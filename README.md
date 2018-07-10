@@ -8,7 +8,7 @@ The goal is to automate "the boring stuff" and let developers focus on business 
 
 ## Getting started
 
-Go to the [Getting started] guide on our Wiki.
+Go to the [Getting started](https://wiki.radix.equinor.com/doku.php/appdeveloper/gettingstarted) guide on our Wiki.
 
 ## Help me
 Contact us on Slack on  [#omnia_radix_support](https://statoil.slack.com/messages/CBKM6N2JY/) . We are also available on [#omnia_radix](https://statoil.slack.com/messages/C8U7XGGAJ/) for general inquires.
