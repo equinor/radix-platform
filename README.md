@@ -1,3 +1,5 @@
+![Logo](https://github.com/Statoil/radix-resources/blob/master/logo/Banner%20energy%20red@2x.png?raw=true)
+
 # Omnia Radix
 This repository is the umbrella for Omnia Radix with issue tracking and feature requests and pointers to other resources.
 
