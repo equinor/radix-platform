@@ -126,7 +126,7 @@ The full ingress would look something like this:
         tls:
         - hosts:
             - grafana.playground-cert-manager-sg.dev.radix.equinor.com
-            secretName: myservice-tls-cert
+            secretName: grafana-tls-secret
 
 Note most Helm charts allow you to set Ingress hosts and annotations in their values.yaml files.
 
