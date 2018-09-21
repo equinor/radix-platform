@@ -11,23 +11,23 @@ Since we will use DNS challenges for verifying ownership of our domains we need 
 We assume an existing DNS zone named `dev.radix.equinor.com` in the resource group `radix-common-dev`
 
 Start by getting the subscription ID of the Omnia Radix Development subscription:
-
+```bash
     az account list --output table
-
+```
 Then create a new Service Principal filling in the subscription ID from before:
-
+```bash
     az ad sp create-for-rbac --name AKSCertManager --role="DNS Zone Contributor" --scopes="/subscriptions/<subscriptionId>/resourceGroups/radix-common-dev"
-
+```
 Keep the response handy for using in later steps.
 
-## cert-manager
+## Setup cert-manager
 
 Install cert-manager from the official Helm chart:
-
+```bash
     helm upgrade --install stable/cert-manager cert-manager --set ingressShim.defaultIssuerName=letsencrypt-prod --set ingressShim.defaultIssuerKind=ClusterIssuer --set ingressShim.defaultACMEChallengeType=dns01 --set ingressShim.defaultACMEDNS01ChallengeProvider=azure-dns
-
+```
 Now create a ClusterIssuer:
-
+```yaml
     apiVersion: certmanager.k8s.io/v1alpha1
     kind: ClusterIssuer
     metadata:
@@ -50,9 +50,10 @@ Now create a ClusterIssuer:
             resourceGroupName: radix-common-dev
             subscriptionID: 16ede44b-1f74-40a5-b428-46cca9a5741b # subscriptionID from az account list --output table
             tenantID: 3aa4a235-b6e2-48d5-9195-7fcf05b459b0 # tenantID from az ad sp create-for-rbac
-            
-And the secret containing the password for the Service Principal:
+```
 
+And the secret containing the password for the Service Principal:
+```yaml
     apiVersion: v1
     kind: Secret
     type: Opaque
@@ -60,16 +61,24 @@ And the secret containing the password for the Service Principal:
         name: "azuredns-config"
     data:
         client-secret: <base 64 encoded password from az ad sp create-for-rbac>
+```
 
-Now create a Certificate object manually:
+This completes the intial setup of cert-manager. The next step is how to obtain certificates.
 
+## How to obtain certificates
+The `Certificate` resource describes our desired certificate and the possible methods that can be used to obtain it.
+They can be created either manually or automated via ingress annotations.
+
+### The manual way
+
+```yaml
     apiVersion: certmanager.k8s.io/v1alpha1
     kind: Certificate
     metadata:
         name: "myservice-cert"
         namespace: default
     spec:
-        secretName: "grafana-tls-secret"
+        secretName: "myservice-tls-secret"
         issuerRef:
             name: letsencrypt-prod
             kind: ClusterIssuer
@@ -82,26 +91,28 @@ Now create a Certificate object manually:
                 provider: azure-dns
             domains:
             - "myservice.dev.radix.equinor.com"
+```
 
-This will create a "Certificate" named `myservice-cert`. It will look for the ClusterIssuer `letsencrypt-prod` that we created before. It will use the domain names in commonName, dnsNames and domains somehow, not sure how they differ though. It will use the provider `azure-dns` that is configured in the provider list in the ClusterIssuer for verifying ownership. When a certificate is successfully retrieved, the private key will be stored in the secret `myservice-tls-secret`.
+This will create a `Certificate` resource named `myservice-cert`. It will look for the ClusterIssuer `letsencrypt-prod` that we created before. It will use the domain names in commonName, dnsNames and domains somehow, not sure how they differ though. It will use the provider `azure-dns` that is configured in the provider list in the ClusterIssuer for verifying ownership. When a certificate is successfully retrieved, the private key will be stored in the secret `myservice-tls-secret`.
 
-But we do not want to be creating these Certificate objects all the time. `cert-manager` comes with a nginx-ingress shim that will look at Ingress objects for extra annotations that can be used to auto-create Certificate objects. For these to work we need to set the default issuers and challenge values:
-
+### The automated way
+But we do not want to be creating these `Certificate` resources all the time. `cert-manager` comes with a nginx-ingress shim that will look at Ingress objects for extra annotations that can be used to auto-create Certificate objects. For these to work we need to set the default issuers and challenge values:
+```yaml
     defaultIssuerName=letsencrypt-prod
     defaultIssuerKind=ClusterIssuer
     defaultACMEChallengeType=dns01
     defaultACMEDNS01ChallengeProvider=azure-dns
-
+```
 We already set these when doing helm install so they should be ready.
 
 To have ingress-shim auto-create certificates we just add this annotation to an `Ingress` object:
-
+```yaml
     metadata:
         annotations:
             kubernetes.io/tls-acme: "true"
-
+```
 The full ingress would look something like this:
-
+```yaml
     apiVersion: extensions/v1beta1
     kind: Ingress
     metadata:
@@ -127,14 +138,14 @@ The full ingress would look something like this:
         - hosts:
             - grafana.playground-cert-manager-sg.dev.radix.equinor.com
             secretName: grafana-tls-secret
-
+```
 Note most Helm charts allow you to set Ingress hosts and annotations in their values.yaml files.
 
-## How it all (should) work
+#### How it all (should) work
 
-Some resource creates an Ingress object refering to an at the moment non-existing secret/tls-certificate. Ingress-shim which is running in the cert-manager container will look for the correct annotations. It finds that this Ingress has that annotation and it creates a Certificate object based on data from the Ingress and the defaultIssuer* and defaultACME* settings.
+Some resource creates an Ingress object refering to an at the moment non-existing secret/tls-certificate. Ingress-shim which is running in the cert-manager container will look for the correct annotations. It finds that this Ingress has that annotation and it creates a `Certificate` resource based on the data from the Ingress and the defaultIssuer* and defaultACME* settings.
 
-Seeing a new Certificate, cert-manager will look at the provider and issuer references and try to find a matching ClusterIssuer. If it finds it it will use the settings from the ClusterIssuer to perform the certificate request process and hopefully retrieve a new signed certificate and put that into `grafana-tls-secret`.
+Seeing a new `Certificate` resource, cert-manager will look at the provider and issuer references and try to find a matching ClusterIssuer. If it finds it it will use the settings from the ClusterIssuer to perform the certificate request process and hopefully retrieve a new signed certificate and put that into `grafana-tls-secret`.
 
 The DNS challenge verification process might take a minute or two to complete due to DNS propagation and caching.
 
