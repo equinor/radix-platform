@@ -89,7 +89,13 @@ git tag -a <tagname> <SHA-of-the-commit> -m "Added feature x"
 git push origin <tagname>
 ```
 
-
+## Example: Delete a tag
+```bash
+# Delete local tag
+git tag --delete <tagname>
+# Delete remote tag
+git push --delete origin <tagname>
+```
 
 ## Versioning
 Use [semantic versioning](https://semver.org/) until the release cadence gets so fast it is no longer feasible.  
