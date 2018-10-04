@@ -1,0 +1,24 @@
+dependencies:
+- name: nginx-ingress
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.28.2
+- name: grafana
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 1.16.0
+- name: cert-manager
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: v0.5.0
+- name: prometheus-operator
+  repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+  version: 0.0.29
+- name: kube-prometheus
+  repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+  version: 0.0.105
+- name: radix-kubernetes-api-proxy
+  repository: https://radixdev.azurecr.io/helm/v1/repo
+  version: 1.0.0
+- name: radix-operator
+  repository: https://radixdev.azurecr.io/helm/v1/repo
+  version: 0.1.0
+digest: sha256:b6438936fd5314bc4cb94574a34658ea430ac47afaa0280319870213cfa7d16f
+generated: 2018-10-04T22:13:55.0184375+02:00

@@ -1,0 +1,129 @@
+externalDns:
+  enabled: true
+
+# radix-operator child chart
+radix-operator:
+  enabled: true
+
+# radix-kubernetes-api-proxy child chart
+radix-kubernetes-api-proxy:
+  enabled: true
+
+# nginx-ingress child chart
+nginx-ingress:
+  enabled: true
+
+  # nginx-ingress chart values:
+  controller:
+    publishService:
+      enabled: true
+    stats:
+      enabled: true
+    metrics:
+      enabled: true
+    service:
+      enableHttp: false
+    externalTrafficPolicy: "Local"
+
+# Connected to nginx-ingress
+createIngressServiceMonitor: true
+
+# cert-manger child chart
+cert-manager:
+  enabled: true
+
+  # cert-manager chart values:
+  ingressShim:
+    defaultIssuerName: letsencrypt-prod
+    defaultIssuerKind: ClusterIssuer
+    defaultACMEChallengeType: dns01
+    defaultACMEDNS01ChallengeProvider: azure-dns
+
+# Connected to cert-manager, but cannot use cert-manager values because helm templating does not handle dashes in variable names very well
+createClusterIssuer: true
+
+
+# kube-prometheus child chart
+# Disable the grafana that is bundled with kube-prometheus via requirements.yaml
+deployGrafana: false
+
+kube-prometheus:
+  enabled: true
+  
+  # kube-prometheus chart values
+  prometheus:
+    image:
+      tag: v2.3.1
+    retention: 31d
+    # externalUrl: ""
+    # routePrefix: /
+    #remoteWrite:
+    #- url: "https://[[influxDBUsername]]:[[influxDBPassword]]@radixinfluxdb.azurewebsites.net/api/v1/prom/write?db=influxdb"
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      hosts:
+      - xx
+      tls:
+      - secretName: prometheus-tls-cert
+        hosts:
+          - xx
+
+
+# grafana child chart
+grafana:
+  enabled: true
+
+  # grafana chart values
+  image:
+    repository: grafana/grafana
+    tag: latest
+    pullPolicy: Always
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    hosts:
+    - xx
+    tls:
+    - secretName: grafana-tls-cert
+      hosts:
+        - xx
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: prometheus
+        type: prometheus
+        url: http://kube-prometheus:9090
+        access: proxy
+        isDefault: true
+        basicAuth: false
+
+  env:
+    GF_AUTH_GENERIC_OAUTH_CLIENT_ID: 7542f95d-c9f4-492f-8450-b3ef2286da7c
+    GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
+    GF_AUTH_ANONYMOUS_ENABLED: "false"
+    GF_AUTH_GENERIC_OAUTH_NAME: Azure AD
+    GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: "true"
+    GF_AUTH_GENERIC_OAUTH_SCOPES: openid email name
+    GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/oauth2/authorize
+    GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/oauth2/token
+    GF_DATABASE_TYPE: mysql
+    GF_DATABASE_SSL_MODE: "skip-verify"
+    GF_DATABASE_CA_CERT_PATH: /etc/ssl/certs/ca-certificates.crt
+    GF_DATABASE_HOST: radix-dev-grafana.mysql.database.azure.com
+    GF_DATABASE_NAME: grafana
+    GF_DATABASE_USER: "mysqlAdmin@radix-dev-grafana"
+    GF_USERS_AUTO_ASSIGN_ORG_ROLE: "Editor" # Viewer|Editor|Admin
+    GF_SERVER_ROOT_URL: xx
+
+  envFromSecret: grafana-secret-envs
+  
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard

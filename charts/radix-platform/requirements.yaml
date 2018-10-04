@@ -1,0 +1,50 @@
+dependencies:
+- name: nginx-ingress
+  version: "0.28.2"
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: nginx-ingress.enabled
+  tags:
+    - nginx-ingress
+
+- name: grafana
+  version: "1.16.0"
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: grafana.enabled
+  tags:
+    - grafana
+
+- name: cert-manager
+  version: "v0.5.0"
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: cert-manager.enabled
+  tags:
+    - cert-manager
+
+- name: prometheus-operator
+  version: "0.0.29"
+  repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+  condition: prometheus-operator.enabled
+  tags:
+    - prometheus-operator
+
+- name: kube-prometheus
+  version: "0.0.105"
+  repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+  condition: kube-prometheus.enabled
+  tags:
+    - kube-prometheus
+
+- name: radix-kubernetes-api-proxy
+  version: "1.0.0"
+  repository: "@radixdev"
+  condition: radix-kubernetes-api-proxy.enabled
+  tags:
+    - radix-kubernetes-api-proxy
+
+- name: radix-operator
+  version: "0.1.0"
+  repository: "@radixdev"
+  condition: radix-operator.enabled
+  tags:
+    - radix-operator
+

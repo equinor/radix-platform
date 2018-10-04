@@ -1,0 +1,31 @@
+{{- if .Values.createClusterIssuer -}}
+
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app: radix-platform
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: sov@equinor.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    dns01:
+      providers:
+      - name: azure-dns
+        azuredns:
+          clientID: ba5ac354-1a07-4c8a-945d-a9846cfcda9c # appID from az ad sp create-for-rbac
+          clientSecretSecretRef:
+            key: client-secret
+            name: azuredns-config
+          hostedZoneName: dev.radix.equinor.com
+          resourceGroupName: radix-common-dev
+          subscriptionID: 16ede44b-1f74-40a5-b428-46cca9a5741b # subscriptionID from az account list --output table
+          tenantID: 3aa4a235-b6e2-48d5-9195-7fcf05b459b0 # tenantID from az ad sp create-for-rbac
+        
+{{- end -}}
