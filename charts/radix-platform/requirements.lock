@@ -14,11 +14,14 @@ dependencies:
 - name: kube-prometheus
   repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
   version: 0.0.105
+- name: kubed
+  repository: https://charts.appscode.com/stable/
+  version: 0.8.0
 - name: radix-kubernetes-api-proxy
   repository: https://radixdev.azurecr.io/helm/v1/repo
   version: 1.0.0
 - name: radix-operator
   repository: https://radixdev.azurecr.io/helm/v1/repo
   version: 0.1.0
-digest: sha256:b6438936fd5314bc4cb94574a34658ea430ac47afaa0280319870213cfa7d16f
-generated: 2018-10-04T22:13:55.0184375+02:00
+digest: sha256:27243b1e551b5ebf41dd24be4a157dd8bed9c6be3dc3895ede26abc46d077c15
+generated: 2018-10-05T12:28:27.3428273+02:00

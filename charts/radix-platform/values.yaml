@@ -1,5 +1,7 @@
 externalDns:
   enabled: true
+  environment: dev
+  deploymentTargetName: xx
 
 # radix-operator child chart
 radix-operator:
@@ -11,6 +13,19 @@ radix-kubernetes-api-proxy:
 
 radixClusterAdminGroup: "604bad73-c53b-4a95-ab17-d7953f75c8c3" # "fg_radix_platform_development"
 radixUserGroup: "7552642f-ad75-4e9d-a140-3ab8f3742c16"
+
+# kubed child chart
+kubed:
+  enabled: true
+
+  # kubed chart values:
+  apiserver:
+    enabled: false
+  config:
+    clusterName: xx
+  rbac:
+    create: true
+  enableAnalytics: false
 
 # nginx-ingress child chart
 nginx-ingress:
@@ -45,6 +60,10 @@ cert-manager:
 # Connected to cert-manager, but cannot use cert-manager values because helm templating does not handle dashes in variable names very well
 createClusterIssuer: true
 
+clusterWildcardCert:
+  enabled: true
+  environment: xx
+  deploymentTargetName: xx
 
 # kube-prometheus child chart
 # Disable the grafana that is bundled with kube-prometheus via requirements.yaml

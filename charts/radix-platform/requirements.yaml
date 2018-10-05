@@ -34,6 +34,13 @@ dependencies:
   tags:
     - kube-prometheus
 
+- name: kubed
+  version: "0.8.0"
+  repository: https://charts.appscode.com/stable/
+  condition: kubed.enabled
+  tags:
+    - kubed
+
 - name: radix-kubernetes-api-proxy
   version: "1.0.0"
   repository: "@radixdev"
