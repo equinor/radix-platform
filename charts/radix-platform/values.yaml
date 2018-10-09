@@ -2,6 +2,7 @@ externalDns:
   enabled: true
   environment: dev
   deploymentTargetName: xx
+  imageTag: "v0.5.7"
 
 # radix-operator child chart
 radix-operator:
