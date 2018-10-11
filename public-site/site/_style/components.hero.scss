@@ -1,0 +1,21 @@
+.c-hero {
+  background: #fff;
+  border-radius: 5px;
+  border-top: 15px solid var(--color-brand-contrast);
+  box-shadow: var(--shadow-level-2);
+  margin-top: 10vh;
+  margin: 10vh 2rem 0;
+}
+
+.c-hero h1 {
+  color: var(--color-brand-contrast);
+  font-size: calc(1.2rem + 16 * ((100vw - 320px) / 1300));
+  font-weight: 500;
+  margin: .5em 0 1em 0;
+}
+
+.c-hero img {
+  max-width: 14rem;
+  min-width: 8rem;
+  width: 16vw;
+}

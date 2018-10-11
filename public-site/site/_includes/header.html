@@ -1,0 +1,14 @@
+<header class="c-header" role="banner">
+  <nav class="o-layout-container">
+    <a href="/">
+      <img src="/images/banner-logo.svg" alt="Omnia Radix logo" />
+    </a>
+    <ul>
+      {% for item in site.data.global-nav %}
+        <li {% if item.url == page.url %}class="active"{% endif %}>
+          <a href="{{ item.url }}">{{ item.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+</header>
