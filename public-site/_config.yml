@@ -21,6 +21,7 @@ destination: build
 markdown: kramdown
 plugins:
   - jekyll-autoprefixer
+  - jekyll-toc
 
 autoprefixer:
   browsers: ">1%, not ie <= 11"

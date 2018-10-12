@@ -6,7 +6,19 @@ useFullTitle: true
 
 # Radix makes your app **develop**
 
-Some uplifting intro here
+## Build
+
+Something something CI/CD!
+
+## Deploy
+
+Cloud, scale, etc
+
+## Monitor
+
+Graphs!
+
+---
 
 A few links, too:
 

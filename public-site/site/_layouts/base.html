@@ -17,15 +17,13 @@
 </head>
 
 <body class="o-layout-page">
-
   {% include header.html %}
-
-  <main class="o-layout-container" aria-label="Content">
-    {{ content }}
-  </main>
-
+  <div class="o-layout-page__body">
+    <div class="o-layout-container">
+      {{ content }}
+    </div>
+  </div>
   {% include footer.html %}
-
 </body>
 
 </html>
