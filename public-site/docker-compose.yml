@@ -1,0 +1,22 @@
+version: "3.5"
+
+services:
+  radix-public-site:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    image: radix-public-site
+    container_name: radix-public-site_container
+    networks:
+      - radix-public-site
+    command: bundle exec jekyll serve
+    volumes:
+      - type: bind
+        source: .
+        target: /site
+    ports:
+      - "4000:4000"
+
+networks:
+  radix-public-site:
+    name: radix-public-site

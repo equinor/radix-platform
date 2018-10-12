@@ -1,0 +1,84 @@
+/* --- Width-constrained container ------------------------------------------ */
+
+.o-layout-container {
+  margin: auto;
+  max-width: 64rem;
+  padding: 0 1rem;
+  width: 100%;;
+}
+
+/* --- Page head ------------------------------------------------------------ */
+
+.o-layout-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.o-layout-page__body {
+  flex: 1 0 auto;
+  padding: 2rem 0;
+}
+
+/* --- Equal-size columns --------------------------------------------------- */
+
+.o-layout-columns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.o-layout-columns > * {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+
+.o-layout-columns > :first-child:nth-last-child(2),
+.o-layout-columns > :first-child:nth-last-child(2) ~ * {
+  flex-basis: calc(50% - .5rem);
+  max-width: calc(50% - .5rem);
+}
+
+.o-layout-columns > :first-child:nth-last-child(3),
+.o-layout-columns > :first-child:nth-last-child(3) ~ * {
+  flex-basis: calc(33.3333% - .6666rem);
+  max-width: calc(33.3333% - .6666rem);
+}
+
+.o-layout-columns > :first-child:nth-last-child(4),
+.o-layout-columns > :first-child:nth-last-child(4) ~ * {
+  flex-basis: calc(25% - .75rem);
+  max-width: calc(25% - .75rem);
+}
+
+.o-layout-columns > :first-child:nth-last-child(5),
+.o-layout-columns > :first-child:nth-last-child(5) ~ * {
+  flex-basis: calc(20% - .8rem);
+  max-width: calc(20% - .8rem);
+}
+
+/* --- 1/4 & 3/4 columns ---------------------------------------------------- */
+
+.o-layout-sidebar {
+  align-items: start;
+  display: grid;
+  grid-gap: 2rem;
+  grid-template-columns: [minor] 1fr [major] 3fr;
+}
+
+.o-layout-sidebar > * {
+  grid-column: minor / major-end;
+}
+
+@media (min-width: 50rem) {
+  .o-layout-sidebar > * {
+     grid-column: auto;
+  }
+}
+
+/* --- Distribute spacing fullwidth ----------------------------------------- */
+
+.o-layout-fullwidth {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+}

@@ -1,0 +1,62 @@
+/**
+ * @extends o-media
+ */
+.c-hero {
+  background: #fff;
+  border-bottom: 15px solid var(--color-brand-contrast);
+  border-radius: 0 0 30px 30px;
+  box-shadow: var(--shadow-level-2);
+  margin: 10vw 2rem 0 2rem;
+  padding-top: 3rem;
+}
+
+.c-hero h1 {
+  color: var(--color-brand-contrast);
+  column-span: all;
+  font-size: calc(1.6rem + 28 * ((100vw - 320px) / 1300));
+  font-weight: 500;
+  margin: .125em 0 .25em 0;
+}
+
+.c-hero h2 {
+  break-before: column;
+  font-size: 1.2rem;
+}
+
+.c-hero img {
+  max-width: 14rem;
+  min-width: 8rem;
+  width: 16vw;
+}
+
+.c-hero__body {
+  columns: 3;
+  column-gap: 2rem;
+  flex-basis: 0;
+}
+
+.c-hero__body hr,
+.c-hero__body hr ~ * {
+  column-span: all;
+}
+
+.c-hero__body hr {
+  border: none;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 45rem) {
+  .c-hero {
+    flex-wrap: wrap;
+    text-align: center;
+  }
+
+  .c-hero__img {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .c-hero__body {
+    columns: auto;
+  }
+}

@@ -1,0 +1,150 @@
+/* ==== Button ============================================================== */
+
+button,
+input[type="button"] {
+  border-radius: 0;
+  cursor: pointer;
+}
+
+/* ==== Checkbox, radio button =============================================== */
+
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+
+/* ==== Select dropdown ===================================================== */
+
+select {
+  cursor: pointer;
+  width: 100%;
+}
+
+/* ==== Textarea ============================================================ */
+
+textarea {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-control-outline);
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: .375rem .75rem;
+  transition:
+    border-color var(--duration-quick) ease-in-out,
+    box-shadow var(--duration-quick) ease-in-out;
+  width: 100%;
+}
+
+textarea:not([rows]) {
+  height: 10em;
+}
+
+/* ---- Focused state ---- */
+
+textarea:focus {
+  border-bottom-color: var(--color-brand-contrast);
+  box-shadow: 0 -.1rem .2rem -.1rem var(--color-brand-contrast) inset;
+  outline: none;
+}
+
+/* ---- Invalid state ---- */
+
+textarea:invalid {
+  border-color: var(--color-danger);
+  border-bottom-color: var(--color-danger-text);
+}
+
+textarea:invalid:focus {
+  box-shadow: 0 -.1rem .2rem -.1rem var(--color-danger-text) inset;
+}
+
+/* ---- Disabled state ---- */
+
+textarea:disabled {
+  background-color: var(--color-background);
+  border-color: transparent;
+  background-image:
+    repeating-linear-gradient(-45deg,
+      #fff,
+      #fff .25rem,
+      var(--color-disabled-background) .5rem,
+      var(--color-disabled-background) .75rem,
+      #fff 1rem
+    );
+  color: var(--color-disabled);
+}
+
+/* ==== Text-based input fields ============================================= */
+
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="text"],
+input[type="url"] {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-control-outline);
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: .375rem .75rem;
+  transition:
+    border-color var(--duration-quick) ease-in-out,
+    box-shadow var(--duration-quick) ease-in-out;
+}
+
+/* ---- Focused state ---- */
+
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="text"]:focus,
+input[type="url"]:focus {
+  border-bottom-color: var(--color-brand-contrast);
+  box-shadow: 0 -.1rem .2rem -.1rem var(--color-brand-contrast) inset;
+  outline: none;
+}
+
+/* ---- Invalid state ---- */
+
+input[type="email"]:invalid,
+input[type="number"]:invalid,
+input[type="tel"]:invalid,
+input[type="text"]:invalid,
+input[type="url"]:invalid {
+  border-color: var(--color-danger);
+  border-bottom-color: var(--color-danger-text);
+  color: var(--color-danger-text);
+}
+
+input[type="email"]:invalid:focus,
+input[type="number"]:invalid:focus,
+input[type="tel"]:invalid:focus,
+input[type="text"]:invalid:focus,
+input[type="url"]:invalid:focus {
+  box-shadow: 0 -.1rem .2rem -.1rem var(--color-danger-text) inset;
+}
+
+/* ---- Disabled state ---- */
+
+input[type="email"]:disabled,
+input[type="number"]:disabled,
+input[type="tel"]:disabled,
+input[type="text"]:disabled,
+input[type="url"]:disabled {
+  background-color: var(--color-background);
+  border-color: transparent;
+  background-image:
+    repeating-linear-gradient(-45deg,
+      #fff,
+      #fff .25rem,
+      #fafafa .5rem,
+      #fafafa .75rem,
+      #fff 1rem
+    );
+  color: var(--color-disabled);
+}
+
+/* ==== Label =============================================================== */
+
+label {
+  cursor: pointer;
+  display: block;
+}

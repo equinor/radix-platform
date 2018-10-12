@@ -1,0 +1,32 @@
+.c-header {
+  background-color: #fff;
+  box-shadow: var(--shadow-level-1);
+  padding: 10px 0;
+}
+
+.c-header nav {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.c-header ul {
+  display: flex;
+  font-family: var(--heading-font-family);
+  font-weight: 700;
+}
+
+.c-header li {
+  border-bottom: 2px solid transparent;
+  border-radius: 3px;
+  margin-left: 1em;
+  padding: 7px 10px 5px 10px;
+}
+
+.c-header li:first-child {
+  margin-left: 0;
+}
+
+.c-header li.active {
+  border-bottom-color: var(--color-brand-active);
+}
