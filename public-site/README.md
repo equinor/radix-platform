@@ -16,8 +16,8 @@ serves the site. It also watches for file changes and auto-rebuilds.
 
 You can see the site on http://localhost:4000
 
-Stop the server with Ctrl+C, but also run `docker-compose down` to
-cleanup the Docker state.
+Stop the server with Ctrl+C, but also run `docker-compose down` to clean up the
+Docker state.
 
 If you need a shell in the container:
 
@@ -51,16 +51,6 @@ The site content is organised within `/site/`. In here you find:
 - `/_layouts/`: HTML layouts for different types of page
 - `/_style/`: CSS files. See the [CSS Section](#CSS) below
 - `/_vendor/`: Third party libraries. Currently maintained manually
-
-## Writing and running tests
-
-Tests are written in [Jest](https://facebook.github.io/jest/). Any file within
-`src/` with the name `test.js` (or that ends with `.test.js`), is picked up by
-the test runner.
-
-Run the tests within the docker container:
-
-    docker exec -ti radix-web-dev_container npm test
 
 ## CSS
 
