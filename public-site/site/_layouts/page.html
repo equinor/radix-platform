@@ -3,7 +3,9 @@ layout: base
 ---
 
 <div class="o-layout o-layout-sidebar o-page">
-  {{ content | toc_only }}
+  <nav class="c-local-nav">
+    {{ content | toc_only }}
+  </nav>
   <main aria-label="Content" class="o-body-text">
     {{ content }}
   </main>

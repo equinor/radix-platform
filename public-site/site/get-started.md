@@ -27,6 +27,38 @@ Let's go over these in order.
 
 ## Your repository
 
+TODO
+
 ## The `radixconfig.yaml` file
 
+TODO, but here is the `radixconfig.yaml` file for this website:
+
+```yaml
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: radix-platform
+spec:
+  environments:
+    - name: dev
+      authorization:
+      - role: RadixAppAdmin
+        groups:
+        - "fg_radix_platform_development"
+    - name: prod
+      authorization:
+      - role: RadixAppAdmin
+        groups:
+        - "fg_radix_platform_development"
+  components:
+    - name: public-site
+      src: "./public-site"
+      ports:
+       - name: http
+         port: 80
+      public: true
+```
+
 ## A `Dockerfile` per component
+
+TODO

@@ -49,5 +49,10 @@
 @import 'objects.page';
 
 @import 'components.header';
+@import 'components.highlight';
+
+{% include_relative _vendor/solarized-css/solarized-dark.css %}
+
+@import 'components.local-nav';
 @import 'components.hero';
 @import 'components.footer';

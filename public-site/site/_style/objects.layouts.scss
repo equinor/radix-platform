@@ -56,13 +56,13 @@
   max-width: calc(20% - .8rem);
 }
 
-/* --- 1/4 & 3/4 columns ---------------------------------------------------- */
+/* --- 1/2 & 2/3 columns ---------------------------------------------------- */
 
 .o-layout-sidebar {
   align-items: start;
   display: grid;
   grid-gap: 2rem;
-  grid-template-columns: [minor] 1fr [major] 3fr;
+  grid-template-columns: [minor] 1fr [major] 2fr;
 }
 
 .o-layout-sidebar > * {
