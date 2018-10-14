@@ -31,32 +31,24 @@ TODO
 
 ## The `radixconfig.yaml` file
 
-TODO, but here is the `radixconfig.yaml` file for this website:
+TODO, but here is a simple example:
 
 ```yaml
 apiVersion: radix.equinor.com/v1
 kind: RadixApplication
 metadata:
-  name: radix-platform
+  name: my-cool-app
 spec:
   environments:
     - name: dev
-      authorization:
-      - role: RadixAppAdmin
-        groups:
-        - "fg_radix_platform_development"
     - name: prod
-      authorization:
-      - role: RadixAppAdmin
-        groups:
-        - "fg_radix_platform_development"
   components:
-    - name: public-site
-      src: "./public-site"
+    - name: main
+      src: "."
+      public: true
       ports:
        - name: http
          port: 80
-      public: true
 ```
 
 ## A `Dockerfile` per component

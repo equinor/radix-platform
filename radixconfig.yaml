@@ -5,15 +5,7 @@ metadata:
 spec:
   environments:
     - name: dev
-      authorization:
-      - role: RadixAppAdmin
-        groups:
-        - "fg_radix_platform_development"
     - name: prod
-      authorization:
-      - role: RadixAppAdmin
-        groups:
-        - "fg_radix_platform_development"
   components:
     - name: public-site
       src: "./public-site"
