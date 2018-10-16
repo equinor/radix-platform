@@ -22,12 +22,16 @@ markdown: kramdown
 plugins:
   - jekyll-autoprefixer
   - jekyll-toc
-
 autoprefixer:
   browsers: ">1%, not ie <= 11"
 sass:
   sass_dir: ./_style
   style: compressed
+
+# Content
+collections:
+  dockerfiles:
+    output: true
 
 # Server settings
 host: 0.0.0.0

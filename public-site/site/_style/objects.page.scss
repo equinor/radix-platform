@@ -1,3 +1,7 @@
+/**
+ * @extends o-layout-sidebar
+ */
+
 .o-page {
   background-color: #fff;
   border-bottom: 5px solid rgba(255, 20, 67, .5);
@@ -5,6 +9,10 @@
   box-shadow: var(--shadow-level-2);
   min-height: 70vh;
   padding: 2rem 1rem;
+}
+
+.o-page > header {
+  grid-column: 2;
 }
 
 @media (min-width: 42rem) {

@@ -4,15 +4,15 @@
 
 .o-body-text h1:not(:first-of-type) {
   border-top: 4px solid var(--color-control-outline);
-  padding: 1.5em 0 .75em 0;
+  margin-top: 1.7rem;
+  padding: 1.5em 0 0.75em 0;
 }
 
 .o-body-text h2 {
   border-top: 1px solid var(--color-control-outline);
   margin: 0;
-  padding: 1.5em 0 .75em 0;
+  padding: 1.5em 0 0.75em 0;
 }
-
 
 .o-body-text p {
   margin: 1.7em 0;
@@ -51,14 +51,14 @@
 .o-body-text ul li::before {
   background-color: var(--color-control-outline);
   border-radius: 10rem;
-  content: '';
+  content: "";
   display: inline-block;
-  height: .5em;
+  height: 0.5em;
   left: -1.5rem;
-  margin-right: -.5rem;
+  margin-right: -0.5rem;
   position: relative;
-  top: -.125em;
-  width: .5em;
+  top: -0.125em;
+  width: 0.5em;
 }
 
 .o-body-text img {
@@ -69,4 +69,15 @@
   margin: 1rem;
   max-width: calc(100% - 4rem - 2px);
   padding: 1rem;
+}
+
+.o-body-text table th {
+  text-align: left;
+}
+
+.o-body-text table td,
+.o-body-text table th {
+  border-bottom: 1px solid var(--color-control-outline);
+  padding: .5rem 1rem;
+  word-break: normal;
 }

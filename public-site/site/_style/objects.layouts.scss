@@ -2,12 +2,12 @@
 
 .o-layout-container {
   margin: auto;
-  max-width: 64rem;
+  max-width: 75rem;
   padding: 0 1rem;
-  width: 100%;;
+  width: 100%;
 }
 
-/* --- Page head ------------------------------------------------------------ */
+/* --- Page ----------------------------------------------------------------- */
 
 .o-layout-page {
   display: flex;
@@ -62,7 +62,8 @@
   align-items: start;
   display: grid;
   grid-gap: 2rem;
-  grid-template-columns: [minor] 1fr [major] 2fr;
+  grid-template-columns: [minor] 33.33% [major] 66.66%;
+  grid-template-rows: 0;
 }
 
 .o-layout-sidebar > * {

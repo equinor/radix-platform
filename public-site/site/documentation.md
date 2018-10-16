@@ -4,6 +4,12 @@ layout: page
 toc: true
 ---
 
-# Documentation
-
 Blah blah blah
+
+# `Dockerfile` examples and best practice
+
+{% for dockerfile in site.dockerfiles %}
+
+- [{{ dockerfile.title }}]({{ dockerfile.url }})
+
+{% endfor %}

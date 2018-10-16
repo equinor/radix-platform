@@ -12,8 +12,7 @@ Omnia Radix is a Platform-as-a-Service ("PaaS", if you like buzzwords). It build
 
 There aren't many requirements: Radix runs applications written in Python, Java, .NET, JavaScript, or [LOLCODE](https://en.wikipedia.org/wiki/LOLCODE) equally well. If it can be built and deployed as Docker containers you are nearly ready. If not, it's not hard to "dockerise" most applications: we have guides [TODO: link] and [human help]({% link community.md %}) on hand.
 
-An in-depth understanding of Docker is not a requirement, but it helps to be familiar with the concepts of containers and images. There are many beginner tutorials online, here's one of the most straightforward: [Getting Started with Docker
-](https://scotch.io/tutorials/getting-started-with-docker).
+An in-depth understanding of Docker is not a requirement, but it helps to be familiar with the concepts of containers and images. There are many beginner tutorials online, here's one of the most straightforward: [Getting Started with Docker](https://scotch.io/tutorials/getting-started-with-docker).
 
 It is also expected that you have a [basic understanding of Git](http://rogerdudler.github.io/git-guide/) (branching, merging) and some networking (ports, domain names).
 
@@ -41,11 +40,11 @@ A single branch can be mapped to multiple environments. You can also use any bra
 
 This is the Radix configuration file, which specifies how your application is built and deployed. It must be placed in the root of your repository.
 
-> Radix only reads `radixconfig.yaml` from the `master` branch. Changes to this file on other branches (even branches that are mapped to environments) are ignored.
+> Radix only reads `radixconfig.yaml` from the `master` branch. Changes to this file in other branches (even branches that are mapped to environments) are ignored.
 
 If you are unfamiliar with YAML, it is fine to write the configuration as JSON instead — just keep the same filename.
 
-Here is a simple example of this file:
+Here is a simple example:
 
 ```yaml
 apiVersion: radix.equinor.com/v1
@@ -65,7 +64,7 @@ spec:
          port: 80
 ```
 
-And the same, but as JSON:
+The same, but as JSON:
 
 ```json
 {
@@ -91,8 +90,59 @@ And the same, but as JSON:
 }
 ```
 
-The syntax for this file is explained in the [full documentation](https://github.com/Statoil/radix-operator/blob/master/docs/radixconfig.md).
+The syntax of this file is explained in the [full documentation](https://github.com/Statoil/radix-operator/blob/master/docs/radixconfig.md).
 
 ## A `Dockerfile` per component
 
-TODO
+Each component in Radix is built separately as a Docker image. The images for all components are deployed as containers running in a common environment. To do this, Radix requires a `Dockerfile` for each component — and a way to find those files.
+
+If you organise your repository with this structure, for instance:
+
+```
+/
+├─ fe/
+│  ├─ Dockerfile
+│  └─ *frontend component code*
+│
+├─ be/
+│  ├─ Dockerfile
+│  └─ *backend component code*
+│
+└─ radixconfig.yaml
+```
+
+In `radixconfig.yaml` you can define the following components:
+
+```yaml
+  components:
+    - name: frontend
+      src: "./fe"
+    - name: backend
+      src: "./be"
+```
+
+Note the `src` property for each component: this is the path to the directory containing the `Dockerfile` for that component. Radix will try to build the image within that directory.
+
+The `Dockerfile` should define a **multi-stage build** in order to speed up the builds and make the resulting image as small as possible. Here is an example for a simple Node.js single-page application:
+
+```docker
+FROM node:carbon-alpine as builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx:1.14-alpine
+WORKDIR /app
+COPY --from=builder /app/build /app
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+```
+
+Note how the first section uses a larger image (`carbon-alpine`) with all dependencies to build the component, and then just the built files are taken into a small image (`nginx`) to serve them.
+
+There are other examples of how to create an efficient `Dockerfile` in [the documentation]({% link documentation.md %}#dockerfile-examples-and-best-practice).
+
+# Register your application
+
+You are now ready to register your application using the [Radix Web Console](https://web-radix-web-console-prod.playground-master-42.dev.radix.equinor.com). Use the "Create an app" link on the top right and follow the instructions there.
