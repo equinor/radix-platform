@@ -15,6 +15,11 @@
   grid-column: 2;
 }
 
+.o-page > header > h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
 @media (min-width: 42rem) {
   .o-page {
     padding: 4rem;
