@@ -2,6 +2,7 @@
 
 This is an overview of current and previous Radix releases and deployments.
 
+## Channels
 We are experimenting with an approach with "release channels" which differ in update frequency, service level objectives(SLO) and agreements(SLA) and expected stability.
 
 |    Channel     |                                           Purpose                                                  |        Termination [1]   |   Support    |     SLO [2]   |    SLA [3]    |
@@ -17,6 +18,11 @@ We are experimenting with an approach with "release channels" which differ in up
 > [2] **SLO**: Service Level Objectives - The lower and upper bounds of stability and performance we expect to deliver. Typically measured in uptime, % of successfull requests or latency percentiles (95% of requests < 500ms) 
 > [3] **SLA:** Service Level Agreements - Responsibility and sanctions if Service Level Objectives are not met.
 
+Short summary of what weekly channel means:
+  - No guarantees of uptime or correctness, but we strive to not break things on purpose. 
+  - No guarantees of response or resolution times for questions and support, but we will respond as soon as we are able to.
+  - New cluster based on latest code every week. Old clusters will live on for 1-2 weeks after that before being terminated. We will try to make migrations of customer applications to new clusters as seamless as possible.
+
 
 ## Releases
 
@@ -29,6 +35,7 @@ No production clusters yet. Expected towards end of 2018.
 |           Name         |    Date    | Version |   Status   |                               Release notes                               |            Web console              |
 |------------------------|------------|---------|------------|---------------------------------------------------------------------------|-------------------------------------|
 | playground-master-42-a | 2018-10-09 | v1.6.0  | Operating  | [Release notes](../release-notes/release-notes-playground-master-42-a.md) | [Web console](https://web-radix-web-console-prod.playground-master-41-a.dev.radix.equinor.com)                 |
+| playground-master-42 | 2018-10-16 | 8eea3123e45643c6348492519f265451fd369a56  | Operating  | [Release notes](../release-notes/release-notes-playground-master-42.md) | [Web console](https://web-radix-web-console-prod.playground-master-41-a.dev.radix.equinor.com)                 |
 
 ### Nightly channel
 
