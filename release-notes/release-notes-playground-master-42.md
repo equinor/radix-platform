@@ -2,7 +2,7 @@
 Release: `playground-master-42`  
 Version: `8eea3123e45643c6348492519f265451fd369a56`
 
-The Omnia Radix team is even prouder than last week to do our second release to our [weekly channel](../docs/releases.md#channels).
+The Omnia Radix team is even prouder than last week to do our second release to our [weekly channel](../docs/releases.md#channels) for week 42.
 
 ## Shortcuts
 * [Web console](https://web-radix-web-console-prod.playground-master-42.dev.radix.equinor.com)
