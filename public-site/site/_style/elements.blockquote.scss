@@ -1,0 +1,31 @@
+blockquote {
+  background-color: var(--color-action);
+  border-bottom: 5px solid var(--color-brand-contrast);
+  margin: 1.7rem 0;
+  padding: 1.5rem;
+  position: relative;
+  border-radius: 0 0 20px 20px;
+}
+
+blockquote::before {
+  align-items: center;
+  background-color: var(--color-brand-contrast);
+  border-radius: 10rem;
+  color: var(--color-brand-contrast-invert);
+  content: 'i';
+  display: flex;
+  height: 1.5em;
+  justify-content: center;
+  left: -.75rem;
+  position: absolute;
+  top: -.75rem;
+  width: 1.5em;
+}
+
+blockquote > p:first-child {
+  margin-top: 0;
+}
+
+blockquote > p:last-child {
+  margin-bottom: 0;
+}
