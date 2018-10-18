@@ -1,6 +1,6 @@
 ---
 title: Documentation
-layout: page
+layout: document
 toc: true
 ---
 

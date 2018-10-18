@@ -8,6 +8,7 @@
   align-items: center;
   display: flex;
   justify-content: space-between;
+  padding: 0 4rem;
 }
 
 .c-header ul {
@@ -29,4 +30,30 @@
 
 .c-header li.active {
   border-bottom-color: var(--color-brand-active);
+}
+
+@media (max-width: 41rem) {
+  .c-header ul {
+    flex-direction: column;
+  }
+
+  .c-header li {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 28rem) {
+  .c-header nav {
+    flex-direction: column;
+    padding: 0 0.5rem;
+  }
+
+  .c-header ul {
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .c-header li {
+    margin-left: 0;
+  }
 }

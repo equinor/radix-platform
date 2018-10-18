@@ -1,6 +1,6 @@
 ---
 title: Dockerfile for Java (Maven)
-layout: page
+layout: document
 parent: ['Documentation', '../documentation.html']
 toc: true
 ---

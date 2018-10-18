@@ -2,7 +2,7 @@
  * @extends o-layout-sidebar
  */
 
-.o-page {
+.o-document {
   background-color: #fff;
   border-bottom: 5px solid rgba(255, 20, 67, .5);
   border-radius: 0 0 20px 20px;
@@ -11,17 +11,25 @@
   padding: 2rem 1rem;
 }
 
-.o-page > header {
+/* TODO: make the header a component */
+
+.o-document > header {
   grid-column: 2;
 }
 
-.o-page > header > h1 {
+.o-document > header h1 {
   font-size: 2rem;
-  margin-bottom: 1rem;
+  margin-bottom: 3rem;
+}
+
+.o-document > header a {
+  display: block;
+  font-weight: 700;
+  margin-bottom: .75rem;
 }
 
 @media (min-width: 42rem) {
-  .o-page {
+  .o-document {
     padding: 4rem;
   }
 }
