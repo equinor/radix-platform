@@ -49,7 +49,7 @@ dependencies:
     - radix-kubernetes-api-proxy
 
 - name: radix-operator
-  version: "0.1.1"
+  version: "0.1.6"
   repository: "@radixdev"
   condition: radix-operator.enabled
   tags:
