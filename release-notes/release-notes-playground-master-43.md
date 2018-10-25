@@ -10,6 +10,7 @@ Release for week 43 in [weekly channel](../docs/releases.md#channels).
 
 ## New
 * Apps can now be promoted from one environment to the next!
+* Branch-to-environment mapping is in place.
 
 ## Improvements
 * 
