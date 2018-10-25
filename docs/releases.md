@@ -34,8 +34,10 @@ No production clusters yet. Expected towards end of 2018.
 
 |           Name         |    Date    | Version |   Status   |                               Release notes                               |            Web console              |
 |------------------------|------------|---------|------------|---------------------------------------------------------------------------|-------------------------------------|
+| playground-master-43 | 2018-10-25 | c4b7d90ce0d49bc332383b951ffae4f6d2a55bcf  | Operating  | [Release notes](../release-notes/release-notes-playground-master-43.md) | [Web console](https://web-radix-web-console-prod.playground-master-43.dev.radix.equinor.com)                 |
+| playground-master-42 | 2018-10-16 | 8eea3123e45643c6348492519f265451fd369a56  | Operating  | [Release notes](../release-notes/release-notes-playground-master-42.md) | [Web console](https://web-radix-web-console-prod.playground-master-42.dev.radix.equinor.com)                 |
 | playground-master-42-a | 2018-10-09 | v1.6.0  | Operating  | [Release notes](../release-notes/release-notes-playground-master-42-a.md) | [Web console](https://web-radix-web-console-prod.playground-master-41-a.dev.radix.equinor.com)                 |
-| playground-master-42 | 2018-10-16 | 8eea3123e45643c6348492519f265451fd369a56  | Operating  | [Release notes](../release-notes/release-notes-playground-master-42.md) | [Web console](https://web-radix-web-console-prod.playground-master-41-a.dev.radix.equinor.com)                 |
+
 
 ### Nightly channel
 
