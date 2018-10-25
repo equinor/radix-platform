@@ -18,6 +18,10 @@
   margin: 1.7em 0;
 }
 
+.o-body-text > p:first-child {
+  margin-top: 0;
+}
+
 .o-body-text ol,
 .o-body-text ul {
   counter-reset: list;

@@ -1,6 +1,6 @@
 ---
 title: Getting started
-layout: page
+layout: document
 toc: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Workflows
-layout: page
+layout: document
 parent: ['Documentation', '../documentation.html']
 toc: true
 ---
