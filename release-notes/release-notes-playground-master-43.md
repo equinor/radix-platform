@@ -13,7 +13,7 @@ Release for week 43 in [weekly channel](../docs/releases.md#channels).
 * Branch-to-environment mapping is in place.
 
 ## Improvements
-* 
+* Web Console tests against remote API Swagger defs
 
 ## Fixes
 * 
