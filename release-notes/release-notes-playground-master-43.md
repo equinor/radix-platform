@@ -11,9 +11,10 @@ Release for week 43 in [weekly channel](../docs/releases.md#channels).
 ## New
 * Apps can now be promoted from one environment to the next!
 * Branch-to-environment mapping is in place.
+* Added radix-clustername and radix-environment list of environment variables of the running applications to make it easier to link different applications within a cluster envionment
 
 ## Improvements
-* 
+* Web Console tests against remote API Swagger defs
 
 ## Fixes
 * 
