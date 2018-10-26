@@ -32,9 +32,19 @@
   border-bottom-color: var(--color-brand-active);
 }
 
-@media (max-width: 41rem) {
+.c-header li.feature > a {
+  background-color: var(--color-action);
+  border-bottom: 2px solid var(--color-brand-contrast);
+  border-radius: 1rem;
+  color: var(--color-brand-contrast);
+  padding: 0.4rem 1rem 0.3rem 1rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 52rem) {
   .c-header ul {
-    flex-direction: column;
+    column-count: 2;
+    display: block;
   }
 
   .c-header li {
@@ -42,7 +52,7 @@
   }
 }
 
-@media (max-width: 28rem) {
+@media (max-width: 36rem) {
   .c-header nav {
     flex-direction: column;
     padding: 0 0.5rem;
