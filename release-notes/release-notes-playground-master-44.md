@@ -1,6 +1,7 @@
-# Release Notes
+# Release Notes - playground-master-44
 Release: `playground-master-44`  
-Version: ``
+Version: `f7f42a581f455c02b7f52e93a98702d83dd5e99e`  
+Channel: weekly
 
 Release for week 44 in [weekly channel](../docs/releases.md#channels).
 
@@ -12,14 +13,14 @@ Release for week 44 in [weekly channel](../docs/releases.md#channels).
 * TODO
 
 ## Improvements
-* TODO
+* Added auditing for cluster (azure logs)
 
 ## Fixes
 * TODO
 
 ## Known issues
-* TODO
+* The Friday Night Killer is still active. Applications might be murdered this coming friday.
 
 ## Ops
-* Kubernetes version x
+* Kubernetes version 1.11.3
   
