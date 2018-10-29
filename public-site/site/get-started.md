@@ -157,6 +157,6 @@ There are other examples of how to create an efficient `Dockerfile` in [the docu
 
 ## Registering the application
 
-We are now ready to register our application using the [Radix Web Console](https://web-radix-web-console-prod.playground-master-42.dev.radix.equinor.com/applications/new). Follow the instructions there to integrate the GitHub repository with Radix.
+We are now ready to register our application using the [Radix Web Console](https://console.dev.radix.equinor.com). Follow the instructions there to integrate the GitHub repository with Radix.
 
 Remember that we can always change the `radixconfig.yaml` file and the `Dockerfiles` after registration to change how the application builds and deploys.

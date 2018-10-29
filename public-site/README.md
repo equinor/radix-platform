@@ -3,7 +3,6 @@
 This is the public site for promoting, documenting & showcasing the Radix
 platform. It is a static site built with [Jekyll](https://jekyllrb.com).
 
-
 ## Running, building
 
 ### The easy way
