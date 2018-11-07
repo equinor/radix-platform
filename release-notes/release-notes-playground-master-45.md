@@ -16,7 +16,10 @@ Release for week 45 in [weekly channel](../docs/releases.md#channels).
 * TODO
 
 ## Fixes
-* TODO
+- Operator is not seeing the latest rd and is unable to recover from azure bug:
+  - If CRDs temporarily gets dropped from ETCD, the operator will recover when they re-appear
+- Fix swagger issue on pipeline jobs
+  - Fixed problems with contract testing in the web console
 
 ## Known issues
 * Missing tls certs for dns alias for web-console and radix-platform
