@@ -1,4 +1,4 @@
-# Release Notes - playground-master-xx
+# Release Notes - playground-master-45
 Release: `playground-master-45`  
 Version: `a8794f70b2047a5d50d087f0a401ed73fa4ecf10`  
 Channel: weekly
