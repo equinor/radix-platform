@@ -10,10 +10,10 @@ Release for week 45 in [weekly channel](../docs/releases.md#channels).
 
 
 ## New
-* TODO
+* -
 
 ## Improvements
-* TODO
+* -
 
 ## Fixes
 - Operator is not seeing the latest rd and is unable to recover from azure bug:
