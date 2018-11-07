@@ -22,5 +22,5 @@ Release for week 45 in [weekly channel](../docs/releases.md#channels).
 * Missing tls certs for dns alias for web-console and radix-platform
 
 ## Ops
-* Kubernetes version x
+* Kubernetes version 1.11.3
   
