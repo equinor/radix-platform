@@ -1,3 +1,35 @@
+testing:
+  clusterFQDN: "xx"
+  influxDBurl: "xx"
+
+  tests:
+    - service: "grafana"
+      endpoint: "/login"
+      expect: 200
+    - service: "api"
+      endpoint: "/"
+      expect: 403
+    - service: "www-radix-canary-golang-prod"
+      endpoint: "/"
+      expect: 200
+    - service: "webhook-radix-github-webhook-qa"
+      endpoint: "/"
+      expect: 500
+    - service: "web-radix-web-console-dev"
+      endpoint: "/"
+      expect: 200
+    - service: "public-site-radix-platform-dev"
+      endpoint: "/"
+      expect: 200
+    - service: "server-radix-api-qa"
+      endpoint: "/swaggerui/"
+      expect: 200
+
+imageCredentials:
+  registry: xx
+  username: xx
+  password: xx
+
 externalDns:
   enabled: true
   environment: dev
@@ -7,6 +39,10 @@ externalDns:
 # radix-operator child chart
 radix-operator:
   enabled: true
+  clusterAKSAPIserver: xx
+  imageCredentials:
+    username: xx
+    password: xx
 
 # radix-kubernetes-api-proxy child chart
 radix-kubernetes-api-proxy:
@@ -95,7 +131,6 @@ kube-prometheus:
       - secretName: prometheus-tls-cert
         hosts:
           - xx
-
 
 # grafana child chart
 grafana:
