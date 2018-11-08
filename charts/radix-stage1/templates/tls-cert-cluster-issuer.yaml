@@ -22,7 +22,7 @@ spec:
           clientID: ba5ac354-1a07-4c8a-945d-a9846cfcda9c # appID from az ad sp create-for-rbac
           clientSecretSecretRef:
             key: client-secret
-            name: azuredns-config
+            name: azuredns-credentials
           hostedZoneName: dev.radix.equinor.com
           resourceGroupName: radix-common-dev
           subscriptionID: 16ede44b-1f74-40a5-b428-46cca9a5741b # subscriptionID from az account list --output table

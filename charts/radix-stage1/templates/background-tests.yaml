@@ -36,33 +36,38 @@ data:
           // This block will be templated by Helm
           {{- range .Values.testing.tests }}
           test.expect = {{ .expect }}
+          test.service = "{{ .service }}"
           test.endpoint = "https://{{ .service }}.{{ $clusterFQDN }}{{ .endpoint }}"
           tests.push(JSON.parse(JSON.stringify(test))); // Deep-ish copy
           {{- end }}
 
           for (let i = 0; i < tests.length; i++) {
 
-            let res = http.get(tests[i].endpoint);
-            let tags = {"name": tests[i].endpoint};
+            let tags = {"name": tests[i].endpoint, "service": tests[i].service};
+            
+            // We add 1 critical error. If it is 0 nothing is sent to InfluxDB. Grafana will need to subtract 1 from the total.
+            criticalFail.add(1, tags);
 
+            let res = http.get(tests[i].endpoint, { tags: tags });
+            
             // console.log(JSON.stringify(res, null, 4));
         
             if (check(res, {
               "no errors": (r) => r.error === ""
             }, tags)){
-              criticalPass.add(1, tags)
+              criticalPass.add(1, tags);
             }else{
               console.log(res.error)
-              criticalFail.add(1, tags)
+              criticalFail.add(1, tags);
             }
             
             if (check(res, {
               "expected HTTP status": (r) => r.status === tests[i].expect
             }, tags)){
-              criticalPass.add(1, tags)
+              criticalPass.add(1, tags);
             }else{
               console.log("Unexpected HTTP status, wanted " + tests[i].expect + " but got " + res.status)
-              criticalFail.add(1, tags)
+              criticalFail.add(1, tags);
             }
 
           }

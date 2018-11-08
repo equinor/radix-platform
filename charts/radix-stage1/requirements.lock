@@ -5,12 +5,6 @@ dependencies:
 - name: grafana
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.16.0
-- name: cert-manager
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: v0.5.0
-- name: prometheus-operator
-  repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-  version: 0.0.29
 - name: kube-prometheus
   repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
   version: 0.0.105
@@ -23,5 +17,5 @@ dependencies:
 - name: radix-operator
   repository: https://radixdev.azurecr.io/helm/v1/repo
   version: 0.1.6
-digest: sha256:19fa2e7b0ee78de11e0132b7e2ed4ea7e73068bdd0ef6d1605c5a1fe2786e4df
-generated: 2018-10-10T16:10:21.6645666+02:00
+digest: sha256:fc496f2381ba537fa21ecfac9a8bc97b5ffba84ac7c8a1a1a45150fcbc3ce1a0
+generated: 2018-11-08T10:28:15.6669125+01:00

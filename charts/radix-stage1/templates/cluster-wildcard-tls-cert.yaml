@@ -14,7 +14,6 @@ metadata:
   annotations:
     kubed.appscode.com/sync: "sync=cluster-wildcard-tls-cert"
   name: cluster-wildcard-tls-cert
-  namespace: default
 data:
   tls.crt: ""
   tls.key: ""
@@ -23,7 +22,6 @@ apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
   name: cluster-wildcard-tls-cert
-  namespace: default
 spec:
   secretName: cluster-wildcard-tls-cert
   issuerRef:
