@@ -113,11 +113,35 @@ PATCH version when you make backwards-compatible bug fixes.
 
 
 ## Useful Git Commands
+
+### Delete matching local branches
 ```bash
 # Delete matching local branches
 git branch | cut -c3- | egrep "^feature/" | xargs git branch -D  
 ```
 
+### Rename branch
+If you have named a branch incorrectly AND pushed this to the remote repository follow these steps before any other developers get a chance to jump on you and give you shit for not correctly following naming conventions.
 
+1. Rename your local branch
+   If you are on the branch you want to rename:
+   ```bash
+   git branch -m new-name
+   ```  
+   
+   If you are on a different branch:
+   ```bash
+   git branch -m old-name new-name
+   ```
+2. Delete the old-name remote branch and push the new-name local branch
+   ```bash
+   git push origin :old-name new-name
+   ```
+3. Reset the upstream branch for the new-name local branch  
+   Switch to the branch and then:
+   ```bash
+   git push origin -u new-name
+   ```  
+   
 ## External resources
 * [http://ohshitgit.com/](http://ohshitgit.com/)

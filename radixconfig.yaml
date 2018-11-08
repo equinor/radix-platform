@@ -1,0 +1,19 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: radix-platform
+spec:
+  environments:
+    - name: dev
+      build:
+        from: master
+    - name: prod
+      build:
+        from: release
+  components:
+    - name: public-site
+      src: "./public-site"
+      ports:
+       - name: http
+         port: 80
+      public: true

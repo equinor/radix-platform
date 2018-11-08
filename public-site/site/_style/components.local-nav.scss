@@ -1,0 +1,21 @@
+.c-local-nav {
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  margin-top: 2.4375rem;
+}
+
+.c-local-nav li {
+  margin-top: .75em;
+}
+
+.c-local-nav li li {
+  margin-left: 1em;
+}
+
+@media (min-width: 50rem) {
+  .c-local-nav {
+    margin-bottom: 0;
+    position: sticky;
+    top: 3rem;
+  }
+}
