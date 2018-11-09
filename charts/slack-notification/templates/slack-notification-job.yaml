@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-slack-notification
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  backoffLimit: 4
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      containers:
+      - name: alpine
+        image: alpine
+        command: ["/bin/sh"]
+        args: ["-c", "apk add --no-cache curl && curl -X POST -H 'Authorization: Bearer {{ .Values.slackToken }}' -H 'Content-type: application/json' --data '{\"channel\":\"{{ .Values.channel }}\",\"text\":\"{{ .Values.text }}\"}' https://slack.com/api/chat.postMessage"]
+      restartPolicy: Never

@@ -1,0 +1,56 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.name }}-init-deploy
+  namespace: {{ .Values.name }}-app
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  backoffLimit: 4
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      serviceAccountName: radix-pipeline
+      containers:
+      - args:
+        - BRANCH=master
+        - RADIX_FILE_NAME=/workspace/radixconfig.yaml
+        - IMAGE_TAG=latest
+        image: radixdev.azurecr.io/radix-pipeline:latest
+        name: radix-pipeline-init
+        volumeMounts:
+        - mountPath: /workspace
+          name: build-context
+      imagePullSecrets:
+      - name: radix-docker-v2
+      initContainers:
+      - args:
+        - apk add --no-cache bash openssh-client git && ls /root/.ssh && cd /workspace
+          && git clone ${CLONE_URL} -b ${CLONE_BRANCH} .
+        command:
+        - /bin/sh
+        - -c
+        env:
+          - name: CLONE_URL
+            value: {{ .Values.cloneURL }}
+          - name: CLONE_BRANCH
+            value: {{ .Values.cloneBranch }}
+        image: alpine:3.7
+        name: clone
+        volumeMounts:
+        - mountPath: /workspace
+          name: build-context
+        - mountPath: /root/.ssh
+          name: git-ssh-keys
+          readOnly: true
+      restartPolicy: Never
+      volumes:
+      - emptyDir: {}
+        name: build-context
+      - name: git-ssh-keys
+        secret:
+          defaultMode: 256
+          secretName: git-ssh-keys

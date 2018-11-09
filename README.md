@@ -21,12 +21,15 @@ Bugs and feature requests can be submitted using the [Issue-tracker in this repo
 
 #### Documentation ####
 
+We are currently updating and migrating documentation from our [old Wiki](https://wiki.radix.equinor.com) and placing it here:
+
+
 > **PS** We are moving fast and making changes so portions of the documentation will be outdated at any time. Stable documentation is something we are discussing how to do.
 
-Our wiki contains most of the documentation and is located here: https://wiki.radix.equinor.com
+Our wiki contains most of the documentation and is located here: 
 
 #### Code ####
 All of our source code for the platform is on [private GitHub repositories prefixed with *radix-*](https://github.com/Statoil?utf8=%E2%9C%93&q=radix-) . You need to be a member of the *Omnia Radix Readers* group to have access. Contact us to get access.
 
 #### Jira ####
-We have a [Jira board](https://statoil.atlassian.net/) for tracking progress in the team. Right now this is internal for the team only....
+We have a [Jira board](https://statoil.atlassian.net/) for tracking progress in the team. Right now this is internal for the team only.

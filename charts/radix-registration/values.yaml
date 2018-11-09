@@ -1,0 +1,10 @@
+name: some-project
+repository: https://github.com/Statoil/some-project
+cloneURL: git@github.com:Statoil/some-project.git
+sharedSecret: GenerateSomeSecret
+deployKey: |
+    -----BEGIN RSA PRIVATE KEY-----
+    xx
+    -----END RSA PRIVATE KEY-----
+adGroups: 
+ - "xx-xx-xx-xx-xx"

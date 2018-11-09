@@ -1,3 +1,35 @@
+testing:
+  clusterFQDN: "xx"
+  influxDBurl: "xx"
+
+  tests:
+    - service: "grafana"
+      endpoint: "/login"
+      expect: 200
+    - service: "api"
+      endpoint: "/"
+      expect: 403
+    - service: "www-radix-canary-golang-prod"
+      endpoint: "/"
+      expect: 200
+    - service: "webhook-radix-github-webhook-qa"
+      endpoint: "/"
+      expect: 500
+    - service: "web-radix-web-console-dev"
+      endpoint: "/"
+      expect: 200
+    - service: "public-site-radix-platform-dev"
+      endpoint: "/"
+      expect: 200
+    - service: "server-radix-api-qa"
+      endpoint: "/swaggerui/"
+      expect: 200
+
+imageCredentials:
+  registry: xx
+  username: xx
+  password: xx
+
 externalDns:
   enabled: true
   environment: dev
@@ -7,6 +39,10 @@ externalDns:
 # radix-operator child chart
 radix-operator:
   enabled: true
+  clusterAKSAPIserver: xx
+  imageCredentials:
+    username: xx
+    password: xx
 
 # radix-kubernetes-api-proxy child chart
 radix-kubernetes-api-proxy:
@@ -50,17 +86,6 @@ nginx-ingress:
 # Connected to nginx-ingress
 createIngressServiceMonitor: true
 
-# cert-manger child chart
-cert-manager:
-  enabled: true
-
-  # cert-manager chart values:
-  ingressShim:
-    defaultIssuerName: letsencrypt-prod
-    defaultIssuerKind: ClusterIssuer
-    defaultACMEChallengeType: dns01
-    defaultACMEDNS01ChallengeProvider: azure-dns
-
 # Connected to cert-manager, but cannot use cert-manager values because helm templating does not handle dashes in variable names very well
 createClusterIssuer: true
 
@@ -68,6 +93,8 @@ clusterWildcardCert:
   enabled: true
   environment: xx
   deploymentTargetName: xx
+
+certManagerAzureDnsSecret: xx
 
 # kube-prometheus child chart
 # Disable the grafana that is bundled with kube-prometheus via requirements.yaml
@@ -96,7 +123,6 @@ kube-prometheus:
         hosts:
           - xx
 
-
 # grafana child chart
 grafana:
   enabled: true
@@ -114,7 +140,7 @@ grafana:
     hosts:
     - xx
     tls:
-    - secretName: grafana-tls-cert
+    - secretName: cluster-wildcard-tls-cert
       hosts:
         - xx
 
