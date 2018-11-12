@@ -20,6 +20,8 @@ If you think you found a bug, or you have a concrete proposal, [log an issue](ht
 
 We are based in Stavanger. If you see us on the corridor, say hello!
 
+![Radix Team](images/radix-team.jpg)
+
 - Lars Kåre
 
   ![Lars Kåre](https://ca.slack-edge.com/T02JL00JU-U034H5BAE-1b3bb62a5396-72)
