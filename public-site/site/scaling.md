@@ -41,6 +41,8 @@ Pre-defined Pod sizes:
 
 > Radix offers monitoring of resource usage so an application can initially be run with **huge** resources and then after some days of monitoring more appropriate resource limits can be set.
 
+For this setup the node size for a production cluster should be D16v3 with 16vCPU and 64GB RAM at $625/month/node before any Equinor discounts.
+
 **Future**: A Verical Pod Autoscaler (VPA) is currently in alpha (https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler). It observes the actual resource usage of a Pod over the past few minutes and can adjust the requests and limits for the Pod dynamically.
 
 #### Metering
