@@ -1,0 +1,17 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixRegistration
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  adGroups:
+  {{- range $index, $group := .Values.adGroups }}
+    - {{ $group }}
+  {{- end }}
+  cloneURL: {{ .Values.cloneURL }}
+  deployKey: {{ .Values.deployKey | toYaml | indent 4 | trim }}
+  repository: {{ .Values.repository }}
+  sharedSecret: {{ .Values.sharedSecret }}

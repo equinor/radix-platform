@@ -1,0 +1,14 @@
+dependencies:
+- name: cert-manager
+  version: "v0.5.0"
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: cert-manager.enabled
+  tags:
+    - cert-manager
+
+- name: prometheus-operator
+  version: "0.0.29"
+  repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+  condition: prometheus-operator.enabled
+  tags:
+    - prometheus-operator

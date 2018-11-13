@@ -1,0 +1,14 @@
+apiVersion: v1
+name: radix-pipeline-invocation
+version: 1.0.0
+appVersion: 1.0.0
+description: Will create a single run of a pipeline run for an existing RadixRegistration
+keywords:
+  - radix
+home: radix.equinor.com
+sources:
+  - https://github.com/Statoil/radix-platform
+maintainers: 
+  - name: Stian Ovrevage
+    email: sov@equinor.com
+deprecated: false

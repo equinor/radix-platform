@@ -32,6 +32,8 @@ sass:
 collections:
   dockerfiles:
     output: true
+  pilotapps:
+    output: true
 
 # Server settings
 host: 0.0.0.0
