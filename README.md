@@ -1,5 +1,7 @@
 ![Logo](https://github.com/Statoil/radix-resources/blob/master/logo/Banner%20energy%20red@2x.png?raw=true)
 
+[Public site](https://www.dev.radix.equinor.com)
+
 # Omnia Radix
 This repository is the umbrella for Omnia Radix with issue tracking and feature requests and pointers to other resources.
 
@@ -10,7 +12,7 @@ The goal is to automate "the boring stuff" and let developers focus on business 
 
 ## Getting started
 
-Go to the [Getting started](https://wiki.radix.equinor.com/doku.php/appdeveloper/gettingstarted) guide on our Wiki.
+There is a [Getting started](https://www.dev.radix.equinor.com/get-started.html) guide. When you are ready, you can register your application in the [Radix Web Console](https://console.dev.radix.equinor.com).
 
 ## Help me
 Contact us on Slack on  [#omnia_radix_support](https://statoil.slack.com/messages/CBKM6N2JY/) . We are also available on [#omnia_radix](https://statoil.slack.com/messages/C8U7XGGAJ/) for general inquires.
