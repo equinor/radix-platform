@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Values.name }}-init-deploy
+  name: {{ .Values.name }}-{{ .Values.cloneBranch }}-init-deploy
   namespace: {{ .Values.name }}-app
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
