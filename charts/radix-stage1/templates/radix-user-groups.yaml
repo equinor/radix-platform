@@ -64,9 +64,24 @@ rules:
   - ""
   resources:
   - namespaces
-  - secrets
-  - pods
   verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - get
   - list
   - watch
 ---
@@ -84,3 +99,81 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
   name: "{{ .Values.radixUserGroup }}"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: radix-operator
+    chart: radix-operator-0.1.0
+    heritage: Tiller
+    release: radix-operator
+  name: radix-app-admin
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - radixapplications
+  - pods
+  - pods/log
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: radix-operator
+    chart: radix-operator-0.1.0
+    heritage: Tiller
+    release: radix-operator
+  name: radix-app-admin-envs
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - deployments
+  - radixdeployments
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - pods
+  - pods/log
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - delete
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - secrets
+  verbs:
+  - create
