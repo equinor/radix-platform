@@ -1,0 +1,9 @@
+customHostname: xx
+
+application: xx
+applicationEnv: xx
+component: xx
+componentPort: xx
+
+clusterName: xx
+clusterEnv: xx
