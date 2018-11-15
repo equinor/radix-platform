@@ -2,3 +2,5 @@
 name: radix-github-webhook
 cloneURL: git@github.com:Statoil/radix-github-webhook.git
 cloneBranch: master
+
+imageTag: xx
