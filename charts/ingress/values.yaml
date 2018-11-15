@@ -7,3 +7,5 @@ componentPort: xx
 
 clusterName: xx
 clusterEnv: xx
+
+enableAutoTLS: false
