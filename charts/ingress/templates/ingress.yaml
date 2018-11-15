@@ -23,4 +23,5 @@ spec:
           path: /
   tls:
     - hosts:
-      - {{ .Values.component }}-{{ .Values.application }}-{{ .Values.applicationEnv }}.{{ .Values.clusterName }}.{{ .Values.clusterEnv }}
+      - {{ .Values.customHostname }}.dev.radix.equinor.com
+      secretName: {{ .Values.customHostname }}.dev.radix.equinor.com

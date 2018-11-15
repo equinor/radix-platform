@@ -36,8 +36,9 @@ spec:
         env:
           - name: CLONE_URL
             value: {{ .Values.cloneURL }}
+          # Which branch to read radixconfig.yaml from
           - name: CLONE_BRANCH
-            value: {{ .Values.cloneBranch }}
+            value: master
         image: alpine:3.7
         name: clone
         volumeMounts:
