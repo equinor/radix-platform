@@ -18,5 +18,4 @@ Release for week 46 in [weekly channel](../docs/releases.md#channels).
 ## Fixes
 - TLS certs for DNS alias for web-console and radix-platform (documentation pages)
 
-
 ## Known issues
