@@ -16,6 +16,6 @@ dependencies:
   version: 1.0.0
 - name: radix-operator
   repository: https://radixdev.azurecr.io/helm/v1/repo
-  version: 0.1.6
-digest: sha256:fc496f2381ba537fa21ecfac9a8bc97b5ffba84ac7c8a1a1a45150fcbc3ce1a0
-generated: 2018-11-08T10:28:15.6669125+01:00
+  version: 1.0.0
+digest: sha256:9ccc0c0489fa93665d5540bbfea8742b9e20eecc7e7bd2fb6f3decdb1c6d9a31
+generated: 2018-11-19T11:23:57.7173622+01:00
