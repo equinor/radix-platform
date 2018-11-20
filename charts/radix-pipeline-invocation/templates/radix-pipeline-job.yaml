@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Values.name }}-init-deploy
+  name: {{ .Values.name }}-{{ .Values.cloneBranch }}-init-deploy-{{ .Values.imageTag }}
   namespace: {{ .Values.name }}-app
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -16,9 +16,9 @@ spec:
       serviceAccountName: radix-pipeline
       containers:
       - args:
-        - BRANCH=master
+        - BRANCH={{ .Values.cloneBranch }}
         - RADIX_FILE_NAME=/workspace/radixconfig.yaml
-        - IMAGE_TAG=latest
+        - IMAGE_TAG={{ .Values.imageTag }}
         image: radixdev.azurecr.io/radix-pipeline:latest
         name: radix-pipeline-init
         volumeMounts:
@@ -36,8 +36,9 @@ spec:
         env:
           - name: CLONE_URL
             value: {{ .Values.cloneURL }}
+          # Which branch to read radixconfig.yaml from
           - name: CLONE_BRANCH
-            value: {{ .Values.cloneBranch }}
+            value: master
         image: alpine:3.7
         name: clone
         volumeMounts:

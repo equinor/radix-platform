@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+    {{- if .Values.enableAutoTLS }}
+    kubernetes.io/tls-acme: "true"
+    {{- end }}
+
+  labels:
+    radixApp: {{ .Values.application }}
+  name: {{ .Values.component }}.custom-domain
+  namespace: {{ .Values.application }}-{{ .Values.applicationEnv }}
+spec:
+  rules:
+    - host: {{ .Values.customHostname }}.dev.radix.equinor.com
+      http:
+        paths:
+        - backend:
+            serviceName: {{ .Values.component }}
+            servicePort: {{ .Values.componentPort }}
+          path: /
+  tls:
+    - hosts:
+      - {{ .Values.customHostname }}.dev.radix.equinor.com
+      secretName: {{ .Values.customHostname }}.dev.radix.equinor.com
