@@ -16,13 +16,13 @@ No production clusters yet. Expected towards end of 2018.
 
 |           Name         |    Date    | Version |   Status   |                               Release notes                               |            Web console              |
 |------------------------|------------|---------|------------|---------------------------------------------------------------------------|-------------------------------------|
-| playground-master-47   | 2018-11-19 |         | Operating  | [Release notes](../release-notes/release-notes-playground-master-47.md)   | [Web console](https://web-radix-web-console-prod.playground-master-47.dev.radix.equinor.com)   |
+| playground-master-47   | 2018-11-19 |         | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-47.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-47.dev.radix.equinor.com)   |
 | playground-master-46   | 2018-11-15 |         | Aborted    | Aborted due to problems. Superseded by playground-master-47               |     |
-| playground-master-45   | 2018-11-06 | a8794f70b2047a5d50d087f0a401ed73fa4ecf10  | Operating  | [Release notes](../release-notes/release-notes-playground-master-45.md) | [Web console](https://web-radix-web-console-prod.playground-master-45.dev.radix.equinor.com)   |
-| playground-master-44   | 2018-10-29 | f7f42a581f455c02b7f52e93a98702d83dd5e99e  | Operating  | [Release notes](../release-notes/release-notes-playground-master-44.md) | [Web console](https://web-radix-web-console-prod.playground-master-44.dev.radix.equinor.com)   |
-| playground-master-43   | 2018-10-25 | c4b7d90ce0d49bc332383b951ffae4f6d2a55bcf  | Operating  | [Release notes](../release-notes/release-notes-playground-master-43.md) | [Web console](https://web-radix-web-console-prod.playground-master-43.dev.radix.equinor.com)   |
-| playground-master-42   | 2018-10-16 | 8eea3123e45643c6348492519f265451fd369a56  | Operating  | [Release notes](../release-notes/release-notes-playground-master-42.md) | [Web console](https://web-radix-web-console-prod.playground-master-42.dev.radix.equinor.com)   |
-| playground-master-42-a | 2018-10-09 | v1.6.0  | Operating  | [Release notes](../release-notes/release-notes-playground-master-42-a.md) | [Web console](https://web-radix-web-console-prod.playground-master-41-a.dev.radix.equinor.com)                 |
+| playground-master-45   | 2018-11-06 | a8794f70b2047a5d50d087f0a401ed73fa4ecf10  | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-45.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-45.dev.radix.equinor.com)   |
+| playground-master-44   | 2018-10-29 | f7f42a581f455c02b7f52e93a98702d83dd5e99e  | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-44.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-44.dev.radix.equinor.com)   |
+| playground-master-43   | 2018-10-25 | c4b7d90ce0d49bc332383b951ffae4f6d2a55bcf  | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-43.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-43.dev.radix.equinor.com)   |
+| playground-master-42   | 2018-10-16 | 8eea3123e45643c6348492519f265451fd369a56  | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-42.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-42.dev.radix.equinor.com)   |
+| playground-master-42-a | 2018-10-09 | v1.6.0  | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-42-a.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-41-a.dev.radix.equinor.com)                 |
 
 
 ### Nightly channel
