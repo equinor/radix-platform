@@ -12,6 +12,7 @@ The goal is to automate "the boring stuff" and let developers focus on business 
 
 ## Getting started
 
+
 There is a [Getting started](https://www.dev.radix.equinor.com/get-started.html) guide. When you are ready, you can register your application in the [Radix Web Console](https://console.dev.radix.equinor.com).
 
 ## Help me
