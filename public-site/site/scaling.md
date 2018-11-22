@@ -19,8 +19,6 @@ First of we need to have a clear distiction between scaling applications on top 
 
 ---
 
-## Discussion
-
 ## Radix Platform Customer Applications
 
 ### Vertical scaling
