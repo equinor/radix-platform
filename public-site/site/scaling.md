@@ -47,7 +47,7 @@ For this setup the node size for a production cluster should be D16v3 with 16vCP
 
 #### Metering
 
-Kubernetes does NOT have a concept of metering. Metering is measuring resource usage over time with the goal of making the user aware that using resoures have a cost. Granular and requent metering is the foundating of the modern cloud. You can pay per-second, per-MB, per-request of what you consume. This makes operating costs for good and efficient software low and big and bloated software high.
+Kubernetes does NOT have a concept of metering. Metering is measuring resource usage over time with the goal of making the user aware that using resoures have a cost. Granular and frequent metering is the foundating of the modern cloud. You can pay per-second, per-MB, per-request of what you consume. This makes operating costs for good and efficient software low and big and bloated software high.
 
 Metering can either be done on actual resource usage og reserved resources. I think metering on reserved resources forces users to set fair resource reservations.
 
