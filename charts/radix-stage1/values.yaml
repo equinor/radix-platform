@@ -146,7 +146,7 @@ grafana:
       datasources:
       - name: prometheus
         type: prometheus
-        url: http://kube-prometheus:9090
+        url: http://radix-stage1-prometheus:9090
         access: proxy
         isDefault: true
         basicAuth: false
