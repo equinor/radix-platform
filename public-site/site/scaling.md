@@ -102,7 +102,7 @@ First of we need to have a clear distiction between scaling applications on top 
 ### Cluster
 
 Waiting for
-- [Cluster Autoscaler to be integrated in AKS](https://docs.microsoft.com/en-us/azure/aks/autoscaler)
+- [Cluster Autoscaler to be integrated in AKS](https://docs.microsoft.com/en-us/azure/aks/autoscaler) (still in preview)
 - The availability of node pools in Q1 2019
 
 
