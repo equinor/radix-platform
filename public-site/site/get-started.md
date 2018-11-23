@@ -12,6 +12,14 @@ You can use Radix just to run code, but the main functionality is to integrate w
 
 Radix also provides monitoring for applications. The are default metrics (e.g. request latency, failure rate), but you can also output custom metrics from your code. Track things that are important for your application: uploaded file size, number of results found, or user preferences. Radix collects and monitors the data.
 
+# Getting access to Omnia Radix
+
+* **Omnia Radix**: Ask Lars Kåre Skjørestad to be added to the `fg_radix_platform_user` AD group. This is necessary to be able to log in to the Radix Web Console.
+
+* **Slack**: The easiest way to get in touch with us is by joining our Slack channels `#omnia_radix` and `#omnia_radix_support` .
+
+* **GitHub**: On `#omnia_radix_support` , ask for access for you and your team to the GitHub Team `Omnia Radix Readers`. That gives you permissions to all our repositories. **Most notably we track issues and feature requests in the [radix-platform repo](https://github.com/statoil/radix-platform/issues).**
+
 # Requirements
 
 There aren't many requirements: Radix runs applications written in Python, Java, .NET, JavaScript, or [LOLCODE](https://en.wikipedia.org/wiki/LOLCODE) equally well. If it can be built and deployed as Docker containers, we are nearly ready. If not, it's not hard to "dockerise" most applications: we have [guides]({% link documentation.md %}#dockerfile-examples-and-best-practice) and [human help]({% link community.md %}) on hand.

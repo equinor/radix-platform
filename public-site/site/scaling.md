@@ -47,7 +47,7 @@ For this setup the node size for a production cluster should be D16v3 with 16vCP
 
 #### Metering
 
-Kubernetes does NOT have a concept of metering. Metering is measuring resource usage over time with the goal of making the user aware that using resoures have a cost. Granular and requent metering is the foundating of the modern cloud. You can pay per-second, per-MB, per-request of what you consume. This makes operating costs for good and efficient software low and big and bloated software high.
+Kubernetes does NOT have a concept of metering. Metering is measuring resource usage over time with the goal of making the user aware that using resoures have a cost. Granular and frequent metering is the foundating of the modern cloud. You can pay per-second, per-MB, per-request of what you consume. This makes operating costs for good and efficient software low and big and bloated software high.
 
 Metering can either be done on actual resource usage og reserved resources. I think metering on reserved resources forces users to set fair resource reservations.
 
@@ -82,4 +82,27 @@ Cluster Autoscaler and Azure AKS integration is currently in Preview (https://do
 ### Vertical
 
 It's not possible to vertically scale an AKS cluster (increase the node VM size). It will be possible to add larger nodes when AKS adds support for node-pools (https://github.com/Azure/AKS/issues/287). Support for node-pools has been delayed from Q3 2018 to currently Q1 2019. There are however no existing tool that does automatic vertical scaling on a cluster level.
+
+## Summary and MVP suggestions
+
+### Apps
+
+#### Metering
+
+No tooling available.
+As a MVP we can start by looking at historical metrics already collected about requested CPU and memory and calculate the total of CPU-hours and memory-GB-hours an application have used per week or month.
+
+#### Horizontal scaling
+
+Set `replicas: 1` by default and let the app owner be able to change this when they know that their app will play well with horizontal scaling.
+A better suggestion is to let them enable HPA if they are able to provide desired CPU/memory/custom metric thresholds for the app.
+
+First of we need to have a clear distiction between scaling applications on top of Kubernetes and the scaling of the underlying Kubernetes cluster itself. The concepts are similar for both but the processes and possibilities completely separate.
+
+### Cluster
+
+Waiting for
+- [Cluster Autoscaler to be integrated in AKS](https://docs.microsoft.com/en-us/azure/aks/autoscaler) (still in preview)
+- The availability of node pools in Q1 2019
+
 
