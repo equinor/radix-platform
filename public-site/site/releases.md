@@ -11,8 +11,9 @@ We are experimenting with an approach with "release channels" which differ in up
 
 |    Channel     |                                           Purpose                                                  |        Termination [1]   |   Support    |     SLO [2]   |    SLA [3]    |
 |----------------|----------------------------------------------------------------------------------------------------|:------------------------:|:------------:|:-------------:|:-------------:|
-| **Production** | Run workloads to be used by end users.                                                             |     Every ~3 months      |     NBD      |      99%      |      No       |
-| **Weekly**     | Test and development of Radix. Radix users get to experiment with setting up and running apps.     | 2-3 weeks after creation | Best-effort  |   98% / 97%   |      No       |
+| **Production** | Run workloads to be used by end users.  To be announced early 2019.                                |                          |              |               |               |
+| **Limited production** | Radix users set up dev and test environments and get experience with the platform.         |     Every ~3 months      |     NBD      |   96% / 96%   |      No       |
+| **Weekly**     | Test and development of Radix.                                                                     | 2-3 weeks after creation | Best-effort  |   90% / 90%   |      No       |
 | **Nightly**    | (**PS: Not used**) Rapid test and integration of Radix Platform. Not to be used for workloads.     |           Daily          |      No      |       No      |      No       |
 
 > _Legend_:
@@ -24,21 +25,24 @@ We are experimenting with an approach with "release channels" which differ in up
 
 # Production channel
 
-> **No production clusters yet. Expected towards end of 2018.**
+> **No production clusters yet. Expected early 2019.**
+
+# Limited production channel
+
+Before going into production we start with a Limited production to gather experience in close collaboration with a select few pilot teams and guide us towards going to full production.
 
 **Support**
-  * **Response time:** Issues filed on [radix-platform repo](https://github.com/statoil/radix-platform/issues) will be answered within Next Business Day (NBD).
+  * **Support channels:** File issue on [radix-platform repo](https://github.com/statoil/radix-platform/issues) or ask on #omnia_radix_support on Slack.
+  * **Response time:** As soon as possible, at least Next Business Day (NBD).
   * **Resolution time:** Cannot be guaranteed but for critical issues work on fixing the problem will start immediately and continue within business hours until resolved.
 
 **Service Level Objective**
-  * **Customer application availability:** 99% uptime per month. This is how much of the time your application is available to end users.
-  * **Omnia Radix platform availability:** 99% uptime per month. This is how much of the time Omnia Radix is available to do builds, change settings of applications etc. Some Omnia Radix components can be offline for periods without affecting the running applications (control-plane vs data-plane).
-
-> 99% uptime equals approximately 1 working day (7,5 hours) of unplanned downtime per month.
+  * **Customer application availability:** 96% uptime per month. 1 day downtime per week. This is how much of the time your application is available to end users.
+  * **Omnia Radix platform availability:** 96% uptime per month. 1 day downtime per week. This is how much of the time Omnia Radix is available to do builds, change settings of applications etc. Some Omnia Radix components can be offline for periods without affecting the running applications (control-plane vs data-plane).
 
 **Service Level Agreement**
   * **Recourse:** For the time being, service level objectives are not guaranteed and breaches does not trigger any compensation or responsibility.
-  * **Planned maintenance:** Planned maintenance will be announced 2 business days in advance. Downtime during planned maintenance does not count towards uptime goals.
+  * **Planned maintenance:** We will try to announce planned maintenance at least 2 business days in advance. Downtime during planned maintenance does not count towards uptime goals.
 
 # Weekly channel
 
@@ -47,11 +51,8 @@ We are experimenting with an approach with "release channels" which differ in up
   * **Resolution time:** Cannot be guaranteed but for critical issues work on fixing the problem will start as soon as possible and continue within business hours until resolved.
 
 **Service Level Objective**
-  * **Customer application availability:** 98% uptime per month. This is how much of the time your application is available to end users.
-  * **Omnia Radix platform availability:** 97% uptime per month. This is how much of the time Omnia Radix is available to do builds, change settings of applications etc. Some Omnia Radix components can be offline for periods without affecting the running applications (control-plane vs data-plane).
-
-> 98% uptime equals approximately 2 working days (15 hours) and 97% uptime equals approx 3 working days (22,5 hours) per month of unplanned downtime.
-
+  * 90% uptime per month.
+  
 **Service Level Agreement**
   * **Recourse:** None
   * **Planned maintenance:** Maintenance may or may not be announced in advance.
