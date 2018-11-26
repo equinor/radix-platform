@@ -37,8 +37,8 @@ process](https://github.com/FrodeHus/docker-windows-volume-watcher/releases).
 ### The other way
 
 You can just run Jekyll locally. You need Ruby and `bundle`. In the root folder
-of the project run `bundle install` to set up dependencies, and then `bundle
-exec jekyll serve` to start the server. Instructions on how to set up the
+of the project run `bundle install` to set up dependencies, and then 
+`bundle exec jekyll serve` to start the server. Instructions on how to set up the
 environment are on the [Jekyll
 website](https://jekyllrb.com/docs/installation/).
 
