@@ -15,13 +15,25 @@ testing:
     - service: "webhook-radix-github-webhook-qa"
       endpoint: "/"
       expect: 500
+    - service: "webhook-radix-github-webhook-prod"
+      endpoint: "/"
+      expect: 500
     - service: "web-radix-web-console-dev"
+      endpoint: "/"
+      expect: 200
+    - service: "web-radix-web-console-prod"
       endpoint: "/"
       expect: 200
     - service: "public-site-radix-platform-dev"
       endpoint: "/"
       expect: 200
+    - service: "public-site-radix-platform-prod"
+      endpoint: "/"
+      expect: 200
     - service: "server-radix-api-qa"
+      endpoint: "/swaggerui/"
+      expect: 200
+    - service: "server-radix-api-prod"
       endpoint: "/swaggerui/"
       expect: 200
 
