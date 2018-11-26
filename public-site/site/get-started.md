@@ -14,7 +14,7 @@ Radix also provides monitoring for applications. The are default metrics (e.g. r
 
 # Getting access to Omnia Radix
 
-* **Omnia Radix**: Ask Lars Kåre Skjørestad to be added to the `fg_radix_platform_user` AD group. This is necessary to be able to log in to the Radix Web Console.
+* **Omnia Radix**: Ask someone in the Radix team, or post a request to the `#omnia_radix_support` channel, to be added to the `fg_radix_platform_user` AD group. This is necessary to be able to log in to the Radix Web Console.
 
 * **Slack**: The easiest way to get in touch with us is by joining our Slack channels `#omnia_radix` and `#omnia_radix_support` .
 
