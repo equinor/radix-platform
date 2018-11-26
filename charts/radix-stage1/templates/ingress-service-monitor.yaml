@@ -5,7 +5,7 @@ kind: ServiceMonitor
 metadata:
   name: "{{ .Release.Name }}-nginx-ingress"
   labels:
-    prometheus: kube-prometheus
+    prometheus: "{{ .Release.Name }}"
     app: radix-platform
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"

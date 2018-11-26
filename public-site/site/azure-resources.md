@@ -4,17 +4,20 @@ layout: document
 toc: true
 ---
 
-## Subscriptions
+# Subscriptions
 
 Omnia Radix Production - Used for production workloads including customer developers test environments.
 
 Omnia Radix Development - Used for developing the Radix platform itself.
 
 Selecting the correct subscription in the Azure Portal is done when creating a resource group. In Azure CLI it's done by 
-    az account list --output table
-    az account set --subscription "Omnia Radix Development"
 
-PS: You have to re run "az login" after being added to a new subscription for it to show up in az account.
+```sh
+az account list --output table
+az account set --subscription "Omnia Radix Development"
+```
+
+> **PS**: You have to re run "az login" after being added to a new subscription for it to show up in az account.
 
 | Subscription  | Resource group     | AD Group               | Roles                 | Resource                          | Description  |
 |---------------|--------------------|------------------------|-----------------------|-----------------------------------|--------------|
@@ -28,7 +31,7 @@ PS: You have to re run "az login" after being added to a new subscription for it
 |               |                    |                        |                       | ACR: radixdev.azurecr.io          |              |
 
 
-## Clusters
+# Clusters
 
 List clusters in a subscription:
 
@@ -46,16 +49,44 @@ Horizontal scaling seems to work ok in a live environment.
 
 Vertical scaling has not yet been tested.
 
-    az vmss update -g {rg} n {name} --set sku.name="YOUR_VALUE"
+    az vmss update --resource-group RG_NAME n {name} --set sku.name="YOUR_VALUE"
     # If you are changing from Standard to Premium you must also include --set sku.tier="Premium"
 
-## Access control
+# Access control
+
+The purpose of access control in Azure is
+ - For Radix users: To limit access to the teams own applications and resources only.
+ - For platform developers: To limit the risk of accidental disruptive changes. To limit the risk if accounts are compromised.
+
+As far as possible we want to use [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles).
+
+## Initial scaffolding
+
+The very first time Omnia Radix is set up there are some steps that are first done by a user with `Owner` permissions on subscription level:
+ - Create resource group `clusters` in each subscription
+ - Create resource group `radix-common-dev|prod` in each subscription
+ - Create resource group `radix-monitoring` in `Production` subscription.
+
+The usage patterns for each resource group is typically different and that is why they are separated. Work is done in `clusters` resource group every ~3 months on Production when setting up and migrating to a new cluster. Work is done in `radix-common-` resource group whenever there are changes or new features to managed services we rely on. Work is done in `radix-monitoring` typically more often than in `radix-common-` and there is less sensitive data and services there so permissions to this can be given more freely.
+
+We create these groups to govern access to the resource groups, and if necessary, sub-resources:
+
+radix_platform_cluster_admin: `Contributor` of `clusters` resource group. Can then create and destroy Kubernetes clusters.
+radix_platform_common_resource_admin: `Contributor` of `radix-common-dev|prod` resource group. Can work on any of the common managed services.
+radix_platform_monitoring: `Contributor` of `radix-monitoring` resource group. Can do anything related to the external monitoring of clusters.
+fg_radix_platform_dns: `DNS Zone Contributor` of `radix-common-dev|prod`. Used by `external-dns` and `cert-manager` to manage automatic DNS updates on Azure DNS service.
+
+Users with `radix_platform_cluster_admin` or `radix_platform_common_resource_admin` permissions can do substantial damage if accounts are either compromised or due to errors.
+
+To mitigate this the permissions are only given to a user when needed and for a short time. On average these permissions should only apply to one or two team members maybe one day every month on the Production subscription.
+
+There is a risk that we forget to remove the permissions after the necessary work has completed. We can mitigate this by creating a small nightly job that checks that there are no members of these two groups. If there are any members a notification can be sent on Slack.
+
+Long term we should look into Just-in-time permissions such as https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure to mitigate some of these risks.
 
 For the time being access control is done with 4 security groups:
 
 **fg_radix_platform_admin**
-
-**fg_radix_platform_dns**
 
 **fg_radix_platform_development** 
 
@@ -76,19 +107,19 @@ Granted to developers hosting their application in radix platform. At the moment
 https://equinor.service-now.com/selfservice?id=kb_article&sys_id=14a8171c6f289d00b2cbd6426e3ee4dd
 
 
-## Managed services
+# Managed services
 
 Managed services are typically services that we do not build/rebuild and deploy/redeploy ourselves so have a lesser need of being automated.
 
-### Azure DNS
+## Azure DNS
 
 There is a Azure DNS service in both Production and Development subscriptions.
 
 Equinor have delegated radix.equinor.com to Azure DNS zone radix.equinor.com in resource group radix-common-prod in Omnia Radix Production subscription.
 
-From there, we have delegatet dev.radix.equinor.com to Azure DNS with same name in resource group radix-common-dev in Omnia Radix Development subscription.
+From there, we have delegated dev.radix.equinor.com to Azure DNS with same name in resource group radix-common-dev in Omnia Radix Development subscription.
 
-#### DNS CAA
+## DNS CAA
 
 Info about CAA: https://letsencrypt.org/docs/caa/
 
@@ -96,7 +127,7 @@ Equinor.com is protected by a Certificate Authority Authorization record set to 
 
 After instruction from LKSK we will allow godaddy,letsencrypt and digicert to issue certificates for radix.equinor.com. We allow that by setting some CAA records on radix.equinor.com which we control and is hosted on Azure DNS.
 
-PS: CAA records cannot be set, or viewed, in the Azure Portal. They are only available using AZ CLI.
+> PS: CAA records cannot be set, or viewed, in the Azure Portal. They are only available using AZ CLI.
 
 We use https://sslmate.com/caa/ to give us the correct format for our records. We then create them using AZ CLI:
 
@@ -118,19 +149,58 @@ And finally use an external service to verify that the changes are visible in DN
 
 Now we can use Let's Encrypt to issue certificates to what.ever.radix.equinor.com :-)
 
-## Azure Container Registry
+# Azure Container Registry
 
-On the development subscription there is a ACR registry in the radix-common-dev resource group.
+> Information about Azure ACR SKUs: https://docs.microsoft.com/en-us/azure/container-registry/container-registry-skus
+
+## Setup
+
+### Prod
+
+    az account set --subscription "Omnia Radix Production"
+    az group show --name radix-common-prod
+    az group create --location northeurope --name radix-common-prod
+    az acr create --name radix --resource-group radix-common-prod --sku Standard
+
+### Dev
+
+    az account set --subscription "Omnia Radix Development"
+    az group show --name radix-common-dev
+    az group create --location northeurope --name radix-common-dev
+    az acr create --name radixdev --resource-group radix-common-dev --sku Standard
+       
+
+## Usage
 
 Log in to the ACR (so that docker push/pull commands work locally) by doing:
+
+### Prod
+
+    az account set --subscription "Omnia Radix Production"
+    az acr login --name radix
+
+### Dev
 
     az account set --subscription "Omnia Radix Development"
     az acr login --name radixdev
 
 
-## Azure Key Vault
+
+# Azure Key Vault
 
 Azure Key Vault can be thought about as a code repository for secrets.
+
+## Setup
+
+### Prod
+
+    az keyvault list --resource-group radix-common-prod
+
+    az keyvault create --name radix-vault \
+                    --resource-group radix-common-prod \
+                    --location northeurope
+
+### Dev
 
     az keyvault list --resource-group radix-common-dev
 
@@ -138,21 +208,27 @@ Azure Key Vault can be thought about as a code repository for secrets.
                     --resource-group radix-common-dev \
                     --location northeurope
 
-Text:
+## Usage
+
+Upload text:
 
     az keyvault secret set --name radix-grafana-aad-client-secret \
                         --vault-name radix-vault-dev \
                         --description "Secret used between Grafana backend and Azure AD for authentication" \
                         --value "xx"
 
-File:
+Upload file:
 
     az keyvault secret set --name radix-grafana-aad-client-secret \
                         --vault-name radix-vault-dev \
                         --description "Secret used between Grafana backend and Azure AD for authentication" \
                         --file mysecrets.txt
 
+Get secrets:
+
     az keyvault secret list --vault-name radix-vault-dev
+
+Get one secret:
 
     az keyvault secret show --name radix-grafana-aad-client-secret \
                         --vault-name radix-vault-dev \

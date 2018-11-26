@@ -27,14 +27,14 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod
-  commonName: "*.{{ .Values.clusterWildcardCert.deploymentTargetName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
+  commonName: "*.{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
   dnsNames:
-  - "{{ .Values.clusterWildcardCert.deploymentTargetName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
+  - "{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
   acme:
     config:
     - dns01:
         provider: azure-dns
       domains:
-      - "*.{{ .Values.clusterWildcardCert.deploymentTargetName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
-      - "{{ .Values.clusterWildcardCert.deploymentTargetName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
+      - "*.{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
+      - "{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
 {{- end -}}
