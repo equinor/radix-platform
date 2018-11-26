@@ -60,6 +60,7 @@ Before going into production we start with a Limited production to gather experi
 
 |           Name         |    Date    | Version |   Status   |                               Release notes                               |            Web console              |
 |------------------------|------------|---------|------------|---------------------------------------------------------------------------|-------------------------------------|
+| weekly-48              | 2018-11-26 |         | Operating  | [Release notes]({% link release-notes/release-notes-weekly-48.md %}) | [Web console](https://web-radix-web-console-prod.weekly-48.dev.radix.equinor.com)   |
 | playground-master-47   | 2018-11-19 |         | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-47.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-47.dev.radix.equinor.com)   |
 | playground-master-46   | 2018-11-15 |         | Aborted    | Aborted due to problems. Superseded by playground-master-47               |     |
 | playground-master-45   | 2018-11-06 |   | Operating  | [Release notes]({% link release-notes/release-notes-playground-master-45.md %}) | [Web console](https://web-radix-web-console-prod.playground-master-45.dev.radix.equinor.com)   |
