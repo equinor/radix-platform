@@ -92,7 +92,7 @@ createClusterIssuer: true
 clusterWildcardCert:
   enabled: true
   environment: xx
-  deploymentTargetName: xx
+  clusterName: xx
 
 certManagerAzureDnsSecret: xx
 

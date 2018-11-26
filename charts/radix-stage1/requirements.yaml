@@ -1,13 +1,13 @@
 dependencies:
 - name: nginx-ingress
-  version: "0.28.2"
+  version: "0.31.0"
   repository: https://kubernetes-charts.storage.googleapis.com/
   condition: nginx-ingress.enabled
   tags:
     - nginx-ingress
 
 - name: grafana
-  version: "1.16.0"
+  version: "1.18.0"
   repository: https://kubernetes-charts.storage.googleapis.com/
   condition: grafana.enabled
   tags:
