@@ -48,14 +48,6 @@ externalDns:
   deploymentTargetName: xx
   imageTag: "v0.5.7"
 
-# radix-operator child chart
-radix-operator:
-  enabled: true
-  clusterAKSAPIserver: xx
-  imageCredentials:
-    username: xx
-    password: xx
-
 # radix-kubernetes-api-proxy child chart
 radix-kubernetes-api-proxy:
   enabled: true

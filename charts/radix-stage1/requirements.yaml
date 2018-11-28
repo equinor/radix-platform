@@ -33,11 +33,3 @@ dependencies:
   condition: radix-kubernetes-api-proxy.enabled
   tags:
     - radix-kubernetes-api-proxy
-
-- name: radix-operator
-  version: "1.0.0"
-  repository: "@radixdev"
-  condition: radix-operator.enabled
-  tags:
-    - radix-operator
-
