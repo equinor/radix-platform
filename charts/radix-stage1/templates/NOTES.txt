@@ -23,4 +23,6 @@
 
 Congratulations on installing Radix on your Kubernetes cluster!
 
+{{ if .Values.testing }}
 Go to https://radixgrafana.azurewebsites.net/d/ReuNR5Aik/radix-public-endpoint-status?var-Cluster={{ .Values.testing.clusterFQDN }} to see the status of your cluster.
+{{ end }}
