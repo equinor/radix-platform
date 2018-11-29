@@ -9,6 +9,8 @@ data:
 
       {{ $clusterFQDN := .Values.clusterFQDN }}
 
+      const serviceAccountToken = open(`${__ENV.TOKEN_FILE_PATH}`).trim();
+
       import { check, sleep } from "k6";
       import { Counter, Rate, Trend } from "k6/metrics";
       import http from "k6/http";
@@ -38,6 +40,7 @@ data:
           test.expect = {{ .expect }}
           test.service = "{{ .service }}"
           test.endpoint = "https://{{ .service }}.{{ $clusterFQDN }}{{ .endpoint }}"
+          test.authenticate = {{ .authenticate }}
           tests.push(JSON.parse(JSON.stringify(test))); // Deep-ish copy
           {{- end }}
 
@@ -48,7 +51,19 @@ data:
             // We add 1 critical error. If it is 0 nothing is sent to InfluxDB. Grafana will need to subtract 1 from the total.
             criticalFail.add(1, tags);
 
-            let res = http.get(tests[i].endpoint, { tags: tags });
+            let params = { tags: tags }
+
+            if (tests[i].authenticate == true) {
+              params = {
+                  tags: tags,
+                  headers: { 
+                      "Content-Type": "application/json",
+                      "Authorization": "Bearer " + serviceAccountToken
+                  }
+              };
+            }
+
+            let res = http.get(tests[i].endpoint, params);
             
             // console.log(JSON.stringify(res, null, 4));
         

@@ -5,33 +5,44 @@ tests:
   - service: "grafana"
     endpoint: "/login"
     expect: 200
+    authenticate: false
   - service: "api"
-    endpoint: "/"
-    expect: 403
+    endpoint: "/apis/batch/v1/jobs"
+    expect: 200
+    authenticate: true
   - service: "www-radix-canary-golang-prod"
     endpoint: "/"
     expect: 200
+    authenticate: false
   - service: "webhook-radix-github-webhook-qa"
     endpoint: "/"
     expect: 500
+    authenticate: false
   - service: "webhook-radix-github-webhook-prod"
     endpoint: "/"
     expect: 500
+    authenticate: false
   - service: "web-radix-web-console-dev"
     endpoint: "/"
     expect: 200
+    authenticate: false
   - service: "web-radix-web-console-prod"
     endpoint: "/"
     expect: 200
+    authenticate: false
   - service: "public-site-radix-platform-dev"
     endpoint: "/"
     expect: 200
+    authenticate: false
   - service: "public-site-radix-platform-prod"
     endpoint: "/"
     expect: 200
+    authenticate: false
   - service: "server-radix-api-qa"
-    endpoint: "/swaggerui/"
+    endpoint: "/api/v1/applications/radix-web-console"
     expect: 200
+    authenticate: true
   - service: "server-radix-api-prod"
-    endpoint: "/swaggerui/"
+    endpoint: "/api/v1/applications/radix-web-console"
     expect: 200
+    authenticate: true

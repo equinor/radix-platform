@@ -34,6 +34,9 @@ spec:
         - "--tag"
         - "cluster={{ .Values.clusterFQDN }}"
         - "/k6scripts/index.js"
+        env:
+        - name: TOKEN_FILE_PATH
+          value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
         volumeMounts:
         - name: k6scripts
           mountPath: /k6scripts/
