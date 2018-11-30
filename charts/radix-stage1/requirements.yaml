@@ -33,3 +33,10 @@ dependencies:
   condition: radix-kubernetes-api-proxy.enabled
   tags:
     - radix-kubernetes-api-proxy
+
+- name: radix-e2e-monitoring
+  version: "1.0.0"
+  repository: "@radixdev"
+  condition: radix-e2e-monitoring.enabled
+  tags:
+    - radix-e2e-monitoring

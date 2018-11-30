@@ -9,6 +9,14 @@ externalDns:
   deploymentTargetName: xx
   imageTag: "v0.5.7"
 
+# radix-e2e-monitoring child chart
+radix-e2e-monitoring:
+  enabled: true
+
+  # radix-e2e-monitoring chart values:
+  clusterFQDN: "xx"
+  influxDBurl: "xx"
+
 # radix-kubernetes-api-proxy child chart
 radix-kubernetes-api-proxy:
   enabled: true
