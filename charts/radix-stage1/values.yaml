@@ -55,6 +55,9 @@ nginx-ingress:
     service:
       enableHttp: false
     externalTrafficPolicy: "Local"
+    config:
+      # Log format documented here: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/log-format.md
+      log-format-upstream: '$namespace $ingress_name $service_name $service_port - $the_real_ip - [$the_real_ip] - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status $req_id'
 
 # Connected to nginx-ingress
 createIngressServiceMonitor: true
