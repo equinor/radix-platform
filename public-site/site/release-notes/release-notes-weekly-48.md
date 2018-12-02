@@ -11,7 +11,7 @@ Channel: weekly
 Release for week 48 in weekly [channel]({% link releases.md %}).
 
 ## Shortcuts
-* [Web console](https://web-radix-web-console-prod.weekly-48.dev.radix.equinor.com)
+* [Web console](https://web-radix-web-console-prod.weekly-48-c.dev.radix.equinor.com)
 
 ## New
 - [OR-269] - API: Show environment deployments
