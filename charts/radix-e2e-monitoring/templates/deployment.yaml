@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-k6tests"
+  labels:
+    app: "radix-platform"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: radix-platform
+      component: k6
+  template:
+    metadata:
+      labels:
+        app: radix-platform
+        component: k6
+    spec:
+      containers:
+      - name: k6
+        image: loadimpact/k6
+        args:
+        - "run"
+        - "--vus"
+        - "1"
+        - "--duration"
+        - "0"
+        - "--out"
+        - "influxdb={{ .Values.influxDBurl }}"
+        - "--tag"
+        - "cluster={{ .Values.clusterFQDN }}"
+        - "/k6scripts/index.js"
+        env:
+        - name: TOKEN_FILE_PATH
+          value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        volumeMounts:
+        - name: k6scripts
+          mountPath: /k6scripts/
+      serviceAccount: radix-monitoring
+      serviceAccountName: radix-monitoring
+      volumes:
+        - name: k6scripts
+          configMap:
+            # Provide the name of the ConfigMap containing the files you want
+            # to add to the container
+            name: k6scripts
+

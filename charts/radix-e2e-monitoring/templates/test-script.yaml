@@ -7,7 +7,9 @@ data:
 
   index.js: |-
 
-      {{ $clusterFQDN := .Values.testing.clusterFQDN }}
+      {{ $clusterFQDN := .Values.clusterFQDN }}
+
+      const serviceAccountToken = open(`${__ENV.TOKEN_FILE_PATH}`).trim();
 
       import { check, sleep } from "k6";
       import { Counter, Rate, Trend } from "k6/metrics";
@@ -34,10 +36,11 @@ data:
           let test = {}
           
           // This block will be templated by Helm
-          {{- range .Values.testing.tests }}
+          {{- range .Values.tests }}
           test.expect = {{ .expect }}
           test.service = "{{ .service }}"
           test.endpoint = "https://{{ .service }}.{{ $clusterFQDN }}{{ .endpoint }}"
+          test.authenticate = {{ .authenticate }}
           tests.push(JSON.parse(JSON.stringify(test))); // Deep-ish copy
           {{- end }}
 
@@ -48,7 +51,19 @@ data:
             // We add 1 critical error. If it is 0 nothing is sent to InfluxDB. Grafana will need to subtract 1 from the total.
             criticalFail.add(1, tags);
 
-            let res = http.get(tests[i].endpoint, { tags: tags });
+            let params = { tags: tags }
+
+            if (tests[i].authenticate == true) {
+              params = {
+                  tags: tags,
+                  headers: { 
+                      "Content-Type": "application/json",
+                      "Authorization": "Bearer " + serviceAccountToken
+                  }
+              };
+            }
+
+            let res = http.get(tests[i].endpoint, params);
             
             // console.log(JSON.stringify(res, null, 4));
         
@@ -75,51 +90,3 @@ data:
           sleep(5);
 
       }
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: "{{ .Release.Name }}-k6tests"
-  labels:
-    app: "radix-platform"
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    release: "{{ .Release.Name }}"
-    heritage: "{{ .Release.Service }}"
-spec:
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: radix-platform
-      component: k6
-  template:
-    metadata:
-      labels:
-        app: radix-platform
-        component: k6
-    spec:
-      containers:
-      - name: k6
-        image: loadimpact/k6
-        args:
-        - "run"
-        - "--vus"
-        - "1"
-        - "--duration"
-        - "0"
-        - "--out"
-        - "influxdb={{ .Values.testing.influxDBurl }}"
-        - "--tag"
-        - "cluster={{ .Values.testing.clusterFQDN }}"
-        - "/k6scripts/index.js"
-        volumeMounts:
-        - name: k6scripts
-          mountPath: /k6scripts/
-      volumes:
-        - name: k6scripts
-          configMap:
-            # Provide the name of the ConfigMap containing the files you want
-            # to add to the container
-            name: k6scripts

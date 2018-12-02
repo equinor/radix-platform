@@ -13,6 +13,7 @@ dependencies:
   tags:
     - grafana
 
+# https://github.com/coreos/prometheus-operator/tree/master/helm/kube-prometheus
 - name: kube-prometheus
   version: "0.0.105"
   repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
@@ -34,10 +35,9 @@ dependencies:
   tags:
     - radix-kubernetes-api-proxy
 
-- name: radix-operator
+- name: radix-e2e-monitoring
   version: "1.0.0"
   repository: "@radixdev"
-  condition: radix-operator.enabled
+  condition: radix-e2e-monitoring.enabled
   tags:
-    - radix-operator
-
+    - radix-e2e-monitoring

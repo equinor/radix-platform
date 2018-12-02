@@ -14,8 +14,8 @@ dependencies:
 - name: radix-kubernetes-api-proxy
   repository: https://radixdev.azurecr.io/helm/v1/repo
   version: 1.0.0
-- name: radix-operator
+- name: radix-e2e-monitoring
   repository: https://radixdev.azurecr.io/helm/v1/repo
   version: 1.0.0
-digest: sha256:6dc29183a188243222f0131fcc71e59c15ae7cb6211f8b4fd47b58e19e52fe27
-generated: 2018-11-26T12:14:09.3213884+01:00
+digest: sha256:d134e4f2d3b9104e7558dde91b9ce6f3f88df57af90d6b9197ad48314ab217e8
+generated: 2018-11-30T09:44:14.2215628+01:00
