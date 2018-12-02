@@ -5,8 +5,8 @@ cd radix-platform/charts/radix-stage1
 az acr helm repo add --name radixdev && helm repo update
 helm dep up
 cd ..
-tar -zcvf radix-stage1-1.0.26.tgz radix-stage1
-az acr helm push --name radixdev radix-stage1-1.0.26.tgz
+tar -zcvf radix-stage1-1.0.27.tgz radix-stage1
+az acr helm push --name radixdev radix-stage1-1.0.27.tgz
 ```
 
 # Gotchas:
