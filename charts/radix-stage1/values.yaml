@@ -99,16 +99,14 @@ kube-prometheus:
         hosts:
           - xx
     storageSpec:
-      volumeClaimTemplates:
-      - metadata:
-          name: prometheus-disk
+      volumeClaimTemplate:
         spec:
-          accessModes:
-          - ReadWriteOnce
           storageClassName: managed-premium-retain
+          accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 100Gi
+              storage: 120Gi
+        selector: {}
 
 # grafana child chart
 grafana:
