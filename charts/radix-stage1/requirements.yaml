@@ -13,6 +13,7 @@ dependencies:
   tags:
     - grafana
 
+# https://github.com/coreos/prometheus-operator/tree/master/helm/kube-prometheus
 - name: kube-prometheus
   version: "0.0.105"
   repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/

@@ -93,6 +93,17 @@ kube-prometheus:
       - secretName: cluster-wildcard-tls-cert
         hosts:
           - xx
+    storageSpec:
+      volumeClaimTemplates:
+      - metadata:
+          name: prometheus-disk
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          storageClassName: managed-premium-retain
+          resources:
+            requests:
+              storage: 100Gi
 
 # grafana child chart
 grafana:
