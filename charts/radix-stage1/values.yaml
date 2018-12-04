@@ -6,7 +6,7 @@ imageCredentials:
 externalDns:
   enabled: true
   environment: dev
-  deploymentTargetName: xx
+  clusterName: xx
   imageTag: "v0.5.7"
 
 # radix-e2e-monitoring child chart
