@@ -34,9 +34,9 @@ helm upgrade radix-platform --version 1.0.7 radixdev/radix-platform \
     --set kube-prometheus.prometheus.ingress.tls[0].hosts[0]=prometheus.$RADIX_CLUSTER_DNS_SUFFIX \
     --set kube-prometheus.prometheus.remoteWrite[0].url=https://influxwrite:x@radixinfluxdb.azurewebsites.net/api/v1/prom/write?db=influxdb \
     --set kubed.config.clusterName=$RADIX_CLUSTER_NAME \
-    --set externalDns.deploymentTargetName=$RADIX_CLUSTER_NAME \
+    --set externalDns.clusterName=$RADIX_CLUSTER_NAME \
     --set externalDns.environment=$RADIX_ENV \
-    --set clusterWildcardCert.deploymentTargetName=$RADIX_CLUSTER_NAME \
+    --set clusterWildcardCert.clusterName=$RADIX_CLUSTER_NAME \
     --set clusterWildcardCert.environment=$RADIX_ENV \
     --set radix-kubernetes-api-proxy.clusterFQDN=$RADIX_CLUSTER_DNS_SUFFIX \
     --set radix-operator.clustername=$RADIX_CLUSTER_NAME \

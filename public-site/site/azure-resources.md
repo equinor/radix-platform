@@ -39,7 +39,11 @@ List clusters in a subscription:
 
 Get credentials for a cluster (to make kubectl work):
 
-    az aks get-credentials --admin --resource-group RG_NAME --name CLUSTER_NAME
+    az aks get-credentials --overwrite-existing --admin --resource-group RG_NAME --name CLUSTER_NAME
+
+> `--overwrite-existing` makes `az` replace existing entries in kubeconfig with the same name. Without it `az` will happily add duplicates. `kubectl` will however crash when given duplicate config entries.
+
+> `--admin` makes the login you get will then BYPASS all RBAC rule checking. It will not make you ClusterAdmin, it will bypass any security checks, so use with care!
 
 Scaling a cluster:
 
