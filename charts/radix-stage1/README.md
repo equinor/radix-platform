@@ -5,8 +5,8 @@ cd radix-platform/charts/radix-stage1
 az acr helm repo add --name radixdev && helm repo update
 helm dep up
 cd ..
-tar -zcvf radix-stage1-1.0.30.tgz radix-stage1
-az acr helm push --name radixdev radix-stage1-1.0.30.tgz
+tar -zcvf radix-stage1-1.0.33.tgz radix-stage1
+az acr helm push --name radixdev radix-stage1-1.0.33.tgz
 ```
 
 # Installing with values from Azure KeyVault
@@ -17,12 +17,12 @@ az keyvault secret download \
     -n credentials \
     --vault-name radix-boot-dev-vault
 
-CLUSTER_NAME=weekly-48-c
+CLUSTER_NAME=dev
 ENVIRONMENT=dev
 
 az acr helm repo add --name radixdev && helm repo update
 
-helm upgrade --install radix-stage1 radixdev/radix-stage1 --namespace default --version 1.0.30 \
+helm upgrade --install radix-stage1 radixdev/radix-stage1 --namespace default --version 1.0.33 \
     --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
     --set radix-e2e-monitoring.influxDBurl=https://`cat radix-credentials.json | jq -r .influxDBUsername`:`cat radix-credentials.json | jq -r .influxDBPassword`@radixinfluxdb.azurewebsites.net/influxdb \
     --set imageCredentials.registry=radixdev.azurecr.io \

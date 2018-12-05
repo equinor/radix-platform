@@ -137,6 +137,8 @@ grafana:
         access: proxy
         isDefault: true
         basicAuth: false
+        jsonData:
+          timeInterval: "5s"
 
   env:
     GF_AUTH_GENERIC_OAUTH_CLIENT_ID: 7542f95d-c9f4-492f-8450-b3ef2286da7c
