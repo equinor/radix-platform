@@ -61,6 +61,12 @@ rules:
   - list
   - watch
 - apiGroups:
+  - radix.equinor.com
+  resources:
+  - radixdeployments
+  verbs:
+  - list
+- apiGroups:
   - ""
   resources:
   - namespaces
