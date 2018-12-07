@@ -34,7 +34,7 @@ Each resource use a naming convention that include the environment name.
   A subcriptions that is one of: `Omnia Radix Prod`, `Omina Radix Dev`
   - `clusters`  
     Purpose: Resource group for all clusters (AKS)  
-    Security group: `radix_platform_cluster_admin_[environment]`  
+    Security group: `fg_radix_cluster_admin_[environment]`  
     Role: `contributor`       
     - `Azure Kubernetes Service (AKS)`  
       Purpose: k8s cluster for running the radix platform  
@@ -55,8 +55,8 @@ Each resource use a naming convention that include the environment name.
     - etc ...
   - `monitoring` (1)    
     Purpose: Resource group for monitoring tools 
-    - `MySql`  
-      Purpose: Backend for Grafana.  
+    - `Monitoring app`  
+      Purpose: Monitoring across all clusters.  
       Naming convention: `radix-grafana-[environment]`  
       Security group (AD): `fg_radix_monitoring_admin_[environment]`  
       Role: `contributor`
@@ -71,13 +71,29 @@ The usage patterns for each resource group is typically different and that is wh
 - Work is done in `common` resource group whenever there are changes or new features to managed services we rely on
 - Work is done in `monitoring` typically more often than in `common` and there is less sensitive data and services there so permissions to this can be given        
 
-## Initial scaffolding
+## Initial scaffolding <a name="scaffolding"></a>
 
 The very first time Omnia Radix is set up there are some steps that are first done by a user with `Owner` permissions on subscription level:
 
 1. Create resource groups according to default structcure in each subscription
+1. Provision shared infrastructure components (dns, container registry etc)
 1. Configure access to resources by adding security group and role to each resource group (see overview for details)
 
+This provisioning is all handled by script, see `/scripts/infrastructure.sh`.  
+
+## Parts
+
+### Container registry
+
+Use cases:
+- Deploy containers (pull)
+- CICD (pull and push)
+
+Service Principal per use case
+- name: "radix-registry-reader"
+  roles: pull
+- name: "radix-registry-cicd"
+  roles: pull, push
 
 ## How to Azure all the things
 
