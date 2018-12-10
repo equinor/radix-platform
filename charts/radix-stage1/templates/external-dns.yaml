@@ -88,6 +88,19 @@ spec:
       volumes:
       - name: external-dns-secret
         secret:
-          secretName: external-dns-secret
+          secretName: {{ .Release.Name }}-external-dns-secret
+---
+
+apiVersion: v1
+kind: Secret
+metadata:  
+  name: {{ .Release.Name }}-external-dns-secret
+  labels:
+    app: "radix-platform"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  azure.json: {{ .Values.externalDns.azure-dns-token }}
 
 {{end}}
