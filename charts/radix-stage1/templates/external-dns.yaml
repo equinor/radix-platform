@@ -101,6 +101,6 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 data:
-  azure.json: {{ .Values.externalDns.azure-dns-token }}
+  azure.json: {{ .Values.externalDns.azureDnsToken }}
 
 {{end}}
