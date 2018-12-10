@@ -18,7 +18,7 @@ Radix also provides monitoring for applications. The are default metrics (e.g. r
 
 * **Slack**: The easiest way to get in touch with us is by joining our Slack channels `#omnia_radix` and `#omnia_radix_support` .
 
-* **GitHub**: On `#omnia_radix_support` , ask for access for you and your team to the GitHub Team `Omnia Radix Readers`. That gives you permissions to all our repositories. **Most notably we track issues and feature requests in the [radix-platform repo](https://github.com/statoil/radix-platform/issues).**
+* **GitHub**: Request access to the GitHub [Omnia Radix Readers](https://github.com/orgs/Statoil/teams/omnia-radix-readers/members) team. That gives you permissions to all our repositories. **Most notably we track issues and feature requests in the [radix-platform repo](https://github.com/statoil/radix-platform/issues).**
 
 # Requirements
 
