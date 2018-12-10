@@ -16,6 +16,6 @@ dependencies:
   version: 1.0.0
 - name: radix-e2e-monitoring
   repository: https://radixdev.azurecr.io/helm/v1/repo
-  version: 1.0.0
-digest: sha256:d134e4f2d3b9104e7558dde91b9ce6f3f88df57af90d6b9197ad48314ab217e8
-generated: 2018-11-30T09:44:14.2215628+01:00
+  version: 1.0.2
+digest: sha256:6aa76bdf7da5603dd673011387935d1ea91a3553da2e4ff204722178106ac411
+generated: 2018-12-10T13:42:27.302484+01:00

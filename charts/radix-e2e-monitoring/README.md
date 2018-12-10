@@ -5,8 +5,8 @@ cd radix-platform/charts/radix-e2e-monitoring
 az acr helm repo add --name radixdev && helm repo update
 helm dep up
 cd ..
-tar -zcvf radix-e2e-monitoring-1.0.0.tgz radix-e2e-monitoring
-az acr helm push --name radixdev radix-e2e-monitoring-1.0.0.tgz
+tar -zcvf radix-e2e-monitoring-1.0.2.tgz radix-e2e-monitoring
+az acr helm push --name radixdev radix-e2e-monitoring-1.0.2.tgz
 ```
 
 
