@@ -25,7 +25,7 @@ spec:
         - mountPath: /workspace
           name: build-context
       imagePullSecrets:
-      - name: radix-docker-v2
+      - name: {{ .Values.pipelineImagePullSecret }}
       initContainers:
       - args:
         - apk add --no-cache bash openssh-client git && ls /root/.ssh && cd /workspace

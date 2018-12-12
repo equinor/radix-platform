@@ -6,8 +6,8 @@ az acr helm repo add --name radixdev && helm repo update
 rm requirements.lock
 helm dep up
 cd ..
-tar -zcvf radix-stage1-1.0.37.tgz radix-stage1
-az acr helm push --name radixdev radix-stage1-1.0.37.tgz
+tar -zcvf radix-stage1-1.0.38.tgz radix-stage1
+az acr helm push --name radixdev radix-stage1-1.0.38.tgz
 ```
 
 ## Updating radix-stage1-values.yaml:

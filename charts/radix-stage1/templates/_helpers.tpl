@@ -1,5 +1,5 @@
 {{- define "azuredns-secret" }}
-{{- printf "%s" .Values.certManagerAzureDnsSecret | b64enc }}
+{{- printf "%s" .Values.azureDnsSecret | b64enc }}
 {{- end }}
 
 {{- define "imagePullSecret" }}

@@ -6,3 +6,4 @@ cloneBranch: master
 imageTag: xx
 
 pipelineImageTag: latest
+pipelineImagePullSecret: radix-docker

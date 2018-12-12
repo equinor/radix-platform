@@ -5,8 +5,8 @@ cd radix-platform/charts/radix-pipeline-invocation
 az acr helm repo add --name radixdev && helm repo update
 helm dep up
 cd ..
-tar -zcvf radix-pipeline-invocation-1.0.5.tgz radix-pipeline-invocation
-az acr helm push --name radixdev radix-pipeline-invocation-1.0.5.tgz
+tar -zcvf radix-pipeline-invocation-1.0.6.tgz radix-pipeline-invocation
+az acr helm push --name radixdev radix-pipeline-invocation-1.0.6.tgz
 ```
 
 # Installing

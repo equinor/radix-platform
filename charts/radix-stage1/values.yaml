@@ -9,6 +9,9 @@ externalDns:
   clusterName: xx
   imageTag: "v0.5.7"
 
+# Used by external-dns and cert-manager
+azureDnsSecret: xx
+
 # radix-e2e-monitoring child chart
 radix-e2e-monitoring:
   enabled: true
@@ -71,8 +74,6 @@ clusterWildcardCert:
   enabled: true
   environment: xx
   clusterName: xx
-
-certManagerAzureDnsSecret: xx
 
 # kube-prometheus child chart
 # Disable the grafana that is bundled with kube-prometheus via requirements.yaml
