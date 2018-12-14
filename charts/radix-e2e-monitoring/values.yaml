@@ -16,13 +16,13 @@ tests:
     authenticate: false
   - service: "webhook-radix-github-webhook-qa"
     endpoint: "/"
-    expect: 500
+    expect: 400
     authenticate: false
   - service: "webhook-radix-github-webhook-prod"
     endpoint: "/"
-    expect: 500
+    expect: 400
     authenticate: false
-  - service: "web-radix-web-console-dev"
+  - service: "web-radix-web-console-qa"
     endpoint: "/"
     expect: 200
     authenticate: false

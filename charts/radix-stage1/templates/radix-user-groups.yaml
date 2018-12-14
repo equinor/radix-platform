@@ -50,8 +50,6 @@ rules:
   resources:
   - radixregistrations
   verbs:
-  - list
-  - watch
   - create
 - apiGroups:
   - radix.equinor.com
@@ -60,6 +58,12 @@ rules:
   verbs:
   - list
   - watch
+- apiGroups:
+  - radix.equinor.com
+  resources:
+  - radixdeployments
+  verbs:
+  - list
 - apiGroups:
   - ""
   resources:

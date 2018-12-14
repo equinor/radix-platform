@@ -78,7 +78,7 @@ spec:
         - --interval=10s
         - --domain-filter={{ .Values.externalDns.environment }}.radix.equinor.com # This is really a zone filter (value should be the zone name).
         - --registry=txt
-        - --txt-owner-id={{ .Values.externalDns.deploymentTargetName }} # Some unique value, this will appear as owner in the dns txt record.
+        - --txt-owner-id={{ .Values.externalDns.clusterName }} # Some unique value, this will appear as owner in the dns txt record.
         - --provider=azure
         - --azure-resource-group=radix-common-{{ .Values.externalDns.environment }} # The resource group where the dns zone resides.
         volumeMounts:
@@ -88,6 +88,19 @@ spec:
       volumes:
       - name: external-dns-secret
         secret:
-          secretName: external-dns-secret
+          secretName: {{ .Release.Name }}-external-dns-secret
+---
+
+apiVersion: v1
+kind: Secret
+metadata:  
+  name: {{ .Release.Name }}-external-dns-secret
+  labels:
+    app: "radix-platform"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  azure.json: {{ .Values.externalDns.azureDnsToken }}
 
 {{end}}

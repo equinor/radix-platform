@@ -4,11 +4,84 @@ layout: document
 toc: true
 ---
 
-# Subscriptions
+## Overview
 
-Omnia Radix Production - Used for production workloads including customer developers test environments.
+In Azure we use a two layer cake for resource control:
 
-Omnia Radix Development - Used for developing the Radix platform itself.
+1. The top layer is _subscription_
+1. The second layer is _resource group(s)_
+
+A _subscription_ give you the power to control resource groups.  
+A _resource group_ give you the power to control resources.
+
+(In Azure there is a level above subscription called _management groups_, but we are not into that scene. Yet.)  
+
+We have defined two environments:  
+- `prod`  
+  Used for production workloads including customer developers test environments.  
+- `dev`  
+  Used for developing the Radix platform itself.
+
+Each environment has a subscription.  
+Each subscription use a specific set of resource groups according to usage pattern.   
+Each resource use a naming convention that include the environment name.    
+
+### Default structure
+
+[environment] = "prod" | "dev"
+
+- `Omnia Radix [environment]`  
+  A subcriptions that is one of: `Omnia Radix Prod`, `Omina Radix Dev`
+  - `clusters`  
+    Purpose: Resource group for all clusters (AKS)  
+    Security group: `radix_platform_cluster_admin_[environment]`  
+    Role: `contributor`       
+    - `Azure Kubernetes Service (AKS)`  
+      Purpose: k8s cluster for running the radix platform  
+      Naming convention: Any string that pass az resource naming validation  
+      Domain name convention: `[cluster-name].[environment].radix.equinor.com`  
+    - etc ...
+  - `common`  
+    Purpose: Resource group for shared resources.  
+    Security group: `fg_radix_common_resource_admin_[environment]`  
+    Role: `contributor`          
+    - `DNS Zone`  
+      Naming convention: `[environment].radix.equinor.com`        
+    - `Keyvault`  
+      Naming convention: `radix-vault-[environment]`
+    - `Container registry`  
+      Naming convention: `radix-registry-[environment]`  
+      Domain name convention: `radix-registry-[environment].azurecr.io`
+    - etc ...
+  - `monitoring` (1)    
+    Purpose: Resource group for monitoring tools 
+    - `MySql`  
+      Purpose: Backend for Grafana.  
+      Naming convention: `radix-grafana-[environment]`  
+      Security group (AD): `fg_radix_monitoring_admin_[environment]`  
+      Role: `contributor`
+
+(1) A `prod` only resource group.
+
+### Usage patterns
+
+The usage patterns for each resource group is typically different and that is why they are separated:
+
+- Work is done in `clusters` resource group every ~3 months in environment `prod` when setting up and migrating to a new cluster
+- Work is done in `common` resource group whenever there are changes or new features to managed services we rely on
+- Work is done in `monitoring` typically more often than in `common` and there is less sensitive data and services there so permissions to this can be given        
+
+## Initial scaffolding
+
+The very first time Omnia Radix is set up there are some steps that are first done by a user with `Owner` permissions on subscription level:
+
+1. Create resource groups according to default structcure in each subscription
+1. Configure access to resources by adding security group and role to each resource group (see overview for details)
+
+
+## How to Azure all the things
+
+### Subscriptions
 
 Selecting the correct subscription in the Azure Portal is done when creating a resource group. In Azure CLI it's done by 
 
@@ -19,19 +92,7 @@ az account set --subscription "Omnia Radix Development"
 
 > **PS**: You have to re run "az login" after being added to a new subscription for it to show up in az account.
 
-| Subscription  | Resource group     | AD Group               | Roles                 | Resource                          | Description  |
-|---------------|--------------------|------------------------|-----------------------|-----------------------------------|--------------|
-| Prod          |                    |                        |                       |                                   |              |
-|               | radix-common-prod  | fg_radix_platform_dns  | DNS Zone Contributor  |                                   |              |
-|               |                    |                        |                       | Azure DNS: radix.equinor.com      |              |
-|               |                    |                        |                       |                                   |              |
-| Dev           |                    |                        |                       |                                   |              |
-|               | radix-common-dev   | fg_radix_platform_dns  | DNS Zone Contributor  |                                   |              |
-|               |                    |                        |                       | Azure DNS: dev.radix.equinor.com  |              |
-|               |                    |                        |                       | ACR: radixdev.azurecr.io          |              |
-
-
-# Clusters
+### Clusters
 
 List clusters in a subscription:
 
@@ -52,66 +113,12 @@ Vertical scaling has not yet been tested.
     az vmss update --resource-group RG_NAME n {name} --set sku.name="YOUR_VALUE"
     # If you are changing from Standard to Premium you must also include --set sku.tier="Premium"
 
-# Access control
 
-The purpose of access control in Azure is
- - For Radix users: To limit access to the teams own applications and resources only.
- - For platform developers: To limit the risk of accidental disruptive changes. To limit the risk if accounts are compromised.
-
-As far as possible we want to use [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles).
-
-## Initial scaffolding
-
-The very first time Omnia Radix is set up there are some steps that are first done by a user with `Owner` permissions on subscription level:
- - Create resource group `clusters` in each subscription
- - Create resource group `radix-common-dev|prod` in each subscription
- - Create resource group `radix-monitoring` in `Production` subscription.
-
-The usage patterns for each resource group is typically different and that is why they are separated. Work is done in `clusters` resource group every ~3 months on Production when setting up and migrating to a new cluster. Work is done in `radix-common-` resource group whenever there are changes or new features to managed services we rely on. Work is done in `radix-monitoring` typically more often than in `radix-common-` and there is less sensitive data and services there so permissions to this can be given more freely.
-
-We create these groups to govern access to the resource groups, and if necessary, sub-resources:
-
-radix_platform_cluster_admin: `Contributor` of `clusters` resource group. Can then create and destroy Kubernetes clusters.
-radix_platform_common_resource_admin: `Contributor` of `radix-common-dev|prod` resource group. Can work on any of the common managed services.
-radix_platform_monitoring: `Contributor` of `radix-monitoring` resource group. Can do anything related to the external monitoring of clusters.
-fg_radix_platform_dns: `DNS Zone Contributor` of `radix-common-dev|prod`. Used by `external-dns` and `cert-manager` to manage automatic DNS updates on Azure DNS service.
-
-Users with `radix_platform_cluster_admin` or `radix_platform_common_resource_admin` permissions can do substantial damage if accounts are either compromised or due to errors.
-
-To mitigate this the permissions are only given to a user when needed and for a short time. On average these permissions should only apply to one or two team members maybe one day every month on the Production subscription.
-
-There is a risk that we forget to remove the permissions after the necessary work has completed. We can mitigate this by creating a small nightly job that checks that there are no members of these two groups. If there are any members a notification can be sent on Slack.
-
-Long term we should look into Just-in-time permissions such as https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure to mitigate some of these risks.
-
-For the time being access control is done with 4 security groups:
-
-**fg_radix_platform_admin**
-
-**fg_radix_platform_development** 
-
-* Granted to developers managing the radix platform
-  * grants owner on radix azure subscription
-  * admin rights on kubernetes clusters hosted under this subscription.
-
-**fg_radix_platform_user**
-
-Granted to developers hosting their application in radix platform. At the moment this AD group is manually maintained by the radix developing team, and can be applied for through [slack channel](https://equinor.slack.com/messages/CBKM6N2JY/convo/G9M0R6BSB-1535027466.000100/).
-
-  * Grants access to connect to hosted kubernetes resources in radix azure subscription. A new azure role has been made for this group, limiting access as much as possible. This is based on [issue](https://github.com/Azure/AKS/issues/413#issuecomment-410334065) posted to Azure/AKS team.
-  * Grants access to list and watch namespaces, jobs, ingress, radixregistrations and radixconfig for all namespaces in AKS. This is **not a secure solution**, but required for the radix web console and brigadeterm to work. The reason is that there is a limitation in kubernetes when it comes to finding resources that a user has access to without allowing list/watch, as reported by several on kubernetes git issues [1](https://github.com/kubernetes/community/issues/1486) [2](https://github.com/kubernetes/kubernetes/issues/58262) [3](https://github.com/kubernetes/kubernetes/issues/40403). When radix api is implemented, most of these access will be revoked, and a more secure solution enforced. The role is granted in [radix-boot-config](https://github.com/Statoil/radix-boot-configs/pull/50) during creation of cluster
-  * Grants access to create new [RadixRegistrations](https://github.com/Statoil/radix-operator/blob/developer/docs/radixregistration.md). In the RadixRegistration a AD group should be provided. 
-  * The group provided in RadixRegistration will be granted further access to resources created based on the RadixRegistration or by the [RadixConfig](https://github.com/Statoil/radix-operator/blob/developer/docs/radixconfig.md) in the git repo defined in RadixRegistration. This includes get/update/delete the [RadixRegistration](https://github.com/Statoil/radix-operator/blob/developer/pkg/apis/kube/roles.go) [[|]] object and get/list/watch/create/delete [RadixDeployment](https://github.com/Statoil/radix-operator/blob/developer/pkg/apis/kube/roles.go), deployments, pods, logs, services in [namespaces](https://github.com/Statoil/radix-operator/blob/developer/charts/radix-operator/templates/rbac.yaml) created based on RadixApplication. These roles and [rolebinding](https://github.com/Statoil/radix-operator/blob/developer/pkg/apis/kube/rolebinding.go) are granted by the radix-operator
-  
-### How to manage FG groups
-https://equinor.service-now.com/selfservice?id=kb_article&sys_id=14a8171c6f289d00b2cbd6426e3ee4dd
-
-
-# Managed services
+### Managed services
 
 Managed services are typically services that we do not build/rebuild and deploy/redeploy ourselves so have a lesser need of being automated.
 
-## Azure DNS
+#### Azure DNS
 
 There is a Azure DNS service in both Production and Development subscriptions.
 
@@ -119,7 +126,7 @@ Equinor have delegated radix.equinor.com to Azure DNS zone radix.equinor.com in 
 
 From there, we have delegated dev.radix.equinor.com to Azure DNS with same name in resource group radix-common-dev in Omnia Radix Development subscription.
 
-## DNS CAA
+#### DNS CAA
 
 Info about CAA: https://letsencrypt.org/docs/caa/
 
@@ -149,20 +156,20 @@ And finally use an external service to verify that the changes are visible in DN
 
 Now we can use Let's Encrypt to issue certificates to what.ever.radix.equinor.com :-)
 
-# Azure Container Registry
+#### Azure Container Registry
 
 > Information about Azure ACR SKUs: https://docs.microsoft.com/en-us/azure/container-registry/container-registry-skus
 
-## Setup
+##### Setup
 
-### Prod
+###### Prod
 
     az account set --subscription "Omnia Radix Production"
     az group show --name radix-common-prod
     az group create --location northeurope --name radix-common-prod
     az acr create --name radix --resource-group radix-common-prod --sku Standard
 
-### Dev
+###### Dev
 
     az account set --subscription "Omnia Radix Development"
     az group show --name radix-common-dev
@@ -170,29 +177,29 @@ Now we can use Let's Encrypt to issue certificates to what.ever.radix.equinor.co
     az acr create --name radixdev --resource-group radix-common-dev --sku Standard
        
 
-## Usage
+##### Usage
 
 Log in to the ACR (so that docker push/pull commands work locally) by doing:
 
-### Prod
+###### Prod
 
     az account set --subscription "Omnia Radix Production"
     az acr login --name radix
 
-### Dev
+###### Dev
 
     az account set --subscription "Omnia Radix Development"
     az acr login --name radixdev
 
 
 
-# Azure Key Vault
+#### Azure Key Vault
 
 Azure Key Vault can be thought about as a code repository for secrets.
 
 ## Setup
 
-### Prod
+###### Prod
 
     az keyvault list --resource-group radix-common-prod
 
@@ -200,7 +207,7 @@ Azure Key Vault can be thought about as a code repository for secrets.
                     --resource-group radix-common-prod \
                     --location northeurope
 
-### Dev
+###### Dev
 
     az keyvault list --resource-group radix-common-dev
 
@@ -208,7 +215,7 @@ Azure Key Vault can be thought about as a code repository for secrets.
                     --resource-group radix-common-dev \
                     --location northeurope
 
-## Usage
+##### Usage
 
 Upload text:
 
