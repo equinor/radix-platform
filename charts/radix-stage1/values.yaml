@@ -91,6 +91,8 @@ kube-prometheus:
     # routePrefix: /
     #remoteWrite:
     #- url: "https://[[influxDBUsername]]:[[influxDBPassword]]@radixinfluxdb.azurewebsites.net/api/v1/prom/write?db=influxdb"
+    serviceMonitorNamespaceSelector:
+      any: true
     ingress:
       enabled: true
       hosts:
