@@ -92,6 +92,21 @@ It's not possible to vertically scale an AKS cluster (increase the node VM size)
 No tooling available.
 As a MVP we can start by looking at historical metrics already collected about requested CPU and memory and calculate the total of CPU-hours and memory-GB-hours an application have used per week or month.
 
+
+#### Vertical scaling 
+
+There are multiple scenarios with different MVP:
+ - Ensure that an app has enough resources available to run as it should
+ - Ensure that a single app doesn't bring down/take up whole cluster/node
+ - Ensure that cluster has enough resources available to support all hosted apps
+
+To ensure that apps have enough resources available to run as they should, we should monitor to find out how much memory and cpu required for the app to work. Based on these measures we can set `request` on deploy object to ensure that minimum cpu/memory is available for app at all time. 
+
+To ensure that a single app doesn't take up all resources and bring down other applications in cluster, we can set a ResourceQuota on app Namespace. This will ensure that all Pods inside can only use up to a certain CPU and Memory usage. 
+
+The ensure cluster has enough resources, we have to monitor cpu/memory usage on nodes, and ensure that requested and use of cp/memory doesn't exceed available cpu/memory.
+
+
 #### Horizontal scaling
 
 Set `replicas: 1` by default and let the app owner be able to change this when they know that their app will play well with horizontal scaling.
