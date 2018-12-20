@@ -6,8 +6,8 @@ az acr helm repo add --name radixdev && helm repo update
 rm requirements.lock
 helm dep up
 cd ..
-tar -zcvf radix-stage1-1.0.40.tgz radix-stage1
-az acr helm push --name radixdev radix-stage1-1.0.40.tgz
+tar -zcvf radix-stage1-1.0.41.tgz radix-stage1
+az acr helm push --name radixdev radix-stage1-1.0.41.tgz
 ```
 
 ## Updating radix-stage1-values.yaml:
@@ -28,12 +28,12 @@ az keyvault secret download \
     -n radix-stage1-values-dev \
     --vault-name radix-boot-dev-vault
 
-CLUSTER_NAME=dev2
+CLUSTER_NAME=stiantest4
 ENVIRONMENT=dev
 
 az acr helm repo add --name radixdev && helm repo update
 
-helm upgrade --install radix-stage1 radixdev/radix-stage1 --namespace default --version 1.0.40 -f radix-stage1-values-dev.yaml \
+helm upgrade --install radix-stage1 radixdev/radix-stage1 --namespace default --version 1.0.41 -f radix-stage1-values-dev.yaml \
     --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.hosts[0]=grafana.$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.tls[0].hosts[0]=grafana.$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \

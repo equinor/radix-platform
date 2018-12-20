@@ -101,6 +101,6 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 data:
-  azure.json: {{ template "azuredns-secret" . }}
+  azure.json: {{ template "external-dns-secret" . }}
 
 {{end}}

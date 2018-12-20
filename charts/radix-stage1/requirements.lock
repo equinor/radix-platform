@@ -18,4 +18,4 @@ dependencies:
   repository: https://radixdev.azurecr.io/helm/v1/repo
   version: 1.0.2
 digest: sha256:6aa76bdf7da5603dd673011387935d1ea91a3553da2e4ff204722178106ac411
-generated: 2018-12-20T12:36:12.1474474+01:00
+generated: 2018-12-20T12:50:41.2551064+01:00
