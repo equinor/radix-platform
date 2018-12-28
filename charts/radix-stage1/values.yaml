@@ -1,6 +1,6 @@
 imageCredentials:
   registry: xx
-  username: xx
+  username: xx # The appId of the CICD service principal. Ex: az ad sp show --id http://radix-cr-cicd-dev --query appId
   password: xx
 
 externalDns:
@@ -8,13 +8,20 @@ externalDns:
   environment: dev
   clusterName: xx
   imageTag: "v0.5.7"
+  zoneName: xx
 
 # Used by external-dns and cert-manager
-azureDnsSecret: xx
+azureDNS:
+  clientId: xx
+  password: xx
+  subscriptionID: xx
+  tenantID: xx
+  resourceGroup: "common"
 
 # radix-e2e-monitoring child chart
 radix-e2e-monitoring:
   enabled: true
+  #influxDBurl: xx # Set in secret values file
 
   # radix-e2e-monitoring chart values:
   clusterFQDN: "xx"
@@ -72,8 +79,8 @@ createClusterIssuer: true
 
 clusterWildcardCert:
   enabled: true
-  environment: xx
-  clusterName: xx
+  clusterDomain: xx
+  appDomain: xx
 
 # kube-prometheus child chart
 # Disable the grafana that is bundled with kube-prometheus via requirements.yaml
@@ -90,7 +97,7 @@ kube-prometheus:
     # externalUrl: ""
     # routePrefix: /
     #remoteWrite:
-    #- url: "https://[[influxDBUsername]]:[[influxDBPassword]]@radixinfluxdb.azurewebsites.net/api/v1/prom/write?db=influxdb"
+    #- url: "https://[[influxDBUsername]]:[[influxDBPassword]]@radixinfluxdb.azurewebsites.net/api/v1/prom/write?db=influxdb" # Set in secret value file
     serviceMonitorNamespaceSelector:
       any: true
     ingress:

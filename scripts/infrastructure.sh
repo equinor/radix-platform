@@ -34,7 +34,7 @@ RADIX_RESOURCE_GROUP_CLUSTERS="clusters"
 RADIX_RESOURCE_GROUP_COMMON="common"
 RADIX_RESOURCE_GROUP_MONITORING="monitoring"
 RADIX_RESOURCE_KEYVAULT="radix-vault-${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
-RADIX_RESOURCE_CONTAINER_REGISTRY="radixcr${RADIX_INFRASTRUCTURE_ENVIRONMENT}" # Note - ACR names cannot contain "-" due to reasons...
+RADIX_RESOURCE_CONTAINER_REGISTRY="radix${RADIX_INFRASTRUCTURE_ENVIRONMENT}" # Note - ACR names cannot contain "-" due to reasons...
 # Set dns name according to environment.
 # It will default to production value.
 RADIX_RESOURCE_DNS_SUFFIX="radix.equinor.com"
@@ -269,23 +269,30 @@ function set_permissions_on_acr() {
     scope="$(az acr show --name ${RADIX_RESOURCE_CONTAINER_REGISTRY} --resource-group ${RADIX_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 
     # Available roles
-    # - Reader: pull
-    # - Contributor: pull and push
-    # - Owner: pull, push, and assign roles to other users
+    # https://github.com/Azure/acr/blob/master/docs/roles-and-permissions.md
+    # Note that to be able to use "az acr build" you have to have the role "Contributor".
 
     local id
-
     echo -e "Container registry: Setting permissions for \"${RADIX_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..."
     id="$(az ad sp show --id http://${RADIX_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query appId --output tsv)"
-    az role assignment create --assignee "${id}" --role Reader --scope "${scope}"
+    # Delete any existing roles
+    az role assignment delete --assignee "${id}" --scope "${scope}"
+    # Configure new roles
+    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}"
 
     echo -e "Container registry: Setting permissions for \"${RADIX_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..."
     id="$(az ad sp show --id http://${RADIX_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query appId --output tsv)"
+    # Delete any existing roles
+    az role assignment delete --assignee "${id}" --scope "${scope}"
+    # Configure new roles
     az role assignment create --assignee "${id}" --role Contributor --scope "${scope}"
 
     echo -e "Container registry: Setting permissions for \"${RADIX_SYSTEM_USER_CLUSTER}\"..."
     id="$(az ad sp show --id http://${RADIX_SYSTEM_USER_CLUSTER} --query appId --output tsv)"
-    az role assignment create --assignee "${id}" --role Contributor --scope "${scope}"
+    # Delete any existing roles
+    az role assignment delete --assignee "${id}" --scope "${scope}"
+    # Configure new roles
+    az role assignment create --assignee "${id}" --role AcrPush --scope "${scope}"
 }
 
 function set_permissions_on_dns() {

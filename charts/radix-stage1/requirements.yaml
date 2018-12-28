@@ -35,23 +35,16 @@ dependencies:
   tags:
     - kubed
 
-- name: radix-kubernetes-api-proxy
-  version: "1.0.0"
-  repository: "@radixdev"
-  condition: radix-kubernetes-api-proxy.enabled
-  tags:
-    - radix-kubernetes-api-proxy
-
 - name: radix-e2e-monitoring
   version: "1.0.2"
-  repository: "@radixdev"
+  repository: "@radixprod"
   condition: radix-e2e-monitoring.enabled
   tags:
     - radix-e2e-monitoring
 
 - name: humio
   version: "1.0.0"
-  repository: "@radixdev"
+  repository: "@radixprod"
   condition: humio.enabled
   tags:
     - humio
