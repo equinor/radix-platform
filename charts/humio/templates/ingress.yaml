@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: humio
+spec:
+  rules:
+  - host: humio.{{ .Values.clusterFQDN }}
+    http:
+      paths:
+      - backend:
+          serviceName: humio-http-and-ingest
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - humio.{{ .Values.clusterFQDN }}
+    secretName: cluster-wildcard-tls-cert

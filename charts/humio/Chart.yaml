@@ -1,0 +1,15 @@
+apiVersion: v1
+name: humio
+version: 1.0.0
+appVersion: 1.0.0
+kubeVersion: ">=1.11.2"
+description: Create single instance Humio deployment backed with Azure File
+keywords:
+  - radix
+home: radix.equinor.com
+sources:
+  - https://github.com/Statoil/radix-platform
+maintainers: 
+  - name: Stian Ovrevage
+    email: sov@equinor.com
+deprecated: false

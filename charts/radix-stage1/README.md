@@ -6,8 +6,8 @@ az acr helm repo add --name radixdev && helm repo update
 rm requirements.lock
 helm dep up
 cd ..
-tar -zcvf radix-stage1-1.0.45.tgz radix-stage1
-az acr helm push --name radixdev radix-stage1-1.0.45.tgz
+tar -zcvf radix-stage1-1.0.47.tgz radix-stage1
+az acr helm push --name radixdev radix-stage1-1.0.47.tgz
 ```
 
 ## Updating radix-stage1-values.yaml:
@@ -33,7 +33,7 @@ ENVIRONMENT=dev
 
 az acr helm repo add --name radixdev && helm repo update
 
-helm upgrade --install radix-stage1 radixdev/radix-stage1 --namespace default --version 1.0.45 -f radix-stage1-values-dev.yaml \
+helm upgrade --install radix-stage1 radixdev/radix-stage1 --namespace default --version 1.0.47 -f radix-stage1-values-dev.yaml \
     --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.hosts[0]=grafana.$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.tls[0].hosts[0]=grafana.$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
@@ -47,7 +47,9 @@ helm upgrade --install radix-stage1 radixdev/radix-stage1 --namespace default --
     --set externalDns.environment=$ENVIRONMENT \
     --set clusterWildcardCert.clusterName=$CLUSTER_NAME \
     --set clusterWildcardCert.environment=$ENVIRONMENT \
-    --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com
+    --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
+    --set humio.clusterFQDN=$CLUSTER_NAME.$ENVIRONMENT.radix.equinor.com \
+    --set humio.enabled=true
 
 rm radix-stage1-values-dev.yaml
 ```

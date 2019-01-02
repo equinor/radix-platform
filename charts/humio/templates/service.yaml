@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: humio-http-and-ingest
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  - name: ingest
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+  selector:
+    app: humio
+  sessionAffinity: None
+  type: ClusterIP

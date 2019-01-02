@@ -178,3 +178,6 @@ cert-manager:
     defaultIssuerKind: ClusterIssuer
     defaultACMEChallengeType: dns01
     defaultACMEDNS01ChallengeProvider: azure-dns
+
+humio:
+  enabled: false
