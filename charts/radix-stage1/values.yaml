@@ -167,3 +167,14 @@ grafana:
     dashboards:
       enabled: true
       label: grafana_dashboard
+
+# cert-manger child chart
+cert-manager:
+  enabled: true
+
+  # cert-manager chart values:
+  ingressShim:
+    defaultIssuerName: letsencrypt-prod
+    defaultIssuerKind: ClusterIssuer
+    defaultACMEChallengeType: dns01
+    defaultACMEDNS01ChallengeProvider: azure-dns
