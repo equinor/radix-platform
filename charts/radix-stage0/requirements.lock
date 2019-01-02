@@ -1,9 +1,6 @@
 dependencies:
-- name: cert-manager
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: v0.5.0
 - name: prometheus-operator
   repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
   version: 0.0.29
-digest: sha256:a690e17f0351f18282c28d25e8721fef684d76908d06598e158e04720f06907d
-generated: 2018-11-08T09:45:15.8964947+01:00
+digest: sha256:63cc336a4ba108e483a42b8982bd6a933e7c90aed36bb3a5cdca17179d7d890a
+generated: 2019-01-02T11:31:55.7790744+01:00
