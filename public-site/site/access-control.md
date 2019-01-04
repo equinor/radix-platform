@@ -118,3 +118,11 @@ For details on resetting credentials then run
 ```
 az ad sp reset-credentials --help
 ```
+
+### Role assignments
+
+```
+az role assignment list --all --assignee xxxxxx
+```
+
+Note the use of `--all`. The `list` command default to list role assignments for subscription and resource groups. `--all` lets you see assignments for, well, all resources.
