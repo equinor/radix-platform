@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # PRECONDITIONS
 #
 # It is assumed that cluster is installed using the cluster_install.sh script
@@ -37,7 +39,7 @@ echo "Applied RBAC for helm/tiller"
 # Step 2: Install Helm
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
 chmod 700 get_helm.sh
-get_helm.sh --no-sudo -v "$HELM_VERSION"
+./get_helm.sh --no-sudo -v "$HELM_VERSION"
 helm init --service-account tiller --upgrade --wait
 
 echo "Helm initialized"
@@ -88,6 +90,7 @@ helm upgrade \
     --set clusterWildcardCert.clusterName=$CLUSTER_NAME \
     --set clusterWildcardCert.environment=$SUBSCRIPTION_ENVIRONMENT \
     --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com
+    -f radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
 
 echo "Stage 1 completed"
 
