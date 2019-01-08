@@ -8,12 +8,14 @@
 # components of the cluster
 #
 # To run this script from terminal:
-# CLUSTER_NAME=aa HELM_VERSION=bb HELM_REPO=cc ./base_components.sh
+# SUBSCRIPTION_ENVIRONMENT=aa VAULT_NAME=bb CLUSTER_NAME=cc HELM_VERSION=dd HELM_REPO=dd ./base_components.sh
 #
 # Input environment variables:
-#   CLUSTER_NAME
+#   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
+#   VAULT_NAME (e.g. radix-boot-dev-vault)
+#   CLUSTER_NAME (e.g. prod)
 #   HELM_VERSION (defaulted if omitted)
-#   HELM_REPO
+#   HELM_REPO (e.g. radixdev)
 
 if [ -n "$HELM_VERSION" ]; then
     HELM_VERSION="latest"
@@ -33,7 +35,10 @@ helm init --service-account tiller --upgrade --wait
 echo "Helm initialized"
 
 # Step 3: Patching kube-dns metrics
-kubectl patch deployment -n kube-system kube-dns-v20 --patch ./patch/kube-dns-metrics-patch.yaml
+kubectl patch deployment \
+    -n kube-system \
+    kube-dns-v20 \
+    --patch ./patch/kube-dns-metrics-patch.yaml
 
 echo "Patched kube-dns metrics"
 
@@ -43,5 +48,12 @@ helm repo update
 echo "Acr helm repo $HELM_REPO was added"
 
 # Step 5: Stage 0
-helm upgrade --install --force radix-stage0 $HELM_REPO/radix-stage0 --namespace default --version 1.0.2
+helm upgrade \
+    --install --force radix-stage0 \
+    $HELM_REPO/radix-stage0 \
+    --namespace default \
+    --version 1.0.2
 echo "Stage 0 completed"
+
+# Step 5: Stage 1
+az keyvault secret download --vault-name $VAULT_NAME --name radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT --file radix-stage1-values-dev.yaml
