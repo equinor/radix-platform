@@ -16,9 +16,17 @@
 #   CLUSTER_NAME (e.g. prod)
 #   HELM_VERSION (defaulted if omitted)
 #   HELM_REPO (e.g. radixdev)
+#   SLACK_CHANNEL (defaulted if omitted)
+#
+# Secret environment variables (downloaded from keyvault):
+#   SLACK_TOKEN
 
-if [ -n "$HELM_VERSION" ]; then
+if [[ -z "$HELM_VERSION" ]]; then
     HELM_VERSION="latest"
+fi
+
+if [[ -z "$SLACK_CHANNEL" ]]; then
+    SLACK_CHANNEL = "CCFLFKM39"
 fi
 
 # Step 1: Apply RBAC config for helm/tiller
@@ -80,3 +88,36 @@ helm upgrade \
     --set clusterWildcardCert.clusterName=$CLUSTER_NAME \
     --set clusterWildcardCert.environment=$SUBSCRIPTION_ENVIRONMENT \
     --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com
+
+echo "Stage 1 completed"
+
+# Step 6: Delete stage 1 secret
+rm -f ./radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
+
+# Step 7: Install operator
+helm upgrade \
+    --install --force radix-operator \
+    $HELM_REPO/radix-operator \
+    --namespace default \
+    --set clusterName=$CLUSTER_NAME \
+    --set image.tag=release-latest
+
+echo "Operator installed"
+
+# Step 8: Patching kubelet service-monitor
+kubectl patch servicemonitors \
+    radix-stage1-exporter-kubelets \
+    --type merge \
+    --patch ./patch/kubelet-service-monitor-patch.yaml
+
+echo "Patched kubelet service-monitor"
+
+# Step 9: Notify on slack channel
+helm upgrade \
+    --install --force radix-boot-notify \
+    $HELM_REPO/slack-notification \
+    --set channel=$SLACK_CHANNEL \
+    --set slackToken=$SLACK_TOKEN \
+    --set text='Cluster $CLUSTER_NAME is now deployed.'
+
+echo "Notified on slack channel"
