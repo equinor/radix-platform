@@ -56,4 +56,27 @@ helm upgrade \
 echo "Stage 0 completed"
 
 # Step 5: Stage 1
-az keyvault secret download --vault-name $VAULT_NAME --name radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT --file radix-stage1-values-dev.yaml
+az keyvault secret download \
+    --vault-name $VAULT_NAME \
+    --name radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT \
+    --file radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
+
+helm upgrade \
+    radix-stage1 \
+    $HELM_REPO/radix-stage1 \
+    --namespace default \
+    --version 1.0.37 \ 
+    --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --set grafana.ingress.hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --set grafana.ingress.tls[0].hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --set grafana.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
+    --set grafana.env.GF_SERVER_ROOT_URL=https://grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --set kube-prometheus.prometheus.ingress.hosts[0]=prometheus.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --set kube-prometheus.prometheus.ingress.tls[0].hosts[0]=prometheus.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --set kube-prometheus.prometheus.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
+    --set kubed.config.clusterName=$CLUSTER_NAME \
+    --set externalDns.clusterName=$CLUSTER_NAME \
+    --set externalDns.environment=$SUBSCRIPTION_ENVIRONMENT \
+    --set clusterWildcardCert.clusterName=$CLUSTER_NAME \
+    --set clusterWildcardCert.environment=$SUBSCRIPTION_ENVIRONMENT \
+    --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com
