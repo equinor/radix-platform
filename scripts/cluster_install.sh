@@ -13,15 +13,15 @@
 # VAULT_NAME=aa CREDENTIALS_SECRET_NAME=bb RESOURCE_GROUP=cc CLUSTER_NAME=dd KUBERNETES_VERSION=ee NODE_COUNT=ff NODE_VM_SIZE=gg  ./cluster_install.sh
 #
 # Input environment variables:
-#   VAULT_NAME
+#   VAULT_NAME (e.g. radix-boot-dev-vault)
 #   CREDENTIALS_SECRET_NAME (defaulted if omitted)
-#   RESOURCE_GROUP
-#   CLUSTER_NAME
+#   RESOURCE_GROUP (e.g clusters)
+#   CLUSTER_NAME (e.g. prod)
 #   KUBERNETES_VERSION (defaulted if omitted)
 #   NODE_COUNT (defaulted if omitted)
 #   NODE_VM_SIZE (defaulted if omitted)
 #
-# Secret environment variables (downloaded from keyvault):
+# Secret environment variables (downloaded from keyvault with CREDENTIALS_SECRET_NAME):
 #   AAD_SERVER_APP_ID
 #   AAD_SERVER_APP_SECRET
 #   AAD_CLIENT_APP_ID
@@ -67,9 +67,9 @@ command="az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME"
 
 echo "Running command:"
 echo
-#echo $command
+echo $command
 
-# $command
+bash -c "$command"
 
 echo
 echo -e "Azure kubernetes service ${CLUSTER_NAME} created"
