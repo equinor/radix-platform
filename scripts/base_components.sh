@@ -29,7 +29,7 @@ if [[ -z "$HELM_VERSION" ]]; then
 fi
 
 if [[ -z "$SLACK_CHANNEL" ]]; then
-    SLACK_CHANNEL = "CCFLFKM39"
+    SLACK_CHANNEL="CCFLFKM39"
 fi
 
 # Step 1: Apply RBAC config for helm/tiller
@@ -42,6 +42,7 @@ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_
 chmod 700 get_helm.sh
 ./get_helm.sh --no-sudo -v "$HELM_VERSION"
 helm init --service-account tiller --upgrade --wait
+rm -f ./get_helm.sh
 
 echo "Helm initialized"
 
@@ -76,7 +77,7 @@ helm upgrade \
     radix-stage1 \
     $HELM_REPO/radix-stage1 \
     --namespace default \
-    --version 1.0.37 \ 
+    --version 1.0.37 \
     --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.tls[0].hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
@@ -90,7 +91,7 @@ helm upgrade \
     --set externalDns.environment=$SUBSCRIPTION_ENVIRONMENT \
     --set clusterWildcardCert.clusterName=$CLUSTER_NAME \
     --set clusterWildcardCert.environment=$SUBSCRIPTION_ENVIRONMENT \
-    --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com
+    --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
     -f radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
 
 echo "Stage 1 completed"
@@ -117,11 +118,11 @@ kubectl patch servicemonitors \
 echo "Patched kubelet service-monitor"
 
 # Step 9: Notify on slack channel
-helm upgrade \
-    --install --force radix-boot-notify \
-    $HELM_REPO/slack-notification \
-    --set channel=$SLACK_CHANNEL \
-    --set slackToken=$SLACK_TOKEN \
-    --set text='Cluster $CLUSTER_NAME is now deployed.'
+#helm upgrade \
+#    --install --force radix-boot-notify \
+#    $HELM_REPO/slack-notification \
+#    --set channel=$SLACK_CHANNEL \
+#    --set slackToken=$SLACK_TOKEN \
+#    --set text='Cluster $CLUSTER_NAME is now deployed.'
 
-echo "Notified on slack channel"
+#echo "Notified on slack channel"
