@@ -3,6 +3,7 @@
 # PRECONDITIONS
 #
 # It is assumed that cluster is installed using the cluster_install.sh script
+# and that the current context is that of the cluster
 #
 # PURPOSE
 #

@@ -76,3 +76,6 @@ echo -e "Azure kubernetes service ${CLUSTER_NAME} created"
 
 # Step 4: Remove credentials file
 rm -f ./credentials
+
+# Step 5: Enter the newly created cluster
+az aks get-credentials --overwrite-existing --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
