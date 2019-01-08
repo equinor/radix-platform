@@ -38,6 +38,8 @@ In this guide we'll set up an application together. Here's what we need to get o
 
 We will go over these points below.
 
+[Radix introduction video](https://statoilsrm.sharepoint.com/portals/hub/_layouts/15/PointPublishing.aspx?app=video&p=p&chid=653b6223-6ef5-4e5b-8388-ca8c77da4c7a&vid=3a64412f-0227-489d-9fda-f5f9845aacae)
+
 ## The repository
 
 All of our **components must be in the same repository**. A component is a piece of code that has its own build and deployment process: for instance a "front end" served by Nginx and a "back end" running on Node.js would be two components. Components are built in parallel from the same repository and deployed together into an environment. There is currently no concept of a multi-repository application.
