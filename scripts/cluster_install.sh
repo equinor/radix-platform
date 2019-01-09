@@ -53,13 +53,10 @@ source ./credentials
 
 # Step 3: Create cluster
 echo "Creating azure kubernetes service ${CLUSTER_NAME}..." 
+
 command="az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --no-ssh-key \
     --kubernetes-version "$KUBERNETES_VERSION" \
-    --aad-server-app-id "$AAD_SERVER_APP_ID" \
-    --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
-    --aad-client-app-id "$AAD_CLIENT_APP_ID" \
-    --aad-tenant-id "$AAD_TENANT_ID" \
     --service-principal "$SERVICE_PRINCIPAL" \
     --client-secret "$CLIENT_SECRET" \
     --node-count "$NODE_COUNT" \

@@ -18,7 +18,7 @@
 #   VAULT_NAME (e.g. radix-boot-dev-vault)
 #   CLUSTER_NAME (e.g. prod)
 #   HELM_VERSION (defaulted if omitted)
-#   HELM_REPO (e.g. radixdev)
+#   HELM_REPO (e.g. radixdev|radixprod)
 #   CREDENTIALS_SECRET_NAME (defaulted if omitted)
 #   SLACK_CHANNEL (defaulted if omitted)
 #
@@ -88,7 +88,7 @@ helm upgrade \
     --install radix-stage1 \
     $HELM_REPO/radix-stage1 \
     --namespace default \
-    --version 1.0.47 \
+    --version 1.0.51 \
     --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.tls[0].hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
@@ -116,7 +116,8 @@ helm upgrade \
     $HELM_REPO/radix-operator \
     --namespace default \
     --set clusterName=$CLUSTER_NAME \
-    --set image.tag=release-latest
+    --set image.tag=release-latest \
+    -f ./patch/operator-$SUBSCRIPTION_ENVIRONMENT.yaml
 
 echo "Operator installed"
 
