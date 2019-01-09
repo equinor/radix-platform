@@ -19,10 +19,15 @@
 #   CLUSTER_NAME (e.g. prod)
 #   HELM_VERSION (defaulted if omitted)
 #   HELM_REPO (e.g. radixdev)
+#   CREDENTIALS_SECRET_NAME (defaulted if omitted)
 #   SLACK_CHANNEL (defaulted if omitted)
 #
 # Secret environment variables (downloaded from keyvault):
 #   SLACK_TOKEN
+
+if [[ -z "$CREDENTIALS_SECRET_NAME" ]]; then
+    CREDENTIALS_SECRET_NAME="credentials-new"
+fi
 
 if [[ -z "$HELM_VERSION" ]]; then
     HELM_VERSION="latest"
@@ -32,12 +37,18 @@ if [[ -z "$SLACK_CHANNEL" ]]; then
     SLACK_CHANNEL="CCFLFKM39"
 fi
 
-# Step 1: Apply RBAC config for helm/tiller
+# Step 1: Download credentials from vault as sh script
+az keyvault secret show --vault-name "$VAULT_NAME" --name "$CREDENTIALS_SECRET_NAME" | jq -r .value > "./credentials"
+
+# Step 2: Execute shell script to set environment variables
+source ./credentials
+
+# Step 3: Apply RBAC config for helm/tiller
 kubectl apply -f ./patch/rbac-config-helm.yaml
 
 echo "Applied RBAC for helm/tiller"
 
-# Step 2: Install Helm
+# Step 4: Install Helm
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
 chmod 700 get_helm.sh
 ./get_helm.sh --no-sudo -v "$HELM_VERSION"
@@ -46,7 +57,7 @@ rm -f ./get_helm.sh
 
 echo "Helm initialized"
 
-# Step 3: Patching kube-dns metrics
+# Step 5: Patching kube-dns metrics
 kubectl patch deployment \
     -n kube-system \
     kube-dns-v20 \
@@ -54,12 +65,12 @@ kubectl patch deployment \
 
 echo "Patched kube-dns metrics"
 
-# Step 4: Adding helm repo
+# Step 6: Adding helm repo
 az acr helm repo add --name "$HELM_REPO"
 helm repo update
 echo "Acr helm repo $HELM_REPO was added"
 
-# Step 5: Stage 0
+# Step 7: Stage 0
 helm upgrade \
     --install radix-stage0 \
     $HELM_REPO/radix-stage0 \
@@ -67,7 +78,7 @@ helm upgrade \
     --version 1.0.2
 echo "Stage 0 completed"
 
-# Step 5: Stage 1
+# Step 8: Stage 1
 az keyvault secret download \
     --vault-name $VAULT_NAME \
     --name radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT \
@@ -96,10 +107,10 @@ helm upgrade \
 
 echo "Stage 1 completed"
 
-# Step 6: Delete stage 1 secret
+# Step 9: Delete stage 1 secret
 rm -f ./radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
 
-# Step 7: Install operator
+# Step 10: Install operator
 helm upgrade \
     --install radix-operator \
     $HELM_REPO/radix-operator \
@@ -109,7 +120,7 @@ helm upgrade \
 
 echo "Operator installed"
 
-# Step 8: Patching kubelet service-monitor
+# Step 11: Patching kubelet service-monitor
 kubectl patch servicemonitors \
     radix-stage1-exporter-kubelets \
     --type merge \
@@ -117,12 +128,15 @@ kubectl patch servicemonitors \
 
 echo "Patched kubelet service-monitor"
 
-# Step 9: Notify on slack channel
-#helm upgrade \
-#    --install radix-boot-notify \
-#    $HELM_REPO/slack-notification \
-#    --set channel=$SLACK_CHANNEL \
-#    --set slackToken=$SLACK_TOKEN \
-#    --set text='Cluster $CLUSTER_NAME is now deployed.'
+# Step 12: Notify on slack channel
+helm upgrade \
+    --install radix-boot-notify \
+    $HELM_REPO/slack-notification \
+    --set channel=$SLACK_CHANNEL \
+    --set slackToken=$SLACK_TOKEN \
+    --set text='Cluster $CLUSTER_NAME is now deployed.'
 
-#echo "Notified on slack channel"
+echo "Notified on slack channel"
+
+# Step 13: Remove credentials file
+rm -f ./credentials
