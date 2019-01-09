@@ -50,7 +50,7 @@ echo "Helm initialized"
 kubectl patch deployment \
     -n kube-system \
     kube-dns-v20 \
-    --patch ./patch/kube-dns-metrics-patch.yaml
+    --patch "$(cat ./patch/kube-dns-metrics-patch.yaml)"
 
 echo "Patched kube-dns metrics"
 
@@ -74,7 +74,7 @@ az keyvault secret download \
     --file radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
 
 helm upgrade \
-    radix-stage1 \
+    --install --force radix-stage1 \
     $HELM_REPO/radix-stage1 \
     --namespace default \
     --version 1.0.37 \
@@ -113,7 +113,7 @@ echo "Operator installed"
 kubectl patch servicemonitors \
     radix-stage1-exporter-kubelets \
     --type merge \
-    --patch ./patch/kubelet-service-monitor-patch.yaml
+    --patch "$(cat ./patch/kubelet-service-monitor-patch.yaml)"
 
 echo "Patched kubelet service-monitor"
 
