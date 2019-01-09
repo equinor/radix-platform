@@ -134,7 +134,7 @@ helm upgrade \
     $HELM_REPO/slack-notification \
     --set channel=$SLACK_CHANNEL \
     --set slackToken=$SLACK_TOKEN \
-    --set text='Cluster $CLUSTER_NAME is now deployed.'
+    --set text="Cluster $CLUSTER_NAME is now deployed."
 
 echo "Notified on slack channel"
 
