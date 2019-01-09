@@ -1,0 +1,15 @@
+# Manual edit: kubectl edit servicemonitors kube-prometheus-exporter-kubelets
+# Automatic patch: kubectl patch servicemonitors kube-prometheus-exporter-kubelets --type merge --patch "$(cat kubelet-service-monitor-patch.yaml)"
+
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 10s
+    port: http-metrics
+    scheme: http
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    honorLabels: true
+    interval: 10s
+    path: /metrics/cadvisor
+    port: http-metrics
+    scheme: http
