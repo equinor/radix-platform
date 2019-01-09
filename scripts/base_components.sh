@@ -61,7 +61,7 @@ echo "Acr helm repo $HELM_REPO was added"
 
 # Step 5: Stage 0
 helm upgrade \
-    --install --force radix-stage0 \
+    --install radix-stage0 \
     $HELM_REPO/radix-stage0 \
     --namespace default \
     --version 1.0.2
@@ -74,10 +74,10 @@ az keyvault secret download \
     --file radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
 
 helm upgrade \
-    --install --force radix-stage1 \
+    --install radix-stage1 \
     $HELM_REPO/radix-stage1 \
     --namespace default \
-    --version 1.0.37 \
+    --version 1.0.47 \
     --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
     --set grafana.ingress.tls[0].hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
@@ -101,7 +101,7 @@ rm -f ./radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
 
 # Step 7: Install operator
 helm upgrade \
-    --install --force radix-operator \
+    --install radix-operator \
     $HELM_REPO/radix-operator \
     --namespace default \
     --set clusterName=$CLUSTER_NAME \
@@ -119,7 +119,7 @@ echo "Patched kubelet service-monitor"
 
 # Step 9: Notify on slack channel
 #helm upgrade \
-#    --install --force radix-boot-notify \
+#    --install radix-boot-notify \
 #    $HELM_REPO/slack-notification \
 #    --set channel=$SLACK_CHANNEL \
 #    --set slackToken=$SLACK_TOKEN \
