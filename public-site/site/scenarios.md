@@ -51,7 +51,7 @@ App with ''one'' container. ''Reading from external open API''. No storage. No s
 
 Examples : 
   * [React.js](https://github.com/Statoil/radix-example-scenario-3-reactjs)
-  * [https://github.com/statoil/radix-example-scenario-3-dotnet](.NET core)
+  * [.Net core](https://github.com/statoil/radix-example-scenario-3-dotnet)
 
 ----
 
