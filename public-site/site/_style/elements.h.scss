@@ -14,3 +14,11 @@ h2 {
   font-weight: 700;
   margin: 1.5em 0 .75em 0;
 }
+
+h3 {
+  font-family: var(--heading-font-family);
+  font-size: .875rem;
+  font-weight: 700;
+  opacity: .75;
+  text-transform: uppercase;
+}
