@@ -75,7 +75,7 @@ helm upgrade \
     --install radix-stage0 \
     $HELM_REPO/radix-stage0 \
     --namespace default \
-    --version 1.0.2
+    --version 1.0.4
 echo "Stage 0 completed"
 
 # Step 8: Stage 1
