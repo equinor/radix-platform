@@ -115,6 +115,7 @@ helm upgrade \
     --install radix-operator \
     $HELM_REPO/radix-operator \
     --namespace default \
+    --set infrastructureEnvironment=$SUBSCRIPTION_ENVIRONMENT \
     --set clusterName=$CLUSTER_NAME \
     --set image.tag=release-latest
 
