@@ -4,6 +4,7 @@ cloneURL: git@github.com:Statoil/radix-github-webhook.git
 cloneBranch: master
 
 imageTag: xx
+useCache: true
 
 pipelineImageTag: latest
 pipelineImagePullSecret: radix-docker

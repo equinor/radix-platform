@@ -50,16 +50,18 @@ helm upgrade --install radix-pipeline-github-webhook-master \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="master" \
-    --set pipelineImageTag="release-latest" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set pipelineImageTag="master-latest" \
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
+    --set useCache="false"
 
 helm upgrade --install radix-pipeline-github-webhook-release \
     $HELM_REPO/radix-pipeline-invocation \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="release" \
-    --set pipelineImageTag="release-latest" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set pipelineImageTag="master-latest" \
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
+    --set useCache="false"
 
 # Radix API
 az keyvault secret download \
@@ -81,21 +83,20 @@ helm upgrade --install radix-pipeline-api-master \
     --set name="radix-api" \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="master" \
-    --set pipelineImageTag="release-latest" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set pipelineImageTag="master-latest" \
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
+    --set useCache="false"
 
 helm upgrade --install radix-pipeline-api-release \
     $HELM_REPO/radix-pipeline-invocation \
     --set name="radix-api" \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="release" \
-    --set pipelineImageTag="release-latest" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set pipelineImageTag="master-latest" \
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
+    --set useCache="false"
 
 # Radix Canary app
-az acr helm repo add --name $HELM_REPO && \
-    helm repo update
-
 az keyvault secret download \
     -f radix-canary-radixregistration-values.yaml \
     -n radix-canary-radixregistration-values \
@@ -115,7 +116,7 @@ helm upgrade --install radix-pipeline-canary-master \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
     --set cloneBranch="master" \
-    --set pipelineImageTag="release-latest" \
+    --set pipelineImageTag="master-latest" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-canary-release \

@@ -19,6 +19,7 @@ spec:
         - BRANCH={{ .Values.cloneBranch }}
         - RADIX_FILE_NAME=/workspace/radixconfig.yaml
         - IMAGE_TAG={{ .Values.imageTag }}
+        - USE_CACHE={{ .Values.useCache }}
         image: radixdev.azurecr.io/radix-pipeline:{{ .Values.pipelineImageTag }}
         name: radix-pipeline-init
         volumeMounts:
