@@ -22,6 +22,7 @@
 # HELM_REPO=aa VAULT_NAME=bb ./manual_deploy.sh
 #
 # Input environment variables:
+#   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
 #   HELM_REPO (e.g. radixdev)
 #   VAULT_NAME (e.g. radix-boot-dev-vault)
 
@@ -51,6 +52,7 @@ helm upgrade --install radix-pipeline-github-webhook-master \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="master-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
 
@@ -60,6 +62,7 @@ helm upgrade --install radix-pipeline-github-webhook-release \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="master-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
 
@@ -84,6 +87,7 @@ helm upgrade --install radix-pipeline-api-master \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="master-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
 
@@ -93,6 +97,7 @@ helm upgrade --install radix-pipeline-api-release \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="master-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
 
@@ -117,6 +122,7 @@ helm upgrade --install radix-pipeline-canary-master \
     --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="master-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-canary-release \
@@ -125,6 +131,7 @@ helm upgrade --install radix-pipeline-canary-release \
     --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Radix Web Console
@@ -149,6 +156,7 @@ helm upgrade --install radix-pipeline-web-console-master \
     --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-web-console-release \
@@ -158,6 +166,7 @@ helm upgrade --install radix-pipeline-web-console-release \
     --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Only done manually, not to screw up prod-cluster
@@ -197,6 +206,7 @@ helm upgrade --install radix-pipeline-public-site-master \
     --set cloneURL="git@github.com:Statoil/radix-platform.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-public-site-release \
@@ -206,6 +216,7 @@ helm upgrade --install radix-pipeline-public-site-release \
     --set cloneURL="git@github.com:Statoil/radix-platform.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
+    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Step 2.6 Redirect public endpoints
