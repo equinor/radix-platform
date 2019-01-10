@@ -19,7 +19,7 @@
 # components of the cluster
 #
 # To run this script from terminal:
-# HELM_REPO=aa VAULT_NAME=bb ./manual_deploy.sh
+# SUBSCRIPTION_ENVIRONMENT=aa HELM_REPO=bb VAULT_NAME=cc ./manual_deploy.sh
 #
 # Input environment variables:
 #   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
