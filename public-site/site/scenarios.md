@@ -17,11 +17,11 @@ App with ''one'' container. No external back end dependencies. No storage. No se
 
 Examples : 
   * <del>https://github.com/larskaare/radix-test1</del>
-  * [React.js](https://github.com/Statoil/radix-example-scenario-1-reactjs) 
-  * [Static html](https://github.com/Statoil/radix-example-scenario-1-html)
-  * [.NET core](https://github.com/Statoil/radix-example-scenario-1-dotnet)
+  * [React.js](https://github.com/equinor/radix-example-scenario-1-reactjs) 
+  * [Static html](https://github.com/equinor/radix-example-scenario-1-html)
+  * [.NET core](https://github.com/equinor/radix-example-scenario-1-dotnet)
 
-<del>Github static file repository/url : https://github.com/Statoil/radix-example-static-html</del>
+<del>Github static file repository/url : https://github.com/equinor/radix-example-static-html</del>
 
 ----
 
@@ -32,16 +32,16 @@ App with ''multiple'' containers. No external dependencies. No back end dependen
 Examples:
 
 Alt 1: Reverse proxy:
-  * [Golang](https://github.com/Statoil/radix-example-scenario-2-golang)
-  * [React.js](https://github.com/Statoil/radix-example-scenario-2-chat)
-  * [.NET core](https://github.com/Statoil/radix-example-scenario-2-dotnet)
+  * [Golang](https://github.com/equinor/radix-example-scenario-2-golang)
+  * [React.js](https://github.com/equinor/radix-example-scenario-2-chat)
+  * [.NET core](https://github.com/equinor/radix-example-scenario-2-dotnet)
    
 
 Alt 2: Two separate endpoints into app
 
-Alt 3: [Dynamic web page storing requests in redis cache](https://github.com/Statoil/radix-example-scenario-2-redis-cache)
+Alt 3: [Dynamic web page storing requests in redis cache](https://github.com/equinor/radix-example-scenario-2-redis-cache)
 
-Alt 4: [Load balanced scaled dynamic web page running in 4 instances, storing requests in a redis cache](https://github.com/Statoil/radix-example-loadbalancer-api-db)
+Alt 4: [Load balanced scaled dynamic web page running in 4 instances, storing requests in a redis cache](https://github.com/equinor/radix-example-loadbalancer-api-db)
 
 ----
 
@@ -50,8 +50,8 @@ Alt 4: [Load balanced scaled dynamic web page running in 4 instances, storing re
 App with ''one'' container. ''Reading from external open API''. No storage. No secrets. Dynamic web page - including information from external API.
 
 Examples : 
-  * [React.js](https://github.com/Statoil/radix-example-scenario-3-reactjs)
-  * [.Net core](https://github.com/statoil/radix-example-scenario-3-dotnet)
+  * [React.js](https://github.com/equinor/radix-example-scenario-3-reactjs)
+  * [.Net core](https://github.com/equinor/radix-example-scenario-3-dotnet)
 
 ----
 
@@ -60,8 +60,8 @@ Examples :
 App with ''two'' containers. ''Reading from external open API''. No storage. No secrets. Dynamic web page - including information from external API.
 
 Examples : 
-  * [Golang: Go + Nginx](https://github.com/Statoil/radix-example-scenario-4-golang)
-  * [Python: Django + PostgresSQL](https://github.com/Statoil/radix-example-scenario-4-webapp)
+  * [Golang: Go + Nginx](https://github.com/equinor/radix-example-scenario-4-golang)
+  * [Python: Django + PostgresSQL](https://github.com/equinor/radix-example-scenario-4-webapp)
 
 ----
 
@@ -69,8 +69,8 @@ Examples :
 Same as Scenario 1 - adding ''metrics - monitoring'' to the app using Prometheus and Grafana
 
 Examples: 
-  * [Node.js](https://github.com/Statoil/radix-example-scenario-5-nodejs)
-  * [Golang](https://github.com/Statoil/radix-example-scenario-5-golang)
+  * [Node.js](https://github.com/equinor/radix-example-scenario-5-nodejs)
+  * [Golang](https://github.com/equinor/radix-example-scenario-5-golang)
 
 ----
 
@@ -78,9 +78,9 @@ Examples:
 Same as Scenario 1 - adding ''running unit tests as part of multistage docker build''. Broken tests fail build.
 
 Examples : 
-  * [Python](https://github.com/Statoil/radix-example-scenario-6-python)
-  * [React.js](https://github.com/Statoil/radix-example-scenario-6-reactjs)
-  * [.NET core](https://github.com/Statoil/radix-example-scenario-6-dotnet)
+  * [Python](https://github.com/equinor/radix-example-scenario-6-python)
+  * [React.js](https://github.com/equinor/radix-example-scenario-6-reactjs)
+  * [.NET core](https://github.com/equinor/radix-example-scenario-6-dotnet)
 
 ----
 
@@ -88,9 +88,9 @@ Examples :
 Same as Scenario 1 - adding ''running linter and unit tests as part of multistage docker build''. Broken tests fail build.
 
 Examples:
-  * [Golang](https://github.com/Statoil/radix-example-scenario-7-golang)
-  * [Python](https://github.com/Statoil/radix-example-scenario-7-python)
-  * [React.js](https://github.com/Statoil/radix-example-scenario-7-reactjs)
+  * [Golang](https://github.com/equinor/radix-example-scenario-7-golang)
+  * [Python](https://github.com/equinor/radix-example-scenario-7-python)
+  * [React.js](https://github.com/equinor/radix-example-scenario-7-reactjs)
   * [docker-multistage-with-test](https://github.com/larskaare/radix-test-scenario-docker-multistage-with-test)
 
 ----
@@ -103,7 +103,7 @@ App with two container. Reading from external ''restricted'' API. No storage. ''
 
 Alt 1: web app from mobile team, integrating with graph api and azure storage account
 
-<del>https://github.com/Statoil/radix-example-mad-webpage</del>
+<del>https://github.com/equinor/radix-example-mad-webpage</del>
 
 Alt 2: Examples
   * [docker-multistage-with-test](https://github.com/larskaare/radix-test-scenario-docker-multistage-with-test)

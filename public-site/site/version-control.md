@@ -5,7 +5,7 @@ toc: true
 ---
 
 We use Git as our versioning system.  
-Location: [Github/Statoil](https://github.com/statoil)  
+Location: [Github/Statoil](https://github.com/equinor)  
 Prefix: `radix-`
 
 ## Workflow
