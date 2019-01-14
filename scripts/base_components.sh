@@ -11,10 +11,11 @@
 # components of the cluster
 #
 # To run this script from terminal:
-# SUBSCRIPTION_ENVIRONMENT=aa VAULT_NAME=bb CLUSTER_NAME=cc HELM_VERSION=dd HELM_REPO=dd ./base_components.sh
+# SUBSCRIPTION_ENVIRONMENT=aa DNS_ZONE=bb VAULT_NAME=cc CLUSTER_NAME=dd HELM_VERSION=ee HELM_REPO=ff ./base_components.sh
 #
 # Input environment variables:
 #   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
+#   DNS_ZONE (e.g. radix.equinor.com|dev.radix.equinor.com)
 #   VAULT_NAME (e.g. radix-boot-dev-vault)
 #   CLUSTER_NAME (e.g. prod)
 #   HELM_VERSION (defaulted if omitted)
@@ -115,7 +116,9 @@ helm upgrade \
     --install radix-operator \
     $HELM_REPO/radix-operator \
     --namespace default \
-    --set infrastructureEnvironment=$SUBSCRIPTION_ENVIRONMENT \
+    --set dnsZone=$DNS_ZONE \
+    --set appAliasBaseURL=app.$DNS_ZONE \
+    --set imageRegistry=radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io \            
     --set clusterName=$CLUSTER_NAME \
     --set image.tag=release-latest \
     -f ./patch/operator-$SUBSCRIPTION_ENVIRONMENT.yaml

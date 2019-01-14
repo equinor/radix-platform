@@ -48,25 +48,23 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-github-webhook-master \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="master" \
-    --set pipelineImageTag="master-latest" \
+    --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
-    --set useCache="false"
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-github-webhook-release \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="release" \
-    --set pipelineImageTag="master-latest" \
+    --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
-    --set useCache="false"
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Radix API
 az keyvault secret download \
@@ -85,7 +83,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-api-master \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="master" \
@@ -96,7 +94,7 @@ helm upgrade --install radix-pipeline-api-master \
 
 helm upgrade --install radix-pipeline-api-release \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="release" \
@@ -122,7 +120,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-canary-master \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
     --set cloneBranch="master" \
@@ -132,7 +130,7 @@ helm upgrade --install radix-pipeline-canary-master \
 
 helm upgrade --install radix-pipeline-canary-release \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
     --set cloneBranch="release" \
@@ -157,7 +155,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-web-console-master \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
     --set cloneBranch="master" \
@@ -167,7 +165,7 @@ helm upgrade --install radix-pipeline-web-console-master \
 
 helm upgrade --install radix-pipeline-web-console-release \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
     --set cloneBranch="release" \
@@ -207,7 +205,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-public-site-master \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:Statoil/radix-platform.git" \
     --set cloneBranch="master" \
@@ -217,7 +215,7 @@ helm upgrade --install radix-pipeline-public-site-master \
 
 helm upgrade --install radix-pipeline-public-site-release \
     $HELM_REPO/radix-pipeline-invocation \
-    --version 1.0.8 \
+    --version 1.0.9 \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:Statoil/radix-platform.git" \
     --set cloneBranch="release" \
