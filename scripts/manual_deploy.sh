@@ -50,7 +50,7 @@ helm upgrade --install radix-pipeline-github-webhook-master \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-github-webhook" \
-    --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
+    --set cloneURL="git@github.com:equinor/radix-github-webhook.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -60,7 +60,7 @@ helm upgrade --install radix-pipeline-github-webhook-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-github-webhook" \
-    --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
+    --set cloneURL="git@github.com:equinor/radix-github-webhook.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -85,7 +85,7 @@ helm upgrade --install radix-pipeline-api-master \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-api" \
-    --set cloneURL="git@github.com:Statoil/radix-api.git" \
+    --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="master-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -96,7 +96,7 @@ helm upgrade --install radix-pipeline-api-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-api" \
-    --set cloneURL="git@github.com:Statoil/radix-api.git" \
+    --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="master-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -122,7 +122,7 @@ helm upgrade --install radix-pipeline-canary-master \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-canary-golang" \
-    --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
+    --set cloneURL="git@github.com:equinor/radix-canary-golang.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="master-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -132,7 +132,7 @@ helm upgrade --install radix-pipeline-canary-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-canary-golang" \
-    --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
+    --set cloneURL="git@github.com:equinor/radix-canary-golang.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -157,7 +157,7 @@ helm upgrade --install radix-pipeline-web-console-master \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-web-console" \
-    --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
+    --set cloneURL="git@github.com:equinor/radix-web-console.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -167,7 +167,7 @@ helm upgrade --install radix-pipeline-web-console-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-web-console" \
-    --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
+    --set cloneURL="git@github.com:equinor/radix-web-console.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -207,7 +207,7 @@ helm upgrade --install radix-pipeline-public-site-master \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-platform" \
-    --set cloneURL="git@github.com:Statoil/radix-platform.git" \
+    --set cloneURL="git@github.com:equinor/radix-platform.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -217,7 +217,7 @@ helm upgrade --install radix-pipeline-public-site-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-platform" \
-    --set cloneURL="git@github.com:Statoil/radix-platform.git" \
+    --set cloneURL="git@github.com:equinor/radix-platform.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
@@ -239,7 +239,7 @@ SHARED_SECRET=$(kubectl get rr radix-github-webhook -o json | jq .spec.sharedSec
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
 RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${GITHUB_PAT_TOKEN} \
-    https://api.github.com/repos/Statoil/radix-github-webhook/hooks \
+    https://api.github.com/repos/equinor/radix-github-webhook/hooks \
     -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
     echo $RESPONSE | jq
 
@@ -251,7 +251,7 @@ SHARED_SECRET=$(kubectl get rr radix-api -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
 RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${GITHUB_PAT_TOKEN} \
-    https://api.github.com/repos/Statoil/radix-api/hooks \
+    https://api.github.com/repos/equinor/radix-api/hooks \
     -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
     echo $RESPONSE | jq
 
@@ -261,7 +261,7 @@ SHARED_SECRET=$(kubectl get rr radix-canary-golang -o json | jq .spec.sharedSecr
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
 RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${GITHUB_PAT_TOKEN} \
-https://api.github.com/repos/Statoil/radix-canary-golang/hooks \
+https://api.github.com/repos/equinor/radix-canary-golang/hooks \
 -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
 echo $RESPONSE | jq
 
@@ -271,7 +271,7 @@ SHARED_SECRET=$(kubectl get rr radix-web-console -o json | jq .spec.sharedSecret
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
 RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${GITHUB_PAT_TOKEN} \
-https://api.github.com/repos/Statoil/radix-web-console/hooks \
+https://api.github.com/repos/equinor/radix-web-console/hooks \
 -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
 echo $RESPONSE | jq
 
@@ -281,6 +281,6 @@ SHARED_SECRET=$(kubectl get rr radix-platform -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
 RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${GITHUB_PAT_TOKEN} \
-    https://api.github.com/repos/Statoil/radix-platform/hooks \
+    https://api.github.com/repos/equinor/radix-platform/hooks \
     -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
     echo $RESPONSE | jq
