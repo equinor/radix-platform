@@ -21,11 +21,7 @@
 #   NODE_COUNT (defaulted if omitted)
 #   NODE_VM_SIZE (defaulted if omitted)
 #
-# Secret environment variables (downloaded from keyvault with CREDENTIALS_SECRET_NAME):
-#   AAD_SERVER_APP_ID
-#   AAD_SERVER_APP_SECRET
-#   AAD_CLIENT_APP_ID
-#   AAD_TENANT_ID
+# Secret environment variables (downloaded from keyvault with CREDENTIALS_SECRET_NAME):ß
 #   SERVICE_PRINCIPAL
 #   CLIENT_SECRET
 
