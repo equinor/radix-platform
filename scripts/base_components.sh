@@ -90,20 +90,21 @@ helm upgrade \
     "$HELM_REPO"/radix-stage1 \
     --namespace default \
     --version 1.0.51 \
-    --set radix-e2e-monitoring.clusterFQDN="$CLUSTER_NAME"."$DNS_ZONE" \
-    --set grafana.ingress.hosts[0]=grafana."$CLUSTER_NAME"."$DNS_ZONE" \
-    --set grafana.ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME"."$DNS_ZONE" \
+    --set radix-e2e-monitoring.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
+    --set grafana.ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
+    --set grafana.ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set grafana.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-    --set grafana.env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME"."$DNS_ZONE" \
-    --set kube-prometheus.prometheus.ingress.hosts[0]=prometheus."$CLUSTER_NAME"."$DNS_ZONE" \
-    --set kube-prometheus.prometheus.ingress.tls[0].hosts[0]=prometheus."$CLUSTER_NAME"."$DNS_ZONE" \
+    --set grafana.env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE" \
+    --set kube-prometheus.prometheus.ingress.hosts[0]=prometheus."$CLUSTER_NAME.$DNS_ZONE" \
+    --set kube-prometheus.prometheus.ingress.tls[0].hosts[0]=prometheus."$CLUSTER_NAME.$DNS_ZONE" \
     --set kube-prometheus.prometheus.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
     --set kubed.config.clusterName="$CLUSTER_NAME" \
     --set externalDns.clusterName="$CLUSTER_NAME" \
+    --set externalDns.zoneName="$DNS_ZONE" \
     --set externalDns.environment="$SUBSCRIPTION_ENVIRONMENT" \
-    --set clusterWildcardCert.clusterName="$CLUSTER_NAME" \
-    --set clusterWildcardCert.environment="$SUBSCRIPTION_ENVIRONMENT" \
-    --set radix-kubernetes-api-proxy.clusterFQDN="$CLUSTER_NAME"."$DNS_ZONE" \
+    --set clusterWildcardCert.clusterDomain="$CLUSTER_NAME.$DNS_ZONE" \
+    --set clusterWildcardCert.appDomain=app."$DNS_ZONE" \
+    --set radix-kubernetes-api-proxy.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
     -f radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
 
 echo "Stage 1 completed"
@@ -117,8 +118,8 @@ helm upgrade \
     "$HELM_REPO"/radix-operator \
     --namespace default \
     --set dnsZone="$DNS_ZONE" \
-    --set appAliasBaseURL=app."$DNS_ZONE" \
-    --set imageRegistry=radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io \            
+    --set appAliasBaseURL="app.$DNS_ZONE" \
+    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \            
     --set clusterName="$CLUSTER_NAME" \
     --set image.tag=release-latest \
     -f ./patch/operator-"$SUBSCRIPTION_ENVIRONMENT".yaml
@@ -139,7 +140,7 @@ helm upgrade \
     "$HELM_REPO"/slack-notification \
     --set channel="$SLACK_CHANNEL" \
     --set slackToken="$SLACK_TOKEN" \
-    --set text="Cluster "$CLUSTER_NAME" is now deployed."
+    --set text="Cluster $CLUSTER_NAME is now deployed."
 
 echo "Notified on slack channel"
 
