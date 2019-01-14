@@ -21,7 +21,7 @@ Short summary of what beta channel means:
 ## New
 
 ## Improvements
-  * [web-console](https://github.com/Statoil/radix-web-console): Improved add new project flow
+  * We-console: Improved add new project flow
 
 ## Fixes
 

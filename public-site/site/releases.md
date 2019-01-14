@@ -32,7 +32,7 @@ We are experimenting with an approach with "release channels" which differ in up
 Before going into production we start with a Limited production to gather experience in close collaboration with a select few pilot teams and guide us towards going to full production.
 
 **Support**
-  * **Support channels:** File issue on [radix-platform repo](https://github.com/statoil/radix-platform/issues) or ask on #omnia_radix_support on Slack.
+  * **Support channels:** File issue on [radix-platform repo](https://github.com/equinor/radix-platform/issues) or ask on #omnia_radix_support on Slack.
   * **Response time:** As soon as possible, at least Next Business Day (NBD).
   * **Resolution time:** Cannot be guaranteed but for critical issues work on fixing the problem will start immediately and continue within business hours until resolved.
 
@@ -47,7 +47,7 @@ Before going into production we start with a Limited production to gather experi
 # Weekly channel
 
 **Support**
-  * **Response time:** Issues filed on [radix-platform repo](https://github.com/statoil/radix-platform/issues) will be answered within Next Business Day (NBD).
+  * **Response time:** Issues filed on [radix-platform repo](https://github.com/equinor/radix-platform/issues) will be answered within Next Business Day (NBD).
   * **Resolution time:** Cannot be guaranteed but for critical issues work on fixing the problem will start as soon as possible and continue within business hours until resolved.
 
 **Service Level Objective**

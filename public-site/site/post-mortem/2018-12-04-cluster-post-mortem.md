@@ -51,7 +51,7 @@ The result of this is that external-dns is deployed with a default value for “
 
 _Code fixed_:  
 Updated external-dns chart to use correct variable name in repo,
-https://github.com/Statoil/radix-platform/blob/master/charts/radix-stage1/values.yaml
+https://github.com/equinor/radix-platform/blob/master/charts/radix-stage1/values.yaml
 
 _Update external-dns by updating deploy yaml in cluster_:  
 Cannot update external-dns by using helm update as it will reintroduce all the work described in attempt 1.
