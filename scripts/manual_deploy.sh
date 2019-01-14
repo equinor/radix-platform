@@ -87,7 +87,7 @@ helm upgrade --install radix-pipeline-api-master \
     --set name="radix-api" \
     --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="master" \
-    --set pipelineImageTag="master-latest" \
+    --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
@@ -98,7 +98,7 @@ helm upgrade --install radix-pipeline-api-release \
     --set name="radix-api" \
     --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="release" \
-    --set pipelineImageTag="master-latest" \
+    --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
@@ -124,7 +124,7 @@ helm upgrade --install radix-pipeline-canary-master \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:equinor/radix-canary-golang.git" \
     --set cloneBranch="master" \
-    --set pipelineImageTag="master-latest" \
+    --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
