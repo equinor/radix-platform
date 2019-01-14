@@ -51,7 +51,7 @@ App with ''one'' container. ''Reading from external open API''. No storage. No s
 
 Examples : 
   * [React.js](https://github.com/Statoil/radix-example-scenario-3-reactjs)
-  * [https://github.com/statoil/radix-example-scenario-3-dotnet](.NET core)
+  * [.Net core](https://github.com/statoil/radix-example-scenario-3-dotnet)
 
 ----
 
@@ -101,7 +101,10 @@ The platform does **not** currently support ''secrets''.
 
 App with two container. Reading from external ''restricted'' API. No storage. ''Secrets''. Dynamic web page - including information from external API.
 
-Alt 1: web app from mobile team, integrating with graph api and azure storage account - <del>https://github.com/Statoil/radix-example-mad-webpage</del>
+Alt 1: web app from mobile team, integrating with graph api and azure storage account
+
+<del>https://github.com/Statoil/radix-example-mad-webpage</del>
 
 Alt 2: Examples
   * [docker-multistage-with-test](https://github.com/larskaare/radix-test-scenario-docker-multistage-with-test)
+---
