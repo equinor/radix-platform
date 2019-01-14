@@ -16,10 +16,10 @@
 # Input environment variables:
 #   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
 #   DNS_ZONE (e.g. radix.equinor.com|dev.radix.equinor.com)
-#   VAULT_NAME (e.g. radix-boot-dev-vault)
+#   VAULT_NAME (e.g. radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
 #   CLUSTER_NAME (e.g. prod)
 #   HELM_VERSION (defaulted if omitted)
-#   HELM_REPO (e.g. radixdev|radixprod)
+#   HELM_REPO (e.g. radixprod|radixdev)
 #   CREDENTIALS_SECRET_NAME (defaulted if omitted)
 #   SLACK_CHANNEL (defaulted if omitted)
 #
@@ -27,7 +27,7 @@
 #   SLACK_TOKEN
 
 if [[ -z "$CREDENTIALS_SECRET_NAME" ]]; then
-    CREDENTIALS_SECRET_NAME="credentials-new"
+    CREDENTIALS_SECRET_NAME="credentials"
 fi
 
 if [[ -z "$HELM_VERSION" ]]; then
@@ -119,7 +119,7 @@ helm upgrade \
     --namespace default \
     --set dnsZone="$DNS_ZONE" \
     --set appAliasBaseURL="app.$DNS_ZONE" \
-    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \            
+    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
     --set image.tag=release-latest \
     -f ./patch/operator-"$SUBSCRIPTION_ENVIRONMENT".yaml
