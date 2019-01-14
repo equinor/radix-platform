@@ -13,7 +13,7 @@
 # VAULT_NAME=aa CREDENTIALS_SECRET_NAME=bb RESOURCE_GROUP=cc CLUSTER_NAME=dd KUBERNETES_VERSION=ee NODE_COUNT=ff NODE_VM_SIZE=gg  ./cluster_install.sh
 #
 # Input environment variables:
-#   VAULT_NAME (e.g. radix-boot-dev-vault)
+#   VAULT_NAME (e.g. radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
 #   CREDENTIALS_SECRET_NAME (defaulted if omitted)
 #   RESOURCE_GROUP (e.g clusters)
 #   CLUSTER_NAME (e.g. prod)
@@ -22,15 +22,11 @@
 #   NODE_VM_SIZE (defaulted if omitted)
 #
 # Secret environment variables (downloaded from keyvault with CREDENTIALS_SECRET_NAME):
-#   AAD_SERVER_APP_ID
-#   AAD_SERVER_APP_SECRET
-#   AAD_CLIENT_APP_ID
-#   AAD_TENANT_ID
 #   SERVICE_PRINCIPAL
 #   CLIENT_SECRET
 
 if [[ -z "$CREDENTIALS_SECRET_NAME" ]]; then
-    CREDENTIALS_SECRET_NAME="credentials-new"
+    CREDENTIALS_SECRET_NAME="credentials"
 fi
 
 if [[ -z "$KUBERNETES_VERSION" ]]; then
@@ -53,25 +49,15 @@ source ./credentials
 
 # Step 3: Create cluster
 echo "Creating azure kubernetes service ${CLUSTER_NAME}..." 
-command="az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
+
+az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --no-ssh-key \
     --kubernetes-version "$KUBERNETES_VERSION" \
-    --aad-server-app-id "$AAD_SERVER_APP_ID" \
-    --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
-    --aad-client-app-id "$AAD_CLIENT_APP_ID" \
-    --aad-tenant-id "$AAD_TENANT_ID" \
     --service-principal "$SERVICE_PRINCIPAL" \
     --client-secret "$CLIENT_SECRET" \
     --node-count "$NODE_COUNT" \
-    --node-vm-size "$NODE_VM_SIZE""
+    --node-vm-size "$NODE_VM_SIZE"
 
-echo "Running command:"
-echo
-echo $command
-
-bash -c "$command"
-
-echo
 echo -e "Azure kubernetes service ${CLUSTER_NAME} created"
 
 # Step 4: Remove credentials file

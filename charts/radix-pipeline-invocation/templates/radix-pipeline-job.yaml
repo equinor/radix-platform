@@ -8,7 +8,7 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
-  backoffLimit: 4
+  backoffLimit: 0
   completions: 1
   parallelism: 1
   template:
@@ -19,7 +19,8 @@ spec:
         - BRANCH={{ .Values.cloneBranch }}
         - RADIX_FILE_NAME=/workspace/radixconfig.yaml
         - IMAGE_TAG={{ .Values.imageTag }}
-        image: radixdev.azurecr.io/radix-pipeline:{{ .Values.pipelineImageTag }}
+        - USE_CACHE={{ .Values.useCache }}
+        image: {{ .Values.containerRegistry }}/radix-pipeline:{{ .Values.pipelineImageTag }}
         name: radix-pipeline-init
         volumeMounts:
         - mountPath: /workspace
