@@ -21,12 +21,12 @@
 #   NODE_COUNT (defaulted if omitted)
 #   NODE_VM_SIZE (defaulted if omitted)
 #
-# Secret environment variables (downloaded from keyvault with CREDENTIALS_SECRET_NAME):ß
+# Secret environment variables (downloaded from keyvault with CREDENTIALS_SECRET_NAME):
 #   SERVICE_PRINCIPAL
 #   CLIENT_SECRET
 
 if [[ -z "$CREDENTIALS_SECRET_NAME" ]]; then
-    CREDENTIALS_SECRET_NAME="credentials-new"
+    CREDENTIALS_SECRET_NAME="credentials"
 fi
 
 if [[ -z "$KUBERNETES_VERSION" ]]; then
