@@ -27,7 +27,7 @@
 #   VAULT_NAME (e.g. radix-boot-dev-vault)
 
 # Init: Set up helm repo
-az acr helm repo add --name $HELM_REPO && \
+az acr helm repo add --name "$HELM_REPO" && \
     helm repo update
 
 # Radix Webhook
@@ -35,11 +35,11 @@ az acr helm repo add --name $HELM_REPO && \
 az keyvault secret download \
     -f radix-github-webhook-radixregistration-values.yaml \
     -n radix-github-webhook-radixregistration-values \
-    --vault-name $VAULT_NAME
+    --vault-name "$VAULT_NAME"
 
 helm upgrade --install radix-github-webhook \
     -f radix-github-webhook-radixregistration-values.yaml \
-    $HELM_REPO/radix-registration
+    "$HELM_REPO"/radix-registration
 
 rm radix-github-webhook-radixregistration-values.yaml
 
@@ -47,34 +47,34 @@ rm radix-github-webhook-radixregistration-values.yaml
 sleep 3s
 
 helm upgrade --install radix-pipeline-github-webhook-master \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-github-webhook-release \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:Statoil/radix-github-webhook.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Radix API
 az keyvault secret download \
     -f radix-api-radixregistration-values.yaml \
     -n radix-api-radixregistration-values \
-    --vault-name $VAULT_NAME
+    --vault-name "$VAULT_NAME"
 
 helm upgrade --install radix-api \
     -f radix-api-radixregistration-values.yaml \
-    $HELM_REPO/radix-registration
+    "$HELM_REPO"/radix-registration
 
 rm radix-api-radixregistration-values.yaml
 
@@ -82,24 +82,24 @@ rm radix-api-radixregistration-values.yaml
 sleep 3s
 
 helm upgrade --install radix-pipeline-api-master \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="master-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
 
 helm upgrade --install radix-pipeline-api-release \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:Statoil/radix-api.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="master-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
 
@@ -107,11 +107,11 @@ helm upgrade --install radix-pipeline-api-release \
 az keyvault secret download \
     -f radix-canary-radixregistration-values.yaml \
     -n radix-canary-radixregistration-values \
-    --vault-name $VAULT_NAME
+    --vault-name "$VAULT_NAME"
 
 helm upgrade --install radix-canary \
     -f radix-canary-radixregistration-values.yaml \
-    $HELM_REPO/radix-registration
+    "$HELM_REPO"/radix-registration
 
 rm radix-canary-radixregistration-values.yaml
 
@@ -119,34 +119,34 @@ rm radix-canary-radixregistration-values.yaml
 sleep 3s
 
 helm upgrade --install radix-pipeline-canary-master \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="master-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-canary-release \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:Statoil/radix-canary-golang.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Radix Web Console
 az keyvault secret download \
     -f radix-web-console-radixregistration-values.yaml \
     -n radix-web-console-radixregistration-values \
-    --vault-name $VAULT_NAME
+    --vault-name "$VAULT_NAME"
 
 helm upgrade --install radix-web-console \
     -f radix-web-console-radixregistration-values.yaml \
-    $HELM_REPO/radix-registration
+    "$HELM_REPO"/radix-registration
 
 rm radix-web-console-radixregistration-values.yaml
 
@@ -154,23 +154,23 @@ rm radix-web-console-radixregistration-values.yaml
 sleep 3s
 
 helm upgrade --install radix-pipeline-web-console-master \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-web-console-release \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:Statoil/radix-web-console.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Only done manually, not to screw up prod-cluster
@@ -192,11 +192,11 @@ helm upgrade --install radix-pipeline-web-console-release \
 az keyvault secret download \
     -f radix-public-site-values.yaml \
     -n radix-public-site-values \
-    --vault-name $VAULT_NAME
+    --vault-name "$VAULT_NAME"
 
 helm upgrade --install radix-public-site \
     -f radix-public-site-values.yaml \
-    $HELM_REPO/radix-registration
+    "$HELM_REPO"/radix-registration
 
 rm radix-public-site-values.yaml
 
@@ -204,23 +204,23 @@ rm radix-public-site-values.yaml
 sleep 3s
 
 helm upgrade --install radix-pipeline-public-site-master \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:Statoil/radix-platform.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 helm upgrade --install radix-pipeline-public-site-release \
-    $HELM_REPO/radix-pipeline-invocation \
+    "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.9 \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:Statoil/radix-platform.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set containerRegistry="radix"$SUBSCRIPTION_ENVIRONMENT".azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Step 2.6 Redirect public endpoints
