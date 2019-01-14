@@ -7,12 +7,17 @@
 # And we need to annotate it to enable kubed to sync it.
 # The workaround is to manually create the secret along with the annotation we need.
 # Cert-manager will then simply update it when ready.
+
+# Configuration for wildcard cert *.clusterDomain
+# Examples:
+# - *.playground2.dev.radix.equinor.com (development - note that "dev" is a subdomain of "radix.equinor.com")
+# - *.cluster44.radix.equinor.com (production - note that production has no environment subdomain, it is simply "radix.equinor.com")
 apiVersion: v1
 type: kubernetes.io/tls
 kind: Secret
 metadata:
   annotations:
-    kubed.appscode.com/sync: "sync=cluster-wildcard-tls-cert"
+    kubed.appscode.com/sync: "cluster-wildcard-sync=cluster-wildcard-tls-cert"
   name: cluster-wildcard-tls-cert
 data:
   tls.crt: ""
@@ -27,14 +32,49 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod
-  commonName: "*.{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
+  commonName: "*.{{ .Values.clusterWildcardCert.clusterDomain }}"
   dnsNames:
-  - "{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
+  - "{{ .Values.clusterWildcardCert.clusterDomain }}"
   acme:
     config:
     - dns01:
         provider: azure-dns
       domains:
-      - "*.{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
-      - "{{ .Values.clusterWildcardCert.clusterName }}.{{ .Values.clusterWildcardCert.environment }}.radix.equinor.com"
+      - "*.{{ .Values.clusterWildcardCert.clusterDomain }}"
+      - "{{ .Values.clusterWildcardCert.clusterDomain }}"
+---
+# Configuration for wildcard cert *.app.clusterDomain
+# Examples:
+# - *.app.playground2.dev.radix.equinor.com (development - note that "dev" is a subdomain of "radix.equinor.com")
+# - *.app.cluster44.radix.equinor.com (production - note that production has no environment subdomain, it is simply "radix.equinor.com")
+apiVersion: v1
+type: kubernetes.io/tls
+kind: Secret
+metadata:
+  annotations:
+    kubed.appscode.com/sync: "app-wildcard-sync=app-wildcard-tls-cert"
+  name: app-wildcard-tls-cert
+data:
+  tls.crt: ""
+  tls.key: ""
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: app-wildcard-tls-cert
+spec:
+  secretName: app-wildcard-tls-cert
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  commonName: "*.{{ .Values.clusterWildcardCert.appDomain }}"
+  dnsNames:
+  - "{{ .Values.clusterWildcardCert.appDomain }}"
+  acme:
+    config:
+    - dns01:
+        provider: azure-dns
+      domains:
+      - "*.{{ .Values.clusterWildcardCert.appDomain }}"
+      - "{{ .Values.clusterWildcardCert.appDomain }}"
 {{- end -}}

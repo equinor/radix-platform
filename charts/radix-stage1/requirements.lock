@@ -14,14 +14,11 @@ dependencies:
 - name: kubed
   repository: https://charts.appscode.com/stable/
   version: 0.8.0
-- name: radix-kubernetes-api-proxy
-  repository: https://radixdev.azurecr.io/helm/v1/repo
-  version: 1.0.0
 - name: radix-e2e-monitoring
-  repository: https://radixdev.azurecr.io/helm/v1/repo
+  repository: https://radixprod.azurecr.io/helm/v1/repo
   version: 1.0.2
 - name: humio
-  repository: https://radixdev.azurecr.io/helm/v1/repo
+  repository: https://radixprod.azurecr.io/helm/v1/repo
   version: 1.0.0
-digest: sha256:9c2012005f1677eed864042f6bec2f132afee575e5d02a16e44e3a144848bdcd
-generated: 2019-01-02T13:07:09.4310112+01:00
+digest: sha256:e948516e1653cfe37d94eb2a9d9cec7ae39a223da02a99e406e6bb28ca578135
+generated: 2019-01-09T13:37:50.9592748+01:00
