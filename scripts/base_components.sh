@@ -11,14 +11,15 @@
 # components of the cluster
 #
 # To run this script from terminal:
-# SUBSCRIPTION_ENVIRONMENT=aa VAULT_NAME=bb CLUSTER_NAME=cc HELM_VERSION=dd HELM_REPO=dd ./base_components.sh
+# SUBSCRIPTION_ENVIRONMENT=aa DNS_ZONE=bb VAULT_NAME=cc CLUSTER_NAME=dd HELM_VERSION=ee HELM_REPO=ff ./base_components.sh
 #
 # Input environment variables:
 #   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
-#   VAULT_NAME (e.g. radix-boot-dev-vault)
+#   DNS_ZONE (e.g. radix.equinor.com|dev.radix.equinor.com)
+#   VAULT_NAME (e.g. radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
 #   CLUSTER_NAME (e.g. prod)
 #   HELM_VERSION (defaulted if omitted)
-#   HELM_REPO (e.g. radixdev)
+#   HELM_REPO (e.g. radixprod|radixdev)
 #   CREDENTIALS_SECRET_NAME (defaulted if omitted)
 #   SLACK_CHANNEL (defaulted if omitted)
 #
@@ -26,7 +27,7 @@
 #   SLACK_TOKEN
 
 if [[ -z "$CREDENTIALS_SECRET_NAME" ]]; then
-    CREDENTIALS_SECRET_NAME="credentials-new"
+    CREDENTIALS_SECRET_NAME="credentials"
 fi
 
 if [[ -z "$HELM_VERSION" ]]; then
@@ -68,55 +69,60 @@ echo "Patched kube-dns metrics"
 # Step 6: Adding helm repo
 az acr helm repo add --name "$HELM_REPO"
 helm repo update
-echo "Acr helm repo $HELM_REPO was added"
+echo "Acr helm repo "$HELM_REPO" was added"
 
 # Step 7: Stage 0
 helm upgrade \
     --install radix-stage0 \
-    $HELM_REPO/radix-stage0 \
+    "$HELM_REPO"/radix-stage0 \
     --namespace default \
-    --version 1.0.2
+    --version 1.0.4
 echo "Stage 0 completed"
 
 # Step 8: Stage 1
 az keyvault secret download \
-    --vault-name $VAULT_NAME \
-    --name radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT \
-    --file radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
+    --vault-name "$VAULT_NAME" \
+    --name radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT" \
+    --file radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
 
 helm upgrade \
     --install radix-stage1 \
-    $HELM_REPO/radix-stage1 \
+    "$HELM_REPO"/radix-stage1 \
     --namespace default \
-    --version 1.0.47 \
-    --set radix-e2e-monitoring.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
-    --set grafana.ingress.hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
-    --set grafana.ingress.tls[0].hosts[0]=grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --version 1.0.51 \
+    --set radix-e2e-monitoring.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
+    --set grafana.ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
+    --set grafana.ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set grafana.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-    --set grafana.env.GF_SERVER_ROOT_URL=https://grafana.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
-    --set kube-prometheus.prometheus.ingress.hosts[0]=prometheus.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
-    --set kube-prometheus.prometheus.ingress.tls[0].hosts[0]=prometheus.$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
+    --set grafana.env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE" \
+    --set kube-prometheus.prometheus.ingress.hosts[0]=prometheus."$CLUSTER_NAME.$DNS_ZONE" \
+    --set kube-prometheus.prometheus.ingress.tls[0].hosts[0]=prometheus."$CLUSTER_NAME.$DNS_ZONE" \
     --set kube-prometheus.prometheus.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-    --set kubed.config.clusterName=$CLUSTER_NAME \
-    --set externalDns.clusterName=$CLUSTER_NAME \
-    --set externalDns.environment=$SUBSCRIPTION_ENVIRONMENT \
-    --set clusterWildcardCert.clusterName=$CLUSTER_NAME \
-    --set clusterWildcardCert.environment=$SUBSCRIPTION_ENVIRONMENT \
-    --set radix-kubernetes-api-proxy.clusterFQDN=$CLUSTER_NAME.$SUBSCRIPTION_ENVIRONMENT.radix.equinor.com \
-    -f radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
+    --set kubed.config.clusterName="$CLUSTER_NAME" \
+    --set externalDns.clusterName="$CLUSTER_NAME" \
+    --set externalDns.zoneName="$DNS_ZONE" \
+    --set externalDns.environment="$SUBSCRIPTION_ENVIRONMENT" \
+    --set clusterWildcardCert.clusterDomain="$CLUSTER_NAME.$DNS_ZONE" \
+    --set clusterWildcardCert.appDomain=app."$DNS_ZONE" \
+    --set radix-kubernetes-api-proxy.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
+    -f radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
 
 echo "Stage 1 completed"
 
 # Step 9: Delete stage 1 secret
-rm -f ./radix-stage1-values-$SUBSCRIPTION_ENVIRONMENT.yaml
+rm -f ./radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
 
 # Step 10: Install operator
 helm upgrade \
     --install radix-operator \
-    $HELM_REPO/radix-operator \
+    "$HELM_REPO"/radix-operator \
     --namespace default \
-    --set clusterName=$CLUSTER_NAME \
-    --set image.tag=release-latest
+    --set dnsZone="$DNS_ZONE" \
+    --set appAliasBaseURL="app.$DNS_ZONE" \
+    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set clusterName="$CLUSTER_NAME" \
+    --set image.tag=release-latest \
+    -f ./patch/operator-"$SUBSCRIPTION_ENVIRONMENT".yaml
 
 echo "Operator installed"
 
@@ -131,9 +137,9 @@ echo "Patched kubelet service-monitor"
 # Step 12: Notify on slack channel
 helm upgrade \
     --install radix-boot-notify \
-    $HELM_REPO/slack-notification \
-    --set channel=$SLACK_CHANNEL \
-    --set slackToken=$SLACK_TOKEN \
+    "$HELM_REPO"/slack-notification \
+    --set channel="$SLACK_CHANNEL" \
+    --set slackToken="$SLACK_TOKEN" \
     --set text="Cluster $CLUSTER_NAME is now deployed."
 
 echo "Notified on slack channel"

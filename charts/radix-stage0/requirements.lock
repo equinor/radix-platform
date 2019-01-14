@@ -3,4 +3,4 @@ dependencies:
   repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
   version: 0.0.29
 digest: sha256:63cc336a4ba108e483a42b8982bd6a933e7c90aed36bb3a5cdca17179d7d890a
-generated: 2019-01-02T17:17:20.9088707+01:00
+generated: 2019-01-14T12:14:42.376369+01:00
