@@ -39,7 +39,7 @@ Alt 1: Reverse proxy:
 
 Alt 2: Two separate endpoints into app
 
-Alt 3: [Dynamic web page storing requests in redis cache](https://github.com/Statoil/radix-example-redis-cache)
+Alt 3: [Dynamic web page storing requests in redis cache](https://github.com/Statoil/radix-example-scenario-2-redis-cache)
 
 Alt 4: [Load balanced scaled dynamic web page running in 4 instances, storing requests in a redis cache](https://github.com/Statoil/radix-example-loadbalancer-api-db)
 
