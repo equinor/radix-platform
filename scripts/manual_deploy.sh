@@ -23,8 +23,8 @@
 #
 # Input environment variables:
 #   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
-#   HELM_REPO (e.g. radixdev)
-#   VAULT_NAME (e.g. radix-boot-dev-vault)
+#   HELM_REPO (e.g. radixprod|radixdev)
+#   VAULT_NAME (e.g. radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
 
 # Init: Set up helm repo
 az acr helm repo add --name "$HELM_REPO" && \
