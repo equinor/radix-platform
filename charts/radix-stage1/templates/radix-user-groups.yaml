@@ -148,13 +148,21 @@ rules:
 - apiGroups:
   - '*'
   resources:
-  - deployments
   - radixdeployments
   verbs:
   - get
   - list
   - watch
   - create
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
   - delete
 - apiGroups:
   - '*'
