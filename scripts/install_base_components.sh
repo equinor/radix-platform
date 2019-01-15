@@ -11,38 +11,83 @@
 # components of the cluster
 #
 # To run this script from terminal:
-# SUBSCRIPTION_ENVIRONMENT=aa DNS_ZONE=bb VAULT_NAME=cc CLUSTER_NAME=dd HELM_VERSION=ee HELM_REPO=ff ./base_components.sh
+# SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=dd ./install_base_components.sh
+#
+# Example: Configure DEV, use defaul settings
+# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" ./install_base_components.sh
+#
+# Example: Configure PROD, use defaul settings
+# SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="cluster1" ./install_base_components.sh
 #
 # Input environment variables:
-#   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
-#   DNS_ZONE (e.g. radix.equinor.com|dev.radix.equinor.com)
-#   VAULT_NAME (e.g. radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
-#   CLUSTER_NAME (e.g. prod)
-#   HELM_VERSION (defaulted if omitted)
-#   HELM_REPO (e.g. radixprod|radixdev)
-#   CREDENTIALS_SECRET_NAME (defaulted if omitted)
-#   SLACK_CHANNEL (defaulted if omitted)
+#   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
+#   CLUSTER_NAME                (Mandatory. Example: prod42)
+#   DNS_ZONE                    (Optional. Example:e.g. radix.equinor.com|dev.radix.equinor.com)
+#   VAULT_NAME                  (Optional. Example: radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
+#   RESOURCE_GROUP              (Optional. Example: "clusters")
+#   HELM_VERSION                (Optional. Defaulted if omitted)
+#   HELM_REPO                   (Optional. Example: radixprod|radixdev)
+#   SLACK_CHANNEL               (Optional. Defaulted if omitted)
 #
-# Secret environment variables (downloaded from keyvault):
-#   SLACK_TOKEN
+# CREDENTIALS:
+# The script expects the slack-token to be found as secret in keyvault.
 
-if [[ -z "$CREDENTIALS_SECRET_NAME" ]]; then
-    CREDENTIALS_SECRET_NAME="credentials"
+# Validate mandatory input
+if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
+    echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+    exit 1
+fi
+
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "Please provide CLUSTER_NAME."
+    exit 1
+fi
+
+# Set default values for optional input
+if [[ -z "$DNS_ZONE" ]]; then
+    DNS_ZONE="radix.equinor.com"
+    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
+        DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
+    fi
+fi
+
+if [[ -z "$RESOURCE_GROUP" ]]; then
+    RESOURCE_GROUP="clusters"
+fi
+
+if [[ -z "$VAULT_NAME" ]]; then
+    VAULT_NAME="radix-vault-$SUBSCRIPTION_ENVIRONMENT"
 fi
 
 if [[ -z "$HELM_VERSION" ]]; then
     HELM_VERSION="latest"
 fi
 
+if [[ -z "$HELM_REPO" ]]; then
+    HELM_REPO="radix${SUBSCRIPTION_ENVIRONMENT}"
+fi
+
 if [[ -z "$SLACK_CHANNEL" ]]; then
     SLACK_CHANNEL="CCFLFKM39"
 fi
 
-# Step 1: Download credentials from vault as sh script
-az keyvault secret show --vault-name "$VAULT_NAME" --name "$CREDENTIALS_SECRET_NAME" | jq -r .value > "./credentials"
+echo -e ""
+echo -e "Start deploy of base components using the following settings:"
+echo -e "SUBSCRIPTION_ENVIRONMENT: $SUBSCRIPTION_ENVIRONMENT"
+echo -e "CLUSTER_NAME            : $CLUSTER_NAME"
+echo -e "DNS_ZONE                : $DNS_ZONE"
+echo -e "VAULT_NAME              : $VAULT_NAME"
+echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
+echo -e "HELM_VERSION            : $HELM_VERSION"
+echo -e "HELM_REPO               : $HELM_REPO"
+echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
+echo -e ""
 
-# Step 2: Execute shell script to set environment variables
-source ./credentials
+# Step 1: Read credentials from keyvault
+SLACK_TOKEN="$(az keyvault secret show --vault-name $VAULT_NAME --name slack-token | jq -r .value)"
+
+# Step 2: Connect kubectl
+az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
 
 # Step 3: Apply RBAC config for helm/tiller
 kubectl apply -f ./patch/rbac-config-helm.yaml
@@ -89,7 +134,7 @@ helm upgrade \
     --install radix-stage1 \
     "$HELM_REPO"/radix-stage1 \
     --namespace default \
-    --version 1.0.52 \
+    --version 1.0.53 \
     --set radix-e2e-monitoring.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
     --set grafana.ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set grafana.ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \

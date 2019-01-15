@@ -19,16 +19,56 @@
 # components of the cluster
 #
 # To run this script from terminal:
-# SUBSCRIPTION_ENVIRONMENT=aa HELM_REPO=bb VAULT_NAME=cc ./manual_deploy.sh
+# SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=bb ./deploy_radix_apps.sh
 #
 # Input environment variables:
-#   SUBSCRIPTION_ENVIRONMENT (e.g. prod|dev)
-#   HELM_REPO (e.g. radixprod|radixdev)
-#   VAULT_NAME (e.g. radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
+#   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
+#   CLUSTER_NAME                (Mandatory. Example: prod42)
+#   RESOURCE_GROUP              (Optional. Example: "clusters")
+#   HELM_REPO                   (Optional. Example: radixprod|radixdev)
+#   VAULT_NAME                  (Optional. Example: radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
+
+
+# Validate mandatory input
+if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
+    echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+    exit 1
+fi
+
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "Please provide CLUSTER_NAME."
+    exit 1
+fi
+
+# Set default values for optional input
+if [[ -z "$RESOURCE_GROUP" ]]; then
+    RESOURCE_GROUP="clusters"
+fi
+
+if [[ -z "$VAULT_NAME" ]]; then
+    VAULT_NAME="radix-vault-$SUBSCRIPTION_ENVIRONMENT"
+fi
+
+if [[ -z "$HELM_REPO" ]]; then
+    HELM_REPO="radix${SUBSCRIPTION_ENVIRONMENT}"
+fi
+
+echo -e ""
+echo -e "Start deploy of radix apps using the following settings:"
+echo -e "SUBSCRIPTION_ENVIRONMENT: $SUBSCRIPTION_ENVIRONMENT"
+echo -e "CLUSTER_NAME            : $CLUSTER_NAME"
+echo -e "VAULT_NAME              : $VAULT_NAME"
+echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
+echo -e "HELM_REPO               : $HELM_REPO"
+echo -e ""
+
 
 # Init: Set up helm repo
 az acr helm repo add --name "$HELM_REPO" && \
     helm repo update
+
+# Connect kubectl so we have the correct context
+az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
 
 # Radix Webhook
 # This must be done to support deployments of application on git push.

@@ -188,3 +188,9 @@ cert-manager:
 
 humio:
   enabled: false
+
+cicdacr:
+  name: "xx"
+  id: "xx"
+  password: "xx"
+  tenantId: "xx"
