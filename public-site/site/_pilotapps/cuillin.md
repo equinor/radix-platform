@@ -11,8 +11,8 @@ _Predictions based on rock images from wells._
   - Xiaopeng Liao
 
 ### Sources
-  - https://github.com/Statoil/cuillin-predictions-browser (main app)
-  - https://github.com/Statoil/node-streamgraph (dependency)
+  - https://github.com/equinor/cuillin-predictions-browser (main app)
+  - https://github.com/equinor/node-streamgraph (dependency)
 
 ### Additional info
 
@@ -64,6 +64,6 @@ The Cuillin team would like better monitoring and potential scaling.
   * The files are stored inside an Amazon VPC that can only be accessed via Statoil's internal network, and those files cannot be copied outside of Statoil's network.
 
 ## One way that works for our CI/CD pipeline
-  - Clone main repo ''git@github.com:Statoil/cuillin-predictions-browser.git''.
-  - Clone package.json dependency repo ''git@github.com:Statoil/node-streamgraph.git''. Beware that this repo has a submodule, after cloning do not forget to run ''git submodule init'' and ''git submodule update''. These 2 commands will create the necessary config for submodule stuff (https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+  - Clone main repo ''git@github.com:equinor/cuillin-predictions-browser.git''.
+  - Clone package.json dependency repo ''git@github.com:equinor/node-streamgraph.git''. Beware that this repo has a submodule, after cloning do not forget to run ''git submodule init'' and ''git submodule update''. These 2 commands will create the necessary config for submodule stuff (https://git-scm.com/book/en/v2/Git-Tools-Submodules)
   - Create 2 pairs of deploy keys, one public key for each repo. One private key for the main repo stored in Jenkins, one private key for the dependency repo stored in k8s secret. The submodule does not need any key as it is a public repo.

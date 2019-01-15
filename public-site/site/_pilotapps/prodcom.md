@@ -6,7 +6,7 @@ toc: true
 ---
 
 ## Sources
-https://github.com/Statoil/ProdCom
+https://github.com/equinor/ProdCom
 
 _Old source_
 http://svn.statoil.no/other/pdm/
