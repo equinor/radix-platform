@@ -15,7 +15,7 @@ az acr helm push --name radixdev radix-pipeline-invocation-1.0.6.tgz
 helm upgrade --install radix-pipeline-api \
     radixdev/radix-pipeline-invocation \
     --set name="radix-api" \
-    --set cloneURL="git@github.com:Statoil/radix-api.git" \
+    --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set pipelineImageTag="release-master"
 ```
 

@@ -7,7 +7,7 @@ keywords:
   - radix
 home: radix.equinor.com
 sources:
-  - https://github.com/Statoil/radix-platform
+  - https://github.com/equinor/radix-platform
 maintainers: 
   - name: Stian Ovrevage
     email: sov@equinor.com

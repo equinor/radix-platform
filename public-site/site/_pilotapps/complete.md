@@ -8,10 +8,10 @@ toc: true
 Front-end and back-end for well completion. Based on prototype from gitlab.
 
 ## Sources
-https://github.com/Statoil/complete
+https://github.com/equinor/complete
 
 _STaaS experimental jenkinsfile for Complete_
-https://github.com/Statoil/staas-pilot-complete
+https://github.com/equinor/staas-pilot-complete
 
 ## Stack
 _Frontend_
@@ -68,10 +68,10 @@ Code pull by using a github deploy key (read only).
 ''staas-pilot-complete/Jenkinsfile''
   * Added jenkins script to jenkins job configuration via ui
   * It should be possible to add/update jenkins script via jenkins api (not tested)
-  * Backup of the script is kept at https://github.com/Statoil/staas-pilot-complete for learning
+  * Backup of the script is kept at https://github.com/equinor/staas-pilot-complete for learning
 
 ### Parallel build 
-We have tested building all three images in parallel (see https://github.com/Statoil/staas-pilot-complete/blob/master/jenkins-scripted-parallel-docker-build.groovy).
+We have tested building all three images in parallel (see https://github.com/equinor/staas-pilot-complete/blob/master/jenkins-scripted-parallel-docker-build.groovy).
 
 This introduced a new set of challenges
   * Hackish loop control
@@ -98,7 +98,7 @@ Creating a docker service that scales is out of scope for this pilot, so we scal
   * Easy flow control
   * Readable jenkins log
 
-Ex: https://github.com/Statoil/staas-pilot-complete/blob/master/jenkins-scripted.groovy
+Ex: https://github.com/equinor/staas-pilot-complete/blob/master/jenkins-scripted.groovy
 
 
 ### Tagging

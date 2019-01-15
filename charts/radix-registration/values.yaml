@@ -1,6 +1,6 @@
 name: some-project
-repository: https://github.com/Statoil/some-project
-cloneURL: git@github.com:Statoil/some-project.git
+repository: https://github.com/equinor/some-project
+cloneURL: git@github.com:equinor/some-project.git
 sharedSecret: GenerateSomeSecret
 deployKey: |
     -----BEGIN RSA PRIVATE KEY-----

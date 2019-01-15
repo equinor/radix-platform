@@ -1,6 +1,6 @@
 # Name must match name of a RadixRegistration
 name: radix-github-webhook
-cloneURL: git@github.com:Statoil/radix-github-webhook.git
+cloneURL: git@github.com:equinor/radix-github-webhook.git
 cloneBranch: master
 
 containerRegistry: xx

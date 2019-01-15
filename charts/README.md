@@ -42,7 +42,7 @@ In the background now `radix-operator` should have created the necessary namespa
 
 Create a Kubernetes job with an invocation of the pipeline, replace `--install` and `name` and `cloneURL` fields:
 
-    helm upgrade --install radix-pipeline-myapp radixdev/radix-pipeline-invocation --set name="myapp" --set cloneURL="git@github.com:Statoil/myapp.git" --set cloneBranch="master"
+    helm upgrade --install radix-pipeline-myapp radixdev/radix-pipeline-invocation --set name="myapp" --set cloneURL="git@github.com:equinor/myapp.git" --set cloneBranch="master"
 
 ### Deleting a deployment
 
