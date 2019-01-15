@@ -89,7 +89,7 @@ helm upgrade \
     --install radix-stage1 \
     "$HELM_REPO"/radix-stage1 \
     --namespace default \
-    --version 1.0.51 \
+    --version 1.0.52 \
     --set radix-e2e-monitoring.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
     --set grafana.ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set grafana.ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
