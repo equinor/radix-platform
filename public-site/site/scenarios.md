@@ -15,8 +15,7 @@ For each scenario you can find example code for at least one programming languag
 
 App with ''one'' container. No external back end dependencies. No storage. No secrets. Static/Dynamic web page
 
-Examples : 
-  * <del>https://github.com/larskaare/radix-test1</del>
+Examples: 
   * [React.js](https://github.com/equinor/radix-example-scenario-1-reactjs) 
   * [Static html](https://github.com/equinor/radix-example-scenario-1-html)
   * [.NET core](https://github.com/equinor/radix-example-scenario-1-dotnet)
@@ -49,7 +48,7 @@ Alt 4: [Load balanced scaled dynamic web page running in 4 instances, storing re
 
 App with ''one'' container. ''Reading from external open API''. No storage. No secrets. Dynamic web page - including information from external API.
 
-Examples : 
+Examples: 
   * [React.js](https://github.com/equinor/radix-example-scenario-3-reactjs)
   * [.Net core](https://github.com/equinor/radix-example-scenario-3-dotnet)
 
@@ -59,7 +58,7 @@ Examples :
 
 App with ''two'' containers. ''Reading from external open API''. No storage. No secrets. Dynamic web page - including information from external API.
 
-Examples : 
+Examples: 
   * [Golang: Go + Nginx](https://github.com/equinor/radix-example-scenario-4-golang)
   * [Python: Django + PostgresSQL](https://github.com/equinor/radix-example-scenario-4-webapp)
 
@@ -77,7 +76,7 @@ Examples:
 ### Scenario - 6
 Same as Scenario 1 - adding ''running unit tests as part of multistage docker build''. Broken tests fail build.
 
-Examples : 
+Examples: 
   * [Python](https://github.com/equinor/radix-example-scenario-6-python)
   * [React.js](https://github.com/equinor/radix-example-scenario-6-reactjs)
   * [.NET core](https://github.com/equinor/radix-example-scenario-6-dotnet)
@@ -97,10 +96,11 @@ Examples:
 ### Scenario - 8
 App with two container. Reading from external ''restricted'' API. No storage. ''Secrets''. Dynamic web page - including information from external API.
 
-Alt 1: web app from mobile team, integrating with graph api and azure storage account
+Alt 1:
+  * [docker-multistage-with-test](https://github.com/equinor/radix-example-scenario-docker-multistage-with-test)
+
+Alt 2: web app from mobile team, integrating with graph api and azure storage account
 
 <del>https://github.com/equinor/radix-example-scenario-8-mad-webpage</del>
 
-Alt 2: Examples
-  * [docker-multistage-with-test](https://github.com/equinor/radix-example-scenario-docker-multistage-with-test)
 ---
