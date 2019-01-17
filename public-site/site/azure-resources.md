@@ -79,7 +79,7 @@ The very first time Omnia Radix is set up there are some steps that are first do
 1. Provision shared infrastructure components (dns, container registry etc)
 1. Configure access to resources by adding security group and role to each resource group (see overview for details)
 
-This provisioning is all handled by script, see `/scripts/infrastructure.sh`.  
+This provisioning is all handled by script, see `/scripts/install_infrastructure.sh`.  
 
 ## Parts
 

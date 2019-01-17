@@ -19,6 +19,10 @@
 #
 # AZ Service Principal
 # https://docs.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az-ad-sp-create-for-rbac
+#
+# AKS rbac and Azure AD integration
+# https://docs.microsoft.com/en-us/azure/aks/aad-integration
+# https://blog.jcorioland.io/archives/2018/11/20/azure-aks-kubernetes-rbac-azure-active-directory-terraform.html
 
 
 ########################################################################
@@ -35,6 +39,10 @@ RADIX_RESOURCE_GROUP_COMMON="common"
 RADIX_RESOURCE_GROUP_MONITORING="monitoring"
 RADIX_RESOURCE_KEYVAULT="radix-vault-${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
 RADIX_RESOURCE_CONTAINER_REGISTRY="radix${RADIX_INFRASTRUCTURE_ENVIRONMENT}" # Note - ACR names cannot contain "-" due to reasons...
+RADIX_RESOURCE_AAD_SERVER="radix-cluster-aad-server-${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
+RADIX_RESOURCE_AAD_SERVER_DISPLAY_NAME="Radix Cluster AAD Server ${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
+RADIX_RESOURCE_AAD_CLIENT="radix-cluster-aad-client-${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
+RADIX_RESOURCE_AAD_CLIENT_DISPLAY_NAME="Radix Cluster AAD Client ${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
 # Set dns name according to environment.
 # It will default to production value.
 RADIX_RESOURCE_DNS_SUFFIX="radix.equinor.com"
@@ -59,8 +67,15 @@ __bin_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # Now we now 
 
 # STYLES
 __style_end="\033[0m"
-__style_yellow="\033[33m"
+__style_red="\033[31m"
 __style_green="\033[32m"
+__style_blue="\033[34m"
+__style_yellow="\033[33m"
+__style_cyan="\033[36m"
+__style_bold="\033[1m"
+__style_dim="\033[2m"
+__style_underlined="\033[4m"
+__style_inverted="\033[7m"
 
 
 ########################################################################
@@ -168,7 +183,7 @@ function update_sp_in_keyvault() {
     tenantId="$(az ad sp show --id ${id} --query appOwnerTenantId --output tsv)"
     template_path="${__bin_dir_path}/service-principal.template.json"
 
-    echo_step "Service principal: storing credentials in keyvault for ${name}"
+    echo_step "Service principal: update credentials in keyvault for ${name}"
 
     if [ ! -e "$template_path" ]; then
         echo "Error: sp json template not found"
@@ -217,6 +232,146 @@ function create_service_principal() {
     password="$(az ad sp create-for-rbac --skip-assignment --name ${name} --query password --output tsv)"
     id="$(az ad sp show --id http://${name} --query appId --output tsv)"
     update_sp_in_keyvault "${name}" "${id}" "${password}" "${description}"
+}
+
+
+
+########################################################################
+# AZURE AD INTEGRATION for clusters
+########################################################################
+
+function create_az_ad_server_app() {
+    # This function will create the AAD server app and related service principal,
+    # set permissions on the app,
+    # and store the app credentials in the keyvault.
+    local rbac_server_app_name="${RADIX_RESOURCE_AAD_SERVER}"
+    local RBAC_SERVER_APP_URL="http://${rbac_server_app_name}"
+    local RBAC_SERVER_APP_SECRET="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)" # Temporary secret, we will reset the credentials when we create the sp for this app.
+
+    # Create the Azure Active Directory server application
+    echo "Creating AAD server application \"${rbac_server_app_name}\"..."
+    az ad app create --display-name "${rbac_server_app_name}" \
+    --password "${RBAC_SERVER_APP_SECRET}" \
+    --identifier-uris "${RBAC_SERVER_APP_URL}" \
+    --reply-urls "${RBAC_SERVER_APP_URL}" \
+    --homepage "${RBAC_SERVER_APP_URL}" \
+    --required-resource-accesses @manifest-server.json
+
+    # Update the application claims
+    local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"    
+    az ad app update --id "${RBAC_SERVER_APP_ID}" --set groupMembershipClaims=All
+
+    # Create service principal for the server application
+    echo "Creating service principal for server application..."
+    az ad sp create --id "${RBAC_SERVER_APP_ID}"
+    # Reset password to something azure will give us
+    RBAC_SERVER_APP_SECRET="$(az ad app credential reset --id ${RBAC_SERVER_APP_ID} --query password --output tsv)"
+
+    # Grant permissions to server application
+    echo "Granting permissions to the server application..."
+    local RESOURCE_API_ID
+    local RBAC_SERVER_APP_RESOURCES_API_IDS="$(az ad app permission list --id ${RBAC_SERVER_APP_ID} --query [].resourceAppId --out tsv | xargs echo)"
+    for RESOURCE_API_ID in $RBAC_SERVER_APP_RESOURCES_API_IDS;
+    do
+        if [ "$RESOURCE_API_ID" == "00000002-0000-0000-c000-000000000000" ]
+        then
+            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "User.Read"
+            echo "Granted User.Read"
+        elif [ "$RESOURCE_API_ID" == "00000003-0000-0000-c000-000000000000" ]
+        then
+            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "Directory.Read.All"
+            echo "Granted Directory.Read.All"
+        else
+            # echo "RESOURCE_API_ID=$RESOURCE_API_ID"
+            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "user_impersonation"
+            echo "Granted user_impersonation"
+        fi
+    done
+    
+    # Store app credentials in keyvault
+    update_sp_in_keyvault "${rbac_server_app_name}" "${RBAC_SERVER_APP_ID}" "${RBAC_SERVER_APP_SECRET}" "AZ AD server app to enable AKS rbac. Display name is \"${rbac_server_app_name}\"."
+    
+    # Notify user about manual steps to make permissions usable
+    echo -e ""
+    echo -e ""
+    echo -e ""
+    echo -e "${__style_bold}The Azure Active Directory application \"${rbac_server_app_name}\" has been created.${__style_end}"
+    echo -e "${__style_bold}You need to ask an Azure AD Administrator to go the Azure portal an click the${__style_end} ${__style_green}\"Grant permissions\"${__style_end} ${__style_bold}button for this app.${__style_end}"
+    echo -e ""
+    echo -e ""
+    echo -e ""
+}
+
+function create_az_ad_client_app() {
+    local rbac_client_app_name="${RADIX_RESOURCE_AAD_CLIENT}"
+    local RBAC_CLIENT_APP_URL="http://${rbac_client_app_name}"
+
+    local RBAC_SERVER_CREDENTIALS="KEYVAULT"
+    local RBAC_SERVER_APP_ID="KEYVAULT"
+    local RBAC_SERVER_APP_OAUTH2PERMISSIONS_ID="LOOKUP"
+    local RBAC_SERVER_APP_SECRET="KEYVAULT"
+
+    echo "Creating AAD client application \"${rbac_client_app_name}\"..."
+
+    # Get AAD server info from keyvault and use it to lookup oauth2 permisssion id
+    RBAC_SERVER_CREDENTIALS="$(az keyvault secret show --vault-name $RADIX_RESOURCE_KEYVAULT --name ${RADIX_RESOURCE_AAD_SERVER} | jq -r .value)"
+    RBAC_SERVER_APP_ID="$(echo $RBAC_SERVER_CREDENTIALS | jq -r .id)"
+    RBAC_SERVER_APP_SECRET="$(echo $RBAC_SERVER_CREDENTIALS | jq -r .password)"
+    RBAC_SERVER_APP_OAUTH2PERMISSIONS_ID="$(az ad app show --id ${RBAC_SERVER_APP_ID} --query oauth2Permissions[0].id -o tsv)"
+
+    # Create client application
+    # First we need a manifest
+    cat > ./manifest-client.json << EOF
+[
+    {
+    "resourceAppId": "${RBAC_SERVER_APP_ID}",
+    "resourceAccess": [
+        {
+        "id": "${RBAC_SERVER_APP_OAUTH2PERMISSIONS_ID}",
+        "type": "Scope"
+        }
+    ]
+    }
+]
+EOF
+
+    # Then we create the client application and provide the manifest
+    az ad app create --display-name "${rbac_client_app_name}" \
+        --native-app \
+        --reply-urls "${RBAC_CLIENT_APP_URL}" \
+        --homepage "${RBAC_CLIENT_APP_URL}" \
+        --required-resource-accesses @manifest-client.json    
+    
+    # Finally remove manifest-client.json file as it is no longer needed
+    rm ./manifest-client.json  
+
+    # To be able to use the client app then we need a service principal for it    
+    # Create service principal for the client application
+    echo "Creating service principal for AAD client application..."
+    local RBAC_CLIENT_APP_ID="$(az ad app list --display-name ${rbac_client_app_name} --query [].appId -o tsv)"
+    az ad sp create --id "${RBAC_CLIENT_APP_ID}"    
+
+    # Grant permissions to server application
+    echo "Granting permissions to the AAD client application..."
+    local RESOURCE_API_ID
+    local RBAC_CLIENT_APP_RESOURCES_API_IDS="$(az ad app permission list --id $RBAC_CLIENT_APP_ID --query [].resourceAppId --out tsv | xargs echo)"
+    for RESOURCE_API_ID in $RBAC_CLIENT_APP_RESOURCES_API_IDS;
+    do
+        az ad app permission grant --api $RESOURCE_API_ID --id $RBAC_CLIENT_APP_ID
+    done
+
+    # Store the client app credentials in the keyvault
+    update_sp_in_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."    
+
+    # Notify user about manual steps to make permissions usable
+    echo -e ""
+    echo -e ""
+    echo -e ""
+    echo -e "${__style_bold}The Azure Active Directory application \"${rbac_client_app_name}\" has been created.${__style_end}"
+    echo -e "${__style_bold}You need to ask an Azure AD Administrator to go the Azure portal an click the${__style_end} ${__style_green}\"Grant permissions\"${__style_end} ${__style_bold}button for this app.${__style_end}"
+    echo -e ""
+    echo -e ""
+    echo -e ""
 }
 
 ########################################################################
@@ -423,6 +578,13 @@ function install() {
     if [[ "$REPLY" =~ ^[Yy]$ ]]
     then
         set_permissions_on_dns
+    fi
+
+    ask_user "AAD server and client app: Should I provision ad apps and related system users?" "An update of an existing ad app will reset the password for the ad app, which means you will have to update ad app password in the AKS clusters manually."    
+    if [[ "$REPLY" =~ ^[Yy]$ ]]
+    then
+        create_az_ad_server_app
+        create_az_ad_client_app
     fi
 
     echo_step "Install done."
