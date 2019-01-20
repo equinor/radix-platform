@@ -1,7 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: k6scripts
+  name: "{{ .Release.Name }}-k6scripts"
+  labels:
+    app: "radix-platform"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
 
 data:
 
