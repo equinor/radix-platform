@@ -47,5 +47,5 @@ spec:
           configMap:
             # Provide the name of the ConfigMap containing the files you want
             # to add to the container
-            name: k6scripts
+            name: "{{ .Release.Name }}-k6scripts"
 
