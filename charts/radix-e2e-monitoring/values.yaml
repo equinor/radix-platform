@@ -1,6 +1,8 @@
 clusterFQDN: "xx"
 influxDBurl: "xx"
 
+createServiceAccountAndRoles: true
+
 tests:
   - service: "grafana"
     endpoint: "/login"
