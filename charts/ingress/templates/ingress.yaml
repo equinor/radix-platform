@@ -14,7 +14,7 @@ metadata:
   namespace: {{ .Values.application }}-{{ .Values.applicationEnv }}
 spec:
   rules:
-    - host: {{ .Values.customHostname }}.dev.radix.equinor.com
+    - host: {{ .Values.aliasUrl }}
       http:
         paths:
         - backend:
@@ -23,5 +23,5 @@ spec:
           path: /
   tls:
     - hosts:
-      - {{ .Values.customHostname }}.dev.radix.equinor.com
-      secretName: {{ .Values.customHostname }}.dev.radix.equinor.com
+      - {{ .Values.aliasUrl }}
+      secretName: {{ .Values.aliasUrl }}

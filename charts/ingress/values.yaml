@@ -5,7 +5,6 @@ applicationEnv: xx
 component: xx
 componentPort: xx
 
-clusterName: xx
-clusterEnv: xx
+aliasUrl: xx
 
 enableAutoTLS: false
