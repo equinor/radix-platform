@@ -93,13 +93,18 @@ Examples:
 
 ----
 
-### Scenario - 8
+### Other Scenarios
+#### Multistage
 App with two container. Reading from external ''restricted'' API. No storage. ''Secrets''. Dynamic web page - including information from external API.
 
-Alt 1:
   * [docker-multistage-with-test](https://github.com/equinor/radix-example-scenario-docker-multistage-with-test)
 
-Alt 2: web app from mobile team, integrating with graph api and azure storage account
+#### Authentication with AD
+App which authenticates the user in AD, if logged in read basic user information from AD.
+
+  * [Omnia Radix Auth Example](https://github.com/equinor/radix-example-auth)
+
+Alt : web app from mobile team, integrating with graph api and azure storage account
 
 <del>https://github.com/equinor/radix-example-scenario-8-mad-webpage</del>
 
