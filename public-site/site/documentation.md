@@ -26,6 +26,9 @@ Also see [scenarios and examples]({% link scenarios.md %})
 
 {% endfor %}
 
+## Security
+ - [Access Control]({% link azure-ad.md %})
+
 ## Index
 
  - [Azure AD Authentication]({% link azure-ad.md %})
