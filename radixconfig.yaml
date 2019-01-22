@@ -9,7 +9,7 @@ spec:
         from: master
     - name: prod
       build:
-        from: master
+        from: release
   components:
     - name: public-site
       src: "./public-site"
