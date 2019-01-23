@@ -23,6 +23,14 @@
 #   KUBERNETES_VERSION          (Optional. Defaulted if omitted)
 #   NODE_COUNT                  (Optional. Defaulted if omitted)
 #   NODE_VM_SIZE                (Optional. Defaulted if omitted)
+#   VNET_NAME                   (Optional. Defaulted if omitted)
+#   VNET_ADDRESS_PREFIX         (Optional. Defaulted if omitted)
+#   VNET_SUBNET_PREFIX          (Optional. Defaulted if omitted)
+#   NETWORK_PLUGIN              (Optional. Defaulted if omitted)
+#   SUBNET_NAME                 (Optional. Defaulted if omitted)
+#   VNET_DOCKER_BRIDGE_ADDRESS  (Optional. Defaulted if omitted)
+#   VNET_DNS_SERVICE_IP         (Optional. Defaulted if omitted)
+#   VNET_SERVICE_CIDR           (Optional. Defaulted if omitted)
 #   CREDENTIALS_FILE            (Optional. Default to read values from keyvault)
 #
 # CREDENTIALS:
@@ -70,6 +78,38 @@ if [[ -z "$NODE_VM_SIZE" ]]; then
     NODE_VM_SIZE="Standard_DS4_v2"
 fi
 
+if [[ -z "$VNET_NAME" ]]; then
+    VNET_NAME="vnet-$CLUSTER_NAME"
+fi
+
+if [[ -z "$VNET_ADDRESS_PREFIX" ]]; then
+    VNET_ADDRESS_PREFIX="192.168.0.0/16"
+fi
+
+if [[ -z "$VNET_SUBNET_PREFIX" ]]; then
+    VNET_SUBNET_PREFIX="192.168.0.0/21"
+fi
+
+if [[ -z "$NETWORK_PLUGIN" ]]; then
+    NETWORK_PLUGIN="azure"
+fi
+
+if [[ -z "$SUBNET_NAME" ]]; then
+    SUBNET_NAME="subnet-$CLUSTER_NAME"
+fi
+
+if [[ -z "$VNET_DOCKER_BRIDGE_ADDRESS" ]]; then
+    VNET_DOCKER_BRIDGE_ADDRESS="172.17.0.1/16"
+fi
+
+if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
+    VNET_DNS_SERVICE_IP="10.2.0.10"
+fi
+
+if [[ -z "$VNET_SERVICE_CIDR" ]]; then
+    VNET_SERVICE_CIDR="10.2.0.0/21"
+fi
+
 # Step 1: Set credentials
 echo "Reading credentials..."
 if [[ -z "$CREDENTIALS_FILE" ]]; then
@@ -96,18 +136,44 @@ fi
 echo -e ""
 echo -e "Start deploy of cluster using the following settings:"
 echo -e ""
-echo -e "INFRASTRUCTURE_ENVIRONMENT: $INFRASTRUCTURE_ENVIRONMENT"
-echo -e "CLUSTER_NAME              : $CLUSTER_NAME"
-echo -e "VAULT_NAME                : $VAULT_NAME"
-echo -e "RESOURCE_GROUP            : $RESOURCE_GROUP"
-echo -e "KUBERNETES_VERSION        : $KUBERNETES_VERSION"
-echo -e "NODE_COUNT                : $NODE_COUNT"
-echo -e "NODE_VM_SIZE              : $NODE_VM_SIZE"
+echo -e "INFRASTRUCTURE_ENVIRONMENT : $INFRASTRUCTURE_ENVIRONMENT"
+echo -e "CLUSTER_NAME               : $CLUSTER_NAME"
+echo -e "VAULT_NAME                 : $VAULT_NAME"
+echo -e "RESOURCE_GROUP             : $RESOURCE_GROUP"
+echo -e "KUBERNETES_VERSION         : $KUBERNETES_VERSION"
+echo -e "NODE_COUNT                 : $NODE_COUNT"
+echo -e "NODE_VM_SIZE               : $NODE_VM_SIZE"
+echo -e "VNET_NAME                  : $VNET_NAME"
+echo -e "VNET_ADDRESS_PREFIX        : $VNET_ADDRESS_PREFIX"
+echo -e "VNET_SUBNET_PREFIX         : $VNET_SUBNET_PREFIX"
+echo -e "NETWORK_PLUGIN             : $NETWORK_PLUGIN"
+echo -e "SUBNET_NAME                : $SUBNET_NAME"
+echo -e "VNET_DOCKER_BRIDGE_ADDRESS : $VNET_DOCKER_BRIDGE_ADDRESS"
+echo -e "VNET_DNS_SERVICE_IP        : $VNET_DNS_SERVICE_IP"
+echo -e "VNET_SERVICE_CIDR          : $VNET_SERVICE_CIDR"
 echo -e ""
 echo -e "USE CREDENTIALS FROM      : $credentials_source"
 echo -e ""
 
-# Step 3: Create cluster
+# Step 3: Create VNET
+echo "Creating azure VNET ${VNET_NAME}..." 
+
+az network vnet create -g "$RESOURCE_GROUP" \
+    -n $VNET_NAME \
+    --address-prefix $VNET_ADDRESS_PREFIX \
+    --subnet-name $SUBNET_NAME \
+    --subnet-prefix $VNET_SUBNET_PREFIX
+
+SUBNET_ID=$(az network vnet subnet list --resource-group $RESOURCE_GROUP --vnet-name $VNET_NAME --query [].id --output tsv)
+VNET_ID="$(az network vnet show --resource-group $RESOURCE_GROUP -n $VNET_NAME --query "id" --output tsv)"
+
+# Delete any existing roles
+az role assignment delete --assignee "${CLUSTER_SYSTEM_USER_ID}" --scope "${VNET_ID}"
+
+# Configure new roles
+az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" --role "Network Contributor" --scope "${VNET_ID}"
+
+# Step 4: Create cluster
 echo "Creating azure kubernetes service ${CLUSTER_NAME}..." 
 
 az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
@@ -117,13 +183,20 @@ az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
     --node-count "$NODE_COUNT" \
     --node-vm-size "$NODE_VM_SIZE" \
+    --network-plugin "$NETWORK_PLUGIN" \
+    --vnet-subnet-id "$SUBNET_ID" \
+    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" \
+    --dns-service-ip "$VNET_DNS_SERVICE_IP" \
+    --service-cidr "$VNET_SERVICE_CIDR" \
     --aad-server-app-id "$AAD_SERVER_APP_ID" \
     --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
     --aad-tenant-id "$AAD_TENANT_ID"
 
+az aks create    
+
 echo - ""
 echo -e "Azure kubernetes service \"${CLUSTER_NAME}\" created."
 
-# Step 4: Enter the newly created cluster
+# Step 5: Enter the newly created cluster
 az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
