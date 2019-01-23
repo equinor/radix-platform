@@ -22,25 +22,60 @@ The configuration of security group and system user permissions is handled by sc
 
 ### Security groups 
 
-We create these groups to govern access to the resource groups, and if necessary, sub-resources:
+environment = "prod" | "dev"
 
-[environment] = "prod" | "dev"
+- `fg_radix_cluster_admin_{environment}`  
+  Contributor to resource group `clusters`.  
+  Can then create and destroy Kubernetes clusters.
+- `fg_radix_common_resource_admin_{environment}`  
+  Contributor to resource group `common`.  
+  Can work on any of the common managed services.
+- `fg_radix_dns_admin_{environment}`  
+  DNS Zone Contributor for the DNS Zone in each environment (ex: `radix.equinor.com` in prod).  
+  Used by external-dns and cert-manager to manage automatic DNS updates on Azure DNS service.
+- `fg_radix_monitoring_admin_{environment}`  
+  Contributor to resource group `monitoring`.  
+  Can do anything related to the external monitoring of clusters.
 
-- `fg_radix_platform_cluster_admin_[environment]`  
-  Contributor of clusters resource group. Can then create and destroy Kubernetes clusters
-- `fg_radix_platform_common_resource_admin_[environment]`  
-  Contributor of radix-common-dev|prod resource group. Can work on any of the common managed services
-- `fg_radix_platform_dns_[environment]`  
-  DNS Zone Contributor of `radix-common-*`. Used by external-dns and cert-manager to manage automatic DNS updates on Azure DNS service.
-- `fg_radix_platform_monitoring_[environment]`  
-  Contributor of radix-monitoring resource group. Can do anything related to the external monitoring of clusters
+#### Deprecated groups
+
+- `fg_radix_platform_admin`  
+  Replaced by `fg_radix_cluster_admin_{environment}` when we move into multiple infrastructure environments.
+
+### Service principals
+
+Platform components have various need for access to resources to perform their job, and we use azure service principals (system users) to provide the components access according to use case.  
+
+environment = "prod" | "dev"
+
+- `radix-cr-reader-{environment}`  
+   A system user that should only be able to pull images from container registry.
+- `radix-cr-cicd-{environment}`  
+   A system user for providing radix cicd access to container registry.
+- `radix-cluster-{environment}`  
+   A system user that control all clusters and related vnets in the resource group `clusters`.
+- `radix-dns-{environment}`  
+  A system user for providing external-dns k8s component access to Azure DNS.
+
+Provisioning (create and update user, role assignments) is handled by script [install_infrastructure.sh](https://github.com/equinor/radix-platform/blob/master/scripts/install_infrastructure.sh).  
+The credentials for each SP is stored as a secret in the `radix-vault-{environment}` key vault using the format provided by the [service-principal.template.json](https://github.com/equinor/radix-platform/blob/master/scripts/service-principal.template.json) json template.
+
+#### Inspect role assignments
+```
+# List roles for SP
+SP_NAME="radix-cr-reader-dev"
+az role assignment list --all --assignee "http://${SP_NAME}"
+```
+
+Note the use of `--all`.  
+The `list` command default to list role assignments for subscription and resource groups. `--all` lets you see assignments for, well, all resources.
 
 #### Mitigations
 
 Users with permissions from either
 
-- `radix_platform_cluster_admin`
-- `radix_platform_common_resource_admin`
+- `fg_radix_cluster_admin_*`
+- `fg_radix_common_resource_admin_*`
 
 can do substantial damage if accounts are either compromised or due to errors.
 
@@ -50,40 +85,8 @@ There is a risk that we forget to remove the permissions after the necessary wor
 
 - Create a small nightly job that checks that there are no members of these two groups.  
   If there are any members a notification can be sent on Slack.
-- Make use of [Azure AD Privileged Identity Management](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure) (PIM)
-
-#### Azure AD Privileged Identity Management in Equinor
-
-IAM want to use PIM for all azure subcriptions and related roles, and the intial scaffolding from their side is up and running.
-
-The configuration per app looks like this
-1. Azure roles are related to azure ad groups (configured in PIM)
-1. Group membership is managed in AccessIT
-1. Group member ask PIM to be granted the role on a time based limit in the azure portal
-
-![Azure PIM Equinor](./images/azpim-equinor.jpg)
-
-#### TODO - update docs when transition to new security model is done
-
-_Current groups_:  
-fg_radix_platform_admin  
-fg_radix_platform_development  
-fg_radix_platform_dns  
-fg_radix_platform_user  
-
-_Next version PROD groups (infrastructure)_:  
-
-- fg_radix_cluster_admin_prod  
-- fg_radix_common_resource_admin_prod  
-- fg_radix_dns_admin_prod  
-- fg_radix_monitoring_admin_prod  
-
-_Next version DEV groups_ (infrastructure):  
-
-- fg_radix_cluster_admin_dev  
-- fg_radix_common_resource_admin_dev  
-- fg_radix_dns_admin_dev  
-- fg_radix_monitoring_admin_dev  
+- Make use of [Azure AD Privileged Identity Management](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure) (PIM).  
+  See also [Azure AD Privileged Identity Management in Equinor](./pim.md) for how/when this will be available in Equinor.  
 
 
 ## Access control for radix platform <a name="platform"></a>
@@ -102,27 +105,8 @@ Granted to developers hosting their application in radix platform. At the moment
 - The group provided in RadixRegistration will own the application and be granted further access to resources created based on the RadixRegistration or by the [RadixConfig](https://github.com/equinor/radix-operator/blob/developer/docs/radixconfig.md) in the git repo defined in RadixRegistration. This includes get/update/delete the [RadixRegistration](https://github.com/equinor/radix-operator/blob/developer/pkg/apis/kube/roles.go) [[|]] object and get/list/watch/create/delete [RadixDeployment](https://github.com/equinor/radix-operator/blob/developer/pkg/apis/kube/roles.go), deployments, pods, logs, services in [namespaces](https://github.com/equinor/radix-operator/blob/developer/charts/radix-operator/templates/rbac.yaml) created based on RadixApplication. These roles and [rolebinding](https://github.com/equinor/radix-operator/blob/developer/pkg/apis/kube/rolebinding.go) are granted by the radix-operator
 
 
-### Azure Service Principal
+`fg_radix_platform_development`  
 
-System accounts which can be rbac'ed.  
-_Password is only exposed once_, when you create the sp (service principal).
+Grants k8s `cluster-admin` role.
 
-For details on creating then run
-```
-az ad sp create --help
-```
 
-Running `sp create` multiple times will update an existing sp's metadata and role assignments (when role assignments are part of the create func arguments).
-
-For details on resetting credentials then run
-```
-az ad sp reset-credentials --help
-```
-
-### Role assignments
-
-```
-az role assignment list --all --assignee xxxxxx
-```
-
-Note the use of `--all`. The `list` command default to list role assignments for subscription and resource groups. `--all` lets you see assignments for, well, all resources.

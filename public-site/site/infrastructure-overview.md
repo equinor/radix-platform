@@ -25,8 +25,7 @@ This is how we do that:
 - [Azure resources](./azure-resources.md)
 - [Access control](./access-control.md#infrastructure)
 - [DNS](./dns.md)
-- [Azure ad](./azure-ad.md)
 
-
+![Infrastructure overview](./diagrams/infrastructure-overview.png)
 
 
