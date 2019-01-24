@@ -78,6 +78,10 @@ if [[ -z "$NODE_VM_SIZE" ]]; then
     NODE_VM_SIZE="Standard_DS4_v2"
 fi
 
+if [[ -z "$POD_PER_NODE" ]]; then
+    POD_PER_NODE="110"
+fi
+
 if [[ -z "$VNET_NAME" ]]; then
     VNET_NAME="vnet-$CLUSTER_NAME"
 fi
@@ -87,7 +91,7 @@ if [[ -z "$VNET_ADDRESS_PREFIX" ]]; then
 fi
 
 if [[ -z "$VNET_SUBNET_PREFIX" ]]; then
-    VNET_SUBNET_PREFIX="192.168.0.0/21"
+    VNET_SUBNET_PREFIX="192.168.0.0/18"
 fi
 
 if [[ -z "$NETWORK_PLUGIN" ]]; then
@@ -107,7 +111,7 @@ if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
 fi
 
 if [[ -z "$VNET_SERVICE_CIDR" ]]; then
-    VNET_SERVICE_CIDR="10.2.0.0/21"
+    VNET_SERVICE_CIDR="10.2.0.0/18"
 fi
 
 # Step 1: Set credentials
@@ -164,6 +168,8 @@ az network vnet create -g "$RESOURCE_GROUP" \
     --subnet-name $SUBNET_NAME \
     --subnet-prefix $VNET_SUBNET_PREFIX
 
+echo "Granting access to VNET ${VNET_NAME} for service principles ${CLUSTER_SYSTEM_USER_ID}..." 
+
 SUBNET_ID=$(az network vnet subnet list --resource-group $RESOURCE_GROUP --vnet-name $VNET_NAME --query [].id --output tsv)
 VNET_ID="$(az network vnet show --resource-group $RESOURCE_GROUP -n $VNET_NAME --query "id" --output tsv)"
 
@@ -183,6 +189,7 @@ az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
     --node-count "$NODE_COUNT" \
     --node-vm-size "$NODE_VM_SIZE" \
+    --max-pods "$POD_PER_NODE" \
     --network-plugin "$NETWORK_PLUGIN" \
     --vnet-subnet-id "$SUBNET_ID" \
     --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" \
