@@ -87,11 +87,11 @@ if [[ -z "$VNET_NAME" ]]; then
 fi
 
 if [[ -z "$VNET_ADDRESS_PREFIX" ]]; then
-    VNET_ADDRESS_PREFIX="192.168.0.0/16"
+    VNET_ADDRESS_PREFIX="192.168.0.0/16" # 64k adresses
 fi
 
 if [[ -z "$VNET_SUBNET_PREFIX" ]]; then
-    VNET_SUBNET_PREFIX="192.168.0.0/18"
+    VNET_SUBNET_PREFIX="192.168.0.0/18" # 16k adresses
 fi
 
 if [[ -z "$NETWORK_PLUGIN" ]]; then
@@ -103,7 +103,7 @@ if [[ -z "$SUBNET_NAME" ]]; then
 fi
 
 if [[ -z "$VNET_DOCKER_BRIDGE_ADDRESS" ]]; then
-    VNET_DOCKER_BRIDGE_ADDRESS="172.17.0.1/16"
+    VNET_DOCKER_BRIDGE_ADDRESS="172.17.0.1/16" # 64k adresses
 fi
 
 if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
@@ -111,7 +111,7 @@ if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
 fi
 
 if [[ -z "$VNET_SERVICE_CIDR" ]]; then
-    VNET_SERVICE_CIDR="10.2.0.0/18"
+    VNET_SERVICE_CIDR="10.2.0.0/18" # 16k adresses
 fi
 
 # Step 1: Set credentials
