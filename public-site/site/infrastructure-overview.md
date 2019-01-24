@@ -23,7 +23,7 @@ We want to be able to
 This is how we do that:
 
 - [Azure resources](./azure-resources.md)
-- [Access control](./access-control.md#infrastructure)
+- [Access control](./access-control.md)
 - [DNS](./dns.md)
 
 ![Infrastructure overview](./diagrams/infrastructure-overview.png)
