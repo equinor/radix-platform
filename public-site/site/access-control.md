@@ -23,16 +23,15 @@ As far as possible we want to use [Azure built-in roles](https://docs.microsoft.
 environment = "prod" | "dev"
 
 - `fg_radix_cluster_admin_{environment}`  
-  Contributor to resource group `clusters`.  
+  Provide a human the role Contributor to resource group `clusters`.  
   Can then create and destroy Kubernetes clusters.
 - `fg_radix_common_resource_admin_{environment}`  
-  Contributor to resource group `common`.  
+  Provide a human the role Contributor to resource group `common`.  
   Can work on any of the common managed services.
 - `fg_radix_dns_admin_{environment}`  
-  DNS Zone Contributor for the DNS Zone in each environment (ex: `radix.equinor.com` in prod).  
-  Used by external-dns and cert-manager to manage automatic DNS updates on Azure DNS service.
+  Provide a human DNS Zone Contributor for the DNS Zone in each environment (ex: `radix.equinor.com` in prod).  
 - `fg_radix_monitoring_admin_{environment}`  
-  Contributor to resource group `monitoring`.  
+  Provide a human the role Contributor to resource group `monitoring`.  
   Can do anything related to the external monitoring of clusters.
 
 #### Deprecated groups
@@ -53,7 +52,7 @@ environment = "prod" | "dev"
 - `radix-cluster-{environment}`  
    A system user that control all clusters and related vnets in the resource group `clusters`.
 - `radix-dns-{environment}`  
-  A system user for providing external-dns k8s component access to Azure DNS.
+  A system user for providing external-dns and cert-manager k8s components access to manage automatic DNS updates in the DNS Zone.  
 
 The credentials for each SP is stored as a secret in the `radix-vault-{environment}` key vault using the format provided by the [service-principal.template.json](https://github.com/equinor/radix-platform/blob/master/scripts/service-principal.template.json) json template.
 
