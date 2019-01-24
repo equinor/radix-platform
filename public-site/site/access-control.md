@@ -16,8 +16,6 @@ The purpose of access control in Azure is
 
 As far as possible we want to use [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles).  
 
-The configuration of security group and system user permissions is handled by script when also configuring the shared infrastructure, see [azure resources - initial scaffolding](./azure-resources.md#scaffolding).
-
 ## Access control for infrastructure <a name="infrastructure"></a>
 
 ### Security groups 
@@ -57,7 +55,6 @@ environment = "prod" | "dev"
 - `radix-dns-{environment}`  
   A system user for providing external-dns k8s component access to Azure DNS.
 
-Provisioning (create and update user, role assignments) is handled by script [install_infrastructure.sh](https://github.com/equinor/radix-platform/blob/master/scripts/install_infrastructure.sh).  
 The credentials for each SP is stored as a secret in the `radix-vault-{environment}` key vault using the format provided by the [service-principal.template.json](https://github.com/equinor/radix-platform/blob/master/scripts/service-principal.template.json) json template.
 
 #### Inspect role assignments
@@ -70,7 +67,7 @@ az role assignment list --all --assignee "http://${SP_NAME}"
 Note the use of `--all`.  
 The `list` command default to list role assignments for subscription and resource groups. `--all` lets you see assignments for, well, all resources.
 
-#### Mitigations
+### Mitigations
 
 Users with permissions from either
 
@@ -88,6 +85,10 @@ There is a risk that we forget to remove the permissions after the necessary wor
 - Make use of [Azure AD Privileged Identity Management](https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure) (PIM).  
   See also [Azure AD Privileged Identity Management in Equinor](./pim.md) for how/when this will be available in Equinor.  
 
+### Provisioning
+
+Provisioning of security groups is handled manually in the [Identity Management tool](https://github.com/equinor/radix-private/blob/master/howto-add-user-to-ad-group.md).  
+Provisioning and configuration of system users and role assignments are handled by script [install_infrastructure.sh](https://github.com/equinor/radix-platform/blob/master/scripts/install_infrastructure.sh).
 
 ## Access control for radix platform <a name="platform"></a>
 
@@ -95,8 +96,7 @@ There is a risk that we forget to remove the permissions after the necessary wor
 
 `fg_radix_platform_user`
 
-Granted to developers hosting their application in radix platform. At the moment this AD group is manually maintained by the radix developing team, and can be applied for through [slack channel](https://equinor.slack.com/messages/CBKM6N2JY/convo/G9M0R6BSB-1535027466.000100/).
-
+Granted to developers hosting their application in radix platform. 
 
 
 - Grants access to connect to hosted kubernetes resources in radix azure subscription. A new azure role has been made for this group, limiting access as much as possible. This is based on [issue](https://github.com/Azure/AKS/issues/413#issuecomment-410334065) posted to Azure/AKS team.  
@@ -109,4 +109,17 @@ Granted to developers hosting their application in radix platform. At the moment
 
 Grants k8s `cluster-admin` role.
 
+### Provisioning
 
+#### Groups
+
+Managed manually in the [Identity Management tool](https://github.com/equinor/radix-private/blob/master/howto-add-user-to-ad-group.md).
+
+- `fg_radix_platform_user`  
+   Apply for membership through [slack channel "Radix Omnia"](https://equinor.slack.com/messages/CBKM6N2JY/convo/G9M0R6BSB-1535027466.000100/). 
+- `fg_radix_platform_development`  
+  Apply for a job in our most excellent team :)
+ 
+#### Role assignments
+
+Role assignments are provided by the radix rbac configuration, [radix-user-groups.yaml](https://github.com/equinor/radix-platform/blob/master/charts/radix-stage1/templates/radix-user-groups.yaml)
