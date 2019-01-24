@@ -10,9 +10,6 @@ spec:
     - name: prod
       build:
         from: release
-    - name: access
-      build:
-        from: OR-13-AccessToWhatWhere
   components:
     - name: public-site
       src: "./public-site"
