@@ -4,10 +4,11 @@
 cd radix-platform/charts/radix-stage1
 az acr helm repo add --name radixdev && helm repo update
 rm requirements.lock
+helm repo add appscode https://charts.appscode.com/stable/
 helm dep up
 cd ..
-tar -zcvf radix-stage1-1.0.47.tgz radix-stage1
-az acr helm push --name radixdev radix-stage1-1.0.47.tgz
+tar -zcvf radix-stage1-1.0.54.tgz radix-stage1
+az acr helm push --name radixdev radix-stage1-1.0.54.tgz
 ```
 
 ## Updating radix-stage1-values.yaml:

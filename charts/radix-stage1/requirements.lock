@@ -15,10 +15,10 @@ dependencies:
   repository: https://charts.appscode.com/stable/
   version: 0.9.0
 - name: radix-e2e-monitoring
-  repository: https://radixprod.azurecr.io/helm/v1/repo
-  version: 1.0.2
+  repository: https://radixdev.azurecr.io/helm/v1/repo
+  version: 1.0.5
 - name: humio
-  repository: https://radixprod.azurecr.io/helm/v1/repo
+  repository: https://radixdev.azurecr.io/helm/v1/repo
   version: 1.0.0
-digest: sha256:608251906883c4d7fdbdba9c3c92e3f50f2069121eda93922fd198eb1ad6dee5
-generated: 2019-01-18T09:55:46.2005154+01:00
+digest: sha256:47ea4c6bcc5096c8c284f6e6995711e56740b1f8868c3fd190d43faf38dd5fc1
+generated: 2019-01-24T11:56:14.194167+01:00

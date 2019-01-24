@@ -36,15 +36,15 @@ dependencies:
     - kubed
 
 - name: radix-e2e-monitoring
-  version: "1.0.2"
-  repository: "@radixprod"
+  version: "1.0.5"
+  repository: "@radixdev"
   condition: radix-e2e-monitoring.enabled
   tags:
     - radix-e2e-monitoring
 
 - name: humio
   version: "1.0.0"
-  repository: "@radixprod"
+  repository: "@radixdev"
   condition: humio.enabled
   tags:
     - humio

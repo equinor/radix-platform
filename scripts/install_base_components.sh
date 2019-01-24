@@ -149,7 +149,7 @@ helm upgrade \
     --set externalDns.environment="$SUBSCRIPTION_ENVIRONMENT" \
     --set clusterWildcardCert.clusterDomain="$CLUSTER_NAME.$DNS_ZONE" \
     --set clusterWildcardCert.appDomain=app."$DNS_ZONE" \
-    --set radix-kubernetes-api-proxy.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
+    --set humio.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
     -f radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
 
 echo "Stage 1 completed"
