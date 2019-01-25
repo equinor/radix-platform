@@ -13,11 +13,11 @@ This is realized as an Azure Kubernetes Service (AKS) using Azure AD for authent
 
 We want to be able to 
 
-    - control traffic in/out of the cluster
-    - control access to the cluster and the usage of its resources
-    - rebuild the cluster at will
-    - create multiple clusters for different use cases
-    - monitor the cluster and it's siblings
+    - control traffic in/out of the platform
+    - control access to the platform and the usage of its resources
+    - rebuild the platform at will
+    - spawn multiple instances of the platform as needed (test, qa etc)
+    - monitor the platform and any siblings
     - provision all the above
 
 This is how we do that:
