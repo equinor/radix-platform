@@ -79,7 +79,11 @@ if [[ -z "$NODE_VM_SIZE" ]]; then
 fi
 
 if [[ -z "$POD_PER_NODE" ]]; then
-    POD_PER_NODE="110"
+    POD_PER_NODE="110" # how many pods each node can run. Max in AKS and k8s is 110
+fi
+
+if [[ -z "$NETWORK_PLUGIN" ]]; then
+    NETWORK_PLUGIN="azure" # flag for advanced networking
 fi
 
 if [[ -z "$VNET_NAME" ]]; then
@@ -87,31 +91,33 @@ if [[ -z "$VNET_NAME" ]]; then
 fi
 
 if [[ -z "$VNET_ADDRESS_PREFIX" ]]; then
-    VNET_ADDRESS_PREFIX="192.168.0.0/16" # 64k adresses
+    VNET_ADDRESS_PREFIX="192.168.0.0/16" # 64k ip adresses available for virtual network 
 fi
 
 if [[ -z "$VNET_SUBNET_PREFIX" ]]; then
-    VNET_SUBNET_PREFIX="192.168.0.0/18" # 16k adresses
-fi
-
-if [[ -z "$NETWORK_PLUGIN" ]]; then
-    NETWORK_PLUGIN="azure"
+    VNET_SUBNET_PREFIX="192.168.0.0/18" # 16k adresses for subnet inside vnet that k8s cluster lives in
 fi
 
 if [[ -z "$SUBNET_NAME" ]]; then
-    SUBNET_NAME="subnet-$CLUSTER_NAME"
-fi
-
-if [[ -z "$VNET_DOCKER_BRIDGE_ADDRESS" ]]; then
-    VNET_DOCKER_BRIDGE_ADDRESS="172.17.0.1/16" # 64k adresses
-fi
-
-if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
-    VNET_DNS_SERVICE_IP="10.2.0.10"
+    SUBNET_NAME="subnet-$CLUSTER_NAME" # subnet name that k8s cluster lives in
 fi
 
 if [[ -z "$VNET_SERVICE_CIDR" ]]; then
-    VNET_SERVICE_CIDR="10.2.0.0/18" # 16k adresses
+    # 16k adresses 
+    # Kubernetes service address range
+    # Exist requirement for what address can be used. 
+    # see https://docs.microsoft.com/en-us/azure/aks/configure-advanced-networking
+    VNET_SERVICE_CIDR="10.2.0.0/18" 
+fi
+
+if [[ -z "$VNET_DOCKER_BRIDGE_ADDRESS" ]]; then
+    # 64k adresses - see https://docs.microsoft.com/en-us/azure/aks/configure-advanced-networking
+    VNET_DOCKER_BRIDGE_ADDRESS="172.17.0.1/16" 
+fi
+
+if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
+    # see https://docs.microsoft.com/en-us/azure/aks/configure-advanced-networking
+    VNET_DNS_SERVICE_IP="10.2.0.10" 
 fi
 
 # Step 1: Set credentials
