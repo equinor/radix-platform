@@ -30,8 +30,8 @@
 ########################################################################
 
 RADIX_INFRASTRUCTURE_REGION="northeurope"
-RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Production" # "Omnia Radix Production" | "Omnia Radix Development"
-RADIX_INFRASTRUCTURE_ENVIRONMENT="prod" # "prod" | "dev"
+RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Development" # "Omnia Radix Production" | "Omnia Radix Development"
+RADIX_INFRASTRUCTURE_ENVIRONMENT="dev" # "prod" | "dev"
 
 # Resource groups and resources
 RADIX_RESOURCE_GROUP_CLUSTERS="clusters"
@@ -399,8 +399,12 @@ function set_permission_on_resource_group() {
 }
 
 function set_permissions_on_all_resource_groups() {
+    # Clusters
     set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_CLUSTERS}" "${RADIX_ADGROUP_CLUSTER}" "contributor"
+    set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_CLUSTERS}" "${RADIX_ADGROUP_CLUSTER}" "User Access Administrator"
+    # Common
     set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_COMMON}" "${RADIX_ADGROUP_COMMON}" "contributor"
+    # Monitoring
     set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_MONITORING}" "${RADIX_ADGROUP_MONITORING}" "contributor"
 }
 
