@@ -4,10 +4,11 @@
 cd radix-platform/charts/radix-stage0
 az acr helm repo add --name radixdev && helm repo update
 rm requirements.lock
+helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
 helm dep up
 cd ..
-tar -zcvf radix-stage0-1.0.3.tgz radix-stage0
-az acr helm push --name radixdev radix-stage0-1.0.3.tgz
+tar -zcvf radix-stage0-1.0.4.tgz radix-stage0
+az acr helm push --name radixdev radix-stage0-1.0.4.tgz
 ```
 
 # Installing
