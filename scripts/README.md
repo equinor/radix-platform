@@ -22,6 +22,18 @@ INFRASTRUCTURE_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_cluster.sh
 SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_base_components.sh
 ```
 
+This script requires two secret files to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
+
+* `slack-token`
+* `radix-stage1-values-prod` or `radix-stage1-values-dev`
+
+The base components include `radix-operator`, and for this component to be successfully deployed, the following images need to be built and pushed to the ACR.
+
+* `radix-operator` (from `master` and `release` branches in `radix-operator` project)
+* `radix-pipeline` (from `master` and `release` branches in `radix-operator` project)
+* `radix-image-builder` (from `master` and `release` branches in `radix-operator` project)
+* `gitclone` (from `master` branch in `radix-api` project)
+
 ## Deploy Radix applications
 
 `deploy_radix_apps.sh` script is used for installing Radix applications (e.g. API server, Webhook). Please read the comments in the script file for more details on how to run it. A simple example to run the script is as follows.
@@ -29,6 +41,18 @@ SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_base_components.
 ```
 SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./deploy_radix_apps.sh
 ```
+
+This script requires several secret files that contain `RadixRegistration` object configurations to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
+
+* radix-api-radixregistration-values
+
+* radix-canary-radixregistration-values
+
+* radix-github-webhook-radixregistration-values
+
+* radix-public-site-values
+
+* radix-web-console-radixregistration-values
 
 ## Create aliases
 

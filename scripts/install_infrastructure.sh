@@ -30,10 +30,8 @@
 ########################################################################
 
 RADIX_INFRASTRUCTURE_REGION="northeurope"
-# RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Production" # "Omnia Radix Production" | "Omnia Radix Development"
-RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Development" # "Omnia Radix Production" | "Omnia Radix Development"
-# RADIX_INFRASTRUCTURE_ENVIRONMENT="prod" # "prod" | "dev"
-RADIX_INFRASTRUCTURE_ENVIRONMENT="dev" # "prod" | "dev"
+RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Production" # "Omnia Radix Production" | "Omnia Radix Development"
+RADIX_INFRASTRUCTURE_ENVIRONMENT="prod" # "prod" | "dev"
 
 # Resource groups and resources
 RADIX_RESOURCE_GROUP_CLUSTERS="clusters"
