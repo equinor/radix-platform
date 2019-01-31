@@ -206,8 +206,6 @@ az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
     --aad-tenant-id "$AAD_TENANT_ID"
 
-az aks create    
-
 echo - ""
 echo -e "Azure kubernetes service \"${CLUSTER_NAME}\" created."
 
