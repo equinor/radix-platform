@@ -2,6 +2,8 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: humio
+  annotations:
+    ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   rules:
   - host: humio.{{ .Values.clusterFQDN }}
