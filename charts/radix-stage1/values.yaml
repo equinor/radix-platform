@@ -63,7 +63,7 @@ nginx-ingress:
     metrics:
       enabled: true
     service:
-      enableHttp: false
+      enableHttp: true
     externalTrafficPolicy: "Local"
     config:
       # Log format documented here: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/log-format.md
