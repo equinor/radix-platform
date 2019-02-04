@@ -43,7 +43,7 @@ dependencies:
     - radix-e2e-monitoring
 
 - name: humio
-  version: "1.0.0"
+  version: "1.0.1"
   repository: "@radixdev"
   condition: humio.enabled
   tags:

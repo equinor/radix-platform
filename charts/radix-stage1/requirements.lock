@@ -19,6 +19,6 @@ dependencies:
   version: 1.0.5
 - name: humio
   repository: https://radixdev.azurecr.io/helm/v1/repo
-  version: 1.0.0
-digest: sha256:47ea4c6bcc5096c8c284f6e6995711e56740b1f8868c3fd190d43faf38dd5fc1
-generated: 2019-02-04T13:03:12.705774+01:00
+  version: 1.0.1
+digest: sha256:f5e3bd8cafc1da9ef80661eb6bf21577cb50a84d32554d3814527d1590efffb1
+generated: 2019-02-04T14:17:06.817206+01:00
