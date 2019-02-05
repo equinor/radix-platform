@@ -37,14 +37,14 @@ dependencies:
 
 - name: radix-e2e-monitoring
   version: "1.0.5"
-  repository: "@radixdev"
+  repository: "@radixprod"
   condition: radix-e2e-monitoring.enabled
   tags:
     - radix-e2e-monitoring
 
 - name: humio
   version: "1.0.1"
-  repository: "@radixdev"
+  repository: "@radixprod"
   condition: humio.enabled
   tags:
     - humio
