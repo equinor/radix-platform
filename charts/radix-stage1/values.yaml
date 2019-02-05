@@ -166,9 +166,10 @@ grafana:
     GF_DATABASE_TYPE: mysql
     GF_DATABASE_SSL_MODE: "skip-verify"
     GF_DATABASE_CA_CERT_PATH: /etc/ssl/certs/ca-certificates.crt
-    GF_DATABASE_HOST: radix-dev-grafana.mysql.database.azure.com
-    GF_DATABASE_NAME: grafana
-    GF_DATABASE_USER: "mysqlAdmin@radix-dev-grafana"
+    # These environment specific variables are moved into radix-stage1-values-ENV KeyVault secret
+    #GF_DATABASE_HOST: radix-dev-grafana.mysql.database.azure.com
+    #GF_DATABASE_NAME: grafana
+    #GF_DATABASE_USER: "mysqlAdmin@radix-dev-grafana"
     GF_USERS_AUTO_ASSIGN_ORG_ROLE: "Editor" # Viewer|Editor|Admin
     GF_SERVER_ROOT_URL: xx
 
