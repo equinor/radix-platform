@@ -1,7 +1,7 @@
 ENVIRONMENT ?= dev
 CONTAINER_REPO ?= radix$(ENVIRONMENT)
-STAGE1_CHART_VERSION = $(shell yq r radix-stage1/Chart.yaml version)
-HUMIO_CHART_VERSION = $(shell yq r humio/Chart.yaml version)
+STAGE1_CHART_VERSION = $(shell cat radix-stage1/Chart.yaml | yq --raw-output .version)
+HUMIO_CHART_VERSION = $(shell cat humio/Chart.yaml | yq --raw-output .version)
 
 
 update-stage1-repo:
