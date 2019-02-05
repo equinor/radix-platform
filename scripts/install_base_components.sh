@@ -28,6 +28,7 @@
 #   HELM_VERSION                (Optional. Defaulted if omitted)
 #   HELM_REPO                   (Optional. Example: radixprod|radixdev)
 #   SLACK_CHANNEL               (Optional. Defaulted if omitted)
+#   PROMETHEUS_NAME             (Optional. Defaulted if omitted)
 #
 # CREDENTIALS:
 # The script expects the slack-token to be found as secret in keyvault.
@@ -69,6 +70,10 @@ fi
 
 if [[ -z "$SLACK_CHANNEL" ]]; then
     SLACK_CHANNEL="CCFLFKM39"
+fi
+
+if [[ -z "$PROMETHEUS_NAME" ]]; then
+    PROMETHEUS_NAME="radix-stage1"
 fi
 
 echo -e ""
@@ -164,10 +169,10 @@ helm upgrade \
     --namespace default \
     --set dnsZone="$DNS_ZONE" \
     --set appAliasBaseURL="app.$DNS_ZONE" \
+    --set prometheusName="$PROMETHEUS_NAME" \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
-    --set image.tag=release-latest \
-    -f ./patch/operator-"$SUBSCRIPTION_ENVIRONMENT".yaml
+    --set image.tag=release-latest
 
 echo "Operator installed"
 
