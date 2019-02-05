@@ -102,6 +102,8 @@ kube-prometheus:
       any: true
     ingress:
       enabled: true
+      annotations:
+        ingress.kubernetes.io/force-ssl-redirect: "true"
       hosts:
       - xx
       tls:
@@ -130,6 +132,8 @@ grafana:
 
   ingress:
     enabled: true
+    annotations: 
+      ingress.kubernetes.io/force-ssl-redirect: "true"
     hosts:
     - xx
     tls:
