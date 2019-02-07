@@ -20,7 +20,7 @@ We will go over these points below.
 
 All of our **components must be in the same repository**. A component is a piece of code that has its own build and deployment process: for instance a "front end" served by Nginx and a "back end" running on Node.js would be two components. Components are built in parallel from the same repository and deployed together into an environment. There is currently no concept of a multi-repository application.
 
-The way we use branches and tags in our repository depends on what type of workflow we use. You can read more about the choices available in the [workflows]({% link guides.md %}) page — but let's continue with setting up for now.
+The way we use branches and tags in our repository depends on what type of workflow we use. You can read more about the choices available in the [workflows](#workflows) section — but let's continue with setting up for now.
 
 ## The `radixconfig.yaml` file
 
@@ -82,19 +82,17 @@ A breakdown of the configuration above:
 
 - Our application is called `myapp`
 - There are two environments, `dev` and `prod`, and only one component, `main`
-- Commits to the `master` branch will trigger a build and deployment of the application to the `dev` environment. We can use this behaviour to build a [workflow]({% link guides.md %})
+- Commits to the `master` branch will trigger a build and deployment of the application to the `dev` environment. We can use this behavior to build a [workflow]({% link guides.md %})
 - Radix will look for the `Dockerfile` for the `main` component in the root directory of the repository
-- Once `main` is built, it will be exposed on the internet on port 80 on each environment it is deployed to (in `dev`, for instance, it will have a domain name like `main-myapp-dev.CLUSTER_NAME.dev.radix.equinor.com`)
+- Once `main` is built, it will be exposed on the internet on port 80 on each environment it is deployed to (in `dev`, for instance, it will have a domain name like `main-myapp-dev.CLUSTER_NAME.radix.equinor.com`)
 
-> Once Radix is out of Alpha, the domain names will have the format `COMPONENT-APP-ENVIRONMENT.cluster.prod.radix.equinor.com` instead
-
-The full syntax of `radixconfig.yaml` is explained in the [documentation](https://github.com/equinor/radix-operator/blob/master/docs/radixconfig.md).
+The full syntax of `radixconfig.yaml` is explained in [Radix Config Explained]({% link references.md %}).
 
 ## A `Dockerfile` per component
 
 Each component in Radix is built into a Docker image. Images for all components are deployed as containers running in an environment. To do this, Radix requires a `Dockerfile` for each component.
 
-If we organise our repository with this structure, for instance:
+If we organize our repository with this structure, for instance:
 
 ```
 /
@@ -146,7 +144,6 @@ There are other examples of how to create an efficient `Dockerfile` in [the docu
 We are now ready to register our application using the [Radix Web Console](https://console.dev.radix.equinor.com). Follow the instructions there to integrate the GitHub repository with Radix.
 
 Remember that we can always change the `radixconfig.yaml` file and the `Dockerfiles` after registration to change how the application builds and deploys.
-
 
 # Docker builds
 
@@ -216,8 +213,6 @@ spec:
 ```
 
 # Monitoring
-
-## Overview
 
 For more information on monitoring see [link]({% link monitoring-for-users.md %})
 

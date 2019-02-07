@@ -4,7 +4,7 @@ layout: document
 toc: true
 ---
 
-# Radix Config
+# Radix Config Explained
 
 # Monitoring Config
 
