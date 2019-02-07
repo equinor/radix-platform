@@ -137,8 +137,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 Note how the first section uses a large image (`node`) which has the dependencies needed to build the component. In the second stage, the built files are copied into a small image (`nginx`) to serve them without all the build dependencies.
 
-There are other examples of how to create an efficient `Dockerfile` in [the documentation]({% link documentation.md %}#dockerfile-examples-and-best-practice).
-
 ## Registering the application
 
 We are now ready to register our application using the [Radix Web Console](https://console.dev.radix.equinor.com). Follow the instructions there to integrate the GitHub repository with Radix.

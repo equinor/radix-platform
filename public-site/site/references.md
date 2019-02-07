@@ -186,6 +186,31 @@ spec:
     component: frontend
 ```
 
+# Security
+
+## Role Based Access Control
+
+Membership in the 'Radix Platform User' AD group grants access to
+
+- Radix Platform Web Console
+- Grafana Dashboard (Monitoring)
+
+Access to manage each application are limited to the members of the AD group provided on the application registration <sup><sup>1</sup></sup>. Management of applications can be e.g. deleting the application from the Radix Platform, view jobs and logs. 
+
+If no AD group is provided during the registration, the application will be available to all Radix users (members of the 'Radix Platform Users' AD group).
+
+We point out that this is **not** to control the access within the application itself.
+
+## Authentication
+
+It is important to know that authentication is something that is considered to be handled outside of the Radix platform, and not by the Radix platform itself. That is, each team managing an application hosted on Radix platform will be responsible for securing their own application.
+
+For an example of authentication in the app using AD have a look at this example:
+
+[Omnia Radix Auth Example](https://github.com/equinor/radix-example-auth)
+
 # Best Practice Dockerfiles
 
 # App Examples
+
+<sup><sup>1</sup></sup> Currently all application are listed, this is a known problem and will be fixed. However, only applications a user has access to can be viewed in a detail view.
