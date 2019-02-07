@@ -10,6 +10,9 @@ spec:
     - name: prod
       build:
         from: release
+    - name: refactor_documentation
+      build:
+        from: refactor_documentation
   components:
     - name: public-site
       src: "./public-site"
