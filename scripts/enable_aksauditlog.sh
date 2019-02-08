@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# az role assignment list --include-groups --assignee 
+# This feature is enabled on az subscription level.
+# The script will first check required roles (and notify user if they cannot run the script),
+# then it will perform the operation.
 
 function checkPermissions(){
     local subName="$(az account show --query name -otsv)"
