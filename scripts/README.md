@@ -4,7 +4,7 @@ This `script` directory is created specifically for provisioning the Radix infra
 
 ## Create infrastructure
 
-1. First run script `install_infrastructure.sh` script to provision all dependencies that a cluster needs (e.g. keyvault, dns).  
+1. First run script `install_infrastructure.sh` to provision all dependencies that a cluster needs (e.g. keyvault, dns).  
    Please read the comments in the script file for more details on how to run it.
 1. Then run script `enable_aksauditlog.sh` to enable [AKS Audit Log](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/aks/view-master-logs.md) (an az subscription feature).
 
