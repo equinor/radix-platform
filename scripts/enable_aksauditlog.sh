@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # This feature is enabled on az subscription level.
+# https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/aks/view-master-logs.md
 # The script will first check required roles (and notify user if they cannot run the script),
 # then it will perform the operation.
 
