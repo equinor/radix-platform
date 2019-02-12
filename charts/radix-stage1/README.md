@@ -17,7 +17,7 @@ az acr helm push --name $HELM_REPO radix-stage1-1.0.58.tgz
 
 ```
 az keyvault secret set \
-    --vault-name radix-boot-dev-vault \
+    --vault-name radix-vault-dev \
     --name radix-stage1-values-dev \
     --file radix-stage1-values-dev.yaml
 ```
@@ -29,7 +29,7 @@ az keyvault secret set \
 az keyvault secret download \
     -f radix-stage1-values-dev.yaml \
     -n radix-stage1-values-dev \
-    --vault-name radix-boot-dev-vault
+    --vault-name radix-vault-dev
 
 CLUSTER_NAME=stiantest4
 ENVIRONMENT=dev
