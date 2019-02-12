@@ -1,3 +1,12 @@
+# PRECONDITIONS
+#
+# It is assumed that:
+# 1. that you have setup a personal github access token (https://github.com/settings/tokens)
+#    with admin:repo_hook scope and set up the environment 
+#    variables:
+#    GH_USERNAME=<github user name>
+#    GITHUB_PAT_TOKEN=<token generated>
+
 # Add webhooks
 kubectl get ing -n radix-github-webhook-prod -w
 
