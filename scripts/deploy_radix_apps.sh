@@ -6,12 +6,7 @@
 # 1. cluster is installed using the cluster_install.sh script,
 # 2. that the base components exists
 # 3. that the current context points to the correct cluster
-# 4. that you have setup a personal github access token (https://github.com/settings/tokens)
-#    with admin:repo_hook scope and set up the environment 
-#    variables:
-#    GH_USERNAME=<github user name>
-#    GITHUB_PAT_TOKEN=<token generated>
-# 5. sha256sum should be installed
+# 4. sha256sum should be installed
 #
 # PURPOSE
 #
