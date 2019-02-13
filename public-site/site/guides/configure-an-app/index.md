@@ -5,7 +5,7 @@ parent: ['Guides', '../../guides.html']
 toc: true
 ---
 
-Make sure you are familiar with [the requirements](../getting-started).
+Make sure you are familiar with [the requirements](../getting-started/).
 
 > Visual learner? Check out the [Introduction to Radix video](https://statoilsrm.sharepoint.com/portals/hub/_layouts/15/PointPublishing.aspx?app=video&p=p&chid=653b6223-6ef5-4e5b-8388-ca8c77da4c7a&vid=3a64412f-0227-489d-9fda-f5f9845aacae) 🎥
 
@@ -21,7 +21,7 @@ We will go over these points below.
 
 All of our **components must be in the same repository**. A component is code that has its own build and deployment process: for instance a "front end" served by Nginx and a "back end" running on Node.js would be two components. Components are built in parallel from the same repository and deployed together into an environment. There is currently no concept of a multi-repository application.
 
-The way we use branches and tags in our repository depends on what type of workflow we use. You can read more about the choices available in the [workflows](../workflows) section — but let's continue with setting up for now.
+The way we use branches and tags in our repository depends on what type of workflow we use. You can read more about the choices available in the [workflows](../workflows/) section — but let's continue with setting up for now.
 
 # The `radixconfig.yaml` file
 
@@ -83,7 +83,7 @@ A breakdown of the configuration above:
 
 - Our application is called `myapp`
 - There are two environments, `dev` and `prod`, and only one component, `main`
-- Commits to the `master` branch will trigger a build and deployment of the application to the `dev` environment. We can use this behavior to build a [workflow](../workflows)
+- Commits to the `master` branch will trigger a build and deployment of the application to the `dev` environment. We can use this behavior to build a [workflow](../workflows/)
 - Radix will look for the `Dockerfile` for the `main` component in the root directory of the repository
 - Once `main` is built, it will be exposed on the internet on port 80 on each environment it is deployed to (in `dev`, for instance, it will have a domain name like `main-myapp-dev.CLUSTER_NAME.radix.equinor.com`)
 

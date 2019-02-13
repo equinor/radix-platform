@@ -22,5 +22,5 @@ Track usage to find problems 💣 and get insight💡
 
 **Radix** builds, deploys, and monitors applications. You provide your code, a `Dockerfile` that can build it, and Radix takes it from there.
 
-[Get started](/guides/getting-started)
+[Get started](/guides/getting-started/)
 [Participate]({% link community.md %})

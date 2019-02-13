@@ -29,6 +29,6 @@ You need to be part of the `fg_radix_platform_user` AD group to create and admin
 
 # Onwards
 
-Let's jump right in and see how to [configure an application](../configure-an-app) in Radix.
+Let's jump right in and see how to [configure an application](../configure-an-app/) in Radix.
 
-Or, if you prefer reading rather than coding right now, you can read about the [concepts in Radix](docs/topic-concepts) instead.
+Or, if you prefer reading rather than coding right now, you can read about the [concepts in Radix](../../docs/topic-concepts/) instead.
