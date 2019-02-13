@@ -3,20 +3,19 @@
 }
 
 .o-body-text h1:not(:first-of-type) {
-  border-top: 4px solid var(--color-control-outline);
+  border-top: 2px solid var(--color-control-outline);
   margin: 1.7rem 0 0.75rem 0;
   padding: 1.5em 0 0 0;
 }
 
 .o-body-text h2 {
-  border-top: 1px solid var(--color-control-outline);
   margin: 0;
   padding: 1.5em 0 0.75em 0;
 }
 
 .o-body-text h3 {
   margin: 0;
-  padding-top: .5rem;
+  padding-top: 0.5rem;
 }
 
 .o-body-text p {

@@ -10,7 +10,9 @@ layout: base
     <h1>{{ page.title }}</h1>
   </header>
   <nav class="c-local-nav">
-    {{ content | toc_only }}
+    {% if page.toc %}
+      {{ content | toc_only }}
+    {% endif %}
   </nav>
   <main aria-label="Content" class="o-body-text">
     {{ content }}

@@ -52,6 +52,11 @@ The site content is organised within `/site/`. In here you find:
 - `/_style/`: CSS files. See the [CSS Section](#CSS) below
 - `/_vendor/`: Third party libraries. Currently maintained manually
 
+But the interesting bits are the actual content:
+
+- `/docs/`: General concepts (topics) and reference documentation for end-users
+- `/guides/`: User-friendly, conversational guides on how to achieve specific objectives
+
 ## CSS
 
 We are using a variation of
