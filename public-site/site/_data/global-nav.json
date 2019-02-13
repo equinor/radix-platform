@@ -1,11 +1,15 @@
 [
   {
-    "title": "Get started",
-    "url": "/get-started.html"
+    "title": "Getting started",
+    "url": "/guides/getting-started/"
   },
   {
-    "title": "Documentation",
-    "url": "/documentation.html"
+    "title": "Guides",
+    "url": "/guides.html"
+  },
+  {
+    "title": "Docs",
+    "url": "/docs.html"
   },
   {
     "title": "Community",
