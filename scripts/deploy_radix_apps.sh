@@ -208,22 +208,6 @@ helm upgrade --install radix-pipeline-web-console-release \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
-# Only done manually, not to screw up prod-cluster
-# Add cluster URL to Azure App to allow for AAD Oauth login:
-# PS: This removes all existing reply-urls. So make sure to include any other live clusters as well. Currently we use app id a593a59c-8f76-490e-937b-a90779039a90 for Omnia Radix Web Console on Azure Dev Subscription.
-
-# az ad app update --id a593a59c-8f76-490e-937b-a90779039a90 --reply-urls \
-#    http://localhost:3000/auth-callback \
-#    https://console.dev.radix.equinor.com/auth-callback \
-#    https://web-radix-web-console-qa.weekly-48-c.dev.radix.equinor.com/auth-callback \
-#    https://web-radix-web-console-prod.weekly-48-c.dev.radix.equinor.com/auth-callback \
-#    https://web-radix-web-console-qa.weekly-49.dev.radix.equinor.com/auth-callback \
-#    https://web-radix-web-console-prod.weekly-49.dev.radix.equinor.com/auth-callback \
-#    https://web-radix-web-console-qa.weekly-50.dev.radix.equinor.com/auth-callback \
-#    https://web-radix-web-console-prod.weekly-50.dev.radix.equinor.com/auth-callback
-# Todo: Maybe we should have a unique app-registration for each cluster instead to avoid the above problem.
-# Note to above: no, you should simply let the script read the reply-urls into a variable, add the new url to the variable and then update the app-registration.
-
 # Public Web Site
 az keyvault secret download \
     -f radix-public-site-values.yaml \
