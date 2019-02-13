@@ -12,7 +12,7 @@ The goal is to automate "the boring stuff" and let developers focus on business 
 
 ## Getting started
 
-There is a [Getting started](https://www.dev.radix.equinor.com/get-started.html) guide. When you are ready, you can register your application in the [Radix Web Console](https://console.dev.radix.equinor.com).
+There is a [Getting started](https://www.radix.equinor.com/get-started.html) guide. When you are ready, you can register your application in the [Radix Web Console](https://console.radix.equinor.com).
 
 ## Help me
 Contact us on Slack on  [#omnia_radix_support](https://statoil.slack.com/messages/CBKM6N2JY/) . We are also available on [#omnia_radix](https://statoil.slack.com/messages/C8U7XGGAJ/) for general inquires.
@@ -20,15 +20,6 @@ Contact us on Slack on  [#omnia_radix_support](https://statoil.slack.com/message
 Bugs and feature requests can be submitted using the [Issue-tracker in this repo](https://github.com/equinor/radix-platform/issues).
 
 ## Further reading
-
-#### Documentation ####
-
-We are currently updating and migrating documentation from our *old Wiki* and placing it here:
-
-
-> **PS** We are moving fast and making changes so portions of the documentation will be outdated at any time. Stable documentation is something we are discussing how to do.
-
-Our wiki contains most of the documentation and is located here: 
 
 #### Code ####
 All of our source code for the platform is on [private GitHub repositories prefixed with *radix-*](https://github.com/equinor?utf8=%E2%9C%93&q=radix-) . You need to be a member of the *Omnia Radix Readers* group to have access. Contact us to get access.
