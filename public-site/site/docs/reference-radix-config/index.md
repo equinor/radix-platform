@@ -1,11 +1,11 @@
 ---
 title: The radixconfig.yaml file
 layout: document
-parent: ['Docs', '../../docs.html']
+parent: ["Docs", "../../docs.html"]
 toc: true
 ---
 
-# Overview 
+# Overview
 
 In order for Radix to configure your application it needs the a configuration file. This must be placed in the root of your app repository and be named `radixconfig.yaml`. The file is expected in YAML or JSON format (in either case, it must have the `.yaml` extension).
 
@@ -47,7 +47,9 @@ spec:
         from: release
 ```
 
-The `environments` section of the spec lists the environments for the application and the branch each environment will build from. If you omit the `build.from` key for the environment, no automatic builds or deployments will be created. This configuration is useful for a promotion-based [workflow](../../guides/workflows).
+The `environments` section of the spec lists the environments for the application and the branch each environment will build from. If you omit the `build.from` key for the environment, no automatic builds or deployments will be created. This configuration is useful for a promotion-based [workflow](../../guides/workflows/).
+
+> Promotion of deployments between environments is implemented in the [Radix API](../reference-radix-api/) but there is no user interface for it in the Web Console yet.
 
 ## `components`
 
@@ -57,14 +59,14 @@ spec:
     - name: frontend
       src: frontend
       ports:
-      - name: http
-        port: 80
+        - name: http
+          port: 80
     - name: backend
       src: backend
       replicas: 2
       ports:
-      - name: http
-        port: 5000
+        - name: http
+          port: 5000
 ```
 
 This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`. `replicas` can be used to [horizontally scale](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) the component. If `replicas` is not set it defaults to `1`.
@@ -162,7 +164,7 @@ spec:
 
 As a convenience for nicer URLs, `dnsAppAlias` creates a DNS alias in the form of `<app-name>.app.radix.equinor.com` for the specified environment and component.
 
-In the example above, the component **frontend** hosted in environment **prod** will be accessible from `myapp.app.radix.equinor.com`, in addition to the default endpoint provided for the frontend component, `frontend-myapp-prod.<clustername>.dev.radix.equinor.com`.
+In the example above, the component **frontend** hosted in environment **prod** will be accessible from `myapp.app.radix.equinor.com`, in addition to the default endpoint provided for the frontend component, `frontend-myapp-prod.<clustername>.radix.equinor.com`.
 
 # Example `radixconfig.yaml` file
 
@@ -183,15 +185,15 @@ spec:
     - name: frontend
       src: frontend
       ports:
-       - name: http
-         port: 80
+        - name: http
+          port: 80
       public: true
       monitoring: true
-      resources: 
-        requests: 
+      resources:
+        requests:
           memory: "64Mi"
           cpu: "100m"
-        limits: 
+        limits:
           memory: "128Mi"
           cpu: "200m"
     - name: backend

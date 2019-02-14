@@ -16,3 +16,4 @@ A collection of relevant topics to make the most of having your application on R
 # Reference
 
 - [The `radixconfig.yaml` file](docs/reference-radix-config/)
+- [Radix API](docs/reference-radix-api/)
