@@ -3,7 +3,6 @@
 # PRECONDITIONS
 #
 # It is assumed that cluster is installed using the cluster_install.sh script
-# and that the current context is that of the cluster
 #
 # PURPOSE
 #
@@ -32,6 +31,11 @@
 #
 # CREDENTIALS:
 # The script expects the slack-token to be found as secret in keyvault.
+
+# We don't use Helm to add extra resources any more. Instead we use three different methods:
+# For resources that don't need any change: yaml file in manifests/ directory
+# Resources that need non-secret customizations: inline the resource in this script and use environment variables
+# Resources that need secret values: store the entire yaml file in Azure KeyVault
 
 # Validate mandatory input
 if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
@@ -88,85 +92,151 @@ echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
 echo -e ""
 
-# Step 1: Read credentials from keyvault
+### Check for Azure login
+
+echo "Checking Azure account information"
+
+AZ_ACCOUNT=`az account list | jq ".[] | select(.isDefault == true)"`
+
+echo -n "You are logged in to subscription "
+echo -n $AZ_ACCOUNT | jq '.id'
+
+echo -n "Which is named " 
+echo -n $AZ_ACCOUNT | jq '.name'
+
+echo -n "As user " 
+echo -n $AZ_ACCOUNT | jq '.user.name'
+
+echo 
+read -p "Is this correct? (Y/n) " correct_az_login
+if [[ $correct_az_login =~ (N|n) ]]; then
+  echo "Please use 'az login' command to login to the correct account. Quitting."
+  exit 1
+fi
+
+# Read credentials from keyvault
+echo "Getting Slack API Token"
 SLACK_TOKEN="$(az keyvault secret show --vault-name $VAULT_NAME --name slack-token | jq -r .value)"
 
-# Step 2: Connect kubectl
+# Connect kubectl
+echo "Getting cluster credentials"
 az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
 
-# Step 3: Apply RBAC config for helm/tiller
+# Apply RBAC config for helm/tiller
+echo "Applying RBAC config for helm/tiller"
 kubectl apply -f ./patch/rbac-config-helm.yaml
 
-echo "Applied RBAC for helm/tiller"
-
-# Step 4: Install Helm
-curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-chmod 700 get_helm.sh
-./get_helm.sh --no-sudo -v "$HELM_VERSION"
+# Install Helm
+echo "Initializing and/or upgrading helm in cluster"
+#curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+#chmod 700 get_helm.sh
+#./get_helm.sh --no-sudo -v "$HELM_VERSION"
 helm init --service-account tiller --upgrade --wait
-rm -f ./get_helm.sh
+#rm -f ./get_helm.sh
 
-echo "Helm initialized"
+# Install cert-manager
 
-# Step 5: Patching kube-dns metrics
-kubectl patch deployment \
-    -n kube-system \
-    kube-dns-v20 \
-    --patch "$(cat ./patch/kube-dns-metrics-patch.yaml)"
+# Apply CRDs
+kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
 
-echo "Patched kube-dns metrics"
+kubectl create namespace cert-manager
 
-# Step 6: Adding helm repo
+# Create some empty TLS secrets that are required for cert-manager to start
+kubectl apply -n cert-manager -f manifests/cert-manager-secrets.yaml
+
+kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+
+# Install cert-manager using helm
+# We also disable the admissions webhook since it's only causing problems
+helm upgrade --install cert-manager \
+    --namespace cert-manager \
+    --version v0.6.0 \
+    --set ingressShim.defaultIssuerName=letsencrypt-prod \
+    --set ingressShim.defaultIssuerKind=ClusterIssuer \
+    --set webhook.enabled=false \
+    stable/cert-manager
+
+kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
+
+# Create a letsencrypt production issuer for cert-manager:
+kubectl apply -f manifests/production-issuer.yaml
+
+# Install nginx-ingress:
+helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.externalTrafficPolicy=Local
+
+# Create a storageclass
+kubectl apply -f manifests/storageclass.yaml
+
+# Install prometheus-operator
+az keyvault secret download \
+    --vault-name monitoring-vault \
+    --name prometheus-operator-values \
+    --file prometheus-operator-values.yaml
+
+helm upgrade --install prometheus-operator stable/prometheus-operator -f prometheus-operator-values.yaml
+
+# rm -f prometheus-operator-values.yaml
+
+# Install grafana
+
+az keyvault secret download \
+    --vault-name radix-vault-dev \
+    --name grafana-secrets \
+    --file grafana-secrets.yaml
+
+kubectl apply -f grafana-secrets.yaml
+
+rm -f grafana-secrets.yaml
+
+helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
+    --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_SUFFIX" \
+    --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_SUFFIX" \
+    --set ingress.tls[0].secretName=grafana-tls \
+    --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_SUFFIX"
+
+
+# Install external-dns
+
+az keyvault secret download \
+    --vault-name radix-vault-dev \
+    --name external-dns-azure-secret \
+    --file external-dns-azure-secret.yaml
+
+kubectl apply -f external-dns-azure-secret.yaml
+
+helm upgrade --install external-dns stable/external-dns --set interval=10s --set txtOwnerId=$CLUSTER_NAME --set provider=azure --set azure.secretName=external-dns-azure-secret --set domainFilters[0]=$DNS_ZONE
+
+rm -f external-dns-azure-secret.yaml
+
+# Install kubed
+
+helm repo add appscode https://charts.appscode.com/stable/
+helm repo update
+
+helm upgrade --install appscode/kubed --name kubed --version 0.9.0 \
+  --namespace kube-system \
+  --set apiserver.enabled=false \
+  --set config.clusterName=$CLUSTER_NAME \
+  --set rbac.create=true \
+  --set enableAnalytics=false
+
+# Add Radix helm repo
+
+echo "Adding ACR helm repo "$HELM_REPO""
 az acr helm repo add --name "$HELM_REPO"
 helm repo update
-echo "Acr helm repo "$HELM_REPO" was added"
 
-# Step 7: Stage 0
-helm upgrade \
-    --install radix-stage0 \
-    "$HELM_REPO"/radix-stage0 \
-    --namespace default \
-    --version 1.0.4
-echo "Stage 0 completed"
+# Install humio
 
-# Step 8: Stage 1
-az keyvault secret download \
-    --vault-name "$VAULT_NAME" \
-    --name radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT" \
-    --file radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
+helm upgrade --install humio \
+    "$HELM_REPO"/humio \
+    --set clusterFQDN=$CLUSTER_NAME.$DNS_SUFFIX \
+    --set singleUserPassword=yolo
 
-helm upgrade \
-    --install radix-stage1 \
-    "$HELM_REPO"/radix-stage1 \
-    --namespace default \
-    --version 1.0.60 \
-    --set radix-e2e-monitoring.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
-    --set grafana.ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
-    --set grafana.ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
-    --set grafana.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-    --set grafana.env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE" \
-    --set kube-prometheus.prometheus.ingress.hosts[0]=prometheus."$CLUSTER_NAME.$DNS_ZONE" \
-    --set kube-prometheus.prometheus.ingress.tls[0].hosts[0]=prometheus."$CLUSTER_NAME.$DNS_ZONE" \
-    --set kube-prometheus.prometheus.ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-    --set kubed.config.clusterName="$CLUSTER_NAME" \
-    --set externalDns.clusterName="$CLUSTER_NAME" \
-    --set externalDns.zoneName="$DNS_ZONE" \
-    --set externalDns.environment="$SUBSCRIPTION_ENVIRONMENT" \
-    --set clusterWildcardCert.clusterDomain="$CLUSTER_NAME.$DNS_ZONE" \
-    --set clusterWildcardCert.appDomain=app."$DNS_ZONE" \
-    --set humio.clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
-    -f radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
-
-echo "Stage 1 completed"
-
-# Step 9: Delete stage 1 secret
-rm -f ./radix-stage1-values-"$SUBSCRIPTION_ENVIRONMENT".yaml
-
-# Step 10: Install operator
-helm upgrade \
-    --install radix-operator \
+# Install radix-operator
+echo "Installing radix-operator"
+helm upgrade --install radix-operator \
     "$HELM_REPO"/radix-operator \
-    --namespace default \
     --set dnsZone="$DNS_ZONE" \
     --set appAliasBaseURL="app.$DNS_ZONE" \
     --set prometheusName="$PROMETHEUS_NAME" \
@@ -174,25 +244,34 @@ helm upgrade \
     --set clusterName="$CLUSTER_NAME" \
     --set image.tag=release-latest
 
-echo "Operator installed"
+# Install radix-e2e-monitoring
+echo "Installing radix-e2e-monitoring"
+az keyvault secret download \
+    --vault-name radix-vault-dev \
+    --name radix-e2e-monitoring \
+    --file radix-e2e-monitoring.yaml
 
-# Step 11: Patching kubelet service-monitor
-kubectl patch servicemonitors \
-    radix-stage1-exporter-kubelets \
-    --type merge \
-    --patch "$(cat ./patch/kubelet-service-monitor-patch.yaml)"
+helm upgrade --install radix-e2e-monitoring \
+    "$HELM_REPO"/radix-e2e-monitoring \
+    --set clusterFQDN=$CLUSTER_NAME.$DNS_SUFFIX \
+    -f radix-e2e-monitoring.yaml
 
-echo "Patched kubelet service-monitor"
+rm -f radix-e2e-monitoring.yaml
 
-# Step 12: Notify on slack channel
-helm upgrade \
-    --install radix-boot-notify \
+# Notify on slack channel
+echo "Notifying on Slack"
+helm upgrade --install radix-boot-notify \
     "$HELM_REPO"/slack-notification \
     --set channel="$SLACK_CHANNEL" \
     --set slackToken="$SLACK_TOKEN" \
-    --set text="Cluster $CLUSTER_NAME is now deployed."
+    --set text="Base components have been installed or updated on $CLUSTER_NAME."
 
-echo "Notified on slack channel"
 
-# Step 13: Remove credentials file
-rm -f ./credentials
+# Patching kube-dns metrics
+#
+# TODO: Even with this, kube-dns is not discovered in prometheus. Needs to be debugged.
+# 
+# echo "Patching kube-dns metrics"
+# kubectl patch deployment -n kube-system kube-dns-v20 \
+#     --patch "$(cat ./manifests/kube-dns-metrics-patch.yaml)"
+# 
