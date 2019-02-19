@@ -4,6 +4,7 @@ metadata:
   name: humio
   annotations:
     ingress.kubernetes.io/force-ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
 spec:
   rules:
   - host: humio.{{ .Values.clusterFQDN }}
