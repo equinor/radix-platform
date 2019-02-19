@@ -162,6 +162,60 @@ kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
 # Create a letsencrypt production issuer for cert-manager:
 kubectl apply -f manifests/production-issuer.yaml
 
+# Create app wildcard cert
+cat <<EOF | kubectl apply -f -
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: app-wildcard-tls-cert
+spec:
+  secretName: app-wildcard-tls-cert
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  commonName: "*.apps.$DNS_ZONE"
+  dnsNames:
+  - "apps.$DNS_ZONE"
+  acme:
+    config:
+    - dns01:
+        provider: azure-dns
+      domains:
+      - "*.apps.$DNS_ZONE"
+      - "apps.$DNS_ZONE"
+EOF
+
+# Create cluster wildcard cert
+cat <<EOF | kubectl apply -f -
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: cluster-wildcard-tls-cert
+spec:
+  secretName: cluster-wildcard-tls-cert
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  commonName: "*.$CLUSTER_NAME.$DNS_ZONE"
+  dnsNames:
+  - "$CLUSTER_NAME.$DNS_ZONE"
+  acme:
+    config:
+    - dns01:
+        provider: azure-dns
+      domains:
+      - "*.$CLUSTER_NAME.$DNS_ZONE"
+      - "$CLUSTER_NAME.$DNS_ZONE"
+EOF
+
+# Give cert-manager some time to create the certificate secrets so we can annotate them
+sleep 10s
+
+kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
+kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
+
+sleep 3600s
+
 # Install nginx-ingress:
 echo "Installing nginx-ingress"
 helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.externalTrafficPolicy=Local
@@ -260,7 +314,7 @@ echo "Installing kubed"
 helm repo add appscode https://charts.appscode.com/stable/
 helm repo update
 
-helm upgrade --install appscode/kubed --name kubed --version 0.9.0 \
+helm upgrade --install kubed appscode/kubed --version 0.9.0 \
   --namespace kube-system \
   --set apiserver.enabled=false \
   --set config.clusterName=$CLUSTER_NAME \
@@ -290,6 +344,12 @@ rm -f humio-values.yaml
 
 # Install radix-operator
 echo "Installing radix-operator"
+
+az keyvault secret download \
+    --vault-name $VAULT_NAME \
+    --name radix-operator-values \
+    --file radix-operator-values.yaml
+
 helm upgrade --install radix-operator \
     "$HELM_REPO"/radix-operator \
     --set dnsZone="$DNS_ZONE" \
@@ -297,7 +357,10 @@ helm upgrade --install radix-operator \
     --set prometheusName="$PROMETHEUS_NAME" \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
-    --set image.tag=release-latest
+    --set image.tag=release-latest \
+    -f radix-operator-values.yaml
+
+rm -f radix-operator-values.yaml
 
 # Install radix-e2e-monitoring
 echo "Installing radix-e2e-monitoring"
