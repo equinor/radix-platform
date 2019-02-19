@@ -27,7 +27,12 @@ SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_base_components.
 This script requires two secret files to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
 
 * `slack-token`
-* `radix-stage1-values-prod` or `radix-stage1-values-dev`
+* `prometheus-operator-values` # prometheus-operator values file
+* `prometheus-basic-auth` # htpasswd file used to authenticate towards Prometheus
+* `grafana-secrets` # grafana secret envs file 
+* `external-dns-azure-secret` # external-dns credentials file
+* `humio-values` # humio values file
+* `radix-e2e-monitoring` # radix-e2e-monitoring values file
 
 The base components include `radix-operator`, and for this component to be successfully deployed, the following images need to be built and pushed to the ACR.
 
