@@ -12,10 +12,10 @@
 # To run this script from terminal:
 # SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=dd ./install_base_components.sh
 #
-# Example: Configure DEV, use defaul settings
+# Example: Configure DEV, use default settings
 # SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" ./install_base_components.sh
 #
-# Example: Configure PROD, use defaul settings
+# Example: Configure PROD, use default settings
 # SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="cluster1" ./install_base_components.sh
 #
 # Input environment variables:
@@ -124,7 +124,7 @@ az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_
 
 # Apply RBAC config for helm/tiller
 echo "Applying RBAC config for helm/tiller"
-kubectl apply -f ./patch/rbac-config-helm.yaml
+kubectl apply -f manifests/rbac-config-helm.yaml
 
 # Install Helm
 echo "Initializing and/or upgrading helm in cluster"
@@ -137,6 +137,7 @@ helm init --service-account tiller --upgrade --wait
 # Install cert-manager
 
 # Apply CRDs
+echo "Installing cert-manager"
 kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
 
 kubectl create namespace cert-manager
@@ -162,25 +163,71 @@ kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
 kubectl apply -f manifests/production-issuer.yaml
 
 # Install nginx-ingress:
+echo "Installing nginx-ingress"
 helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.externalTrafficPolicy=Local
 
 # Create a storageclass
 kubectl apply -f manifests/storageclass.yaml
 
 # Install prometheus-operator
+echo "Installing prometheus-operator"
 az keyvault secret download \
-    --vault-name monitoring-vault \
+    --vault-name $VAULT_NAME \
     --name prometheus-operator-values \
     --file prometheus-operator-values.yaml
 
 helm upgrade --install prometheus-operator stable/prometheus-operator -f prometheus-operator-values.yaml
 
-# rm -f prometheus-operator-values.yaml
+rm -f prometheus-operator-values.yaml
 
-# Install grafana
+
+# Install Prometheus Ingress with HTTP Basic Authentication
+
+# To generate a new file: `htpasswd -c ./auth prometheus`
+# This file MUST be named `auth` when creating the secret!
 
 az keyvault secret download \
-    --vault-name radix-vault-dev \
+    --vault-name $VAULT_NAME \
+    --name prometheus-basic-auth \
+    --file auth
+
+kubectl create secret generic prometheus-htpasswd --from-file auth
+
+rm -f auth
+
+# Create a custom ingress for prometheus that adds HTTP Basic Auth
+
+cat <<EOF | kubectl apply -f -
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: prometheus-htpasswd
+    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - ok"
+  labels:
+    app: prometheus
+  name: prometheus-basic-auth
+spec:
+  rules:
+  - host: prometheus.$CLUSTER_NAME.$DNS_ZONE
+    http:
+      paths:
+      - backend:
+          serviceName: prometheus-operator-prometheus
+          servicePort: 9090
+        path: /
+  tls:
+  - hosts:
+    - prometheus.$CLUSTER_NAME.$DNS_ZONE
+    secretName: prometheus-tls
+EOF
+
+# Install grafana
+echo "Installing grafana"
+az keyvault secret download \
+    --vault-name $VAULT_NAME \
     --name grafana-secrets \
     --file grafana-secrets.yaml
 
@@ -189,27 +236,27 @@ kubectl apply -f grafana-secrets.yaml
 rm -f grafana-secrets.yaml
 
 helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
-    --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_SUFFIX" \
-    --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_SUFFIX" \
+    --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
+    --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set ingress.tls[0].secretName=grafana-tls \
-    --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_SUFFIX"
+    --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE"
 
 
 # Install external-dns
-
+echo "Installing external-dns"
 az keyvault secret download \
-    --vault-name radix-vault-dev \
+    --vault-name $VAULT_NAME \
     --name external-dns-azure-secret \
     --file external-dns-azure-secret.yaml
 
 kubectl apply -f external-dns-azure-secret.yaml
 
-helm upgrade --install external-dns stable/external-dns --set interval=10s --set txtOwnerId=$CLUSTER_NAME --set provider=azure --set azure.secretName=external-dns-azure-secret --set domainFilters[0]=$DNS_ZONE
+helm upgrade --install external-dns stable/external-dns --set rbac.create=true --set interval=10s --set txtOwnerId=$CLUSTER_NAME --set provider=azure --set azure.secretName=external-dns-azure-secret --set domainFilters[0]=$DNS_ZONE
 
 rm -f external-dns-azure-secret.yaml
 
 # Install kubed
-
+echo "Installing kubed"
 helm repo add appscode https://charts.appscode.com/stable/
 helm repo update
 
@@ -227,11 +274,19 @@ az acr helm repo add --name "$HELM_REPO"
 helm repo update
 
 # Install humio
+echo "Installing humio"
+
+az keyvault secret download \
+    --vault-name $VAULT_NAME \
+    --name humio-values \
+    --file humio-values.yaml
 
 helm upgrade --install humio \
     "$HELM_REPO"/humio \
-    --set clusterFQDN=$CLUSTER_NAME.$DNS_SUFFIX \
-    --set singleUserPassword=yolo
+    --set clusterFQDN=$CLUSTER_NAME.$DNS_ZONE \
+    -f humio-values.yaml
+
+rm -f humio-values.yaml
 
 # Install radix-operator
 echo "Installing radix-operator"
@@ -247,13 +302,13 @@ helm upgrade --install radix-operator \
 # Install radix-e2e-monitoring
 echo "Installing radix-e2e-monitoring"
 az keyvault secret download \
-    --vault-name radix-vault-dev \
+    --vault-name $VAULT_NAME \
     --name radix-e2e-monitoring \
     --file radix-e2e-monitoring.yaml
 
 helm upgrade --install radix-e2e-monitoring \
     "$HELM_REPO"/radix-e2e-monitoring \
-    --set clusterFQDN=$CLUSTER_NAME.$DNS_SUFFIX \
+    --set clusterFQDN=$CLUSTER_NAME.$DNS_ZONE \
     -f radix-e2e-monitoring.yaml
 
 rm -f radix-e2e-monitoring.yaml
