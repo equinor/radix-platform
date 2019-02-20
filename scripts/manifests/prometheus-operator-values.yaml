@@ -1,0 +1,26 @@
+grafana:
+  enabled: false
+
+prometheusOperator:
+  resources:
+    limits:
+      cpu: "2"
+      memory: "8000Mi"
+    requests:
+      cpu: "0.5"
+      memory: "1000Mi"
+
+prometheus:
+  prometheusSpec:
+    retention: 31d
+    serviceMonitorNamespaceSelector:
+      any: true
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: managed-premium-retain
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 120Gi
+        selector: {}

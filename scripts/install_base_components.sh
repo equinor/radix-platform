@@ -231,15 +231,8 @@ kubectl apply -f manifests/storageclass.yaml
 
 # Install prometheus-operator
 echo "Installing prometheus-operator"
-az keyvault secret download \
-    --vault-name $VAULT_NAME \
-    --name prometheus-operator-values \
-    --file prometheus-operator-values.yaml
 
-helm upgrade --install prometheus-operator stable/prometheus-operator -f prometheus-operator-values.yaml
-
-rm -f prometheus-operator-values.yaml
-
+helm upgrade --install prometheus-operator stable/prometheus-operator -f manifests/prometheus-operator-values.yaml
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
