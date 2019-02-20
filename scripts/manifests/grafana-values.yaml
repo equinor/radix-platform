@@ -1,11 +1,9 @@
 ingress:
   enabled: true
-  annotations:
-    kubernetes.io/tls-acme: "true"
   hosts:
   - xx
   tls:
-  - secretName: "grafana-tls"
+  - secretName: "xx"
     hosts:
       - xx
 

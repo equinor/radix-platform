@@ -160,7 +160,15 @@ helm upgrade --install cert-manager \
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
 
 # Create a letsencrypt production issuer for cert-manager:
-kubectl apply -f manifests/production-issuer.yaml
+
+az keyvault secret download \
+    --vault-name $VAULT_NAME \
+    --name cert-manager-production-clusterissuer \
+    --file cert-manager-production-clusterissuer.yaml
+
+kubectl apply -n cert-manager -f cert-manager-production-clusterissuer.yaml
+
+rm -f cert-manager-production-clusterissuer.yaml
 
 # Create app wildcard cert
 cat <<EOF | kubectl apply -f -
@@ -208,13 +216,11 @@ spec:
       - "$CLUSTER_NAME.$DNS_ZONE"
 EOF
 
-# Give cert-manager some time to create the certificate secrets so we can annotate them
+echo "Waiting 10 seconds for cert-manager to create certificate secrets before annotating them"
 sleep 10s
 
 kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
 kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
-
-sleep 3600s
 
 # Install nginx-ingress:
 echo "Installing nginx-ingress"
@@ -256,7 +262,6 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: prometheus-htpasswd
     nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - ok"
@@ -275,7 +280,7 @@ spec:
   tls:
   - hosts:
     - prometheus.$CLUSTER_NAME.$DNS_ZONE
-    secretName: prometheus-tls
+    secretName: cluster-wildcard-tls-cert
 EOF
 
 # Install grafana
@@ -292,7 +297,7 @@ rm -f grafana-secrets.yaml
 helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
     --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
-    --set ingress.tls[0].secretName=grafana-tls \
+    --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
     --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE"
 
 
@@ -337,7 +342,12 @@ az keyvault secret download \
 
 helm upgrade --install humio \
     "$HELM_REPO"/humio \
-    --set clusterFQDN=$CLUSTER_NAME.$DNS_ZONE \
+    --set ingress.clusterFQDN=$CLUSTER_NAME.$DNS_ZONE \
+    --set ingress.tlsSecretName=cluster-wildcard-tls-cert \
+    --set resources.limits.cpu=4 \
+    --set resources.limits.memory=16000Mi \
+    --set resources.requests.cpu=0.5 \
+    --set resources.requests.memory=2000Mi \
     -f humio-values.yaml
 
 rm -f humio-values.yaml
