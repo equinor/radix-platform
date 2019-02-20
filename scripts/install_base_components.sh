@@ -368,7 +368,8 @@ helm upgrade --install radix-operator \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
     --set image.tag=release-latest \
-    -f radix-operator-values.yaml
+    -f radix-operator-values.yaml \
+    --version 1.0.17
 
 rm -f radix-operator-values.yaml
 
