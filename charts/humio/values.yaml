@@ -1,3 +1,7 @@
-clusterFQDN: xx.radix.equinor.com
-
 singleUserPassword: xx
+
+ingress:
+  clusterFQDN: xx.radix.equinor.com
+  annotations: {}
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+  tlsSecretName: humio
