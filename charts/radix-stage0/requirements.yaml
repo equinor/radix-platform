@@ -1,7 +1,0 @@
-dependencies:
-- name: prometheus-operator
-  version: "0.0.29"
-  repository: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-  condition: prometheus-operator.enabled
-  tags:
-    - prometheus-operator
