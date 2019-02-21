@@ -5,8 +5,7 @@
 # It is assumed that:
 # 1. cluster is installed using the cluster_install.sh script,
 # 2. that the base components exists
-# 3. that the current context points to the correct cluster
-# 4. sha256sum should be installed
+# 3. sha256sum should be installed
 #
 # PURPOSE
 #
@@ -57,10 +56,30 @@ echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
 echo -e "HELM_REPO               : $HELM_REPO"
 echo -e ""
 
+### Check for Azure login
+
+echo "Checking Azure account information"
+
+AZ_ACCOUNT=`az account list | jq ".[] | select(.isDefault == true)"`
+
+echo -n "You are logged in to subscription "
+echo -n $AZ_ACCOUNT | jq '.id'
+
+echo -n "Which is named " 
+echo -n $AZ_ACCOUNT | jq '.name'
+
+echo -n "As user " 
+echo -n $AZ_ACCOUNT | jq '.user.name'
+
+echo 
+read -p "Is this correct? (Y/n) " correct_az_login
+if [[ $correct_az_login =~ (N|n) ]]; then
+  echo "Please use 'az login' command to login to the correct account. Quitting."
+  exit 1
+fi
 
 # Init: Set up helm repo
-az acr helm repo add --name "$HELM_REPO" && \
-    helm repo update
+az acr helm repo add --name "$HELM_REPO" && helm repo update
 
 # Connect kubectl so we have the correct context
 az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"

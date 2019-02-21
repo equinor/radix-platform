@@ -10,13 +10,10 @@
 # within a subscription on an existing resource group
 #
 # To run this script from terminal: 
-# INFRASTRUCTURE_ENVIRONMENT=bb CLUSTER_NAME=dd ./install_cluster.sh
-#
-# Example:
-# INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=cluster42 ./install_cluster.sh
+# INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 ./install_cluster.sh
 #
 # INPUTS:
-#   INFRASTRUCTURE_ENVIRONMENT  (Mandatory - "prod", "dev")
+#   INFRASTRUCTURE_ENVIRONMENT  (Mandatory - "prod" or "dev")
 #   CLUSTER_NAME                (Mandatory. Example: "prod43")
 #   VAULT_NAME                  (Optional. Example: "radix-vault-prod")
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
@@ -34,7 +31,7 @@
 #   CREDENTIALS_FILE            (Optional. Default to read values from keyvault)
 #
 # CREDENTIALS:
-# See "Step 1: Set credentials" for key/value pairs.
+# See "Set credentials" for key/value pairs.
 #
 # Default (no file provided as input)
 #   The script will read credentials from keyvault each required system user and slack token.
@@ -67,7 +64,7 @@ if [[ -z "$RESOURCE_GROUP" ]]; then
 fi
 
 if [[ -z "$KUBERNETES_VERSION" ]]; then
-    KUBERNETES_VERSION="1.11.5"
+    KUBERNETES_VERSION="1.12.4"
 fi
 
 if [[ -z "$NODE_COUNT" ]]; then
@@ -120,29 +117,28 @@ if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
     VNET_DNS_SERVICE_IP="10.2.0.10" 
 fi
 
-# Step 1: Set credentials
-echo "Reading credentials..."
+### Check for Azure login
+
+echo "Checking Azure account information"
+
+AZ_ACCOUNT=`az account list | jq ".[] | select(.isDefault == true)"`
+
+echo -n "You are logged in to subscription "
+echo -n $AZ_ACCOUNT | jq '.id'
+
+echo -n "Which is named " 
+echo -n $AZ_ACCOUNT | jq '.name'
+
+echo -n "As user " 
+echo -n $AZ_ACCOUNT | jq '.user.name'
+
 if [[ -z "$CREDENTIALS_FILE" ]]; then
-    # No file found, default to read credentials from keyvault
-    # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)   
-    CLUSTER_SYSTEM_USER_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .id)"
-    CLUSTER_SYSTEM_USER_PASSWORD="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .password)"
-    AAD_SERVER_APP_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-server-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .id)"
-    AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-server-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .password)"
-    AAD_TENANT_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-server-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .tenantId)"
-    AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-client-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .id)"
-    SLACK_TOKEN="$(az keyvault secret show --vault-name $VAULT_NAME --name slack-token | jq -r .value)"
-    # Helper var for log output
     credentials_source="keyvault"
 else
-    # Credentials are provided from input.
-    # Source the file to make the key/value pairs readable as script vars    
-    source ./"$CREDENTIALS_FILE"
-    # Helper var for log output
     credentials_source="$CREDENTIALS_FILE"
 fi
 
-# Step 2: Show what we got before starting on the The Great Work
+# Show configuration before starting
 echo -e ""
 echo -e "Start deploy of cluster using the following settings:"
 echo -e ""
@@ -165,7 +161,32 @@ echo -e ""
 echo -e "USE CREDENTIALS FROM      : $credentials_source"
 echo -e ""
 
-# Step 3: Create VNET
+echo 
+read -p "Does this look good? (Y/n) " verify_config
+if [[ $verify_config =~ (N|n) ]]; then
+  echo "Quitting."
+  exit 1
+fi
+
+# Set credentials
+echo "Reading credentials..."
+if [[ -z "$CREDENTIALS_FILE" ]]; then
+    # No file found, default to read credentials from keyvault
+    # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)   
+    CLUSTER_SYSTEM_USER_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .id)"
+    CLUSTER_SYSTEM_USER_PASSWORD="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .password)"
+    AAD_SERVER_APP_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-server-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .id)"
+    AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-server-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .password)"
+    AAD_TENANT_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-server-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .tenantId)"
+    AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $VAULT_NAME --name radix-cluster-aad-client-$INFRASTRUCTURE_ENVIRONMENT | jq -r .value | jq -r .id)"
+    SLACK_TOKEN="$(az keyvault secret show --vault-name $VAULT_NAME --name slack-token | jq -r .value)"
+else
+    # Credentials are provided from input.
+    # Source the file to make the key/value pairs readable as script vars    
+    source ./"$CREDENTIALS_FILE"
+fi
+
+# Create VNET
 echo "Creating azure VNET ${VNET_NAME}..." 
 
 az network vnet create -g "$RESOURCE_GROUP" \
@@ -174,19 +195,21 @@ az network vnet create -g "$RESOURCE_GROUP" \
     --subnet-name $SUBNET_NAME \
     --subnet-prefix $VNET_SUBNET_PREFIX
 
-echo "Granting access to VNET ${VNET_NAME} for service principles ${CLUSTER_SYSTEM_USER_ID}..." 
+echo "Granting access to VNET ${VNET_NAME} for Service Principal ${CLUSTER_SYSTEM_USER_ID}" 
 
 SUBNET_ID=$(az network vnet subnet list --resource-group $RESOURCE_GROUP --vnet-name $VNET_NAME --query [].id --output tsv)
 VNET_ID="$(az network vnet show --resource-group $RESOURCE_GROUP -n $VNET_NAME --query "id" --output tsv)"
 
 # Delete any existing roles
+echo "Deleting existing roles"
 az role assignment delete --assignee "${CLUSTER_SYSTEM_USER_ID}" --scope "${VNET_ID}"
 
 # Configure new roles
+echo "Creating new roles"
 az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" --role "Network Contributor" --scope "${VNET_ID}"
 
-# Step 4: Create cluster
-echo "Creating azure kubernetes service ${CLUSTER_NAME}..." 
+# Create cluster
+echo "Creating azure kubernetes service ${CLUSTER_NAME}" 
 
 az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --no-ssh-key \
@@ -207,7 +230,7 @@ az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --aad-tenant-id "$AAD_TENANT_ID"
 
 echo - ""
-echo -e "Azure kubernetes service \"${CLUSTER_NAME}\" created."
+echo -e "Azure kubernetes service ${CLUSTER_NAME} created."
 
-# Step 5: Enter the newly created cluster
+# Enter the newly created cluster
 az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"

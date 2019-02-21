@@ -3,10 +3,13 @@ kind: Ingress
 metadata:
   name: humio
   annotations:
-    ingress.kubernetes.io/force-ssl-redirect: "true"
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   rules:
-  - host: humio.{{ .Values.clusterFQDN }}
+  - host: humio.{{ .Values.ingress.clusterFQDN }}
     http:
       paths:
       - backend:
@@ -15,5 +18,5 @@ spec:
         path: /
   tls:
   - hosts:
-    - humio.{{ .Values.clusterFQDN }}
-    secretName: cluster-wildcard-tls-cert
+    - humio.{{ .Values.ingress.clusterFQDN }}
+    secretName: {{ .Values.ingress.tlsSecretName }}
