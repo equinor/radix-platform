@@ -23,7 +23,7 @@ It is also expected that you have a [basic understanding of Git](http://rogerdud
 
 ## Getting access
 
-You need to be part of the `fg_radix_platform_user` AD group to create and adminsiter your applications in Radix. For now, the easiest way to be added to this group is to post a request on [the `#omnia_radix_support` channel](https://equinor.slack.com/messages/CBKM6N2JY) Slack channel.
+Access to Radix is managed in Access IT. To get started and play around on the Platform, request access to the Radix Platform role: [Radix Playground Users](https://accessit.equinor.com/Search/Search?term=Radix+Playground+Users+%28OMNIA+RADIX%29), this will grant you access to register, build, deploy and maintain applications in a Radix playground/test cluster.
 
 > To help improve Radix, request access to the GitHub [Omnia Radix Readers](https://github.com/orgs/equinor/teams/omnia-radix-readers/members) team — this gives you access to poke around in our repositories. We track **issues and feature requests** in the [radix-platform](https://github.com/equinor/radix-platform/issues) repo. Please log those! 🙂
 
