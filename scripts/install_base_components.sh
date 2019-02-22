@@ -374,6 +374,7 @@ helm upgrade --install radix-operator \
 rm -f radix-operator-values.yaml
 
 # Install backup of radix custom resources (RR, RA, RD)
+# https://github.com/equinor/radix-backup-cr
 echo "Installing radix-backup-cr"
 
 helm upgrade --install radix-backup-cr \
