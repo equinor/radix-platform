@@ -366,6 +366,15 @@ helm upgrade --install radix-operator \
 
 rm -f radix-operator-values.yaml
 
+# Install backup of radix custom resources (RR, RA, RD)
+echo "Installing radix-backup-cr"
+
+helm upgrade --install radix-backup-cr \
+    $HELM_REPO/radix-backup-cr \
+    --namespace default \
+    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+    --set image.tag=release-latest
+
 # Install radix-e2e-monitoring
 echo "Installing radix-e2e-monitoring"
 az keyvault secret download \

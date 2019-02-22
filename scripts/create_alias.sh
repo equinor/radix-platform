@@ -56,7 +56,7 @@ for filename in alias_config/*.sh; do
         --cname "$RADIX_APP_CNAME"
 
     # Create ingress object in the cluster
-    helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" "$RADIX_HELM_REPO"/ingress \
+    helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" "$HELM_REPO"/ingress \
         --version 1.0.3 \
         --set aliasUrl="$RADIX_APP_ALIAS_NAME.$RADIX_ZONE_NAME" \
         --set application="$RADIX_APP_NAME" \
