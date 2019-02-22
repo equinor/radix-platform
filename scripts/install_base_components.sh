@@ -226,8 +226,9 @@ kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="app-w
 echo "Installing nginx-ingress"
 helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.externalTrafficPolicy=Local
 
-# Create a storageclass
-kubectl apply -f manifests/storageclass.yaml
+# Create storageclasses
+kubectl apply -f manifests/storageclass-retain.yaml
+kubectl apply -f manifests/storageclass-retain-nocache.yaml
 
 # Install prometheus-operator
 echo "Installing prometheus-operator"
