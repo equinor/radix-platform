@@ -18,7 +18,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: managed-premium-retain
+          storageClassName: managed-premium-retain-nocache
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
