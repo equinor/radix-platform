@@ -21,6 +21,7 @@
 # Input environment variables:
 #   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
 #   CLUSTER_NAME                (Mandatory. Example: prod42)
+#   IS_PLAYGROUND_CLUSTER       (Optional. Defaulted if omitted)
 #   DNS_ZONE                    (Optional. Example:e.g. radix.equinor.com|dev.radix.equinor.com)
 #   VAULT_NAME                  (Optional. Example: radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
@@ -54,6 +55,10 @@ if [[ -z "$DNS_ZONE" ]]; then
     if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
         DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
     fi
+fi
+
+if [[ -z "$IS_PLAYGROUND_CLUSTER" ]]; then
+    IS_PLAYGROUND_CLUSTER="false"
 fi
 
 if [[ -z "$RESOURCE_GROUP" ]]; then
@@ -361,6 +366,7 @@ helm upgrade --install radix-operator \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
     --set image.tag=release-latest \
+    --set isPlaygroundCluster="$IS_PLAYGROUND_CLUSTER" \
     -f radix-operator-values.yaml \
     --version 1.0.17
 
