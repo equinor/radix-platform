@@ -61,10 +61,6 @@ This script requires several secret files that contain `RadixRegistration` objec
 
 * radix-web-console-radixregistration-values
 
-## Add Reply URL for cluster
-
-`add_reply_url_for_cluster.sh` script is used for appending web console in prod environment for this cluster to the list of reply URLs, in order for authentication to work.
-
 ## Create Web Hooks for Radix apps
 
 `create_web_hooks_radix_apps.sh` script is used for creating webhooks (using the ingress object of the webhook from prod environment) for the set of Radix applications, in order for them to be CI/CD'ed in the cluster.

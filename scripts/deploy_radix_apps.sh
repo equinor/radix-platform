@@ -262,5 +262,13 @@ helm upgrade --install radix-pipeline-public-site-release \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
+# Update replyUrl for web-console
+echo "Waiting for web-console ingress to be ready..."
+while [[ "$(kubectl get ing -n radix-web-console-prod web -o jsonpath='{.spec.rules[0].host}' 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done    
+echo "$(AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)"
+
 # Step 2.6 Redirect public endpoints
 # To be done manually
