@@ -38,6 +38,14 @@
 # Resources that need non-secret customizations: inline the resource in this script and use environment variables
 # Resources that need secret values: store the entire yaml file in Azure KeyVault
 
+# Check for prerequisites binaries
+echo
+echo " Check for neccesary executables"
+hash az || { echo "Error: Azure-CLI not found in PATH. Exiting...";  exit 1; }
+hash kubectl || { echo "Error: kubectl not found in PATH. Exiting...";  exit 1; }
+hash helm || { echo "Error: helm not found in PATH. Exiting...";  exit 1; }
+hash jq || { echo "Error: jq not found in PATH. Exiting...";  exit 1; }
+
 # Validate mandatory input
 if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
     echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
@@ -133,11 +141,8 @@ kubectl apply -f manifests/rbac-config-helm.yaml
 
 # Install Helm
 echo "Initializing and/or upgrading helm in cluster"
-#curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-#chmod 700 get_helm.sh
-#./get_helm.sh --no-sudo -v "$HELM_VERSION"
 helm init --service-account tiller --upgrade --wait
-#rm -f ./get_helm.sh
+helm repo update
 
 # Install cert-manager
 
@@ -299,6 +304,8 @@ helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
     --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
     --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE"
 
+# Update grafana replyUrl    
+echo "$(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)"
 
 # Install external-dns
 echo "Installing external-dns"

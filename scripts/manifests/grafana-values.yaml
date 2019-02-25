@@ -22,7 +22,9 @@ env:
   GF_DATABASE_HOST: radixgrafana.mysql.database.azure.com
   GF_DATABASE_NAME: grafana
   GF_DATABASE_USER: "grafana@radixgrafana"
-  GF_AUTH_GENERIC_OAUTH_CLIENT_ID: 7542f95d-c9f4-492f-8450-b3ef2286da7c
+  #GF_DATABASE_PASSWORD: ""                 # Set by secret
+  #GF_AUTH_GENERIC_OAUTH_CLIENT_ID: ""      # Set by secret
+  #GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: ""  # Set by secret
   GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
   GF_AUTH_ANONYMOUS_ENABLED: "false"
   GF_AUTH_GENERIC_OAUTH_NAME: Azure AD
