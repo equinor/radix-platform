@@ -1,30 +1,41 @@
-# Radix Infrastructure Provisioning
+# How to deploy the Radix platform and required infrastructure
 
-This `script` directory is created specifically for provisioning the Radix infrastructure on Azure.
+## Deploy infrastructure
 
-## Create infrastructure
+### Initial scaffolding
 
-1. First run script `install_infrastructure.sh` to provision all dependencies that a cluster needs (e.g. keyvault, dns).  
-   Please read the comments in the script file for more details on how to run it.
-1. Then run script `enable_aksauditlog.sh` to enable [AKS Audit Log](https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/aks/view-master-logs.md) (an az subscription feature).
+Initial scaffolding should only be run once per environment as it will setup all the shared infrastructure (e.g. keyvault, dns).
 
-## Create cluster
+Run script `install_infrastructure.sh`.   
+Instructions for how to run it can be found in the file.
 
-`install_cluster.sh` script is used for creating a new cluster. Please read the comments in the script file for more details on how to run it. A simple example to run the script is as follows.
+### Create cluster
 
+Run script `install_cluster.sh`.  
+Instructions for how to run it can be found in the file.  
+
+Example:
 ```
 INFRASTRUCTURE_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_cluster.sh
 ```
 
-## Install base components
+## Deploy base components
 
-`install_base_components.sh` script is used for installing Radix base components (e.g. operator, externalDns). Please read the comments in the script file for more details on how to run it. A simple example to run the script is as follows.
+This will deploy third party components (nginx, external-dns etc) and some radix components (radix-operator).
 
+Run script `install_base_components.sh`.  
+Instructions for how to run it can be found in the file. 
+
+Example:
 ```
 SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_base_components.sh
 ```
 
-This script requires two secret files to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
+### Dependencies
+
+#### Secrets
+
+This script requires secret files to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
 
 * `slack-token`
 * `prometheus-operator-values` # prometheus-operator values file
@@ -33,6 +44,8 @@ This script requires two secret files to be available in the `keyvault` of the c
 * `external-dns-azure-secret` # external-dns credentials file
 * `humio-values` # humio values file
 * `radix-e2e-monitoring` # radix-e2e-monitoring values file
+
+#### Images
 
 The base components include `radix-operator`, and for this component to be successfully deployed, the following images need to be built and pushed to the ACR.
 
@@ -43,36 +56,59 @@ The base components include `radix-operator`, and for this component to be succe
 
 ## Deploy Radix applications
 
-`deploy_radix_apps.sh` script is used for installing Radix applications (e.g. API server, Webhook). Please read the comments in the script file for more details on how to run it. A simple example to run the script is as follows.
+This will deploy Radix applications like radix-api, webhook, web-console etc.
 
+Run script `deploy_radix_apps.sh`.  
+Instructions for how to run it can be found in the file. 
+
+Example:
 ```
 SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./deploy_radix_apps.sh
 ```
 
-This script requires several secret files that contain `RadixRegistration` object configurations to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
+### Dependencies
 
-* radix-api-radixregistration-values
+#### Secrets
 
-* radix-canary-radixregistration-values
+This script requires several secret files that contain `RadixRegistration` object configurations to be available in the `keyvault` of the corresponding subscription (ex: `radix-vault-dev`), as follows.
 
-* radix-github-webhook-radixregistration-values
-
-* radix-public-site-values
-
-* radix-web-console-radixregistration-values
+* `radix-api-radixregistration-values`
+* `radix-canary-radixregistration-values`
+* `radix-github-webhook-radixregistration-values`
+* `radix-public-site-values`
+* `radix-web-console-radixregistration-values`
 
 ## Create Web Hooks for Radix apps
 
-`create_web_hooks_radix_apps.sh` script is used for creating webhooks (using the ingress object of the webhook from prod environment) for the set of Radix applications, in order for them to be CI/CD'ed in the cluster.
+This will create webhooks that will connect Radix application github repos with the radix CI/CD.  
 
-## Create aliases
+Run script `create_web_hooks_radix_apps.sh`.  
+Instructions for how to run it can be found in the file. 
 
-`create_alias.sh` script is used for creating aliases (i.e. ingress objects) for some selected applications  (i.e. Web console, public site, API server, Webhook, canary). Please read the comments in the script file for more details on how to run it. 
+### Dependencies
 
-This script depends on configuration files (one config for aliasing each application): `alias_config_console.sh`, `alias_config_public_site.sh`, `alias_config_api.sh`, `alias_config_webhook.sh`, `alias_config_canary.sh`.
+The radix component `radix-github-webhook-prod` must be available in the cluster.
 
-A simple example to run the script is as follows.
+## Create/update aliases
 
+_Aliases should only be set for apps running in the production cluster_.
+
+It is a way to provide a more user friendly url to a selected set of apps (i.e. Web console, public site, API server, Webhook, canary).  
+
+Run script `create_alias.sh`.  
+Instructions for how to run it can be found in the file. 
+
+Example:
 ```
 RADIX_ALIAS_CONFIG_VARS_PATH=./alias_config_console.sh ./create_alias.sh
 ```
+
+### Dependencies
+
+This script depends on configuration files (one config for aliasing each application): 
+- `alias_config_console.sh`
+- `alias_config_public_site.sh`
+- `alias_config_api.sh`
+- `alias_config_webhook.sh`
+- `alias_config_canary.sh`.
+
