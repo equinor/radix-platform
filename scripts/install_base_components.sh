@@ -243,7 +243,7 @@ kubectl apply -f manifests/storageclass-retain-nocache.yaml
 # Install prometheus-operator
 echo "Installing prometheus-operator"
 
-helm upgrade --install prometheus-operator stable/prometheus-operator -f manifests/prometheus-operator-values.yaml
+helm upgrade --install prometheus-operator stable/prometheus-operator -f manifests/prometheus-operator-values.yaml --set prometheus.prometheusSpec.serviceMonitorSelector.any=true
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
