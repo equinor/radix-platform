@@ -54,6 +54,8 @@ The base components include `radix-operator`, and for this component to be succe
 * `radix-image-builder` (from `master` and `release` branches in `radix-operator` project)
 * `gitclone` (from `master` branch in `radix-api` project)
 
+For backup of custom resources (RR, RA, RD) - Image `radix-backup-cr`, from `master` and `release` braches in [radix-backup-cr](https://github.com/equinor/radix-backup-cr) project, is also required
+
 ## Deploy Radix applications
 
 This will deploy Radix applications like radix-api, webhook, web-console etc.
