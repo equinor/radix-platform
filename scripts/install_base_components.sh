@@ -191,16 +191,16 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod
-  commonName: "*.apps.$DNS_ZONE"
+  commonName: "*.app.$DNS_ZONE"
   dnsNames:
-  - "apps.$DNS_ZONE"
+  - "app.$DNS_ZONE"
   acme:
     config:
     - dns01:
         provider: azure-dns
       domains:
-      - "*.apps.$DNS_ZONE"
-      - "apps.$DNS_ZONE"
+      - "*.app.$DNS_ZONE"
+      - "app.$DNS_ZONE"
 EOF
 
 # Create cluster wildcard cert
