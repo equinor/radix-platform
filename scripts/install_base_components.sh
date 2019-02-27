@@ -38,15 +38,25 @@
 # Resources that need non-secret customizations: inline the resource in this script and use environment variables
 # Resources that need secret values: store the entire yaml file in Azure KeyVault
 
-# Check for prerequisites binaries
-echo
-echo " Check for neccesary executables"
-hash az || { echo "Error: Azure-CLI not found in PATH. Exiting...";  exit 1; }
-hash kubectl || { echo "Error: kubectl not found in PATH. Exiting...";  exit 1; }
-hash helm || { echo "Error: helm not found in PATH. Exiting...";  exit 1; }
-hash jq || { echo "Error: jq not found in PATH. Exiting...";  exit 1; }
 
-# Validate mandatory input
+#######################################################################################
+### Check for prerequisites binaries
+###
+
+echo ""
+printf "Check for neccesary executables... "
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
+hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting...";  exit 1; }
+#printf "All is good."
+echo ""
+
+
+#######################################################################################
+### Validate mandatory input
+###
+
 if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
     echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
     exit 1
@@ -57,7 +67,11 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-# Set default values for optional input
+
+#######################################################################################
+### Set default values for optional input
+###
+
 if [[ -z "$DNS_ZONE" ]]; then
     DNS_ZONE="radix.equinor.com"
     if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
@@ -93,6 +107,11 @@ if [[ -z "$PROMETHEUS_NAME" ]]; then
     PROMETHEUS_NAME="radix-stage1"
 fi
 
+#######################################################################################
+### Ask user to verify inputs and az login
+###
+
+# Print inputs
 echo -e ""
 echo -e "Start deploy of base components using the following settings:"
 echo -e "SUBSCRIPTION_ENVIRONMENT: $SUBSCRIPTION_ENVIRONMENT"
@@ -105,35 +124,49 @@ echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
 echo -e ""
 
-### Check for Azure login
-
+# Check for Azure login
 echo "Checking Azure account information"
 
 AZ_ACCOUNT=`az account list | jq ".[] | select(.isDefault == true)"`
-
 echo -n "You are logged in to subscription "
 echo -n $AZ_ACCOUNT | jq '.id'
-
 echo -n "Which is named " 
 echo -n $AZ_ACCOUNT | jq '.name'
-
 echo -n "As user " 
 echo -n $AZ_ACCOUNT | jq '.user.name'
+echo ""
 
-echo 
 read -p "Is this correct? (Y/n) " correct_az_login
 if [[ $correct_az_login =~ (N|n) ]]; then
   echo "Please use 'az login' command to login to the correct account. Quitting."
   exit 1
 fi
 
-# Read credentials from keyvault
+#######################################################################################
+### Connect kubectl
+###
+
+# Exit if cluster does not exist
+echo ""
+echo "Connecting kubectl..."
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+    # Send message to stderr
+    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 0        
+fi
+
+
+#######################################################################################
+### Read secrets from keyvault
+###
+
 echo "Getting Slack API Token"
 SLACK_TOKEN="$(az keyvault secret show --vault-name $VAULT_NAME --name slack-token | jq -r .value)"
 
-# Connect kubectl
-echo "Getting cluster credentials"
-az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
+
+#######################################################################################
+### Install Helm and related rbac
+###
 
 # Apply RBAC config for helm/tiller
 echo "Applying RBAC config for helm/tiller"
@@ -144,7 +177,10 @@ echo "Initializing and/or upgrading helm in cluster"
 helm init --service-account tiller --upgrade --wait
 helm repo update
 
-# Install cert-manager
+
+#######################################################################################
+### Install cert-manager
+###
 
 # Apply CRDs
 echo "Installing cert-manager"
@@ -180,7 +216,13 @@ kubectl apply -n cert-manager -f cert-manager-production-clusterissuer.yaml
 
 rm -f cert-manager-production-clusterissuer.yaml
 
+#######################################################################################
+### Create wildcard certs
+###
+
 # Create app wildcard cert
+echo "Creating app wildcard cert..."
+
 cat <<EOF | kubectl apply -f -
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
@@ -204,6 +246,8 @@ spec:
 EOF
 
 # Create cluster wildcard cert
+echo "Creating cluster wildcard cert..."
+
 cat <<EOF | kubectl apply -f -
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
@@ -226,23 +270,35 @@ spec:
       - "$CLUSTER_NAME.$DNS_ZONE"
 EOF
 
-echo "Waiting 10 seconds for cert-manager to create certificate secrets before annotating them"
+echo "Waiting 10 seconds for cert-manager to create certificate secrets before annotating them..."
 sleep 10s
 
 kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
 kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
 
-# Install nginx-ingress:
+
+#######################################################################################
+### Install nginx-ingress:
+###
+
 echo "Installing nginx-ingress"
 helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.externalTrafficPolicy=Local
 
-# Create storageclasses
+
+#######################################################################################
+### Create storage classes
+###
+
+echo "Creating storage classes"
 kubectl apply -f manifests/storageclass-retain.yaml
 kubectl apply -f manifests/storageclass-retain-nocache.yaml
 
-# Install prometheus-operator
-echo "Installing prometheus-operator"
 
+#######################################################################################
+### Install prometheus-operator
+###
+
+echo "Installing prometheus-operator"
 helm upgrade --install prometheus-operator stable/prometheus-operator -f manifests/prometheus-operator-values.yaml --set prometheus.prometheusSpec.serviceMonitorSelector.any=true
 
 # Install Prometheus Ingress with HTTP Basic Authentication
@@ -287,7 +343,11 @@ spec:
     secretName: cluster-wildcard-tls-cert
 EOF
 
-# Install grafana
+
+#######################################################################################
+### Install grafana
+###
+
 echo "Installing grafana"
 az keyvault secret download \
     --vault-name $VAULT_NAME \
@@ -304,10 +364,14 @@ helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
     --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
     --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE"
 
-# Update grafana replyUrl    
+# Add grafana replyUrl to AAD app    
 echo "$(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)"
 
-# Install external-dns
+
+#######################################################################################
+### Install external-dns
+###
+
 echo "Installing external-dns"
 az keyvault secret download \
     --vault-name $VAULT_NAME \
@@ -320,7 +384,11 @@ helm upgrade --install external-dns stable/external-dns --set rbac.create=true -
 
 rm -f external-dns-azure-secret.yaml
 
-# Install kubed
+
+#######################################################################################
+### Install kubed
+###
+
 echo "Installing kubed"
 helm repo add appscode https://charts.appscode.com/stable/
 helm repo update
@@ -332,13 +400,20 @@ helm upgrade --install kubed appscode/kubed --version 0.9.0 \
   --set rbac.create=true \
   --set enableAnalytics=false
 
-# Add Radix helm repo
+
+#######################################################################################
+### Add Radix helm repo
+### 
 
 echo "Adding ACR helm repo "$HELM_REPO""
 az acr helm repo add --name "$HELM_REPO"
 helm repo update
 
-# Install humio
+
+#######################################################################################
+### Install humio
+###
+
 echo "Installing humio"
 
 az keyvault secret download \
@@ -358,7 +433,11 @@ helm upgrade --install humio \
 
 rm -f humio-values.yaml
 
-# Install radix-operator
+
+#######################################################################################
+### Install radix-operator
+###
+
 echo "Installing radix-operator"
 
 az keyvault secret download \
@@ -380,8 +459,11 @@ helm upgrade --install radix-operator \
 
 rm -f radix-operator-values.yaml
 
-# Install backup of radix custom resources (RR, RA, RD)
-# https://github.com/equinor/radix-backup-cr
+
+#######################################################################################
+### Install backup of radix custom resources (RR, RA, RD)
+### https://github.com/equinor/radix-backup-cr
+
 echo "Installing radix-backup-cr"
 
 helm upgrade --install radix-backup-cr \
@@ -390,7 +472,11 @@ helm upgrade --install radix-backup-cr \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set image.tag=release-latest
 
-# Install radix-e2e-monitoring
+
+#######################################################################################
+### Install radix-e2e-monitoring
+###
+
 echo "Installing radix-e2e-monitoring"
 az keyvault secret download \
     --vault-name $VAULT_NAME \
@@ -404,7 +490,11 @@ helm upgrade --install radix-e2e-monitoring \
 
 rm -f radix-e2e-monitoring.yaml
 
-# Notify on slack channel
+
+#######################################################################################
+### Notify on slack channel
+###
+
 echo "Notifying on Slack"
 helm upgrade --install radix-boot-notify \
     "$HELM_REPO"/slack-notification \
@@ -413,8 +503,10 @@ helm upgrade --install radix-boot-notify \
     --set text="Base components have been installed or updated on $CLUSTER_NAME."
 
 
-# Patching kube-dns metrics
-#
+#######################################################################################
+### Patching kube-dns metrics
+###
+
 # TODO: Even with this, kube-dns is not discovered in prometheus. Needs to be debugged.
 # 
 # echo "Patching kube-dns metrics"
