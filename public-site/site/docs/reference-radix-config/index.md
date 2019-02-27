@@ -63,7 +63,6 @@ spec:
           port: 80
     - name: backend
       src: backend
-      replicas: 2
       ports:
         - name: http
           port: 5000
