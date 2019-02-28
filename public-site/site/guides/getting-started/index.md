@@ -23,7 +23,7 @@ It is also expected that you have a [basic understanding of Git](http://rogerdud
 
 ## Getting access
 
-Access to Radix is managed in Access IT. To get started and play around on the Platform, request access to the Radix Platform role: [Radix Playground Users](https://accessit.equinor.com/Search/Search?term=Radix+Playground+Users+%28OMNIA+RADIX%29), this will grant you access to register, build, deploy and maintain applications in a Radix playground/test cluster.
+Access to Radix is managed in Access IT. To get started, request the role "[Radix Playground Users](https://accessit.equinor.com/Search/Search?term=Radix+Playground+Users+%28OMNIA+RADIX%29)"; this will grant access to register, build, deploy and maintain applications in the Radix **playground** cluster.
 
 > To help improve Radix, request access to the GitHub [Omnia Radix Readers](https://github.com/orgs/equinor/teams/omnia-radix-readers/members) team — this gives you access to poke around in our repositories. We track **issues and feature requests** in the [radix-platform](https://github.com/equinor/radix-platform/issues) repo. Please log those! 🙂
 
