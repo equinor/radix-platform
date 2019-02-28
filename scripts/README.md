@@ -2,9 +2,7 @@
 
 ## Deploy infrastructure
 
-### Initial scaffolding
-
-Initial scaffolding should only be run once per environment as it will setup all the shared infrastructure (e.g. keyvault, dns).
+### Install and update of shared infrastructure
 
 Run script `install_infrastructure.sh`.   
 Instructions for how to run it can be found in the file.
