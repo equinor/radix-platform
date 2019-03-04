@@ -63,13 +63,12 @@ spec:
           port: 80
     - name: backend
       src: backend
-      replicas: 2
       ports:
         - name: http
           port: 5000
 ```
 
-This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`. `replicas` can be used to [horizontally scale](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) the component. If `replicas` is not set it defaults to `1`.
+This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`.
 
 ### `public`
 
@@ -82,41 +81,62 @@ spec:
 
 The `public` field of a component, if set to `true`, is used to make the component accessible on the internet by generating a public endpoint. Any component without `public: true` can only be accessed from another component in the app.
 
-### `monitoring`
+### `environmentConfig`
 
-```yaml
-spec:
-  components:
-    - name: frontend
-      monitoring: true
-```
+The `environmentConfig` section is to set environment specific settings for each component
 
-The `monitoring` field of a component, if set to `true`, is used to expose custom application metrics in the Radix monitoring dashboards. It is expected that the component provides a `/metrics` endpoint: his will be queried periodically (every five seconds) by an instance of [Prometheus](https://prometheus.io/) running within Radix. General metrics, such as resource usage, will always be available in monitors, regardless of this being set.
-
-### `resources`
-
-```yaml
-spec:
-  components:
-    - name: frontend
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "100m"
-        limits:
-          memory: "128Mi"
-          cpu: "200m"
-```
-
-The `resources` section of a component can specify how much CPU and memory each component needs. `resources` is used to ensure that each component is allocated enough resources to run as it should. `limits` describes the maximum amount of compute resources allowed. `requests` describes the minimum amount of compute resources required. If `requests` is omitted for a component it defaults to the settings in `limits`. If `limits` is omitted, its value defaults to an implementation-defined value. [More info](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/)
-
-### `environmentVariables`
+#### `replicas`
 
 ```yaml
 spec:
   components:
     - name: backend
-      environmentVariables:
+      environmentConfig:
+        - environment: prod
+          replicas: 2
+```
+
+`replicas` can be used to [horizontally scale](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) the component. If `replicas` is not set it defaults to `1`.
+
+#### `monitoring`
+
+```yaml
+spec:
+  components:
+    - name: frontend
+      environmentConfig:
+        - environment: prod
+          monitoring: true
+```
+
+The `monitoring` field of a component environment config, if set to `true`, is used to expose custom application metrics in the Radix monitoring dashboards. It is expected that the component provides a `/metrics` endpoint: his will be queried periodically (every five seconds) by an instance of [Prometheus](https://prometheus.io/) running within Radix. General metrics, such as resource usage, will always be available in monitors, regardless of this being set.
+
+#### `resources`
+
+```yaml
+spec:
+  components:
+    - name: frontend
+      environmentConfig:
+        - environment: prod
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+```
+
+The `resources` section of a component can specify how much CPU and memory each component needs. `resources` is used to ensure that each component is allocated enough resources to run as it should. `limits` describes the maximum amount of compute resources allowed. `requests` describes the minimum amount of compute resources required. If `requests` is omitted for a component it defaults to the settings in `limits`. If `limits` is omitted, its value defaults to an implementation-defined value. [More info](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/)
+
+#### `variables`
+
+```yaml
+spec:
+  components:
+    - name: backend
+      environmentConfig:
         - environment: dev
           variables:
             DB_HOST: "db-dev"
@@ -188,26 +208,28 @@ spec:
         - name: http
           port: 80
       public: true
-      monitoring: true
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "100m"
-        limits:
-          memory: "128Mi"
-          cpu: "200m"
+      environmentConfig:
+        - environment: prod
+          monitoring: true
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
     - name: backend
       src: backend
-      replicas: 2
       ports:
         - name: http
           port: 5000
-      environmentVariables:
+      environmentConfig:
         - environment: dev
           variables:
             DB_HOST: "db-dev"
             DB_PORT: "1234"
         - environment: prod
+          replicas: 2
           variables:
             DB_HOST: "db-prod"
             DB_PORT: "9876"
