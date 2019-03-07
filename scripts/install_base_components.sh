@@ -12,6 +12,9 @@
 # To run this script from terminal:
 # SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=dd ./install_base_components.sh
 #
+# Example: Configure Playground, use default settings
+# SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="playground-1" IS_PLAYGROUND_CLUSTER="true" ./install_base_components.sh
+#
 # Example: Configure DEV, use default settings
 # SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" ./install_base_components.sh
 #
@@ -223,6 +226,13 @@ rm -f cert-manager-production-clusterissuer.yaml
 # Create app wildcard cert
 echo "Creating app wildcard cert..."
 
+# TODO: For discussion. Should entire DNS_ZONE be playground.radix.equinor.com
+APP_WILDCARD_DNS_NAME="app.$DNS_ZONE"
+
+if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+  APP_WILDCARD_DNS_NAME="app.playground.$DNS_ZONE"
+fi
+
 cat <<EOF | kubectl apply -f -
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
@@ -233,16 +243,16 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod
-  commonName: "*.app.$DNS_ZONE"
+  commonName: "*.$APP_WILDCARD_DNS_NAME"
   dnsNames:
-  - "app.$DNS_ZONE"
+  - "$APP_WILDCARD_DNS_NAME"
   acme:
     config:
     - dns01:
         provider: azure-dns
       domains:
-      - "*.app.$DNS_ZONE"
-      - "app.$DNS_ZONE"
+      - "*.$APP_WILDCARD_DNS_NAME"
+      - "$APP_WILDCARD_DNS_NAME"
 EOF
 
 # Create cluster wildcard cert
@@ -440,6 +450,12 @@ rm -f humio-values.yaml
 
 echo "Installing radix-operator"
 
+APP_ALIAS_BASE_URL="app.$DNS_ZONE"
+
+if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+  APP_ALIAS_BASE_URL="app.playground.$DNS_ZONE"
+fi
+
 az keyvault secret download \
     --vault-name $VAULT_NAME \
     --name radix-operator-values \
@@ -448,14 +464,13 @@ az keyvault secret download \
 helm upgrade --install radix-operator \
     "$HELM_REPO"/radix-operator \
     --set dnsZone="$DNS_ZONE" \
-    --set appAliasBaseURL="app.$DNS_ZONE" \
+    --set appAliasBaseURL="$APP_ALIAS_BASE_URL" \
     --set prometheusName="$PROMETHEUS_NAME" \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
     --set image.tag=release-latest \
     --set isPlaygroundCluster="$IS_PLAYGROUND_CLUSTER" \
-    -f radix-operator-values.yaml \
-    --version 1.0.17
+    -f radix-operator-values.yaml
 
 rm -f radix-operator-values.yaml
 

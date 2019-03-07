@@ -2,12 +2,16 @@
 
 # Example:
 # CLUSTER_NAME=aa ./create_alias.sh
-
+#
+# Example: Configure Playground, use default settings
+# CLUSTER_NAME="playground-1" IS_PLAYGROUND_CLUSTER="true" ./create_alias.sh
+#
 # INPUTS:
 #   CLUSTER_NAME                (Mandatory. Example: prod42)
 #   RADIX_ZONE_NAME             (Optional. Defaulted if omitted)
 #   RADIX_APP_ENVIRONMENT       (Optional. Defaulted if omitted. ex: "prod", "qa", "test")
 #   HELM_REPO                   (Optional. Defaulted if omitted)
+#   IS_PLAYGROUND_CLUSTER       (Optional. Defaulted if omitted)
 
 # Validate mandatory input
 if [[ -z "$CLUSTER_NAME" ]]; then
@@ -34,6 +38,12 @@ for filename in alias_config/*.sh; do
     # Import variables
     source ./"$filename"
 
+    RADIX_APP_ALIAS_URL="$RADIX_APP_ALIAS_NAME.$RADIX_ZONE_NAME"
+
+    if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+        RADIX_APP_ALIAS_URL="$RADIX_APP_ALIAS_NAME.$CLUSTER_NAME.$RADIX_ZONE_NAME"
+    fi
+
     # Show what we got before starting on the The Great Work
     echo -e ""
     echo -e "Start creating alias using the following settings:"
@@ -41,11 +51,13 @@ for filename in alias_config/*.sh; do
     echo -e "RADIX_ZONE_NAME              : $RADIX_ZONE_NAME"
     echo -e "RADIX_APP_CNAME              : $RADIX_APP_CNAME"
     echo -e "RADIX_APP_ALIAS_NAME         : $RADIX_APP_ALIAS_NAME"
+    echo -e "RADIX_APP_ALIAS_URL          : $RADIX_APP_ALIAS_URL"
     echo -e "RADIX_APP_NAME               : $RADIX_APP_NAME"
     echo -e "RADIX_APP_ENVIRONMENT        : $RADIX_APP_ENVIRONMENT"
     echo -e "RADIX_APP_COMPONENT          : $RADIX_APP_COMPONENT"
     echo -e "RADIX_APP_COMPONENT_PORT     : $RADIX_APP_COMPONENT_PORT"
     echo -e "HELM_REPO                    : $HELM_REPO"
+
     echo -e ""
 
     # Create alias in the dns zone
@@ -58,10 +70,11 @@ for filename in alias_config/*.sh; do
     # Create ingress object in the cluster
     helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" "$HELM_REPO"/ingress \
         --version 1.0.3 \
-        --set aliasUrl="$RADIX_APP_ALIAS_NAME.$RADIX_ZONE_NAME" \
+        --set aliasUrl="$RADIX_APP_ALIAS_URL" \
         --set application="$RADIX_APP_NAME" \
         --set applicationEnv="$RADIX_APP_ENVIRONMENT" \
         --set component="$RADIX_APP_COMPONENT" \
         --set componentPort="$RADIX_APP_COMPONENT_PORT" \
         --set enableAutoTLS=true
+        
 done
