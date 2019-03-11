@@ -77,8 +77,11 @@ fi
 
 if [[ -z "$DNS_ZONE" ]]; then
     DNS_ZONE="radix.equinor.com"
-    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
-        DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
+
+    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+      DNS_ZONE="playground.$DNS_ZONE"
+    elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
+      DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
     fi
 fi
 
@@ -226,12 +229,7 @@ rm -f cert-manager-production-clusterissuer.yaml
 # Create app wildcard cert
 echo "Creating app wildcard cert..."
 
-# TODO: For discussion. Should entire DNS_ZONE be playground.radix.equinor.com
-APP_WILDCARD_DNS_NAME="app.$DNS_ZONE"
-
-if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
-  APP_WILDCARD_DNS_NAME="app.playground.$DNS_ZONE"
-fi
+APP_ALIAS_BASE_URL="app.$DNS_ZONE"
 
 cat <<EOF | kubectl apply -f -
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -243,16 +241,16 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod
-  commonName: "*.$APP_WILDCARD_DNS_NAME"
+  commonName: "*.$APP_ALIAS_BASE_URL"
   dnsNames:
-  - "$APP_WILDCARD_DNS_NAME"
+  - "$APP_ALIAS_BASE_URL"
   acme:
     config:
     - dns01:
         provider: azure-dns
       domains:
-      - "*.$APP_WILDCARD_DNS_NAME"
-      - "$APP_WILDCARD_DNS_NAME"
+      - "*.$APP_ALIAS_BASE_URL"
+      - "$APP_ALIAS_BASE_URL"
 EOF
 
 # Create cluster wildcard cert
@@ -449,12 +447,6 @@ rm -f humio-values.yaml
 ###
 
 echo "Installing radix-operator"
-
-APP_ALIAS_BASE_URL="app.$DNS_ZONE"
-
-if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
-  APP_ALIAS_BASE_URL="app.playground.$DNS_ZONE"
-fi
 
 az keyvault secret download \
     --vault-name $VAULT_NAME \
