@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # PURPOSE
+#
 # Provision az infrastructure that will hold and support radix clusters.
-# There are two main features which both have their own defined function
-# - "install"
-# - "destroy"
-# The rest are support funcs for these two.
 
 # USAGE
-# See "show_help" func or simply run the script with no arguments.
+#
+# From terminal:
+# RADIX_INFRASTRUCTURE_ENVIRONMENT="dev" ./install_infrastructure.sh
 
 # USEFUL INFO
+#
 # Built in roles for Azure resources
 # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
 #
@@ -26,12 +26,55 @@
 
 
 ########################################################################
+# Check for prerequisites binaries
+########################################################################
+
+echo ""
+printf "Check for neccesary executables... "
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting...";  exit 1; }
+printf "Ok."
+echo ""
+
+
+########################################################################
+# Validate mandatory input
+########################################################################
+
+# bash || doesn't do a standard logic "OR" - it short-circuits, and the second command is run only if the first fails.
+# So we check the values using case statements instead
+case "$RADIX_INFRASTRUCTURE_ENVIRONMENT" in
+    "dev" )
+        # Valid
+        ;;
+
+    "prod" )
+        # Valid
+        ;;
+
+    *)
+        # Exit for anything else
+        echo "Please provide RADIX_INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+        exit 1
+        ;;
+esac
+
+
+########################################################################
 # CONFIG VARS
 ########################################################################
 
+# Region and subscription
 RADIX_INFRASTRUCTURE_REGION="northeurope"
-RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Development" # "Omnia Radix Production" | "Omnia Radix Development"
-RADIX_INFRASTRUCTURE_ENVIRONMENT="dev" # "prod" | "dev"
+case "$RADIX_INFRASTRUCTURE_ENVIRONMENT" in
+    "dev" )
+        RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Development"
+        ;;
+
+    "prod" )
+        RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Production"
+        ;;
+esac
 
 # Resource groups and resources
 RADIX_RESOURCE_GROUP_CLUSTERS="clusters"
@@ -457,16 +500,38 @@ function set_permissions_on_acr() {
 function set_permissions_on_dns() {
     local scope
     local id
-    scope="$(az network dns zone show --name ${RADIX_RESOURCE_DNS} --resource-group ${RADIX_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
+    local dns # Optional input 1
+    
+    if [ -n "$1" ]; then
+        dns="$1"
+    else
+        dns="$RADIX_RESOURCE_DNS"
+    fi    
+
+    scope="$(az network dns zone show --name ${dns} --resource-group ${RADIX_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 
     # Grant 'DNS Zone Contributor' permissions to a specific zone
     # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
-    echo -e "Azure dns zone: Setting permissions for \"${RADIX_SYSTEM_USER_DNS}\" on \"${RADIX_RESOURCE_DNS}\"..."
+    echo -e "Azure dns zone: Setting permissions for \"${RADIX_SYSTEM_USER_DNS}\" on \"${dns}\"..."
     id="$(az ad sp show --id http://${RADIX_SYSTEM_USER_DNS} --query appId --output tsv)"
     az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}"
     
     # demo code
     #azure role assignment create --signInName <user email address> --roleName "DNS Zone Contributor" --resource-name <zone name> --resource-type Microsoft.Network/DNSZones --resource-group <resource group name>
+}
+
+########################################################################
+# PLAYGROUND
+########################################################################
+
+function configure_playground() {
+    # Playground infrastructure is _added_ to an existing environment.
+
+    # Add dns + permissions
+    local playground_dns="playground.${RADIX_RESOURCE_DNS_SUFFIX}"
+    echo_step "Configure Azure DNS: ${playground_dns}"
+    az network dns zone create -g "${RADIX_RESOURCE_GROUP_COMMON}" -n "${playground_dns}"    
+    set_permissions_on_dns "$playground_dns"
 }
 
 ########################################################################
@@ -519,36 +584,19 @@ function destroy() {
 }
 
 ########################################################################
-# INTERFACE
+# INSTALL (and update)
 ########################################################################
 
-# Misc az queries
-# az group list --query '[].name'
-
-function show_help() {
-    echo -e "${__style_yellow}Provision prerequisite infrastructure for radix platform${__style_end}"
-    echo -e ""
-    echo -e "${__style_green}Configuration:${__style_end}"
-    echo -e "- Environment : ${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
-    echo -e "- Region      : ${RADIX_INFRASTRUCTURE_REGION}"
-    echo -e "- Subscription: ${RADIX_INFRASTRUCTURE_SUBSCRIPTION}"
-    echo -e ""
-    echo -e "Commands:"
-    echo -e "- ${__style_green}install${__style_end}: Install all prerequiste infrastructure, system users, permissions etc step by step."
-    echo -e "- ${__style_green}destroy${__style_end}: Destroy all prerequiste infrastructure, system users, permissions etc step by step."
-    echo -e ""
-    echo -e "Be aware that it is possible to create havoc with this script. You have been warned."
-}
-
 function install() {
-    echo_step "Provision all prerequisite infrastructure."
-    echo -e "Use radix-boot to provision clusters when all prerequisite infrastructure is ready."
+    echo ""
+    # echo_step "Provision all prerequisite infrastructure."
+    echo -e "Use \"install_cluster.sh\" to provision clusters when all prerequisite infrastructure is ready."
     ask_user "Do you want to continue?"
     if [[ ! "$REPLY" =~ ^[Yy]$ ]]
     then
         echo -e "Exiting install."
         exit 0
-    fi
+    fi        
     
     ask_user "Should I provision the resource groups?" "This will reset all permissions on existing groups."    
     if [[ "$REPLY" =~ ^[Yy]$ ]]
@@ -591,34 +639,40 @@ function install() {
         create_az_ad_client_app
     fi
 
+    # Playground
+    if [[ "${RADIX_INFRASTRUCTURE_ENVIRONMENT}" == "dev" ]]
+    then
+        ask_user "Configure playground?"    
+        if [[ "$REPLY" =~ ^[Yy]$ ]]
+        then
+            configure_playground
+        fi        
+    fi
+
     echo_step "Install done."
 }
 
-function parse_arguments() {    
+########################################################################
+# INTERFACE
+########################################################################
 
-    case "$1" in
-        "-help" | "-h" )
-            show_help
-            ;;
+# Misc az queries
+# az group list --query '[].name'
 
-        "install" )
-            set_subscription
-            install
-            ;;
-
-        "destroy" )
-            set_subscription
-            destroy
-            ;;
-
-        *)
-            show_help
-            ;;
-    esac    
-}
+function show_config() {
+    echo -e ""
+    echo -e "${__style_yellow}Provision prerequisite infrastructure for radix platform${__style_end}"
+    echo -e ""
+    echo -e "${__style_green}Configuration:${__style_end}"
+    echo -e "- Environment : ${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
+    echo -e "- Region      : ${RADIX_INFRASTRUCTURE_REGION}"
+    echo -e "- Subscription: ${RADIX_INFRASTRUCTURE_SUBSCRIPTION}"
+} 
 
 ########################################################################
 # MAIN
 ########################################################################
 
-parse_arguments "$@"
+set_subscription
+show_config
+install
