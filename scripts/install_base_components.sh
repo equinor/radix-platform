@@ -13,7 +13,7 @@
 # SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=dd ./install_base_components.sh
 #
 # Example: Configure Playground, use default settings
-# SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="playground-1" IS_PLAYGROUND_CLUSTER="true" ./install_base_components.sh
+# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" IS_PLAYGROUND_CLUSTER="true" ./install_base_components.sh
 #
 # Example: Configure DEV, use default settings
 # SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" ./install_base_components.sh
