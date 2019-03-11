@@ -282,7 +282,7 @@ echo "Waiting 10 seconds for cert-manager to create certificate secrets before a
 sleep 10s
 
 kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
-kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
+kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="cluster-wildcard-sync=cluster-wildcard-tls-cert"
 
 
 #######################################################################################
