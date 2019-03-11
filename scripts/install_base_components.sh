@@ -212,15 +212,19 @@ helm upgrade --install cert-manager \
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
 
 # Create a letsencrypt production issuer for cert-manager:
+clusterissuer_config="cert-manager-production-clusterissuer"
+if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+  clusterissuer_config="cert-manager-playground-clusterissuer"
+fi
 
 az keyvault secret download \
     --vault-name $VAULT_NAME \
-    --name cert-manager-production-clusterissuer \
-    --file cert-manager-production-clusterissuer.yaml
+    --name "$clusterissuer_config" \
+    --file "${clusterissuer_config}.yaml"
 
-kubectl apply -n cert-manager -f cert-manager-production-clusterissuer.yaml
+kubectl apply -n cert-manager -f "${clusterissuer_config}.yaml"
 
-rm -f cert-manager-production-clusterissuer.yaml
+rm -f "${clusterissuer_config}.yaml"
 
 #######################################################################################
 ### Create wildcard certs
