@@ -65,7 +65,7 @@ if [[ -z "$RESOURCE_GROUP" ]]; then
 fi
 
 if [[ -z "$KUBERNETES_VERSION" ]]; then
-    KUBERNETES_VERSION="1.12.4"
+    KUBERNETES_VERSION="1.12.6"
 fi
 
 if [[ -z "$NODE_COUNT" ]]; then
