@@ -264,11 +264,17 @@ helm upgrade --install radix-pipeline-public-site-release \
 
 # Update replyUrl for web-console
 echo "Waiting for web-console ingress to be ready..."
-while [[ "$(kubectl get ing -n radix-web-console-prod web -o jsonpath='{.spec.rules[0].host}' 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get ing web -n radix-web-console-prod 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
-done    
-echo "$(AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)"
+done
+echo "Ingress is ready."    
+(AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
+wait # wait for subshell to finish
 
-# Step 2.6 Redirect public endpoints
-# To be done manually
+echo ""
+echo "Roses are red, violets are blue"
+echo "this script has come to an end"
+echo "but maybe not so "
+echo "for all the tasks assigned to you"
+echo ""
