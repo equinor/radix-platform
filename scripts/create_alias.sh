@@ -81,6 +81,8 @@ if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
     RADIX_ZONE_NAME="playground.$RADIX_ZONE_NAME"
 fi
 
+az acr helm repo add --name "$HELM_REPO" && helm repo update
+
 for filename in alias_config/*.sh; do
     [ -e "$filename" ] || continue
     
