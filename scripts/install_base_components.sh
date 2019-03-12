@@ -113,6 +113,12 @@ if [[ -z "$PROMETHEUS_NAME" ]]; then
     PROMETHEUS_NAME="radix-stage1"
 fi
 
+OPERATOR_IMAGE_TAG="release-latest"
+
+if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
+  OPERATOR_IMAGE_TAG="master-latest"
+fi
+
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
@@ -128,6 +134,7 @@ echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
 echo -e "HELM_VERSION            : $HELM_VERSION"
 echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
+echo -e "OPERATOR_IMAGE_TAG      : $OPERATOR_IMAGE_TAG"
 echo -e ""
 
 # Check for Azure login
@@ -464,7 +471,7 @@ helm upgrade --install radix-operator \
     --set prometheusName="$PROMETHEUS_NAME" \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
-    --set image.tag=release-latest \
+    --set image.tag="$OPERATOR_IMAGE_TAG" \
     --set isPlaygroundCluster="$IS_PLAYGROUND_CLUSTER" \
     -f radix-operator-values.yaml
 
