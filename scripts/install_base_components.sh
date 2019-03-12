@@ -213,6 +213,8 @@ helm upgrade --install cert-manager \
     --version v0.6.0 \
     --set ingressShim.defaultIssuerName=letsencrypt-prod \
     --set ingressShim.defaultIssuerKind=ClusterIssuer \
+    --set ingressShim.defaultACMEChallengeType="dns01" \
+    --set ingressShim.defaultACMEDNS01ChallengeProvider="azure-dns" \
     --set webhook.enabled=false \
     stable/cert-manager
 
