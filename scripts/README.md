@@ -7,6 +7,11 @@
 Run script `install_infrastructure.sh`.   
 Instructions for how to run it can be found in the file.
 
+Example:
+```
+RADIX_INFRASTRUCTURE_ENVIRONMENT="dev" ./install_infrastructure.sh
+```
+
 ### Create cluster
 
 Run script `install_cluster.sh`.  

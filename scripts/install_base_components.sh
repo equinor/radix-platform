@@ -303,7 +303,7 @@ kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="clust
 ###
 
 echo "Installing nginx-ingress"
-helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.externalTrafficPolicy=Local
+helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.service.externalTrafficPolicy=Local
 
 
 #######################################################################################
@@ -479,6 +479,8 @@ helm upgrade --install radix-operator \
 
 rm -f radix-operator-values.yaml
 
+## For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
+kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
 ### Install backup of radix custom resources (RR, RA, RD)

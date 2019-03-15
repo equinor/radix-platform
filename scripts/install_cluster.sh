@@ -243,3 +243,13 @@ echo -e "Azure kubernetes service ${CLUSTER_NAME} created."
 
 # Enter the newly created cluster
 az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
+
+echo "###########################################################"
+echo ""
+echo "MANUAL STEP: AKS DIAGNOSTIC LOGS"
+echo ""
+echo "You need to manually enable AKS Diagnostic logs. See https://docs.microsoft.com/en-us/azure/aks/view-master-logs ."
+echo ""
+echo "Complete the steps in the section 'Enable diagnostics logs'. PS: It has been enabled on our subscriptions so no need to do that step."
+echo ""
+echo "###########################################################"

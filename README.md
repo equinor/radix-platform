@@ -1,4 +1,4 @@
-![Logo](https://github.com/equinor/radix-resources/blob/master/logo/Banner%20energy%20red@2x.png?raw=true)
+![Logo](logo/Banner%20energy%20red@2x.png)
 
 [Public site](https://www.radix.equinor.com)
 
