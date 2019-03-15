@@ -12,6 +12,9 @@
 # To run this script from terminal:
 # SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=dd ./install_base_components.sh
 #
+# Example: Configure Playground, use default settings
+# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" IS_PLAYGROUND_CLUSTER="true" ./install_base_components.sh
+#
 # Example: Configure DEV, use default settings
 # SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" ./install_base_components.sh
 #
@@ -72,15 +75,18 @@ fi
 ### Set default values for optional input
 ###
 
-if [[ -z "$DNS_ZONE" ]]; then
-    DNS_ZONE="radix.equinor.com"
-    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
-        DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
-    fi
-fi
-
 if [[ -z "$IS_PLAYGROUND_CLUSTER" ]]; then
     IS_PLAYGROUND_CLUSTER="false"
+fi
+
+if [[ -z "$DNS_ZONE" ]]; then
+    DNS_ZONE="radix.equinor.com"
+
+    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+      DNS_ZONE="playground.$DNS_ZONE"
+    elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
+      DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
+    fi
 fi
 
 if [[ -z "$RESOURCE_GROUP" ]]; then
@@ -107,6 +113,12 @@ if [[ -z "$PROMETHEUS_NAME" ]]; then
     PROMETHEUS_NAME="radix-stage1"
 fi
 
+OPERATOR_IMAGE_TAG="release-latest"
+
+if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
+  OPERATOR_IMAGE_TAG="master-latest"
+fi
+
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
@@ -122,6 +134,7 @@ echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
 echo -e "HELM_VERSION            : $HELM_VERSION"
 echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
+echo -e "OPERATOR_IMAGE_TAG      : $OPERATOR_IMAGE_TAG"
 echo -e ""
 
 # Check for Azure login
@@ -200,21 +213,27 @@ helm upgrade --install cert-manager \
     --version v0.6.0 \
     --set ingressShim.defaultIssuerName=letsencrypt-prod \
     --set ingressShim.defaultIssuerKind=ClusterIssuer \
+    --set ingressShim.defaultACMEChallengeType="dns01" \
+    --set ingressShim.defaultACMEDNS01ChallengeProvider="azure-dns" \
     --set webhook.enabled=false \
     stable/cert-manager
 
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
 
 # Create a letsencrypt production issuer for cert-manager:
+clusterissuer_config="cert-manager-production-clusterissuer"
+if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+  clusterissuer_config="cert-manager-playground-clusterissuer"
+fi
 
 az keyvault secret download \
     --vault-name $VAULT_NAME \
-    --name cert-manager-production-clusterissuer \
-    --file cert-manager-production-clusterissuer.yaml
+    --name "$clusterissuer_config" \
+    --file "${clusterissuer_config}.yaml"
 
-kubectl apply -n cert-manager -f cert-manager-production-clusterissuer.yaml
+kubectl apply -n cert-manager -f "${clusterissuer_config}.yaml"
 
-rm -f cert-manager-production-clusterissuer.yaml
+rm -f "${clusterissuer_config}.yaml"
 
 #######################################################################################
 ### Create wildcard certs
@@ -222,6 +241,8 @@ rm -f cert-manager-production-clusterissuer.yaml
 
 # Create app wildcard cert
 echo "Creating app wildcard cert..."
+
+APP_ALIAS_BASE_URL="app.$DNS_ZONE"
 
 cat <<EOF | kubectl apply -f -
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -233,16 +254,16 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod
-  commonName: "*.app.$DNS_ZONE"
+  commonName: "*.$APP_ALIAS_BASE_URL"
   dnsNames:
-  - "app.$DNS_ZONE"
+  - "$APP_ALIAS_BASE_URL"
   acme:
     config:
     - dns01:
         provider: azure-dns
       domains:
-      - "*.app.$DNS_ZONE"
-      - "app.$DNS_ZONE"
+      - "*.$APP_ALIAS_BASE_URL"
+      - "$APP_ALIAS_BASE_URL"
 EOF
 
 # Create cluster wildcard cert
@@ -274,7 +295,7 @@ echo "Waiting 10 seconds for cert-manager to create certificate secrets before a
 sleep 10s
 
 kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
-kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
+kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="cluster-wildcard-sync=cluster-wildcard-tls-cert"
 
 
 #######################################################################################
@@ -448,14 +469,13 @@ az keyvault secret download \
 helm upgrade --install radix-operator \
     "$HELM_REPO"/radix-operator \
     --set dnsZone="$DNS_ZONE" \
-    --set appAliasBaseURL="app.$DNS_ZONE" \
+    --set appAliasBaseURL="$APP_ALIAS_BASE_URL" \
     --set prometheusName="$PROMETHEUS_NAME" \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
-    --set image.tag=release-latest \
+    --set image.tag="$OPERATOR_IMAGE_TAG" \
     --set isPlaygroundCluster="$IS_PLAYGROUND_CLUSTER" \
-    -f radix-operator-values.yaml \
-    --version 1.0.17
+    -f radix-operator-values.yaml
 
 rm -f radix-operator-values.yaml
 

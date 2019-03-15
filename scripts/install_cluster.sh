@@ -24,6 +24,7 @@
 #   VNET_ADDRESS_PREFIX         (Optional. Defaulted if omitted)
 #   VNET_SUBNET_PREFIX          (Optional. Defaulted if omitted)
 #   NETWORK_PLUGIN              (Optional. Defaulted if omitted)
+#   NETWORK_POLICY              (Optional. Defaulted if omitted)
 #   SUBNET_NAME                 (Optional. Defaulted if omitted)
 #   VNET_DOCKER_BRIDGE_ADDRESS  (Optional. Defaulted if omitted)
 #   VNET_DNS_SERVICE_IP         (Optional. Defaulted if omitted)
@@ -64,7 +65,7 @@ if [[ -z "$RESOURCE_GROUP" ]]; then
 fi
 
 if [[ -z "$KUBERNETES_VERSION" ]]; then
-    KUBERNETES_VERSION="1.12.4"
+    KUBERNETES_VERSION="1.12.6"
 fi
 
 if [[ -z "$NODE_COUNT" ]]; then
@@ -81,6 +82,10 @@ fi
 
 if [[ -z "$NETWORK_PLUGIN" ]]; then
     NETWORK_PLUGIN="azure" # flag for advanced networking
+fi
+
+if [[ -z "$NETWORK_POLICY" ]]; then
+    NETWORK_POLICY="calico" # flag for network security policy
 fi
 
 if [[ -z "$VNET_NAME" ]]; then
@@ -116,6 +121,8 @@ if [[ -z "$VNET_DNS_SERVICE_IP" ]]; then
     # see https://docs.microsoft.com/en-us/azure/aks/configure-advanced-networking
     VNET_DNS_SERVICE_IP="10.2.0.10" 
 fi
+
+
 
 ### Check for Azure login
 
@@ -153,6 +160,7 @@ echo -e "VNET_NAME                  : $VNET_NAME"
 echo -e "VNET_ADDRESS_PREFIX        : $VNET_ADDRESS_PREFIX"
 echo -e "VNET_SUBNET_PREFIX         : $VNET_SUBNET_PREFIX"
 echo -e "NETWORK_PLUGIN             : $NETWORK_PLUGIN"
+echo -e "NETWORK_POLICY             : $NETWORK_POLICY"
 echo -e "SUBNET_NAME                : $SUBNET_NAME"
 echo -e "VNET_DOCKER_BRIDGE_ADDRESS : $VNET_DOCKER_BRIDGE_ADDRESS"
 echo -e "VNET_DNS_SERVICE_IP        : $VNET_DNS_SERVICE_IP"
@@ -227,7 +235,8 @@ az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --aad-server-app-id "$AAD_SERVER_APP_ID" \
     --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
-    --aad-tenant-id "$AAD_TENANT_ID"
+    --aad-tenant-id "$AAD_TENANT_ID" \
+    --network-policy "$NETWORK_POLICY"
 
 echo - ""
 echo -e "Azure kubernetes service ${CLUSTER_NAME} created."
