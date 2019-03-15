@@ -459,6 +459,8 @@ helm upgrade --install radix-operator \
 
 rm -f radix-operator-values.yaml
 
+## For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
+kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
 ### Install backup of radix custom resources (RR, RA, RD)
