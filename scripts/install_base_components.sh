@@ -75,6 +75,10 @@ fi
 ### Set default values for optional input
 ###
 
+if [[ -z "$IS_PLAYGROUND_CLUSTER" ]]; then
+    IS_PLAYGROUND_CLUSTER="false"
+fi
+
 if [[ -z "$DNS_ZONE" ]]; then
     DNS_ZONE="radix.equinor.com"
 
@@ -83,10 +87,6 @@ if [[ -z "$DNS_ZONE" ]]; then
     elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
       DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
     fi
-fi
-
-if [[ -z "$IS_PLAYGROUND_CLUSTER" ]]; then
-    IS_PLAYGROUND_CLUSTER="false"
 fi
 
 if [[ -z "$RESOURCE_GROUP" ]]; then
