@@ -8,12 +8,12 @@ ingress:
       - xx
 
 resources:
-  limits:
-    cpu: "2"
-    memory: "2000Mi"
+#  limits:
+#    cpu: "2"
+#    memory: "2000Mi"
   requests:
     cpu: "0.2"
-    memory: "200Mi"
+    memory: "500Mi"
 
 env:
   GF_DATABASE_TYPE: mysql
@@ -32,9 +32,6 @@ env:
   GF_AUTH_GENERIC_OAUTH_SCOPES: openid email name
   GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/oauth2/authorize
   GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/oauth2/token
-  GF_DATABASE_TYPE: mysql
-  GF_DATABASE_SSL_MODE: "skip-verify"
-  GF_DATABASE_CA_CERT_PATH: /etc/ssl/certs/ca-certificates.crt
   GF_USERS_AUTO_ASSIGN_ORG_ROLE: "Editor" # Viewer|Editor|Admin
   GF_SERVER_ROOT_URL: xx
 
@@ -48,7 +45,7 @@ datasources:
       type: prometheus
       url: http://prometheus-operator-prometheus:9090
       access: proxy
-      isDefault: false
+      isDefault: true
       basicAuth: false
       jsonData:
         timeInterval: "5s"
