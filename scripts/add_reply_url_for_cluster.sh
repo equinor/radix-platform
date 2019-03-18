@@ -7,8 +7,8 @@
 # Example 1:
 # AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh
 # 
-# Example 2: Calling script from another script without polluting parent environment
-# echo "$(AAD_APP_NAME="radix-cluster-aad-server-dev" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)"
+# Example 2: Using a subshell to avoid polluting parent shell
+# (AAD_APP_NAME="radix-cluster-aad-server-dev" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
 
 # INPUTS:
 #   AAD_APP_NAME            (Mandatory)
@@ -17,7 +17,7 @@
 #   REPLY_PATH              (Mandatory)
 
 echo ""
-echo "Updating replyUrl \"${additionalReplyURL}\" to AAD app \"${AAD_APP_NAME}\"..."
+echo "Updating replyUrls for AAD app \"${AAD_APP_NAME}\"..."
 
 # Validate mandatory input
 if [[ -z "$AAD_APP_NAME" ]]; then
@@ -38,13 +38,18 @@ if [[ -z "$REPLY_PATH" ]]; then
 fi
 
 function updateReplyUrls() {
-    local aaAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
-    local currentReplyUrls="$(az ad app show --id ${aaAppId} --query replyUrls --output tsv)"
-    local host_name=$(kubectl get ing -n ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
-    local additionalReplyURL="https://${host_name}${REPLY_PATH}"   
+    local aadAppId
+    local currentReplyUrls
+    local host_name
+    local additionalReplyURL
 
+    aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
     # Convert list to string where urls are separated by space
-    currentReplyUrls="$(echo $currentReplyUrls | paste -s -d  -)"
+    currentReplyUrls="$(az ad app show --id ${aadAppId} --query replyUrls --output json | jq -r '.[] | @sh')"
+    # Remove tabs as mac really insist on one being there
+    currentReplyUrls="$(printf '%s\t' ${currentReplyUrls})"
+    host_name=$(kubectl get ing -n ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
+    additionalReplyURL="https://${host_name}${REPLY_PATH}"  
     
     if [[ "$currentReplyUrls" == *"${additionalReplyURL}"* ]]; then
         echo "replyUrl \"${additionalReplyURL}\" already exist in AAD app \"${AAD_APP_NAME}\"."
@@ -52,11 +57,25 @@ function updateReplyUrls() {
         exit 0        
     fi
 
-    local newReplyURLs="${currentReplyUrls} ${additionalReplyURL}"
- 
-    # az ad app update --id "${aaAppId}" --reply-urls "${newReplyURLs}"
+    local newReplyURLs
+    newReplyURLs="${currentReplyUrls}'${additionalReplyURL}'"
+   
+    # Ask user
+    echo "This will be the new list of replyUrls for AAD app $AAD_APP_NAME:"
+    echo "$newReplyURLs"
+    echo ""
+    echo "Do you want to continue?"
+    read -p "[Y]es or [N]o " -n 1 -r
+    echo ""
+    if [[ "$REPLY" =~ ^[Nn]$ ]]
+    then
+        echo "Skipping updating replyUrls."
+        exit 0
+    fi
+
     # Workaround for newReplyURLs param expansion
-    local cmd_text="az ad app update --id "${aaAppId}" --reply-urls "${newReplyURLs}""
+    local cmd_text
+    cmd_text="az ad app update --id "${aadAppId}" --reply-urls "${newReplyURLs}""
     bash -c "$cmd_text"
    
     echo "Added replyUrl \"${additionalReplyURL}\" to AAD app \"${AAD_APP_NAME}\"."
@@ -64,4 +83,5 @@ function updateReplyUrls() {
 }
 
 ### MAIN
-updateReplyUrls
+ updateReplyUrls
+
