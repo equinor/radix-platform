@@ -11,6 +11,7 @@ The `radix-stage0`containes prerequisites for the components in `radix-stage1` h
 - prometheus
 - kubed
 - humio
+- Grafana
 
 ## radix-registration and radix-pipeline-invocation charts
 
