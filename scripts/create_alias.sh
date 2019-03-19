@@ -116,7 +116,7 @@ for filename in alias_config/*.sh; do
 
     # Create ingress object in the cluster
     helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" "$HELM_REPO"/ingress \
-        --version 1.0.3 \
+        --version 1.0.4 \
         --set aliasUrl="$RADIX_APP_ALIAS_URL" \
         --set application="$RADIX_APP_NAME" \
         --set applicationEnv="$RADIX_APP_ENVIRONMENT" \
