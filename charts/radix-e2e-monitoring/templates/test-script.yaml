@@ -16,6 +16,8 @@ data:
 
       const serviceAccountToken = open(`${__ENV.TOKEN_FILE_PATH}`).trim();
 
+      const kubernetesHost = `${__ENV.KUBERNETES_SERVICE_HOST}`;
+      
       import { check, sleep } from "k6";
       import { Counter, Rate, Trend } from "k6/metrics";
       import http from "k6/http";
@@ -51,7 +53,7 @@ data:
 
           for (let i = 0; i < tests.length; i++) {
 
-            let tags = {"name": tests[i].endpoint, "service": tests[i].service};
+            let tags = {"kubernetesHost": kubernetesHost, "name": tests[i].endpoint, "service": tests[i].service};
             
             // We add 1 critical error. If it is 0 nothing is sent to InfluxDB. Grafana will need to subtract 1 from the total.
             criticalFail.add(1, tags);

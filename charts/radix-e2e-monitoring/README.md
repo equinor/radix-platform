@@ -6,12 +6,12 @@ az account set --subscription "Omnia Radix Development"
 az acr helm repo add --name radixdev && helm repo update
 helm dep up
 cd ..
-tar -zcvf radix-e2e-monitoring-1.0.5.tgz radix-e2e-monitoring
-az acr helm push --name radixdev radix-e2e-monitoring-1.0.5.tgz
+tar -zcvf radix-e2e-monitoring-1.0.8.tgz radix-e2e-monitoring
+az acr helm push --name radixdev radix-e2e-monitoring-1.0.8.tgz
 
 az account set --subscription "Omnia Radix Production"
 az acr helm repo add --name radixprod && helm repo update
-az acr helm push --name radixprod radix-e2e-monitoring-1.0.5.tgz
+az acr helm push --name radixprod radix-e2e-monitoring-1.0.8.tgz
 ```
 
 
