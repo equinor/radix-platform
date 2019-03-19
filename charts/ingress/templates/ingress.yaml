@@ -10,7 +10,8 @@ metadata:
     {{- end }}
 
   labels:
-    radixApp: {{ .Values.application }}
+    radix-app: {{ .Values.application }}
+    radix-component: {{ .Values.component }}
   name: {{ .Values.component }}.custom-domain
   namespace: {{ .Values.application }}-{{ .Values.applicationEnv }}
 spec:

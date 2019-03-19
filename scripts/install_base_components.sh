@@ -386,8 +386,8 @@ helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
     --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE"
 
 # Add grafana replyUrl to AAD app    
-echo "$(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)"
-
+(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
+wait # wait for subshell to finish
 
 #######################################################################################
 ### Install external-dns
