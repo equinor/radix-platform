@@ -117,3 +117,6 @@ This script depends on configuration files (one config for aliasing each applica
 - `alias_config_webhook.sh`
 - `alias_config_canary.sh`.
 
+## Install Network security test
+
+When radix-canary is up running go to https://github.com/equinor/radix-nsp-test and register this as a radix application. 
