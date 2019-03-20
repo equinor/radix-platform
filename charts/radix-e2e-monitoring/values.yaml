@@ -8,10 +8,11 @@ tests:
     endpoint: "/login"
     expect: 200
     authenticate: false
-  - service: "api"
-    endpoint: "/apis/batch/v1/jobs"
-    expect: 200
-    authenticate: true
+  # Disabled for now. Needs an ingress in each cluster forwarding "api" to "kube-system/kubernetes" service. Not sure if team will accept that.
+  #- service: "api"
+  #  endpoint: "/apis/batch/v1/jobs"
+  #  expect: 200
+  #  authenticate: true
   - service: "www-radix-canary-golang-prod"
     endpoint: "/"
     expect: 200
@@ -32,18 +33,10 @@ tests:
     endpoint: "/"
     expect: 200
     authenticate: false
-  - service: "public-site-radix-platform-dev"
-    endpoint: "/"
-    expect: 200
-    authenticate: false
   - service: "public-site-radix-platform-prod"
     endpoint: "/"
     expect: 200
     authenticate: false
-  - service: "server-radix-api-qa"
-    endpoint: "/api/v1/applications/radix-web-console"
-    expect: 200
-    authenticate: true
   - service: "server-radix-api-prod"
     endpoint: "/api/v1/applications/radix-web-console"
     expect: 200

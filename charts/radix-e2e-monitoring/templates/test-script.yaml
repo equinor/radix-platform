@@ -16,16 +16,21 @@ data:
 
       const serviceAccountToken = open(`${__ENV.TOKEN_FILE_PATH}`).trim();
 
-      const kubernetesHost = `${__ENV.KUBERNETES_SERVICE_HOST}`;
+      let source
+
+      if(`${__ENV.KUBERNETES_SERVICE_HOST}` == "undefined"){
+        source = `${__ENV.NAME}`;
+      }else{
+        source = `${__ENV.KUBERNETES_SERVICE_HOST}`;
+      }
       
       import { check, sleep } from "k6";
       import { Counter, Rate, Trend } from "k6/metrics";
       import http from "k6/http";
 
-      const criticalPass = new Counter("critical_tests_pass");
-      const criticalFail = new Counter("critical_tests_fail");
-      const warningPass = new Rate("warning_tests_pass");
-      const warningFail = new Rate("warning_tests_fail");
+      const testsRun = new Counter("tests_run");
+      const testsSuccessful = new Counter("tests_successful");
+      const testsFailed = new Counter("tests_failed");
 
       export let options = {
         thresholds: {
@@ -35,6 +40,8 @@ data:
       };
 
       export default function() {
+
+          console.log("Starting tests. Setting source to: " + source)
 
           // Array containing all tests
           let tests = []
@@ -53,12 +60,11 @@ data:
 
           for (let i = 0; i < tests.length; i++) {
 
-            let tags = {"kubernetesHost": kubernetesHost, "name": tests[i].endpoint, "service": tests[i].service};
+            let tags = {"source": source, "name": tests[i].endpoint, "service": tests[i].service};
             
-            // We add 1 critical error. If it is 0 nothing is sent to InfluxDB. Grafana will need to subtract 1 from the total.
-            criticalFail.add(1, tags);
-
             let params = { tags: tags }
+
+            testsFailed.add(0, tags);
 
             if (tests[i].authenticate == true) {
               params = {
@@ -74,23 +80,27 @@ data:
             
             // console.log(JSON.stringify(res, null, 4));
         
+            testsRun.add(1, tags);
+
             if (check(res, {
               "no errors": (r) => r.error === ""
             }, tags)){
-              criticalPass.add(1, tags);
             }else{
               console.log(res.error)
-              criticalFail.add(1, tags);
+              testsFailed.add(1, tags);
+              continue;
             }
             
             if (check(res, {
               "expected HTTP status": (r) => r.status === tests[i].expect
             }, tags)){
-              criticalPass.add(1, tags);
             }else{
-              console.log("Unexpected HTTP status, wanted " + tests[i].expect + " but got " + res.status)
-              criticalFail.add(1, tags);
+              console.log(tests[i].endpoint + " Unexpected HTTP status, wanted " + tests[i].expect + " but got " + res.status)
+              testsFailed.add(1, tags);
+              continue;
             }
+
+            testsSuccessful.add(1, tags);
 
           }
 
