@@ -122,12 +122,12 @@ data:
                   res.body
               );
               testsRunsFailedCounter++;
-              testsFailed.add(1, baseTags);
+              testsFailed.add(1, testTags);
               continue;
             }
 
             testsFailed.add(0, baseTags);
-            testsSuccessful.add(1, baseTags);
+            testsSuccessful.add(1, testTags);
             testsRunsSuccessfulCounter++;
           }
 
