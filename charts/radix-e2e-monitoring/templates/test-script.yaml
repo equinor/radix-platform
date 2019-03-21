@@ -66,12 +66,11 @@ data:
             let testTags = {
               source: source,
               cluster: clusterFQDN,
-              scope: "test",
               name: tests[i].endpoint,
               service: tests[i].service
             };
 
-            let params = { testTags: testTags };
+            let params = { tags: testTags };
 
             if (tests[i].authenticate == true) {
               params = {
