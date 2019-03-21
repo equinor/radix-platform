@@ -36,16 +36,3 @@ env:
   GF_SERVER_ROOT_URL: xx
 
 envFromSecret: grafana-secrets
-
-datasources:
-  datasources.yaml:
-    apiVersion: 1
-    datasources:
-    - name: prometheus
-      type: prometheus
-      url: http://prometheus-operator-prometheus:9090
-      access: proxy
-      isDefault: true
-      basicAuth: false
-      jsonData:
-        timeInterval: "5s"
