@@ -5,7 +5,9 @@ parent: ['Docs', '../../docs.html']
 toc: true
 ---
 
-# Application
+# Running code in Radix
+
+## Application
 
 Applications are the highest level of objects that can be created in in Radix — all other objects are contained within them.
 
@@ -17,7 +19,7 @@ The components of an application don't need to share aspects like coding languag
 
 The basic configuration for an application (the *application registration*) is composed of a **name**, the URL of a **GitHub repository**, and **access control** configuration (i.e. which Active Directory groups can administer the application in Radix). The remainder of the configuration is provided by the [`radixconfig.yaml` file](../reference-radix-config/), which is kept in the root of the application GitHub repository.
 
-# Environment
+## Environment
 
 An environment is an isolated area where all of an application's [components](#component) run. It is meant to compartmentalise an instance of the application, and can be used to provide that instance to users.
 
@@ -33,7 +35,7 @@ Environments are targets for [deployments](#deployment); at any time an environm
 
 Environments (not deployments) also define any [secrets](#secret) that are required by the running components. Those secrets are kept in the environment when the active deployment is changed, and applied to the new components.
 
-# Component
+## Component
 
 A component represents a standalone process running within an [environment](#environment) in a Radix application. Components are defined in the [`radixconfig.yaml` file](../reference-radix-config/#components), but they are only instantiated by [deployments](#deployment), which specify the Docker image to use. A component can have one or more running [replicas](#replica), depending on its configuration.
 
@@ -45,31 +47,13 @@ If a component is defined as `public`, endpoints are made available on the publi
 
 Components can further be configured independently on each environment. Besides [environment variables](#environment-variable) and [secrets](#secret), a component can have different resource usage and monitoring settings.
 
-# Replica
+## Replica
 
 A replica is a running instance of a [component](#component). As a normal process, it can write to the standard output (`stdout`), which is made available for inspection by Radix.
 
 If a replica terminates unexpectedly, a new one is started so that the component will maintain the specified number of replicas running (by default, this number is one). Each replica is started with the exact same configuration.
 
-# Deployment
-
-Deployments are created by some types of [job](#job). A deployment defines the specific image used for each [component](#component) when it runs in an [environment](#environment). Deployments thus serve to aggregate specific versions of components, and make them easy to deploy together.
-
-[Environment variables](#environment-variable) (but not [secrets](#secret)) are also stored within a deployment.
-
-# Job
-
-Jobs are the core of the continuous integration/deployment (CI/CD) capabilities of Radix. Jobs perform tasks, which can causes changes in an application, its environments, and components. Depending on the type of job (its [pipeline](#pipeline)), different behaviours can be expected.
-
-Jobs consist of a series of *steps*, run either in parallel or sequentially (this is also defined by the pipeline). Each step is a stand-alone process, and its output can be inspected.
-
-# Pipeline
-
-A pipeline defines a type of job. At the moment, only one pipeline exists in Radix: the `build-deploy` pipeline. This is triggered by a commit in GitHub to a branch mapped to an environment. In turn, this causes all components to be rebuilt and a new deployment to be created in the appropriate environment.
-
-![Diagram of the build-deploy pipeline](pipeline-build-deploy.png "The build-deploy pipeline")
-
-# Environment variable
+## Environment variable
 
 A component can use any number of environment variables; the values of these are specified per [environment](#environment) in the `radixconfig.yaml` file.
 
@@ -77,8 +61,38 @@ Note that each component has its own set of environment variables. It's quite po
 
 In addition to the user-defined variables, a series of variables prefixed with `RADIX_*` are made available to all components. Check the [variables section](../reference-radix-config/#variables) of the `radix_config.yaml` reference for details.
 
-# Secret
+## Secret
 
 Secrets are made available to components as environment variables. Unlike [environment variables](#environment-variable), secrets are defined in each [environment](#environment), and components specify the name of the secret they require (not the value). This means that the secrets remain in their environment regardless of the specific active [deployment](#deployment).
 
 For each environment, a secret can be **consistent** or **missing**. A missing secret will prevent the component from starting up. To populate a secret, navigate to each environment within the Web Console, where required secrets and their state are displayed.
+
+# Continuous integration and deployment
+
+## Job
+
+Jobs are the core of the continuous integration/deployment (CI/CD) capabilities of Radix. Jobs perform tasks, which can causes changes in an application, its environments, and components. Depending on the type of job (its [pipeline](#pipeline)), different behaviours can be expected.
+
+Jobs consist of a series of *steps*, run either in parallel or sequentially (this is also defined by the pipeline). Each step is a stand-alone process, and its output can be inspected.
+
+## Pipeline
+
+A pipeline defines a type of job. At the moment, only one pipeline exists in Radix: the `build-deploy` pipeline. This is triggered by a commit in GitHub to a branch mapped to an environment. In turn, this causes all components to be rebuilt and a new deployment to be created in the appropriate environment.
+
+![Diagram of the build-deploy pipeline](pipeline-build-deploy.png "The build-deploy pipeline")
+
+## Deployment
+
+Deployments are created by some types of [job](#job). A deployment defines the specific image used for each [component](#component) when it runs in an [environment](#environment). Deployments thus serve to aggregate specific versions of components, and make them easy to deploy together.
+
+[Environment variables](#environment-variable) (but not [secrets](#secret)) are also stored within a deployment.
+
+# Publishing applications
+
+## Default alias
+
+Each application can have one specific component in one specific environment set as the _default alias_. This component is assigned a domain name in the format `[application].app.radix.equinor.com`, which can be used as the public URL for accessing the application.
+
+The default alias is configured by the [`dnsAppAlias` setting](../reference-radix-config/#dnsappalias) in the `radixconfig.yaml` file.
+
+There is currently no way to specify custom DNS aliases (i.e. to choose your own custom domain), although this is a feature that is being considered.
