@@ -14,7 +14,7 @@ data:
 
       {{ $clusterFQDN := .Values.clusterFQDN }}
 
-      const clusterFQDN = {{ .Values.clusterFQDN }}
+      const clusterFQDN = "{{ .Values.clusterFQDN }}"
 
       const serviceAccountToken = open(`${__ENV.TOKEN_FILE_PATH}`).trim();
 
