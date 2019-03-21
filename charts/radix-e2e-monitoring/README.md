@@ -1,21 +1,48 @@
+# Installation on cluster
+
+`install_base_components.sh` script automatically installs e2e monitoring running inside a cluster monitoring itself.
+
+# Installation on other cluster
+
+Update env var to cluster name and execute commands. 
+
+** PS: If the cluster already has installed another e2e helm chart, add the setting `--set createServiceAccountAndRoles=false` to the helm command! **
+
+az keyvault secret download \
+    --vault-name radix-vault-prod \
+    --name radix-e2e-monitoring \
+    --file radix-e2e-monitoring.yaml
+
+export CLUSTER_FQDN=playground-4.playground.radix.equinor.com
+
+helm upgrade --install e2e-$CLUSTER_FQDN \
+    radixprod/radix-e2e-monitoring \
+    --set clusterFQDN=$CLUSTER_FQDN \
+    -f radix-e2e-monitoring.yaml \
+    --set createServiceAccountAndRoles=false
+
+rm -f radix-e2e-monitoring.yaml
 
 
+# Upload new version to Helm Registry
 ```
 cd radix-platform/charts/radix-e2e-monitoring
 az account set --subscription "Omnia Radix Development"
 az acr helm repo add --name radixdev && helm repo update
 helm dep up
 cd ..
-tar -zcvf radix-e2e-monitoring-1.0.9.tgz radix-e2e-monitoring
-az acr helm push --name radixdev radix-e2e-monitoring-1.0.9.tgz
+tar -zcvf radix-e2e-monitoring-1.0.11.tgz radix-e2e-monitoring
+az acr helm push --name radixdev radix-e2e-monitoring-1.0.11.tgz
 
 az account set --subscription "Omnia Radix Production"
 az acr helm repo add --name radixprod && helm repo update
-az acr helm push --name radixprod radix-e2e-monitoring-1.0.9.tgz
+az acr helm push --name radixprod radix-e2e-monitoring-1.0.11.tgz
+
+az acr helm repo add --name radixprod && helm repo update
 ```
 
 
-# Tests
+# Developing and debugging
 
 Download active test configuration and run locally:
 

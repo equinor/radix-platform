@@ -14,6 +14,8 @@ data:
 
       {{ $clusterFQDN := .Values.clusterFQDN }}
 
+      const clusterFQDN = {{ .Values.clusterFQDN }}
+
       const serviceAccountToken = open(`${__ENV.TOKEN_FILE_PATH}`).trim();
 
       let source
@@ -28,16 +30,13 @@ data:
       import { Counter, Rate, Trend } from "k6/metrics";
       import http from "k6/http";
 
-      const testsRun = new Counter("tests_run");
+      // A test run is a sum of all the tests
+      const testsRunsSuccessful = new Counter("test_runs_successful");
+      const testsRunsFailed = new Counter("test_runs_failed");
+
+      // A test is an individual test
       const testsSuccessful = new Counter("tests_successful");
       const testsFailed = new Counter("tests_failed");
-
-      export let options = {
-        thresholds: {
-          "critical_tests_fail": ["count<1"],
-          "warning_tests_fail": ["rate<0.1"],
-        }
-      };
 
       export default function() {
 
@@ -58,52 +57,83 @@ data:
           tests.push(JSON.parse(JSON.stringify(test))); // Deep-ish copy
           {{- end }}
 
+          let baseTags = { source: source, cluster: clusterFQDN };
+
+          let testsRunsSuccessfulCounter = 0;
+          let testsRunsFailedCounter = 0;
+
           for (let i = 0; i < tests.length; i++) {
+            let testTags = {
+              source: source,
+              cluster: clusterFQDN,
+              scope: "test",
+              name: tests[i].endpoint,
+              service: tests[i].service
+            };
 
-            let tags = {"source": source, "name": tests[i].endpoint, "service": tests[i].service};
-            
-            let params = { tags: tags }
-
-            testsFailed.add(0, tags);
+            let params = { testTags: testTags };
 
             if (tests[i].authenticate == true) {
               params = {
-                  tags: tags,
-                  headers: { 
-                      "Content-Type": "application/json",
-                      "Authorization": "Bearer " + serviceAccountToken
-                  }
+                tags: testTags,
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: "Bearer " + serviceAccountToken
+                }
               };
             }
 
             let res = http.get(tests[i].endpoint, params);
-            
-            // console.log(JSON.stringify(res, null, 4));
-        
-            testsRun.add(1, tags);
 
-            if (check(res, {
-              "no errors": (r) => r.error === ""
-            }, tags)){
-            }else{
-              console.log(res.error)
-              testsFailed.add(1, tags);
-              continue;
-            }
-            
-            if (check(res, {
-              "expected HTTP status": (r) => r.status === tests[i].expect
-            }, tags)){
-            }else{
-              console.log(tests[i].endpoint + " Unexpected HTTP status, wanted " + tests[i].expect + " but got " + res.status)
-              testsFailed.add(1, tags);
+            //console.log(JSON.stringify(res, null, 4));
+
+            if (
+              check(
+                res,
+                {
+                  "no errors": r => r.error === ""
+                },
+                testTags
+              )
+            ) {
+            } else {
+              console.log(res.error);
+              testsRunsFailedCounter++;
+              testsFailed.add(1, baseTags);
               continue;
             }
 
-            testsSuccessful.add(1, tags);
+            if (
+              check(
+                res,
+                {
+                  "expected HTTP status": r => r.status === tests[i].expect
+                },
+                testTags
+              )
+            ) {
+            } else {
+              console.log(
+                tests[i].endpoint +
+                  " Unexpected HTTP status, wanted " +
+                  tests[i].expect +
+                  " but got " +
+                  res.status + 
+                  ". Body is: " + 
+                  res.body
+              );
+              testsRunsFailedCounter++;
+              testsFailed.add(1, baseTags);
+              continue;
+            }
 
+            testsFailed.add(0, baseTags);
+            testsSuccessful.add(1, baseTags);
+            testsRunsSuccessfulCounter++;
           }
 
-          sleep(5);
+          testsRunsFailed.add(testsRunsFailedCounter, baseTags);
+          testsRunsSuccessful.add(testsRunsSuccessfulCounter, baseTags);
 
-      }
+          sleep(5);
+        }
