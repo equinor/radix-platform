@@ -1,7 +1,7 @@
 ---
 title: Monitoring concepts
 layout: document
-parent: ['Guides', '../../guides.html']
+parent: ['Docs', '../../docs.html']
 toc: true
 ---
 
