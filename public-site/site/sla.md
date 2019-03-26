@@ -23,18 +23,18 @@ We are experimenting with an approach with "release channels" which differ in up
 
 Before going into production we start with a Limited production to gather experience in close collaboration with a select few pilot teams and guide us towards going to full production.
 
-**Support**
+**SLA**
   * **Support channels:** File issue on [radix-platform repo](https://github.com/equinor/radix-platform/issues) or ask on #omnia_radix_support on Slack.
   
   Schedule for DevOps/Support team - Norway default, i.e. 08:00 - 16:00 on Norwegian working days
   
   * **SLA Response time:** As soon as possible, at least Next Business Day (NBD).
   * **On call duty:** No  
-  * **Resolution time:** Cannot be guaranteed but for critical issues work on fixing the problem will start immediately and continue within business hours until resolved.
+  * **SLA Resolution time:** Cannot be guaranteed but for critical issues work on fixing the problem will start immediately and continue within business hours until resolved.
   
-  * **Minimum uptime pr month or maximum downtime within supported hours:**
-  * **Customer application availability:**
-  * **Omnia Radix platform availability:** 
+  * **SLA Minimum uptime pr month or maximum downtime within supported hours:**
+  * **SLA Customer application availability:**
+  * **SLA Omnia Radix platform availability:** 
   * **Planned maintenance:** We will try to announce planned maintenance at least 2 business days in advance. Downtime during planned maintenance does not count towards uptime goals.
   
   
@@ -46,14 +46,11 @@ ASSOCIATED OPERATIONAL RISKS
 
 # Playground cluster
 
-**Support**
-  * **Response time:** Issues filed on [radix-platform repo](https://github.com/equinor/radix-platform/issues) will be answered within Next Business Day (NBD).
+**SLA**
+  * **Support channels:** Ask on #omnia_radix_support on Slack
+  * **SLA Response time:** Issues filed on [radix-platform repo](https://github.com/equinor/radix-platform/issues) will be answered within Next Business Day (NBD).
 
-
-**Service Level Objective**
-  * 90% uptime per month.
-  
 **Service Level Agreement**
-  * **Recourse:** None
+  * **Minimum uptime pr month or maximum downtime within supported hours:**
   * **Planned maintenance:** Maintenance may or may not be announced in advance.
 
