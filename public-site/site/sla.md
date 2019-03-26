@@ -38,19 +38,17 @@ Before going into production we start with a Limited production to gather experi
   * **Planned maintenance:** We will try to announce planned maintenance at least 2 business days in advance. Downtime during planned maintenance does not count towards uptime goals.
   
   
-ASSOCIATED OPERATIONAL RISKS
+(ASSOCIATED OPERATIONAL RISKS
 - No incident management beyond schedule "Norway - default" - i.e. no support after 16:00 CET/CEST on Norwegian working days.
 - Risks for infrastructure downtime despite robust, high availability infrastructure.
-- Disaster recovery not established.
+- Disaster recovery not established.)
 
 
 # Playground cluster
 
-**SLA**
   * **Support channels:** Ask on #omnia_radix_support on Slack
-  * **SLA Response time:** Issues filed on [radix-platform repo](https://github.com/equinor/radix-platform/issues) will be answered within Next Business Day (NBD).
 
 **Service Level Agreement**
-  * **Minimum uptime pr month or maximum downtime within supported hours:**
+  * **Minimum uptime pr month or maximum downtime within supported hours:** xxx
   * **Planned maintenance:** Maintenance may or may not be announced in advance.
 
