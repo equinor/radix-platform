@@ -494,7 +494,7 @@ function set_permissions_on_acr() {
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}"
     # Configure new roles
-    az role assignment create --assignee "${id}" --role AcrPush --scope "${scope}"
+    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}"
 }
 
 function set_permissions_on_dns() {
