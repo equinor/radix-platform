@@ -8,20 +8,15 @@ toc: true
 # Clusters
 We are experimenting with an approach with "release channels" which differ in update frequency, service level agreements(SLA) and expected stability.
 
-|    Cluster            |                       Purpose                              |      Termination     |   Support    |     
-|-----------------------|------------------------------------------------------------|:--------------------:|:------------:|
-| **Production**        | Run workloads to be used by end users.  To be announced in 2019. |               |              |      
-| **Limited production**|                                                            | Every ~3 months      | Best effort |    
-| **Weekly**     | Test and development for the Radix team                           | 2-3 weeks after creation | Best-effort |  
-| **Playground**  | Test and development of Radix.                                   |                 | Best-effort  |  
+|    Cluster            |             Purpose                              |      Termination/Upgrade    |   Support    |     
+|-----------------------|--------------------------------------------------|:---------------------------:|:------------:|
+| **Production**        | Radix production - currenly limited access       | Every ~3 months             | Yes          |   
+| **Playground**        | Test and development of Radix.                   |                             | Best-effort  |  
+| **Weekly**            | Test and development for the Radix team          | 2-3 weeks after creation    | Best-effort  |
 
 # Production 
 
-> **No production clusters yet. Expected early 2019.**
-
-# Limited production 
-
-Before going into production we start with a Limited production to gather experience in close collaboration with a select few pilot teams and guide us towards going to full production.
+Procuction with limited access for selected teams and products. Limited access while we learn more about the operations of Radix.
 
 **SLA**
   * **Support channels:** File issue on [radix-platform repo](https://github.com/equinor/radix-platform/issues) or ask on #omnia_radix_support on Slack.
