@@ -11,7 +11,7 @@ We are experimenting with an approach with "release channels" which differ in up
 |    Cluster            |             Purpose                              |      Termination/Upgrade    |   Support    |     
 |-----------------------|--------------------------------------------------|:---------------------------:|:------------:|
 | **Production**        | Radix production - currenly limited access       | Every ~3 months             | Yes          |   
-| **Playground**        | Test and development of Radix.                   |                             | Best-effort  |  
+| **Playground**        | "Open" for test and experimenting with Radix     |                             | Best-effort  |  
 | **Weekly**            | Test and development for the Radix team          | 2-3 weeks after creation    | Best-effort  |
 
 # Production 
