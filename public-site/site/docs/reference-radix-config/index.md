@@ -70,16 +70,16 @@ spec:
 
 This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`.
 
-### `public`
+### `publicPort`
 
 ```yaml
 spec:
   components:
     - name: frontend
-      public: true
+      publicPort: http
 ```
 
-The `public` field of a component, if set to `true`, is used to make the component accessible on the internet by generating a public endpoint. Any component without `public: true` can only be accessed from another component in the app.
+The `publicPort` field of a component, if set to `<PORT_NAME>`, is used to make the component accessible on the internet by generating a public endpoint. Any component without `publicPort: <PORT_NAME>` can only be accessed from another component in the app. If specified, the `<PORT_NAME>` should exist in the `ports` field.
 
 ### `environmentConfig`
 
@@ -159,7 +159,7 @@ Environment variables are defined per Radix environment. By default, each applic
 - RADIX_DNS_ZONE
 - RADIX_PORTS (only available if `ports` are set)
 - RADIX_PORT_NAMES (only available if `ports` are set)
-- RADIX_PUBLIC_DOMAIN_NAME (if `component.public: true`)
+- RADIX_PUBLIC_DOMAIN_NAME (if `component.publicPort: <PORT_NAME>`)
 
 ### `secrets`
 
@@ -207,7 +207,7 @@ spec:
       ports:
         - name: http
           port: 80
-      public: true
+      publicPort: http
       environmentConfig:
         - environment: prod
           monitoring: true
