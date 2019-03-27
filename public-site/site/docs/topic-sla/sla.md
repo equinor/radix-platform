@@ -1,6 +1,7 @@
 ---
 title: SLA
 layout: document
+parent: ["Docs", "../../docs.html"]
 toc: true
 ---
 
@@ -44,6 +45,6 @@ ASSOCIATED OPERATIONAL RISKS
   * **Support channels:** Ask on #omnia_radix_support on Slack, file issues on [radix-platform repo](https://github.com/equinor/radix-platform/issues)
 
 **Service Level Agreement**
-  * **Minimum uptime pr month (or maximum downtime within supported hours):** xxx
+  * **Minimum uptime pr month (or maximum downtime within supported hours):** tbd
   * **Planned maintenance:** Maintenance that will have impact will be announced in advance.
 
