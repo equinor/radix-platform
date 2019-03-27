@@ -41,9 +41,9 @@ ASSOCIATED OPERATIONAL RISKS
 
 # Playground cluster
 
-  * **Support channels:** Ask on #omnia_radix_support on Slack
+  * **Support channels:** Ask on #omnia_radix_support on Slack, file issues on [radix-platform repo](https://github.com/equinor/radix-platform/issues)
 
 **Service Level Agreement**
-  * **Minimum uptime pr month or maximum downtime within supported hours:** xxx
-  * **Planned maintenance:** Maintenance may or may not be announced in advance.
+  * **Minimum uptime pr month (or maximum downtime within supported hours):** xxx
+  * **Planned maintenance:** Maintenance that will have impact will be announced in advance.
 
