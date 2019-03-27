@@ -1,0 +1,15 @@
+# Manual edit: kubectl edit servicemonitors prometheus-operator-kubelet
+# Automatic patch: kubectl patch servicemonitors prometheus-operator-kubelet --type merge --patch "$(cat kubelet-service-monitor-patch.yaml)"
+
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 10s
+    port: http-metrics
+    scheme: http
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    honorLabels: true
+    interval: 10s
+    path: /metrics/cadvisor
+    port: http-metrics
+    scheme: http
