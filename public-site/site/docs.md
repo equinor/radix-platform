@@ -12,6 +12,7 @@ A collection of relevant topics to make the most of having your application on R
 - How use [Docker and containers](docs/topic-docker/) in Radix
 - Ensure that your apps are [secure](docs/topic-security/) in the platform
 - Choose the most appropriate [monitoring strategy](docs/topic-monitoring/)
+- Service, support and availability [SLA](docs/topic-sla/)
 
 # Reference
 
