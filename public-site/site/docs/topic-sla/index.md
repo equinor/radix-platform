@@ -19,10 +19,10 @@ We are experimenting with an approach with "release channels" which differ in up
 
 Procuction with limited access for selected teams and products. Limited access while we learn more about the operations of Radix.
 
-**SLA**
+### SLA
   * **Support channels:** File issue on [radix-platform repo](https://github.com/equinor/radix-platform/issues) or ask on #omnia_radix_support on Slack.
   
-  Schedule for DevOps/Support team - Norway default, i.e. 08:00 - 16:00 on Norwegian working days
+  Schedule for Radix DevOps/Support team - Norway default, i.e. 08:00 - 16:00 on Norwegian working days
   
   * **SLA Response time:** As soon as possible, at least Next Business Day (NBD).
   * **On call duty:** No  
