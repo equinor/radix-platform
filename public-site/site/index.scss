@@ -54,6 +54,8 @@
 
 {% include_relative _vendor/solarized-css/solarized-dark.css %}
 
+@import 'components.dropdown-menu';
+@import 'components.global-nav';
 @import 'components.local-nav';
 @import 'components.hero';
 @import 'components.footer';

@@ -1,16 +1,56 @@
 <header class="c-header" role="banner">
   <nav class="o-layout-container">
-    <a href="/">
+    <a href="/" class="c-header__logo">
       <img src="/images/banner-logo.svg" alt="Omnia Radix logo" />
     </a>
-    <ul>
+    <ul class="c-global-nav">
       {% for item in site.data.global-nav %}
         <li {% if item.url == page.url %}class="active"{% endif %}>
           <a href="{{ item.url }}">{{ item.title }}</a>
         </li>
       {% endfor %}
-      <li class="feature">
-        <a href="https://console.radix.equinor.com">Web Console</a>
+      <li class="featured">
+        <div class="c-dropdown-menu">
+          <div
+            aria-label="Toggle Web Console links"
+            class="c-dropdown-menu__label"
+            tabindex="0"
+          >
+            Web Console
+          </div>
+          <ul class="c-dropdown-menu__togglee">
+            <li>
+              <a href="https://console.playground.radix.equinor.com">
+                <div class="o-media c-dropdown-menu__item">
+                  <div class="o-media__img c-dropdown-menu__item-icon">
+                    {% include potted-plant.svg %}
+                  </div>
+                  <div class="o-media__body">
+                    <div class="c-dropdown-menu__item-title">Playground</div>
+                    <div class="c-dropdown-menu__item-details">
+                      Go for a test drive, flip switches, press buttons, break stuff
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="https://console.radix.equinor.com">
+                <div class="o-media c-dropdown-menu__item">
+                  <div class="o-media__img c-dropdown-menu__item-icon">
+                    {% include trees.svg %}
+                  </div>
+                  <div class="o-media__body">
+                    <div class="c-dropdown-menu__item-title">Production</div>
+                    <div class="c-dropdown-menu__item-details">
+                      For serious business
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
   </nav>

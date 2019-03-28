@@ -24,6 +24,12 @@
     </div>
   </div>
   {% include footer.html %}
+
+  {% comment %}
+    The line below is needed to avoid transitions firing on page load
+    See https://stackoverflow.com/questions/14389566/stop-css3-transition-from-firing-on-page-load
+  {% endcomment %}
+  <script> </script>
 </body>
 
 </html>
