@@ -140,6 +140,6 @@ Note how the first section uses a large image (`node`) which has the dependencie
 
 # Registering the application
 
-We are now ready to register our application using the [Radix Web Console](https://console.radix.equinor.com/applications/new). Follow the instructions there to integrate the GitHub repository with Radix.
+We are now ready to register our application using the Radix Web Console. Load the console for the [Radix cluster](../getting-started/#the-radix-clusters) that you want to use: [Playground](https://console.playground.radix.equinor.com/applications/new) or [Production](https://console.radix.equinor.com/applications/new). Follow the instructions there to integrate the GitHub repository with Radix.
 
 Remember that we can always change the `radixconfig.yaml` file and the `Dockerfile`s after registration to change how the application builds and deploys.
