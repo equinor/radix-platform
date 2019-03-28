@@ -13,7 +13,6 @@ We are experimenting with an approach with "release channels" which differ in up
 |-----------------------|--------------------------------------------------|:---------------------------:|:------------:|
 | **Production**        | Radix production - currenly limited access       | Every ~3 months             | Yes          |   
 | **Playground**        | "Open" for test and experimenting with Radix     |                             | Best-effort  |  
-| **Weekly**            | Test and development for the Radix team          | 2-3 weeks after creation    | Best-effort  |
 
 # Production 
 
