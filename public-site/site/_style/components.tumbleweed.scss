@@ -1,0 +1,57 @@
+.c_tumbleweed {
+  animation: tumbleweed-slide 8s linear infinite;
+  margin-bottom: 5vw;
+  position: fixed;
+}
+
+.c_tumbleweed__bouncer {
+  animation: tumbleweed-bounce 4s infinite;
+}
+
+.c_tumbleweed svg {
+  animation: tumbleweed-spin 4s infinite both;
+  color: var(--color-brand);
+  display: block;
+  opacity: .5;
+  width: 10vw;
+}
+
+@keyframes tumbleweed-slide {
+  from {
+    left: calc(100% + 10vw);
+  }
+
+  to {
+    left: -10vw;
+  }
+}
+
+@keyframes tumbleweed-spin {
+  0% {
+    transform: rotate(90deg);
+    animation-timing-function: ease-out;
+  }
+  50% {
+    transform: rotate(-360deg);
+    animation-timing-function: ease-out;
+  }
+  75% {
+    transform: rotate(-450deg);
+    animation-timing-function: ease-in;
+  }
+  to {
+    transform: rotate(-630deg);
+  }
+}
+
+
+@keyframes tumbleweed-bounce {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(.6, -.28, .74, .05);
+  }
+  50% {
+    transform: translateY(5vw);
+    animation-timing-function: ease-out;
+  }
+}
