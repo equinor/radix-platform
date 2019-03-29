@@ -92,3 +92,4 @@ The web server will be available on http://localhost:8080
 
 trees by Made x Made from the Noun Project: https://thenounproject.com/term/trees/1723897/
 pot plant by Made x Made from the Noun Project: https://thenounproject.com/term/pot-plant/1724797/
+Tumbleweed by Megan Sorenson from the Noun Project: https://thenounproject.com/term/tumbleweed/1390797/
