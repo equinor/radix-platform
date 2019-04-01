@@ -74,6 +74,7 @@ fi
 
 if [[ -z "$NODE_VM_SIZE" ]]; then
     NODE_VM_SIZE="Standard_DS4_v2"
+    NODE_VM_SIZE_DESCRIPTION="8 vCPU, 28GB RAM"
 fi
 
 if [[ -z "$POD_PER_NODE" ]]; then
@@ -143,6 +144,20 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     credentials_source="keyvault"
 else
     credentials_source="$CREDENTIALS_FILE"
+fi
+
+NODE_COUNT_DEV=1
+NODE_VM_SIZE_DEV=Standard_DS1_v2
+NODE_VM_SIZE_DEV_DESCRIPTION="1vCPU, 3.5GB RAM"
+
+echo "Select cluster size and capacity: "
+echo "1) (default) Production size, $NODE_COUNT x $NODE_VM_SIZE ($NODE_VM_SIZE_DESCRIPTION)"
+echo "2) Dev size, $NODE_COUNT_DEV x $NODE_VM_SIZE_DEV ($NODE_VM_SIZE_DEV_DESCRIPTION)"
+
+read -p ": " cluster_size
+if [[ $cluster_size =~ (2) ]]; then
+  NODE_COUNT=$NODE_COUNT_DEV
+  NODE_VM_SIZE=$NODE_VM_SIZE_DEV
 fi
 
 # Show configuration before starting
