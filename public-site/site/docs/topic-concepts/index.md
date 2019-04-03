@@ -9,7 +9,7 @@ toc: true
 
 ## Application
 
-Applications are the highest level of objects that can be created in in Radix — all other objects are contained within them.
+Applications are the highest level of objects that can be created in Radix — all other objects are contained within them.
 
 ![Diagram of application main concepts](application-overview.png "Application overview")
 
