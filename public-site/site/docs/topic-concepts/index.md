@@ -41,7 +41,7 @@ A component represents a standalone process running within an [environment](#env
 
 > Familiar with Docker or containers? A Radix component can be thought of as Docker image, and replicas as containers running that image.
 
-If a component is defined as `public`, endpoints are made available on the public internet for each environment the component is deployed to. This allows connections via HTTPS into Radix, which are routed internally to an HTTP endpoint on the component. The domain name for the public endpoint is auto-generated from the component, environment, and application names: `https://[component]-[application]-[environment].[cluster-name].radix.equinor.com`.
+If a component's `publicPort` is defined, endpoints are made available on the public Internet for each environment the component is deployed to. This allows connections via HTTPS into Radix, which are routed internally to an HTTP endpoint on the component. The domain name for the public endpoint is auto-generated from the component, environment, and application names: `https://[component]-[application]-[environment].[cluster-name].radix.equinor.com`.
 
 > The `[cluster-name]` part of the domain refers to the current Radix cluster. This should become a static name in the future.
 
