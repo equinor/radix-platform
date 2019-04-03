@@ -37,7 +37,7 @@ Here is a simple example of the file:
 apiVersion: radix.equinor.com/v1
 kind: RadixApplication
 metadata:
-  name: my-cool-app
+  name: myapp
 spec:
   environments:
     - name: dev
