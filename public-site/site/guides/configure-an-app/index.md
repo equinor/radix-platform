@@ -47,7 +47,7 @@ spec:
   components:
     - name: main
       src: "."
-      public: true
+      publicPort: http
       ports:
        - name: http
          port: 80
@@ -69,7 +69,7 @@ The same, but as JSON:
          {
             "name": "main",
             "src": ".",
-            "public": true,
+            "publicPort": "http",
             "ports": [
                { "name": "http", "port": 80 }
             ]
