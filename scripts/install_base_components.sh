@@ -32,6 +32,8 @@
 #   HELM_REPO                   (Optional. Example: radixprod|radixdev)
 #   SLACK_CHANNEL               (Optional. Defaulted if omitted)
 #   PROMETHEUS_NAME             (Optional. Defaulted if omitted)
+#   FLUX_GITOPS_REPO            (Optional. Defaulted if omitted)
+#   FLUX_GITOPS_BRANCH          (Optional. Defaulted if omitted)
 #
 # CREDENTIALS:
 # The script expects the slack-token to be found as secret in keyvault.
@@ -119,6 +121,19 @@ if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
   OPERATOR_IMAGE_TAG="master-latest"
 fi
 
+if [[ -z "$FLUX_GITOPS_REPO" ]]; then
+  FLUX_GITOPS_REPO="git@github.com:equinor/radix-flux.git"
+fi
+
+if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
+  if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
+    FLUX_GITOPS_BRANCH="production"
+  fi
+  if [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]]; then
+    FLUX_GITOPS_BRANCH="development"
+  fi
+fi
+
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
@@ -136,6 +151,8 @@ echo -e "HELM_VERSION            : $HELM_VERSION"
 echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
 echo -e "OPERATOR_IMAGE_TAG      : $OPERATOR_IMAGE_TAG"
+echo -e "FLUX_GITOPS_REPO        : $FLUX_GITOPS_REPO"
+echo -e "FLUX_GITOPS_BRANCH      : $FLUX_GITOPS_BRANCH"
 echo -e ""
 
 # Check for Azure login
@@ -461,31 +478,33 @@ rm -f humio-values.yaml
 
 
 #######################################################################################
+# TODO Remove radix-operator when Flux is up and running
 ### Install radix-operator
 ###
 
-echo "Installing radix-operator"
+# echo "Installing radix-operator"
 
-az keyvault secret download \
-    --vault-name $VAULT_NAME \
-    --name radix-operator-values \
-    --file radix-operator-values.yaml
+# az keyvault secret download \
+#     --vault-name $VAULT_NAME \
+#     --name radix-operator-values \
+#     --file radix-operator-values.yaml
 
-helm upgrade --install radix-operator \
-    "$HELM_REPO"/radix-operator \
-    --set dnsZone="$DNS_ZONE" \
-    --set appAliasBaseURL="$APP_ALIAS_BASE_URL" \
-    --set prometheusName="$PROMETHEUS_NAME" \
-    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
-    --set clusterName="$CLUSTER_NAME" \
-    --set image.tag="$OPERATOR_IMAGE_TAG" \
-    --set clusterType="$CLUSTER_TYPE" \
-    -f radix-operator-values.yaml
+# helm upgrade --install radix-operator \
+#     "$HELM_REPO"/radix-operator \
+#     --set dnsZone="$DNS_ZONE" \
+#     --set appAliasBaseURL="$APP_ALIAS_BASE_URL" \
+#     --set prometheusName="$PROMETHEUS_NAME" \
+#     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+#     --set clusterName="$CLUSTER_NAME" \
+#     --set image.tag="$OPERATOR_IMAGE_TAG" \
+#     --set clusterType="$CLUSTER_TYPE" \
+#     -f radix-operator-values.yaml
 
-rm -f radix-operator-values.yaml
 
-## For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
+#######################################################################################
+### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
+
 
 #######################################################################################
 ### Install backup of radix custom resources (RR, RA, RD)
@@ -516,6 +535,81 @@ helm upgrade --install radix-e2e-monitoring \
     -f radix-e2e-monitoring.yaml
 
 rm -f radix-e2e-monitoring.yaml
+
+
+#######################################################################################
+# Create radix platform shared configs and secrets
+# Create 2 secrets for Radix platform radix-sp-acr-azure and radix-docker
+echo "Creating radix-sp-acr-azure secret"
+az keyvault secret download \
+    --vault-name $VAULT_NAME \
+    --name "radix-cr-cicd-${SUBSCRIPTION_ENVIRONMENT}" \
+    --file sp_credentials.json
+
+kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run -o yaml | kubectl apply -f -
+
+echo "Creating radix-docker secret"
+kubectl create secret docker-registry radix-docker \
+   --docker-server="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
+   --docker-username=$"$(jq -r '.id' sp_credentials.json)" \
+   --docker-password="$(jq -r '.password' sp_credentials.json)" \
+   --docker-email=radix@statoilsrm.onmicrosoft.com \
+   --dry-run -o yaml \
+   | kubectl apply -f -
+
+rm -f sp_credentials.json
+
+cat << EOF > radix-platform-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: radix-platform-config
+  namespace: default
+data:
+  platform: |
+    dnsZone: "$DNS_ZONE"
+    appAliasBaseURL: "app.$DNS_ZONE"
+    prometheusName: radix-stage1
+    imageRegistry: "radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io"
+    clusterName: "$CLUSTER_NAME"
+    clusterType: "$CLUSTER_TYPE"
+EOF
+
+kubectl apply -f radix-platform-config.yaml
+rm radix-platform-config.yaml
+
+
+#######################################################################################
+### Install and configure Flux
+echo ""
+echo "Adding Weaveworks repository to Helm"
+helm repo add weaveworks https://weaveworks.github.io/flux > /dev/null
+
+echo ""
+echo "Installing Flux with Helm operator"
+helm upgrade --install flux \
+   --set rbac.create=true \
+   --set helmOperator.create=true \
+   --set helmOperator.pullSecret=radix-docker \
+   --set git.url="$FLUX_GITOPS_REPO" \
+   --set git.branch="$FLUX_GITOPS_BRANCH" \
+   --set registry.acr.enabled=true \
+   weaveworks/flux > /dev/null
+
+echo -e ""
+echo -e ""
+echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
+echo -e "At startup Flux generates a SSH key that should be added to git repository."
+echo -e ""
+echo -e "Step 1: get flux ssh key"
+echo -e " Wait for container to start before getting SSH-key with command:"
+echo -e "$ kubectl logs deployment/flux | grep identity.pub | cut -d '\"' -f2"
+echo -e ""
+echo -e "Step 2: Add ssh key to config repo"
+echo -e "Add deploy key that can READ and WRITE to config repo"
+echo -e ""
+echo -e " You can then show the Flux logs (Close with Ctrl+C)"
+echo  -e"$ kubectl logs deployment/flux -f"
 
 
 #######################################################################################
