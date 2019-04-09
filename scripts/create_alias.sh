@@ -4,7 +4,7 @@
 # CLUSTER_NAME=aa ./create_alias.sh
 #
 # Example: Configure Playground, use default settings
-# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" IS_PLAYGROUND_CLUSTER="true" ./create_alias.sh
+# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" CLUSTER_TYPE="playground" ./create_alias.sh
 #
 # INPUTS:
 #   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
@@ -13,7 +13,7 @@
 #   RADIX_APP_ENVIRONMENT       (Optional. Defaulted if omitted. ex: "prod", "qa", "test")
 #   HELM_REPO                   (Optional. Defaulted if omitted)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
-#   IS_PLAYGROUND_CLUSTER       (Optional. Defaulted if omitted)
+#   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
 
 #######################################################################################
 ### Validate mandatory input
@@ -77,8 +77,8 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     exit 0        
 fi
 
-if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
-    RADIX_ZONE_NAME="playground.$RADIX_ZONE_NAME"
+if [ "$CLUSTER_TYPE" != "production" ]; then
+    RADIX_ZONE_NAME="$CLUSTER_TYPE.$RADIX_ZONE_NAME"
 fi
 
 az acr helm repo add --name "$HELM_REPO" && helm repo update

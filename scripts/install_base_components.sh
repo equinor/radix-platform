@@ -13,19 +13,19 @@
 # SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=dd ./install_base_components.sh
 #
 # Example: Configure Playground, use default settings
-# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" IS_PLAYGROUND_CLUSTER="true" ./install_base_components.sh
+# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" CLUSTER_TYPE="playground" ./install_base_components.sh
 #
 # Example: Configure DEV, use default settings
 # SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" ./install_base_components.sh
 #
 # Example: Configure PROD, use default settings
-# SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="cluster1" ./install_base_components.sh
+# SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="cluster1" CLUSTER_TYPE="production" ./install_base_components.sh
 #
 # Input environment variables:
 #   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
 #   CLUSTER_NAME                (Mandatory. Example: prod42)
-#   IS_PLAYGROUND_CLUSTER       (Optional. Defaulted if omitted)
-#   DNS_ZONE                    (Optional. Example:e.g. radix.equinor.com|dev.radix.equinor.com)
+#   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
+#   DNS_ZONE                    (Optional. Example:e.g. radix.equinor.com|dev.radix.equinor.com|playground.radix.equinor.com)
 #   VAULT_NAME                  (Optional. Example: radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
 #   HELM_VERSION                (Optional. Defaulted if omitted)
@@ -75,14 +75,14 @@ fi
 ### Set default values for optional input
 ###
 
-if [[ -z "$IS_PLAYGROUND_CLUSTER" ]]; then
-    IS_PLAYGROUND_CLUSTER="false"
+if [[ -z "$CLUSTER_TYPE" ]]; then
+    CLUSTER_TYPE="development"
 fi
 
 if [[ -z "$DNS_ZONE" ]]; then
     DNS_ZONE="radix.equinor.com"
 
-    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
       DNS_ZONE="playground.$DNS_ZONE"
     elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
       DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
@@ -222,7 +222,7 @@ kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
 
 # Create a letsencrypt production issuer for cert-manager:
 clusterissuer_config="cert-manager-production-clusterissuer"
-if [ "$IS_PLAYGROUND_CLUSTER" = "true" ]; then
+if [ "$CLUSTER_TYPE" = "playground" ]; then
   clusterissuer_config="cert-manager-playground-clusterissuer"
 fi
 
@@ -478,7 +478,7 @@ helm upgrade --install radix-operator \
     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
     --set clusterName="$CLUSTER_NAME" \
     --set image.tag="$OPERATOR_IMAGE_TAG" \
-    --set isPlaygroundCluster="$IS_PLAYGROUND_CLUSTER" \
+    --set clusterType="$CLUSTER_TYPE" \
     -f radix-operator-values.yaml
 
 rm -f radix-operator-values.yaml
