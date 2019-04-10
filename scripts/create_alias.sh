@@ -77,7 +77,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     exit 0        
 fi
 
-if [ "$CLUSTER_TYPE" != "production" ]; then
+if [ "$CLUSTER_TYPE" = "playground" ]; then
     RADIX_ZONE_NAME="$CLUSTER_TYPE.$RADIX_ZONE_NAME"
 fi
 
