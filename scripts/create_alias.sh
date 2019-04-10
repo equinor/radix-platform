@@ -79,6 +79,8 @@ fi
 
 if [ "$CLUSTER_TYPE" = "playground" ]; then
     RADIX_ZONE_NAME="$CLUSTER_TYPE.$RADIX_ZONE_NAME"
+elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
+    RADIX_ZONE_NAME="${SUBSCRIPTION_ENVIRONMENT}.${RADIX_ZONE_NAME}"
 fi
 
 az acr helm repo add --name "$HELM_REPO" && helm repo update
