@@ -36,8 +36,11 @@
   pointer-events: none;
   position: absolute;
   right: -2rem;
-  transition: opacity var(--duration-medium) var(--duration-quick);
+  transition:
+    opacity var(--duration-medium) ease var(--duration-quick),
+    visibility 0s linear calc(var(--duration-medium) + var(--duration-quick));
   top: calc(2rem - 2px);
+  visibility: hidden;
   width: 24rem;
   z-index: 3;
 }
@@ -52,7 +55,10 @@
   position: fixed;
   right: 0;
   top: 0;
-  transition: opacity var(--duration-medium) var(--duration-quick);
+  transition:
+    opacity var(--duration-medium) var(--duration-quick),
+    visibility 0s linear calc(var(--duration-medium) + var(--duration-quick));
+  visibility: hidden;
   z-index: 1;
 }
 
@@ -67,11 +73,19 @@
 .c-dropdown-menu:focus-within .c-dropdown-menu__togglee {
   pointer-events: auto;
   opacity: 1;
+  transition:
+    opacity var(--duration-medium) ease var(--duration-quick),
+    visibility 0s linear 0s;
+  visibility: visible;
 }
 
 .c-dropdown-menu:hover::before,
 .c-dropdown-menu:focus-within::before {
   opacity: .2;
+  transition:
+    opacity var(--duration-medium) ease var(--duration-quick),
+    visibility 0s linear 0s;
+  visibility: visible;
 }
 
 .c-dropdown-menu__togglee > li:nth-child(n+2) {
