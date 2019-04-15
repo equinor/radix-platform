@@ -149,6 +149,7 @@ echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
 echo -e "FLUX_GITOPS_REPO        : $FLUX_GITOPS_REPO"
 echo -e "FLUX_GITOPS_BRANCH      : $FLUX_GITOPS_BRANCH"
+echo -e "FLUX_GITOPS_PATH        : $FLUX_GITOPS_PATH"
 echo -e ""
 
 # Check for Azure login
