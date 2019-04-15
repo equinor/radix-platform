@@ -34,6 +34,7 @@
 #   PROMETHEUS_NAME             (Optional. Defaulted if omitted)
 #   FLUX_GITOPS_REPO            (Optional. Defaulted if omitted)
 #   FLUX_GITOPS_BRANCH          (Optional. Defaulted if omitted)
+#   FLUX_GITOPS_PATH            (Optional. Defaulted if omitted)
 #
 # CREDENTIALS:
 # The script expects the slack-token to be found as secret in keyvault.
@@ -115,22 +116,18 @@ if [[ -z "$PROMETHEUS_NAME" ]]; then
     PROMETHEUS_NAME="radix-stage1"
 fi
 
-OPERATOR_IMAGE_TAG="release-latest"
-
-if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
-  OPERATOR_IMAGE_TAG="master-latest"
-fi
-
 if [[ -z "$FLUX_GITOPS_REPO" ]]; then
   FLUX_GITOPS_REPO="git@github.com:equinor/radix-flux.git"
 fi
 
 if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
   if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
-    FLUX_GITOPS_BRANCH="production"
+    FLUX_GITOPS_BRANCH="release"
+    FLUX_GITOPS_PATH="production-configs"
   fi
   if [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]]; then
-    FLUX_GITOPS_BRANCH="development"
+    FLUX_GITOPS_BRANCH="master"
+    FLUX_GITOPS_PATH="development-configs"
   fi
 fi
 
@@ -150,7 +147,6 @@ echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
 echo -e "HELM_VERSION            : $HELM_VERSION"
 echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
-echo -e "OPERATOR_IMAGE_TAG      : $OPERATOR_IMAGE_TAG"
 echo -e "FLUX_GITOPS_REPO        : $FLUX_GITOPS_REPO"
 echo -e "FLUX_GITOPS_BRANCH      : $FLUX_GITOPS_BRANCH"
 echo -e ""
@@ -478,30 +474,6 @@ rm -f humio-values.yaml
 
 
 #######################################################################################
-# TODO Remove radix-operator when Flux is up and running
-### Install radix-operator
-###
-
-# echo "Installing radix-operator"
-
-# az keyvault secret download \
-#     --vault-name $VAULT_NAME \
-#     --name radix-operator-values \
-#     --file radix-operator-values.yaml
-
-# helm upgrade --install radix-operator \
-#     "$HELM_REPO"/radix-operator \
-#     --set dnsZone="$DNS_ZONE" \
-#     --set appAliasBaseURL="$APP_ALIAS_BASE_URL" \
-#     --set prometheusName="$PROMETHEUS_NAME" \
-#     --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
-#     --set clusterName="$CLUSTER_NAME" \
-#     --set image.tag="$OPERATOR_IMAGE_TAG" \
-#     --set clusterType="$CLUSTER_TYPE" \
-#     -f radix-operator-values.yaml
-
-
-#######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
 
@@ -593,6 +565,7 @@ helm upgrade --install flux \
    --set helmOperator.pullSecret=radix-docker \
    --set git.url="$FLUX_GITOPS_REPO" \
    --set git.branch="$FLUX_GITOPS_BRANCH" \
+   --set git.path="$FLUX_GITOPS_PATH" \
    --set registry.acr.enabled=true \
    weaveworks/flux > /dev/null
 
