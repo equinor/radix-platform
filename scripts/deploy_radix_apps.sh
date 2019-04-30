@@ -263,18 +263,29 @@ helm upgrade --install radix-pipeline-public-site-release \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Update replyUrl for web-console
-echo "Waiting for web-console ingress to be ready..."
+echo ""
+echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
 while [[ "$(kubectl get ing web -n radix-web-console-prod 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
-echo "Ingress is ready."    
-(AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
-wait # wait for subshell to finish
+echo "Ingress is ready, adding replyUrl... "
+
+# The web console has an aad app per cluster type. This script does not know about cluster type, so we will have to go with subscription environment.
+if [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]]; then
+    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
+    wait # wait for subshell to finish
+    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
+    wait # wait for subshell to finish
+fi
+if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
+    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
+    wait # wait for subshell to finish
+fi
 
 echo ""
 echo "Roses are red, violets are blue"
-echo "this script has come to an end"
-echo "but maybe not so "
-echo "for all the tasks assigned to you"
+echo "the deployment of radix apps has come to an end"
+echo "but maybe not so"
+echo "for all the remaining tasks assigned to you"
 echo ""
