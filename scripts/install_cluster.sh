@@ -146,7 +146,7 @@ else
     credentials_source="$CREDENTIALS_FILE"
 fi
 
-NODE_COUNT_DEV=2
+NODE_COUNT_DEV=4 # You need 4xStandard_DS1_v2 nodes to be able to run the complete radix platform
 NODE_VM_SIZE_DEV=Standard_DS1_v2
 NODE_VM_SIZE_DEV_DESCRIPTION="1vCPU, 3.5GB RAM"
 
