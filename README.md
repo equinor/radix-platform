@@ -22,7 +22,9 @@ Contact us on Slack on [#omnia_radix_support](https://statoil.slack.com/messages
 
 Bugs and feature requests can be submitted using the [issue tracker in this repo](https://github.com/equinor/radix-platform/issues).
 
-## Further reading
+## Setup
+
+Please go to [scripts](https://github.com/equinor/radix-platform/tree/master/scripts) for information on how to set up the platform
 
 ### Documentation
 
@@ -34,4 +36,4 @@ All of our source code for the platform is on [private GitHub repositories prefi
 
 ### Jira
 
-We have a [Jira board](https://statoil.atlassian.net/) for tracking progress in the team. Right now this is internal for the team only.
+We have a [Jira board](https://equinor.atlassian.net/secure/RapidBoard.jspa?rapidView=41&projectKey=RA) for tracking progress in the team. Right now this is internal for the team only.

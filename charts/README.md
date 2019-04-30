@@ -1,17 +1,6 @@
 # radix-platform helm charts
 
-Here is a collection of platform-wide helm charts
-
-## radix-stage0 and radix-stage1 charts
-
-The `radix-stage0`containes prerequisites for the components in `radix-stage1` helm chart, which aims to be the top level umbrella chart that will install as many of the base components as possible. Such as:
-
-- nginx
-- cert-manager
-- prometheus
-- kubed
-- humio
-- Grafana
+Here is a collection of helm charts to assist in the setup of the platform. They are referenced from the [scripts](https://github.com/equinor/radix-platform/tree/master/scripts) used for setting up the platform
 
 ## radix-registration and radix-pipeline-invocation charts
 
