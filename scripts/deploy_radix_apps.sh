@@ -47,6 +47,8 @@ if [[ -z "$HELM_REPO" ]]; then
     HELM_REPO="radix${SUBSCRIPTION_ENVIRONMENT}"
 fi
 
+CICDCANARY_IMAGE_TAG="master-latest"
+
 echo -e ""
 echo -e "Start deploy of radix apps using the following settings:"
 echo -e "SUBSCRIPTION_ENVIRONMENT: $SUBSCRIPTION_ENVIRONMENT"
@@ -282,6 +284,24 @@ if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
     (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
     wait # wait for subshell to finish
 fi
+
+#######################################################################################
+### Install Radix CICD Canary
+###
+echo "Install Radix CICD Canary"
+az keyvault secret download \
+  --vault-name "$VAULT_NAME" \
+  --name radix-cicd-canary-values \
+  --file radix-cicd-canary-values.yaml
+
+helm upgrade --install radix-cicd-canary \
+  "$HELM_REPO"/radix-cicd-canary \
+  --namespace radix-cicd-canary \
+  --set clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
+  --set image.tag="$CICDCANARY_IMAGE_TAG" \
+  -f radix-cicd-canary-values.yaml
+
+rm -f radix-cicd-canary-values.yaml
 
 echo ""
 echo "Roses are red, violets are blue"

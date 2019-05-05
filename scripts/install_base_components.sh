@@ -131,8 +131,6 @@ if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
   fi
 fi
 
-CICDCANARY_IMAGE_TAG="master-latest"
-
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
@@ -152,7 +150,6 @@ echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
 echo -e "FLUX_GITOPS_REPO        : $FLUX_GITOPS_REPO"
 echo -e "FLUX_GITOPS_BRANCH      : $FLUX_GITOPS_BRANCH"
 echo -e "FLUX_GITOPS_PATH        : $FLUX_GITOPS_PATH"
-echo -e "CICDCANARY_IMAGE_TAG    : $CICDCANARY_IMAGE_TAG"
 echo -e ""
 
 # Check for Azure login
@@ -588,23 +585,6 @@ echo -e ""
 echo -e " You can then show the Flux logs (Close with Ctrl+C)"
 echo  -e"$ kubectl logs deployment/flux -f"
 
-#######################################################################################
-### Install Radix CICD Canary
-###
-echo "Install Radix CICD Canary"
-az keyvault secret download \
-  --vault-name "$VAULT_NAME" \
-  --name radix-cicd-canary-values \
-  --file radix-cicd-canary-values.yaml
-
-helm upgrade --install radix-cicd-canary \
-  "$HELM_REPO"/radix-cicd-canary \
-  --namespace radix-cicd-canary \
-  --set clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
-  --set image.tag="$CICDCANARY_IMAGE_TAG" \
-  -f radix-cicd-canary-values.yaml
-
-rm -f radix-cicd-canary-values.yaml
 
 #######################################################################################
 ### Notify on slack channel
