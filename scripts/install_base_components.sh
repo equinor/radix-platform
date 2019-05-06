@@ -46,6 +46,12 @@
 
 
 #######################################################################################
+# Styles
+__style_yellow="\033[33m"
+__style_end="\033[0m"
+
+
+#######################################################################################
 ### Check for prerequisites binaries
 ###
 
@@ -554,6 +560,37 @@ rm radix-platform-config.yaml
 
 #######################################################################################
 ### Install and configure Flux
+
+FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
+FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
+FLUX_DEPLOY_KEYS_GENERATED=false
+
+FLUX_PRIVATE_KEY=`az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$VAULT_NAME"`
+FLUX_PUBLIC_KEY=`az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$VAULT_NAME"`
+
+if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
+    echo "Missing flux deploy keys for GitHub in keyvault: $VAULT_NAME"
+    echo "Generating flux private and public keys..."
+    ssh-keygen -t rsa -b 4096 -N "" -C "gm_radix@equinor.com" -f id_rsa."$SUBSCRIPTION_ENVIRONMENT"
+    az keyvault secret set --file=./id_rsa."$SUBSCRIPTION_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$VAULT_NAME"
+    az keyvault secret set --file=./id_rsa."$SUBSCRIPTION_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$VAULT_NAME"
+    rm id_rsa."$SUBSCRIPTION_ENVIRONMENT"
+    rm id_rsa."$SUBSCRIPTION_ENVIRONMENT".pub
+    FLUX_DEPLOY_KEYS_GENERATED=true
+else
+    echo "Flux deploy keys for GitHub already exist in keyvault: $VAULT_NAME"
+fi
+
+echo ""
+echo "Creating $FLUX_PRIVATE_KEY_NAME secret"
+az keyvault secret download \
+    --vault-name $VAULT_NAME \
+    --name "$FLUX_PRIVATE_KEY_NAME" \
+    --file "$FLUX_PRIVATE_KEY_NAME"
+
+kubectl create secret generic "$FLUX_PRIVATE_KEY_NAME" --from-file=identity="$FLUX_PRIVATE_KEY_NAME"
+rm "$FLUX_PRIVATE_KEY_NAME"
+
 echo ""
 echo "Adding Weaveworks repository to Helm"
 helm repo add weaveworks https://weaveworks.github.io/flux > /dev/null
@@ -567,23 +604,20 @@ helm upgrade --install flux \
    --set git.url="$FLUX_GITOPS_REPO" \
    --set git.branch="$FLUX_GITOPS_BRANCH" \
    --set git.path="$FLUX_GITOPS_PATH" \
+   --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
    --set registry.acr.enabled=true \
    weaveworks/flux > /dev/null
 
 echo -e ""
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
-echo -e "At startup Flux generates a SSH key that should be added to git repository."
-echo -e ""
-echo -e "Step 1: get flux ssh key"
-echo -e " Wait for container to start before getting SSH-key with command:"
-echo -e "$ kubectl logs deployment/flux | grep identity.pub | cut -d '\"' -f2"
-echo -e ""
-echo -e "Step 2: Add ssh key to config repo"
-echo -e "Add deploy key that can READ and WRITE to config repo"
-echo -e ""
-echo -e " You can then show the Flux logs (Close with Ctrl+C)"
-echo  -e"$ kubectl logs deployment/flux -f"
+
+if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
+    FLUX_DEPLOY_KEY_NOTIFICATION="*** IMPORTANT ***\nPlease add a new deploy key in the radix-flux repository (https://github.com/equinor/radix-flux/settings/keys) with the value from $FLUX_PUBLIC_KEY_NAME secret in $VAULT_NAME Azure keyvault."
+    echo ""
+    echo -e "${__style_yellow}$FLUX_DEPLOY_KEY_NOTIFICATION${__style_end}"
+    echo ""
+fi
 
 
 #######################################################################################
