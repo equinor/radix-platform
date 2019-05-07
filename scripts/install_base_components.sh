@@ -315,15 +315,6 @@ sleep 10s
 kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
 kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="cluster-wildcard-sync=cluster-wildcard-tls-cert"
 
-
-#######################################################################################
-### Install nginx-ingress:
-###
-
-echo "Installing nginx-ingress"
-helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.service.externalTrafficPolicy=Local --set controller.metrics.serviceMonitor.enabled=true
-
-
 #######################################################################################
 ### Create storage classes
 ###
@@ -386,6 +377,13 @@ EOF
 
 kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
      --patch "$(cat ./manifests/kubelet-service-monitor-patch.yaml)"
+
+#######################################################################################
+### Install nginx-ingress:
+###
+
+echo "Installing nginx-ingress"
+helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.service.externalTrafficPolicy=Local --set controller.metrics.serviceMonitor.enabled=true
 
 #######################################################################################
 ### Install grafana
