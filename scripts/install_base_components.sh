@@ -635,6 +635,7 @@ helm upgrade --install radix-cicd-canary \
   --set clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
   --set image.tag="$CICDCANARY_IMAGE_TAG" \
   --set imageCredentials.registry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
+  --set clusterType="$CLUSTER_TYPE" \
   -f radix-cicd-canary-values.yaml
 
 rm -f radix-cicd-canary-values.yaml
