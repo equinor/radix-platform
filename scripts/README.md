@@ -22,6 +22,8 @@ Example:
 INFRASTRUCTURE_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_cluster.sh
 ```
 
+At the end of the `install_cluster.sh` script, a reminder to enable AKS diagnostics logs is presented. If AKS diagnostics logs is needed to be enabled in the cluster, it should be set manually via Azure portal. The complete procedures are available on https://github.com/equinor/radix-private/blob/master/docs/infrastructure/logging.md.
+
 ## Deploy base components
 
 This will deploy third party components (nginx, external-dns etc) and some radix components (radix-operator).
