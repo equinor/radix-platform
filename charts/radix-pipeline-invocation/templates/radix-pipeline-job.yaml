@@ -37,8 +37,8 @@ spec:
       - name: {{ .Values.pipelineImagePullSecret }}
       initContainers:
       - args:
-        - n=1;max=10;delay=5;while true; do if [ "$n" -lt "$max" ]; then nslookup
-          github.com && break; n=$((n+1)); sleep $(($delay*$n)); else echo "The command
+        - n=1;max=10;delay=2;while true; do if [ "$n" -lt "$max" ]; then nslookup
+          github.com && break; n=$((n+1)); sleep $(($delay)); else echo "The command
           has failed after $n attempts."; break; fi done
         command:
         - /bin/sh
