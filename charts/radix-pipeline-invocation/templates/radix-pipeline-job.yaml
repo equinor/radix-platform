@@ -7,6 +7,14 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
+    radix-app: {{ .Values.name }}
+    radix-app-name: {{ .Values.name }}
+    radix-branch: {{ .Values.cloneBranch }}
+    radix-commit: ""
+    radix-image-tag: {{ .Values.imageTag }}
+    radix-job-name: {{ .Values.name }}-{{ .Values.cloneBranch }}-init-deploy-{{ .Values.imageTag }}
+    radix-job-type: job
+    radix-pipeline: build-deploy
 spec:
   backoffLimit: 0
   completions: 1
@@ -29,19 +37,32 @@ spec:
       - name: {{ .Values.pipelineImagePullSecret }}
       initContainers:
       - args:
-        - apk add --no-cache bash openssh-client git && ls /root/.ssh && cd /workspace
-          && git clone ${CLONE_URL} -b ${CLONE_BRANCH} .
+        - n=1;max=10;delay=5;while true; do if [ "$n" -lt "$max" ]; then nslookup
+          github.com && break; n=$((n+1)); sleep $(($delay*$n)); else echo "The command
+          has failed after $n attempts."; break; fi done
         command:
         - /bin/sh
         - -c
-        env:
-          - name: CLONE_URL
-            value: {{ .Values.cloneURL }}
-          # Which branch to read radixconfig.yaml from
-          - name: CLONE_BRANCH
-            value: master
-        image: alpine:3.7
+        image: alpine
+        imagePullPolicy: Always
+        name: nslookup
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - clone
+        - {{ .Values.cloneURL }}
+        - -b
+        - master
+        - --verbose
+        - --progress
+        - /workspace
+        image: alpine/git
+        imagePullPolicy: Always
         name: clone
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /workspace
           name: build-context
@@ -49,6 +70,11 @@ spec:
           name: git-ssh-keys
           readOnly: true
       restartPolicy: Never
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: radix-pipeline
+      serviceAccountName: radix-pipeline
+      terminationGracePeriodSeconds: 30
       volumes:
       - emptyDir: {}
         name: build-context
