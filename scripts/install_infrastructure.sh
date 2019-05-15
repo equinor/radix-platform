@@ -3,6 +3,9 @@
 # PURPOSE
 #
 # Provision az infrastructure that will hold and support radix clusters.
+#
+# REQUIRED ACCESS LEVEL
+# The user must have the role "contributor" in the Azure subscription.
 
 # USAGE
 #
@@ -93,11 +96,6 @@ RADIX_RESOURCE_DNS="$RADIX_RESOURCE_DNS_SUFFIX"
 if [ "$RADIX_INFRASTRUCTURE_ENVIRONMENT" != "prod" ]; then
     RADIX_RESOURCE_DNS="${RADIX_INFRASTRUCTURE_ENVIRONMENT}.${RADIX_RESOURCE_DNS_SUFFIX}"
 fi
-
-# Ad groups for resource management
-RADIX_ADGROUP_CLUSTER="fg_radix_cluster_admin_${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
-RADIX_ADGROUP_COMMON="fg_radix_common_resource_admin_${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
-RADIX_ADGROUP_MONITORING="fg_radix_monitoring_admin_${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
 
 # All system users per environment
 RADIX_SYSTEM_USER_CONTAINER_REGISTRY_READER="radix-cr-reader-${RADIX_INFRASTRUCTURE_ENVIRONMENT}"
@@ -421,51 +419,6 @@ EOF
 # AUTHORIZATION
 ########################################################################
 
-function set_permission_on_resource_group() {
-    local resourceGroupName # Input 1
-    local adGroupName # Input 2    
-    local roleName # Input 3
-    local scope
-    local adGroupId
-
-    resourceGroupName="$1"
-    adGroupName="$2"
-    roleName="$3"
-
-    adGroupId="$(az ad group show -g ${adGroupName} --query 'objectId' --out tsv)"
-    scope="/subscriptions/$(az account show --query 'id' --out tsv)/resourceGroups/${resourceGroupName}"
-
-    echo_step "Resource group: Setting permissions on \"${resourceGroupName}\" for \"${adGroupName}\"..."
-    az role assignment create --assignee "$adGroupId" \
-    --role "${roleName}" \
-    --scope "${scope}"
-}
-
-function set_permissions_on_all_resource_groups() {
-    # Clusters
-    set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_CLUSTERS}" "${RADIX_ADGROUP_CLUSTER}" "contributor"
-    set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_CLUSTERS}" "${RADIX_ADGROUP_CLUSTER}" "User Access Administrator"
-    # Common
-    set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_COMMON}" "${RADIX_ADGROUP_COMMON}" "contributor"
-    # Monitoring
-    set_permission_on_resource_group "${RADIX_RESOURCE_GROUP_MONITORING}" "${RADIX_ADGROUP_MONITORING}" "contributor"
-}
-
-function set_permissions_on_keyvault() {
-    local adGroupId
-    
-    echo -e "Keyvault: Setting default permissions for admins \"${RADIX_ADGROUP_COMMON}\"..."
-    adGroupId="$(az ad group show -g ${RADIX_ADGROUP_COMMON} --query 'objectId' --out tsv)"
-    # --name -n      [Required] : Name of the key vault.
-    # --object-id               : A GUID that identifies the principal that will receive permissions.
-    # --resource-group -g       : Proceed only if Key Vault belongs to the specified resource group.
-    # --spn                     : Name of a service principal that will receive permissions.
-    # --upn                     : Name of a user principal that will receive permissions.
-    # --secret-permissions      : Space-separated list of secret permissions to assign.  Allowed
-    #                             values: backup, delete, get, list, purge, recover, restore, set.
-    az keyvault set-policy --name "${RADIX_RESOURCE_KEYVAULT}" --resource-group "${RADIX_RESOURCE_GROUP_COMMON}" --object-id "${adGroupId}" --secret-permissions list get set delete    
-}
-
 function set_permissions_on_acr() {
     local scope
     scope="$(az acr show --name ${RADIX_RESOURCE_CONTAINER_REGISTRY} --resource-group ${RADIX_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
@@ -598,14 +551,13 @@ function install() {
         exit 0
     fi        
     
-    ask_user "Should I provision the resource groups?" "This will reset all permissions on existing groups."    
+    ask_user "Should I provision the resource groups?"    
     if [[ "$REPLY" =~ ^[Yy]$ ]]
     then
         provision_resource_groups
-        set_permissions_on_all_resource_groups
     fi
 
-    ask_user "Should I provision all the common resources?" "This will reset all permissions on existing resources."    
+    ask_user "Should I provision all the common resources?"    
     if [[ "$REPLY" =~ ^[Yy]$ ]]
     then
         provision_common_resources
