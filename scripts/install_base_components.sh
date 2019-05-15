@@ -130,10 +130,10 @@ if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
   if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
     FLUX_GITOPS_BRANCH="release"
     FLUX_GITOPS_PATH="production-configs"
-  elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" == "playground" ]; then
+  elif [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]] && [ "$CLUSTER_TYPE" == "playground" ]; then
     FLUX_GITOPS_BRANCH="release"
     FLUX_GITOPS_PATH="playground-configs"
-  elif [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]] && [ "$CLUSTER_TYPE" != "playground" ]; then
+  elif [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]] && [ "$CLUSTER_TYPE" == "development" ]; then
     FLUX_GITOPS_BRANCH="master"
     FLUX_GITOPS_PATH="development-configs"
   fi
