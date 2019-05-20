@@ -102,7 +102,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-github-webhook-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:equinor/radix-github-webhook.git" \
     --set cloneBranch="master" \
@@ -112,7 +112,7 @@ helm upgrade --install radix-pipeline-github-webhook-master \
 
 helm upgrade --install radix-pipeline-github-webhook-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:equinor/radix-github-webhook.git" \
     --set cloneBranch="release" \
@@ -137,7 +137,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-api-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="master" \
@@ -148,7 +148,7 @@ helm upgrade --install radix-pipeline-api-master \
 
 helm upgrade --install radix-pipeline-api-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="release" \
@@ -174,7 +174,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-canary-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:equinor/radix-canary-golang.git" \
     --set cloneBranch="master" \
@@ -184,7 +184,7 @@ helm upgrade --install radix-pipeline-canary-master \
 
 helm upgrade --install radix-pipeline-canary-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:equinor/radix-canary-golang.git" \
     --set cloneBranch="release" \
@@ -209,7 +209,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-web-console-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:equinor/radix-web-console.git" \
     --set cloneBranch="master" \
@@ -219,7 +219,7 @@ helm upgrade --install radix-pipeline-web-console-master \
 
 helm upgrade --install radix-pipeline-web-console-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:equinor/radix-web-console.git" \
     --set cloneBranch="release" \
@@ -244,7 +244,7 @@ sleep 3s
 
 helm upgrade --install radix-pipeline-public-site-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:equinor/radix-platform.git" \
     --set cloneBranch="master" \
@@ -254,7 +254,7 @@ helm upgrade --install radix-pipeline-public-site-master \
 
 helm upgrade --install radix-pipeline-public-site-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.9 \
+    --version 1.0.10 \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:equinor/radix-platform.git" \
     --set cloneBranch="release" \
