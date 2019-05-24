@@ -84,6 +84,15 @@ az acr helm repo add --name "$HELM_REPO" && helm repo update
 # Connect kubectl so we have the correct context
 az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME"
 
+# Wait for operator to be deployed from flux
+echo ""
+echo "Waiting for radix-operator to be deployed by flux-operator so we can register radix apps"
+while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo "Radix operator is ready, registering apps... "
+
 # Radix Webhook
 # This must be done to support deployments of application on git push.
 az keyvault secret download \
