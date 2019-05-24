@@ -111,7 +111,7 @@ helm upgrade --install radix-pipeline-github-webhook-master \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
-sleep 10s
+sleep 4s
 
 helm upgrade --install radix-pipeline-github-webhook-release \
     "$HELM_REPO"/radix-pipeline-invocation \
@@ -150,7 +150,7 @@ helm upgrade --install radix-pipeline-api-master \
     --set useCache="false"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
-sleep 10s
+sleep 4s
 
 helm upgrade --install radix-pipeline-api-release \
     "$HELM_REPO"/radix-pipeline-invocation \
@@ -189,7 +189,7 @@ helm upgrade --install radix-pipeline-canary-master \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
-sleep 10s
+sleep 4s
 
 helm upgrade --install radix-pipeline-canary-release \
     "$HELM_REPO"/radix-pipeline-invocation \
@@ -227,7 +227,7 @@ helm upgrade --install radix-pipeline-web-console-master \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
-sleep 10s
+sleep 4s
 
 helm upgrade --install radix-pipeline-web-console-release \
     "$HELM_REPO"/radix-pipeline-invocation \
