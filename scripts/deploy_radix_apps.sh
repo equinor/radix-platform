@@ -110,6 +110,9 @@ helm upgrade --install radix-pipeline-github-webhook-master \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
+# Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
+sleep 10s
+
 helm upgrade --install radix-pipeline-github-webhook-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.10 \
@@ -145,6 +148,9 @@ helm upgrade --install radix-pipeline-api-master \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
     --set useCache="false"
+
+# Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
+sleep 10s
 
 helm upgrade --install radix-pipeline-api-release \
     "$HELM_REPO"/radix-pipeline-invocation \
@@ -182,6 +188,9 @@ helm upgrade --install radix-pipeline-canary-master \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
+# Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
+sleep 10s
+
 helm upgrade --install radix-pipeline-canary-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.10 \
@@ -217,6 +226,9 @@ helm upgrade --install radix-pipeline-web-console-master \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
+# Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
+sleep 10s
+
 helm upgrade --install radix-pipeline-web-console-release \
     "$HELM_REPO"/radix-pipeline-invocation \
     --version 1.0.10 \
@@ -248,16 +260,6 @@ helm upgrade --install radix-pipeline-public-site-master \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:equinor/radix-platform.git" \
     --set cloneBranch="master" \
-    --set pipelineImageTag="release-latest" \
-    --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
-
-helm upgrade --install radix-pipeline-public-site-release \
-    "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.10 \
-    --set name="radix-platform" \
-    --set cloneURL="git@github.com:equinor/radix-platform.git" \
-    --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
     --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
