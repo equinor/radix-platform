@@ -45,7 +45,7 @@ spec:
         - -c
         image: alpine
         imagePullPolicy: Always
-        name: nslookup
+        name: internal-nslookup
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
