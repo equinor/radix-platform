@@ -102,6 +102,15 @@ fi
 ### Delete cluster
 ###
 
+# Exit if cluster does not exist
+echo ""
+echo "Connecting kubectl..."
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+    # Send message to stderr
+    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 0        
+fi
+
 echo ""
 echo "Deleting cluster..."
 az aks delete --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" --yes
