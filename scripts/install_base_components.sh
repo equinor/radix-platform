@@ -317,10 +317,23 @@ spec:
       - "$CLUSTER_NAME.$DNS_ZONE"
 EOF
 
-echo "Waiting 10 seconds for cert-manager to create certificate secrets before annotating them..."
-sleep 10s
-
+# Waiting for cert-manager to create certificate secrets before annotating them...
+echo ""
+echo "Waiting for cert-manager to create certificate secret app-wildcard-tls-cert before annotating it..."
+while [[ "$(kubectl get secret app-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo "Certificate secret app-wildcard-tls-cert has been created, annotating it..."
 kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
+
+echo ""
+echo "Waiting for cert-manager to create certificate secret cluster-wildcard-tls-cert before annotating it..."
+while [[ "$(kubectl get secret cluster-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo "Certificate secret cluster-wildcard-tls-cert has been created, annotating it..."
 kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="cluster-wildcard-sync=cluster-wildcard-tls-cert"
 
 #######################################################################################
