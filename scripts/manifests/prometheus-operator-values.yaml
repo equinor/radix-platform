@@ -1,18 +1,26 @@
 grafana:
   enabled: false
 
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: "0m" # Added to a default of 100m
+        memory: "0Mi" # Added to a default of 25Mi
+
 prometheusOperator:
   resources:
-    limits:
-      cpu: "2"
-      memory: "8000Mi"
     requests:
-      cpu: "0.5"
-      memory: "1000Mi"
+      cpu: "50m"
+      memory: "100Mi"
 
 prometheus:
   prometheusSpec:
-    retention: 31d
+    resources:
+      requests:
+        cpu: "0m" # Added to a default of 200m
+        memory: "950Mi" # Added to a default of 50m
+    retention: 180d
     serviceMonitorNamespaceSelector:
       any: true
     storageSpec:

@@ -489,8 +489,8 @@ helm upgrade --install humio \
     --set ingress.tlsSecretName=cluster-wildcard-tls-cert \
     --set resources.limits.cpu=4 \
     --set resources.limits.memory=16000Mi \
-    --set resources.requests.cpu=0.5 \
-    --set resources.requests.memory=2000Mi \
+    --set resources.requests.cpu=0.2 \
+    --set resources.requests.memory=800Mi \
     -f humio-values.yaml
 
 rm -f humio-values.yaml

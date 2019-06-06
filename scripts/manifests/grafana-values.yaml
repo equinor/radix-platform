@@ -12,8 +12,8 @@ resources:
 #    cpu: "2"
 #    memory: "2000Mi"
   requests:
-    cpu: "0.2"
-    memory: "500Mi"
+    cpu: "50m"
+    memory: "250Mi"
 
 env:
   GF_DATABASE_TYPE: mysql

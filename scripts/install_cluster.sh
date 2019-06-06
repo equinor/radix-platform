@@ -146,9 +146,9 @@ else
     credentials_source="$CREDENTIALS_FILE"
 fi
 
-NODE_COUNT_DEV=4 # You need 4xStandard_DS1_v2 nodes to be able to run the complete radix platform
-NODE_VM_SIZE_DEV=Standard_DS1_v2
-NODE_VM_SIZE_DEV_DESCRIPTION="1vCPU, 3.5GB RAM"
+NODE_COUNT_DEV=1
+NODE_VM_SIZE_DEV=Standard_DS2_v2
+NODE_VM_SIZE_DEV_DESCRIPTION="2vCPU, 7GB RAM"
 
 echo "Select cluster size and capacity: "
 echo "1) (default) Production size, $NODE_COUNT x $NODE_VM_SIZE ($NODE_VM_SIZE_DESCRIPTION)"
@@ -261,7 +261,7 @@ az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_
 
 echo "###########################################################"
 echo ""
-echo "MANUAL STEP: AKS DIAGNOSTIC LOGS"
+echo "FOR PRODUCTION ONLY: MANUAL STEP: AKS DIAGNOSTIC LOGS"
 echo ""
 echo "You need to manually enable AKS Diagnostic logs. See https://docs.microsoft.com/en-us/azure/aks/view-master-logs ."
 echo ""
