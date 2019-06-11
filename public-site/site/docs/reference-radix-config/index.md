@@ -201,7 +201,7 @@ spec:
 
 It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domain) for the application. The `dnsExternalAlias` needs to point to a component marked as public. The `dnsExternalAlias` can have any URL, which can be used as the public URL for accessing the application, as long as the application developer provides a valid certificate for the alias.
 
-In the example above, the component **frontend** hosted in environment **prod** will be accessible from `some.alias.com` and `another.alias.com`, as long as the correct certificate has been set. To set the certificate, there will be two secrets for every external alias listed. One holding the cert part of the TLS certificate and one holding the private key of the TLS certificate.
+In the example above, the component **frontend** hosted in environment **prod** will be accessible from `some.alias.com` and `another.alias.com`, as long as the correct certificate has been set. To set the certificate, there will be two secrets for every external alias listed on the component. One holding the cert part of the TLS certificate and one holding the private key of the TLS certificate.
 
 # Example `radixconfig.yaml` file
 
