@@ -18,3 +18,7 @@ A collection of relevant topics to make the most of having your application on R
 
 - [The `radixconfig.yaml` file](docs/reference-radix-config/)
 - [Radix API](docs/reference-radix-api/)
+
+# Whats new
+
+- [06.2019 - External/user defined alias](docs/whats-new/external_alias.md)
