@@ -11,7 +11,17 @@ We have introduced a new configuration in the `radixconfig.yaml` file for having
 
 # How-to set certificate
 
+The TLS certificate consists of a cert part and a private key. Once the external alias has been defined, the secrets for the TLS certificate parts will be listed as secrets on the component.
 
+![List of secrets for corresponding TLS certificate](list-of-external-alias-secrets.png "List of Secrets")
+
+Set the cert part of the TLS certificate and save.
+
+![Setting the cert part](setting-cert.png "Setting cert")
+
+Set the private key part of the TLS certificate and save.
+
+![Setting the private key part](setting-cert.png "Setting private key")
 
 # Whats next
 
