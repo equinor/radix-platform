@@ -7,9 +7,9 @@ spec:
     - name: prod
       build:
         from: master
-    - name: RA-37-ExternalAlias
+    - name: ra-37-external-alias
       build:
-        from: RA-37-ExternalAlias
+        from: ra-37-external-alias
   components:
     - name: public-site
       src: "./public-site"
