@@ -21,7 +21,7 @@ Set the cert part of the TLS certificate and save.
 
 Set the private key part of the TLS certificate and save.
 
-![Setting the private key part](setting-cert.png "Setting private key")
+![Setting the private key part](setting-private-key.png "Setting private key")
 
 # Whats next
 
