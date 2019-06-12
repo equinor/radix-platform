@@ -21,4 +21,4 @@ A collection of relevant topics to make the most of having your application on R
 
 # Whats new
 
-- [06.2019 - External/user defined alias](docs/whats-new/external_alias/)
+- [06.2019 - External/user defined alias](docs/whats-new/external-alias/)
