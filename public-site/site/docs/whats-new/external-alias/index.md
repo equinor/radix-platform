@@ -9,20 +9,22 @@ toc: true
 
 We have introduced a new configuration in the `radixconfig.yaml` file for having user defined aliases, provided developers bring the corresponding certificate. For information on how to configure that, see the documentation for the [`dnsExternalAlias` setting](../../reference-radix-config/#dnsexternalalias) in the `radixconfig.yaml` file.
 
-# How-to set certificate
+## How-to set certificate
 
-The TLS certificate consists of a cert part and a private key. Once the external alias has been defined, the secrets for the TLS certificate parts will be listed as secrets on the component.
+The TLS certificate consists of a certificate and a private key. Once the external alias has been defined, the secrets for the TLS certificate parts will be listed under secrets in the applicable component overview page.
 
 ![List of secrets for corresponding TLS certificate](list-of-external-alias-secrets.png "List of Secrets")
 
+### Certificate 
 Set the cert part of the TLS certificate and save.
 
 ![Setting the cert part](setting-cert.png "Setting cert")
 
+### Private key
 Set the private key part of the TLS certificate and save.
 
 ![Setting the private key part](setting-private-key.png "Setting private key")
 
-# Whats next
+# What's next
 
-We will do some work to list the defined external aliases in a future feature.
+The list of defined external aliases will be made available later.
