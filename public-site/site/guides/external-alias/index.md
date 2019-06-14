@@ -7,7 +7,7 @@ toc: true
 
 # Introduction
 
-We have introduced a new configuration in the `radixconfig.yaml` file for having user defined aliases, provided developers bring the corresponding certificate. For information on how to configure that, see the documentation for the [`dnsExternalAlias` setting](../../reference-radix-config/#dnsexternalalias) in the `radixconfig.yaml` file.
+We have introduced a new configuration in the `radixconfig.yaml` file for having user defined aliases, provided developers bring the corresponding certificate. For information on how to configure that, see the documentation for the [`dnsExternalAlias` setting](../../docs/reference-radix-config/#dnsexternalalias) in the `radixconfig.yaml` file.
 
 ## How-to set certificate
 
