@@ -21,4 +21,4 @@ A collection of relevant topics to make the most of having your application on R
 
 # Whats new
 
-- [06-2019 - Specify your own URL aliases](docs/whats-new/external-alias/)
+- [06-2019 - Specify your own URL aliases](guides/whats-new/external-alias/)

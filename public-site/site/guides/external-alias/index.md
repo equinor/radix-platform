@@ -1,7 +1,7 @@
 ---
 title: External Alias
 layout: document
-parent: ["Docs", "../../../docs.html"]
+parent: ['Guides', '../../guides.html']
 toc: true
 ---
 

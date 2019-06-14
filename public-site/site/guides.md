@@ -21,3 +21,7 @@ Builds in Radix are Docker builds! The [Docker builds](guides/docker/) guide has
 # Monitoring
 
 You can use monitoring "out of the box" (the link to Grafana is in the top-right corner of the [Web Console](https://console.radix.equinor.com)). But you will get the most value by implementing [monitoring relevant for your app](guides/monitoring).
+
+# External alias/custom url
+
+You can have you own custom domains, as long as you bring your own certificate. See [this](guides/external-alias) for more info
