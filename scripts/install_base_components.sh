@@ -404,7 +404,13 @@ kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
 ###
 
 echo "Installing nginx-ingress"
-helm upgrade --install nginx-ingress stable/nginx-ingress --set controller.publishService.enabled=true --set controller.stats.enabled=true --set controller.metrics.enabled=true --set controller.service.externalTrafficPolicy=Local --set controller.metrics.serviceMonitor.enabled=true
+helm upgrade --install nginx-ingress stable/nginx-ingress \
+  --set controller.publishService.enabled=true \
+  --set controller.stats.enabled=true \
+  --set controller.metrics.enabled=true \
+  --set controller.service.externalTrafficPolicy=Local \
+  --set controller.metrics.serviceMonitor.enabled=true \
+  -f ./manifests/nginx-configmap-values.yaml
 
 #######################################################################################
 ### Install grafana
