@@ -18,6 +18,8 @@ How should you set up Git branches and Radix environments? Read about [workflows
 
 Builds in Radix are Docker builds! The [Docker builds](guides/docker/) guide has recommendations for creating good `Dockerfile`s that work well in the cloud ☁️
 
+Radix will generate automatic domains with SSL certificates for your application, but you can also have [your own custom domains](guides/external-alias), as long as you bring your own certificate.
+
 # Monitoring
 
 You can use monitoring "out of the box" (the link to Grafana is in the top-right corner of the [Web Console](https://console.radix.equinor.com)). But you will get the most value by implementing [monitoring relevant for your app](guides/monitoring).

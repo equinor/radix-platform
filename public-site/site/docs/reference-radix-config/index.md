@@ -186,6 +186,23 @@ As a convenience for nicer URLs, `dnsAppAlias` creates a DNS alias in the form o
 
 In the example above, the component **frontend** hosted in environment **prod** will be accessible from `myapp.app.radix.equinor.com`, in addition to the default endpoint provided for the frontend component, `frontend-myapp-prod.<clustername>.radix.equinor.com`.
 
+## `dnsExternalAlias`
+
+```yaml
+spec:
+  dnsExternalAlias:
+    - alias: some.alias.com
+      environment: prod
+      component: frontend
+    - alias: another.alias.com
+      environment: prod
+      component: frontend
+```
+
+It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domain) for the application. The `dnsExternalAlias` needs to point to a component marked as public. The `dnsExternalAlias` can have any URL, which can be used as the public URL for accessing the application, as long as the application developer provides a valid certificate for the alias.
+
+In the example above, the component **frontend** hosted in environment **prod** will be accessible from `some.alias.com` and `another.alias.com`, as long as the correct certificate has been set. To set the certificate, there will be two secrets for every external alias listed on the component. One holding the cert part of the TLS certificate and one holding the private key of the TLS certificate.
+
 # Example `radixconfig.yaml` file
 
 This example showcases all options; in many cases the defaults will be a good choice instead.
@@ -238,4 +255,11 @@ spec:
   dnsAppAlias:
     environment: prod
     component: frontend
+  dnsExternalAlias:
+    - alias: some.alias.com
+      environment: prod
+      component: frontend
+    - alias: another.alias.com
+      environment: prod
+      component: frontend
 ```
