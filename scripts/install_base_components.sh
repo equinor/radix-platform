@@ -479,30 +479,6 @@ helm repo update
 
 
 #######################################################################################
-### Install humio
-###
-
-echo "Installing humio"
-
-az keyvault secret download \
-    --vault-name $VAULT_NAME \
-    --name humio-values \
-    --file humio-values.yaml
-
-helm upgrade --install humio \
-    "$HELM_REPO"/humio \
-    --set ingress.clusterFQDN=$CLUSTER_NAME.$DNS_ZONE \
-    --set ingress.tlsSecretName=cluster-wildcard-tls-cert \
-    --set resources.limits.cpu=4 \
-    --set resources.limits.memory=16000Mi \
-    --set resources.requests.cpu=0.2 \
-    --set resources.requests.memory=800Mi \
-    -f humio-values.yaml
-
-rm -f humio-values.yaml
-
-
-#######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
 
