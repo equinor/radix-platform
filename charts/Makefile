@@ -1,7 +1,6 @@
 ENVIRONMENT ?= dev
 CONTAINER_REPO ?= radix$(ENVIRONMENT)
 STAGE1_CHART_VERSION = $(shell cat radix-stage1/Chart.yaml | yq --raw-output .version)
-HUMIO_CHART_VERSION = $(shell cat humio/Chart.yaml | yq --raw-output .version)
 
 
 update-stage1-repo:
@@ -13,9 +12,3 @@ update-stage1-repo:
 	tar -zcvf radix-stage1-$(STAGE1_CHART_VERSION).tgz radix-stage1
 	az acr helm push --name $(CONTAINER_REPO) radix-stage1-$(STAGE1_CHART_VERSION).tgz
 	rm -f radix-stage1-$(STAGE1_CHART_VERSION).tgz
-
-update-humio-repo:
-	az acr helm repo add --name $(CONTAINER_REPO) && helm repo update
-	tar -zcvf humio-$(HUMIO_CHART_VERSION).tgz humio
-	az acr helm push --name $(CONTAINER_REPO) humio-$(HUMIO_CHART_VERSION).tgz
-	rm -f humio-$(HUMIO_CHART_VERSION).tgz
