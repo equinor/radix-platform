@@ -22,6 +22,8 @@ Attach the csr file to the request
 
 In return you will receive a certificate, this together with the private key from the mydomain.equinor.com.key will be added as secrets to your application.  
 
+You should follow the appropriate procedure on how to handle keys and certificates.
+
 ## Configure external alias in Radix config
 
 A new configuration section needs to be added to the `radixconfig.yaml`, for details see the documentation for the [`dnsExternalAlias` setting](../../docs/reference-radix-config/#dnsexternalalias) in the `radixconfig.yaml` file.
