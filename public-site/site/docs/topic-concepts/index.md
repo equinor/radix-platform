@@ -91,7 +91,7 @@ Deployments are created by some types of [job](#job). A deployment defines the s
 
 ## Default alias
 
-Each application can have one specific component in one specific environment set as the _default alias_. This component is assigned a domain name in the format `[application].app.radix.equinor.com` and assigned a certificate which can be used as the public URL for accessing the application.
+Each application can have one specific component in one specific environment set as the _default alias_. This component is assigned a domain name in the format `[application].app.radix.equinor.com` and assigned a certificate. This domain can be used as the public URL for accessing the application.
 
 The default alias is configured by the [`dnsAppAlias` setting](../reference-radix-config/#dnsappalias) in the `radixconfig.yaml` file.
 
