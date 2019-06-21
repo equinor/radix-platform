@@ -98,6 +98,6 @@ The default alias is configured by the [`dnsAppAlias` setting](../reference-radi
 
 ## External (custom) alias 
 
-It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domain) for the application. The _external alias_ needs to point to a component [marked as public]([marked as public](../reference-radix-config/#publicport). This external alias can be any domain name, which can be used as the public URL for accessing the application, as long as a valid certificate for the domain is applied.
+It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domain) for the application. The _external alias_ needs to point to a component [marked as public](../reference-radix-config/#publicport). This external alias can be any domain name, which can be used as the public URL for accessing the application, as long as a valid certificate for the domain is applied.
 
 The external alias is configured by the [`dnsExternalAlias` setting](../reference-radix-config/#dnsexternalalias) in the `radixconfig.yaml` file.
