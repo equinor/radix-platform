@@ -91,14 +91,13 @@ Deployments are created by some types of [job](#job). A deployment defines the s
 
 ## Default alias
 
-Each application can have one specific component in one specific environment set as the _default alias_. This component is assigned a domain name in the format `[application].app.radix.equinor.com`, which can be used as the public URL for accessing the application.
+Each application can have one specific component in one specific environment set as the _default alias_. This component is assigned a domain name in the format `[application].app.radix.equinor.com` and assigned a certificate. This domain can be used as the public URL for accessing the application.
 
 The default alias is configured by the [`dnsAppAlias` setting](../reference-radix-config/#dnsappalias) in the `radixconfig.yaml` file.
 
-There is currently no way to specify custom DNS aliases (i.e. to choose your own custom domain), although this is a feature that is being considered.
 
-## External alias
+## External (custom) alias 
 
-It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domain) for the application. The _external alias_ needs to point to a component marked as public. The _external alias_ can have any URL, which can be used as the public URL for accessing the application, as long as the application developer provides a valid certificate for the alias.
+It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domain) for the application. The _external alias_ needs to point to a component [marked as public]([marked as public](../reference-radix-config/#publicport). This external alias can be any domain name, which can be used as the public URL for accessing the application, as long as a valid certificate for the domain is applied.
 
 The external alias is configured by the [`dnsExternalAlias` setting](../reference-radix-config/#dnsexternalalias) in the `radixconfig.yaml` file.
