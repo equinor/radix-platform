@@ -317,6 +317,31 @@ spec:
       - "$CLUSTER_NAME.$DNS_ZONE"
 EOF
 
+# Create active cluster wildcard cert
+echo "Creating active cluster wildcard cert..."
+
+cat <<EOF | kubectl apply -f -
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: active-cluster-wildcard-tls-cert
+spec:
+  secretName: active-cluster-wildcard-tls-cert
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  commonName: "*.$DNS_ZONE"
+  dnsNames:
+  - "$DNS_ZONE"
+  acme:
+    config:
+    - dns01:
+        provider: azure-dns
+      domains:
+      - "*.$DNS_ZONE"
+      - "$DNS_ZONE"
+EOF
+
 # Waiting for cert-manager to create certificate secrets before annotating them...
 echo ""
 echo "Waiting for cert-manager to create certificate secret app-wildcard-tls-cert before annotating it..."
@@ -335,6 +360,15 @@ while [[ "$(kubectl get secret cluster-wildcard-tls-cert 2>&1)" == *"Error"* ]];
 done
 echo "Certificate secret cluster-wildcard-tls-cert has been created, annotating it..."
 kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="cluster-wildcard-sync=cluster-wildcard-tls-cert"
+
+echo ""
+echo "Waiting for cert-manager to create certificate secret active-cluster-wildcard-tls-cert before annotating it..."
+while [[ "$(kubectl get secret active-cluster-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo "Certificate secret active-cluster-wildcard-tls-cert has been created, annotating it..."
+kubectl annotate Secret active-cluster-wildcard-tls-cert kubed.appscode.com/sync="active-cluster-wildcard-sync=active-cluster-wildcard-tls-cert"
 
 #######################################################################################
 ### Create storage classes
@@ -448,7 +482,7 @@ az keyvault secret download \
 
 kubectl apply -f external-dns-azure-secret.yaml
 
-helm upgrade --install external-dns stable/external-dns --set rbac.create=true --set interval=10s --set txtOwnerId=$CLUSTER_NAME --set provider=azure --set azure.secretName=external-dns-azure-secret --set domainFilters[0]=$DNS_ZONE
+helm upgrade --install external-dns stable/external-dns --set rbac.create=true --set interval=10s --set txtOwnerId=$CLUSTER_NAME --set provider=azure --set azure.secretName=external-dns-azure-secret --set domainFilters[0]=$DNS_ZONE --set policy=sync
 
 rm -f external-dns-azure-secret.yaml
 
