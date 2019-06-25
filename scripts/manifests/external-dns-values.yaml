@@ -1,0 +1,9 @@
+crd:
+  create: true
+
+service:
+  annotations:
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "7979"
+    prometheus.io/scrape: "true"
+
