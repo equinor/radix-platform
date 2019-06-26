@@ -13,7 +13,7 @@ Running an application in Radix is not much different to running Docker containe
 
 Only HTTPS traffic is allowed in and out of the application. SSL certificates are automatically managed by Radix, except for custom [external aliases](../../guides/external-alias/).
 
-Internally, [components](../topic-concepts/#component) can communicate with each other using other protocols and [ports](../reference-radix-config/#components).
+Internally, [components](../topic-concepts/#component) can communicate with each other using other protocols and [ports](../reference-radix-config/#components), provided they use TCP.
 
 ## Internal DNS
 
