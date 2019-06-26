@@ -6,12 +6,19 @@ toc: true
 
 # Topics
 
-A collection of relevant topics to make the most of having your application on Radix
+## The basics
 
 - Understanding [Radix concepts](docs/topic-concepts/)
+- The application [runtime environment](docs/topic-runtime-env)
+
+## Best practice
+
 - How use [Docker and containers](docs/topic-docker/) in Radix
 - Ensure that your apps are [secure](docs/topic-security/) in the platform
 - Choose the most appropriate [monitoring strategy](docs/topic-monitoring/)
+
+## About the platform
+
 - Service, support and availability [SLA](docs/topic-sla/)
 - [Rolling updates](docs/topic-rollingupdate/) in Radix
 
