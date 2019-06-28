@@ -65,11 +65,15 @@ if [[ -z "$RESOURCE_GROUP" ]]; then
 fi
 
 if [[ -z "$KUBERNETES_VERSION" ]]; then
-    KUBERNETES_VERSION="1.12.7"
+    KUBERNETES_VERSION="1.12.8"
 fi
 
 if [[ -z "$NODE_COUNT" ]]; then
     NODE_COUNT="3"
+fi
+
+if [[ -z "$NODE_DISK_SIZE" ]]; then
+    NODE_DISK_SIZE="200"
 fi
 
 if [[ -z "$NODE_VM_SIZE" ]]; then
@@ -170,6 +174,7 @@ echo -e "VAULT_NAME                 : $VAULT_NAME"
 echo -e "RESOURCE_GROUP             : $RESOURCE_GROUP"
 echo -e "KUBERNETES_VERSION         : $KUBERNETES_VERSION"
 echo -e "NODE_COUNT                 : $NODE_COUNT"
+echo -e "NODE_DISK_SIZE             : $NODE_DISK_SIZE"
 echo -e "NODE_VM_SIZE               : $NODE_VM_SIZE"
 echo -e "VNET_NAME                  : $VNET_NAME"
 echo -e "VNET_ADDRESS_PREFIX        : $VNET_ADDRESS_PREFIX"
@@ -240,6 +245,7 @@ az aks create --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" \
     --service-principal "$CLUSTER_SYSTEM_USER_ID" \
     --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
     --node-count "$NODE_COUNT" \
+    --node-osdisk-size "$NODE_DISK_SIZE" \
     --node-vm-size "$NODE_VM_SIZE" \
     --max-pods "$POD_PER_NODE" \
     --network-plugin "$NETWORK_PLUGIN" \
