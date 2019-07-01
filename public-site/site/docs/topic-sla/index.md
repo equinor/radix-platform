@@ -12,12 +12,12 @@ We are experimenting with an approach with "release channels" which differ in up
 
 |    Cluster            |             Purpose                              |      Termination/Upgrade    |   Support    |     
 |-----------------------|--------------------------------------------------|:---------------------------:|:------------:|
-| **Production**        | Radix production - currenly limited access       | Every ~6 months             | Yes          |   
-| **Playground**        | "Open" for test and experimenting with Radix     |                             | Best-effort  |  
+| **Production**        | For products under development or in production       | Every ~6 months             | Yes          |   
+| **Playground**        | For testing and experimenting with Radix     |                             | Best-effort  |  
 
 ## SLA - Production 
 
-Should be used when your team has chosen radix as PaaS for a product under development or in production. 
+Should be used when your team has chosen Radix as PaaS (Platform as a Service) for a product under development or in production. 
 
 ### Support
 
@@ -30,8 +30,8 @@ Schedule for Radix DevOps/Support team - 08:00 - 16:00 CET/CEST on Norwegian wor
 
 ### Uptime
 
-  * **Platform monthly uptime: 99.5%** - expected uptime for radix as a hosting platform. 
-  * **Omnia Radix services monthly uptime: 98%** - expected uptime for radix services, as CI/CD and monitoring. 
+  * **Platform monthly uptime: 99.5%** - expected uptime for Radix as a hosting platform. 
+  * **Omnia Radix services monthly uptime: 98%** - expected uptime for Radix services, as CI/CD and monitoring. 
   * **Planned maintenance:** We will announce planned maintenance at least 2 business days in advance. Downtime during planned maintenance does not count towards uptime goals.
   
 ### Associated operational risks
@@ -48,5 +48,5 @@ Use Playground for testing Radix, see if it’s a good fit for your projects, an
 
 **Uptime:** "Best-effort", but no guarantee uptime. Planned maintenance is announced as early as possible. 
 
-**In Playground cluster - hosted applications might be lost during maintenance, upgrades or migrations.**
+**In Playground cluster - hosted applications may need to be re-registered after maintenance, upgrades or migrations.**
 
