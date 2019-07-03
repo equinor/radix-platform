@@ -69,7 +69,7 @@ App with ''two'' containers. ''Reading from external open API''. No storage. No 
 Examples:
 
 - [Golang: Go + Nginx](https://github.com/equinor/radix-example-scenario-4-golang)
-- [Python: Django + PostgresSQL](https://github.com/equinor/radix-example-scenario-4-webapp)
+- [Python: Django + PostgresSQL](https://github.com/equinor/radix-example-scenario-4-django)
 
 # Scenario 5
 
