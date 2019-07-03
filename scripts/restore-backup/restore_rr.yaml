@@ -1,0 +1,11 @@
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: ${BACKUP_NAME}-rr
+  namespace: velero
+spec:
+  backupName: ${BACKUP_NAME}
+  includedNamespaces:
+  - '*'
+  includedResources:
+  - 'radixregistrations.radix.equinor.com'
