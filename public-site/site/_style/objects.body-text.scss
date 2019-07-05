@@ -69,6 +69,10 @@
   width: 0.5em;
 }
 
+.o-body-text blockquote li::before {
+  background-color: var(--color-brand-contrast);
+}
+
 .o-body-text img {
   background-color: var(--color-background);
   border: 1px solid var(--color-control-outline);
