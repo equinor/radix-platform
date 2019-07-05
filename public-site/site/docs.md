@@ -10,6 +10,7 @@ toc: true
 
 - Understanding [Radix concepts](docs/topic-concepts/)
 - The application [runtime environment](docs/topic-runtime-env)
+- [Domain names](docs/topic-domain-names) for your components
 
 ## Best practice
 

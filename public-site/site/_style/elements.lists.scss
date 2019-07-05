@@ -7,3 +7,8 @@ li {
   display: block;
   list-style: none;
 }
+
+li > p:first-child {
+  display: inline-block;
+  margin: 0 !important;
+}
