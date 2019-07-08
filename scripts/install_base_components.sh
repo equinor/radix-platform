@@ -536,7 +536,7 @@ helm upgrade --install radix-backup-cr \
 
 echo "Installing radix-e2e-monitoring"
 az keyvault secret download \
-    --vault-name $VAULT_NAME \
+    --vault-name "$VAULT_NAME" \
     --name radix-e2e-monitoring \
     --file radix-e2e-monitoring.yaml
 
@@ -551,9 +551,13 @@ rm -f radix-e2e-monitoring.yaml
 #######################################################################################
 # Create radix platform shared configs and secrets
 # Create 2 secrets for Radix platform radix-sp-acr-azure and radix-docker
+
+echo ""
+echo "Start on radix platform shared configs and secrets..."
+
 echo "Creating radix-sp-acr-azure secret"
 az keyvault secret download \
-    --vault-name $VAULT_NAME \
+    --vault-name "$VAULT_NAME" \
     --name "radix-cr-cicd-${SUBSCRIPTION_ENVIRONMENT}" \
     --file sp_credentials.json
 
@@ -589,9 +593,13 @@ EOF
 kubectl apply -f radix-platform-config.yaml
 rm radix-platform-config.yaml
 
+echo "Done."
 
 #######################################################################################
 ### Install and configure Flux
+
+echo ""
+echo "Start installing Flux..."
 
 FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
 FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
@@ -651,9 +659,13 @@ if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
     echo ""
 fi
 
+echo "Done."
+
 #######################################################################################
 ### Install Radix CICD Canary
 ###
+
+echo ""
 echo "Install Radix CICD Canary"
 az keyvault secret download \
   --vault-name "$VAULT_NAME" \
@@ -670,6 +682,58 @@ helm upgrade --install radix-cicd-canary \
   -f radix-cicd-canary-values.yaml
 
 rm -f radix-cicd-canary-values.yaml
+echo "Done."
+
+#######################################################################################
+### Install prerequisites for Velero
+### 
+
+echo ""
+echo "Installing Velero prerequisites..."
+
+AZ_VELERO_SECRET_NAME="velero-credentials"
+VELERO_NAMESPACE="velero"
+AZ_VELERO_SECRET_PAYLOAD_FILE="./velero-credentials"
+
+# Create secret for az credentials
+az keyvault secret download \
+   --vault-name "$VAULT_NAME" \
+   --name "$AZ_VELERO_SECRET_NAME" \
+   -f "$AZ_VELERO_SECRET_PAYLOAD_FILE"
+
+kubectl create ns "$VELERO_NAMESPACE"
+kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
+   --from-env-file="$AZ_VELERO_SECRET_PAYLOAD_FILE" \
+   --dry-run -o yaml \
+   | kubectl apply -f -
+
+rm "$AZ_VELERO_SECRET_PAYLOAD_FILE"
+
+# Create the cluster specific blob container
+AZ_VELERO_STORAGE_ACCOUNT_ID="radixvelero${SUBSCRIPTION_ENVIRONMENT}"
+
+az storage container create -n "$CLUSTER_NAME" \
+    --public-access off \
+    --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
+    2>&1 >/dev/null
+
+# Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
+cat << EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: velero-flux-values
+  namespace: velero
+data:
+  values: |
+    configuration:
+      backupStorageLocation:
+        bucket: $CLUSTER_NAME
+EOF
+
+echo "Done."
+echo ""
+
 
 #######################################################################################
 ### Notify on slack channel
