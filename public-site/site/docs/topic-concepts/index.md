@@ -77,9 +77,21 @@ Jobs consist of a series of *steps*, run either in parallel or sequentially (thi
 
 ## Pipeline
 
-A pipeline defines a type of job. At the moment, only one pipeline exists in Radix: the `build-deploy` pipeline. This is triggered by a commit in GitHub to a branch mapped to an environment. In turn, this causes all components to be rebuilt and a new deployment to be created in the appropriate environment.
+A pipeline defines a type of job. There are currently three types of pipeline in Radix:
+
+### The `build-deploy` pipeline
+
+This is triggered by a commit in GitHub to a branch mapped to an environment. In turn, this causes all components to be rebuilt and a new deployment to be created in the appropriate environment.
 
 ![Diagram of the build-deploy pipeline](pipeline-build-deploy.png "The build-deploy pipeline")
+
+### The `build` pipeline
+
+Exactly the same as the `build-deploy` pipeline, but a deployment is not created at the end of the build. Useful for testing the ability to build the code, run tests, etc.
+
+### The `promote` pipeline
+
+Used to duplicate an existing [deployment](#deployment) from one environment into another (or to redeploy an old deployment). You can read more about it in the [promotion guide](../../guides/deployment-promotion).
 
 ## Deployment
 
@@ -95,8 +107,7 @@ Each application can have one specific component in one specific environment set
 
 The default alias is configured by the [`dnsAppAlias` setting](../reference-radix-config/#dnsappalias) in the `radixconfig.yaml` file.
 
-
-## External (custom) alias 
+## External (custom) alias
 
 It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domain) for the application. The _external alias_ needs to point to a component [marked as public](../reference-radix-config/#publicport). This external alias can be any domain name, which can be used as the public URL for accessing the application, as long as a valid certificate for the domain is applied.
 
