@@ -3,8 +3,10 @@
 .o-layout-container {
   margin: auto;
   max-width: 75rem;
-  padding: 0 1rem;
+  padding: 0 var(--container-lateral-padding);
   width: 100%;
+  
+  --container-lateral-padding: 1rem;
 }
 
 /* --- Page ----------------------------------------------------------------- */
@@ -26,7 +28,7 @@
   align-items: start;
   display: block;
   grid-gap: 0 2rem;
-  grid-template-columns: [minor] 33.33% [major] 66.66%;
+  grid-template-columns: [minor] minmax(0, 1fr) [major] minmax(0, 2fr);
   grid-template-rows: min-content;
 }
 
