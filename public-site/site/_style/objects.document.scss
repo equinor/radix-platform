@@ -8,7 +8,9 @@
   border-radius: 0 0 20px 20px;
   box-shadow: var(--shadow-level-2);
   min-height: 70vh;
-  padding: 2rem 1rem;
+  padding: 2rem var(--document-lateral-padding);
+
+  --document-lateral-padding: 1rem;
 }
 
 /* TODO: make the header a component */
@@ -30,6 +32,6 @@
 
 @media (min-width: 42rem) {
   .o-document {
-    padding: 4rem;
+    --document-lateral-padding: 4rem;
   }
 }

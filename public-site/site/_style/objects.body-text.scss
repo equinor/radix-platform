@@ -20,6 +20,13 @@
 
 .o-body-text p {
   margin: 1.7em 0;
+  position: relative;
+}
+
+.o-body-text p::after {
+  clear: both;
+  content: '';
+  display: block;
 }
 
 .o-body-text > p:first-child {
@@ -75,17 +82,20 @@
 
 .o-body-text img {
   background-color: var(--color-background);
-  border: 1px solid var(--color-control-outline);
+  border: var(--image-border-width) solid var(--color-control-outline);
   box-shadow: var(--shadow-level-1);
   box-sizing: content-box;
   display: block;
-  margin: 1rem;
-  max-width: calc(100% - 4rem - 2px);
-  transition: max-width var(--duration-medium);
+  float: right;
+  margin: 1rem 0;
+  max-width: calc(100% - var(--image-border-width) * 2);
+  transition: max-width var(--duration-medium) ease-in-out;
+
+  --image-border-width: 1px;
 }
 
 .o-body-text img:hover {
-  max-width: 100vw;
+  max-width: calc(100vw - var(--document-lateral-padding) * 2 - var(--container-lateral-padding) * 2 - var(--image-border-width) * 2);
 }
 
 .o-body-text table th {
