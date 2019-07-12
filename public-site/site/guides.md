@@ -14,7 +14,7 @@ We also have a collection of [scenarios](guides/scenarios/) that can be used as 
 
 # Building and deploying
 
-How should you set up Git branches and Radix environments? Read about [workflows](guides/workflows/) for an overview.
+How should you set up Git branches and Radix environments? Read about [workflows](guides/workflows/) for an overview. A common strategy is to use [promotion](guides/deployment-promotion) to control how deployments end up in environments.
 
 Builds in Radix are Docker builds! The [Docker builds](guides/docker/) guide has recommendations for creating good `Dockerfile`s that work well in the cloud ☁️
 
