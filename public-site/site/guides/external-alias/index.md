@@ -5,13 +5,13 @@ parent: ['Guides', '../../guides.html']
 toc: true
 ---
 
-It is possible to make an application available on a custom domain via a setting in `radixconfig.yaml`, provided you register the domain and bring the corresponding TLS certificate into Radix.
+It is possible to make an application available on a custom DNS via a setting in `radixconfig.yaml`, provided you register the DNS alias and bring the corresponding TLS certificate into Radix.
 
 You must register and make your domain name an alias of the [public name](../../docs/topic-domain-names/#public-name) of a component in your app. (Don't point an external alias at a canonical name.)
 
-The process for setting up the alias depends on the service used to register and manage the domain name. This guide assumes registration of a `*.equinor.com` subdomain, but you should be able to adapt the instructions to a third-party provider.
+The process for setting up the alias depends on the service used to register and manage the domain name. This guide assumes registration of a `*.equinor.com` alias, but you should be able to adapt the instructions to a third-party provider.
 
-# Acquire an Equinor subdomain alias
+# Acquire an Equinor alias
 
 Request a DNS alias in the [Services@Equinor](https://equinor.service-now.com) portal (service: "IT infrastructure operational tasks"). Specify which [public name](../../docs/topic-domain-names/#public-name) the alias should point to. An example request:
 
@@ -22,7 +22,7 @@ Point to: frontend-myapp-prod.radix.equinor.com
 
 # Acquire an Equinor certificate
 
-Request a certificate for your domain in the [Services@Equinor](https://equinor.service-now.com) portal (service: "Public SSL certificate"). You'll need a Certificate Signing Request (CSR) file. To create a CSR file you need a private key. An example of how to create these files is to use the `openssl` command:
+Request a certificate for your DNS name in the [Services@Equinor](https://equinor.service-now.com) portal (service: "Public SSL certificate"). You'll need a Certificate Signing Request (CSR) file. To create a CSR file you need a private key. An example of how to create these files is to use the `openssl` command:
 
 1. Generate private key
 
