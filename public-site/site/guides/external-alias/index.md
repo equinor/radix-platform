@@ -46,6 +46,7 @@ A PEM container holding both the SSL and the intermediate certificate in the sam
 -----END CERTIFICATE-----
 ```
 
+
 ### How to get it
 
 1. Start by getting to know the appropriate procedure on how to handle keys and certificates in Equinor, as they are considered as sensitive information
