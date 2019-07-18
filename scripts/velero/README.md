@@ -47,12 +47,10 @@ Managed by Flux, see [radix-flux](https://github.com/equinor/radix-flux) repo.
 Removing Velero from a cluster is a three-step operation:
 
 ```sh
-# First delete the flux helmRelease manifest for velero.
-# This will trigger the flux-helm-operator to delete and purge the velero helm release.
-kubectl delete helmRelease velero -n velero
-
-# And then we need to remove all the things that are not cleaned up when deleting the helm release
-kubectl delete namespace/velero clusterrolebinding/velero
+# Deleting the namespace will also delete the flux helmRelease, which again trigger a helm delete --purge
+kubectl delete namespace/velero
+# Clean up that which is unfortunately not removed by helm delete
+kubectl delete clusterrolebinding/velero
 kubectl delete crds --selector=app.kubernetes.io/name=velero
 ```
 

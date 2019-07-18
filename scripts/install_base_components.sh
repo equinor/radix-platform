@@ -729,6 +729,8 @@ data:
     configuration:
       backupStorageLocation:
         bucket: $CLUSTER_NAME
+        config:
+          storageAccount: $AZ_VELERO_STORAGE_ACCOUNT_ID
 EOF
 
 echo "Done."
