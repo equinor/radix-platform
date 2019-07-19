@@ -633,7 +633,11 @@ rm "$FLUX_PRIVATE_KEY_NAME"
 
 echo ""
 echo "Adding Weaveworks repository to Helm"
-helm repo add weaveworks https://weaveworks.github.io/flux > /dev/null
+helm repo add fluxcd https://fluxcd.github.io/flux
+
+echo ""
+echo "Adding Flux CRDs, no longer included in the helm chart"
+kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml
 
 echo ""
 echo "Installing Flux with Helm operator"
@@ -646,7 +650,7 @@ helm upgrade --install flux \
    --set git.path="$FLUX_GITOPS_PATH" \
    --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
    --set registry.acr.enabled=true \
-   weaveworks/flux > /dev/null
+   fluxcd/flux > /dev/null
 
 echo -e ""
 echo -e ""
