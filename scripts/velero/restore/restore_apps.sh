@@ -179,7 +179,7 @@ PATCH_JSON="$(cat << END
 {
    "spec": {
       "objectStorage": {
-         "prefix": "$SOURCE_CLUSTER"
+         "bucket": "$SOURCE_CLUSTER"
       }
    }
 }
@@ -252,7 +252,7 @@ PATCH_JSON="$(cat << END
 {
    "spec": {
       "objectStorage": {
-         "prefix": "$DEST_CLUSTER"
+         "bucket": "$DEST_CLUSTER"
       }
    }
 }
