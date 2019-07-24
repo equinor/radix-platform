@@ -1,8 +1,17 @@
 # Restore
 
-Handled by script and the use of restore manifests to define what and how we want to restore.  
-See header of [./restore_apps.sh](./restore_apps.sh) for details on usage.
+Backups are stored in azure blob containers.  
+First find the name of the backup you want to restore by either inspecting the storage account in azure (see names in `velero.env`) or use the velero client, and then run the restore apps script.
 
+1. Find the backup  
+   ```sh
+   velero backup get
+   ```
+1. Run restore script     
+   ```sh
+   # See header of script for details on usage
+   SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+   ```
 
 ## Troubleshooting
 
