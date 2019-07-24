@@ -482,7 +482,15 @@ az keyvault secret download \
 
 kubectl apply -f external-dns-azure-secret.yaml
 
-helm upgrade --install external-dns stable/external-dns --set rbac.create=true --set interval=10s --set txtOwnerId=$CLUSTER_NAME --set provider=azure --set azure.secretName=external-dns-azure-secret --set domainFilters[0]=$DNS_ZONE --set policy=sync
+helm upgrade --install external-dns stable/external-dns \
+  --version 1.8.2 \
+  --set rbac.create=true \
+  --set interval=60s \
+  --set txtOwnerId=$CLUSTER_NAME \
+  --set provider=azure \
+  --set azure.secretName=external-dns-azure-secret \
+  --set domainFilters[0]=$DNS_ZONE \
+  --set policy=sync
 
 rm -f external-dns-azure-secret.yaml
 
