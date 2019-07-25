@@ -579,8 +579,6 @@ data:
     imageRegistry: "radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io"
     clusterName: "$CLUSTER_NAME"
     clusterType: "$CLUSTER_TYPE"
-    config:
-      clusterName: "$CLUSTER_NAME"
 EOF
 
 kubectl apply -f radix-platform-config.yaml
