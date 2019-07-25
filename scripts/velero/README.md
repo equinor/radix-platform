@@ -8,7 +8,8 @@ Related repos:
 
 Related info:
 - [Official Velero docs](https://heptio.github.io/velero)
-- [Spike: Can we use Velero for disaster/recovery?](./spike-result.md) 
+- [Spike: Can we use Velero for disaster/recovery?](./spike-result.md)  
+  - [Spike recovery](./spike-recovery.md)
 
 Operations:
 - [Velero operations](./operations.md)
