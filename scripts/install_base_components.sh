@@ -494,23 +494,6 @@ helm upgrade --install external-dns stable/external-dns \
 
 rm -f external-dns-azure-secret.yaml
 
-
-#######################################################################################
-### Install kubed
-###
-
-echo "Installing kubed"
-helm repo add appscode https://charts.appscode.com/stable/
-helm repo update
-
-helm upgrade --install kubed appscode/kubed --version 0.9.0 \
-  --namespace kube-system \
-  --set apiserver.enabled=false \
-  --set config.clusterName=$CLUSTER_NAME \
-  --set rbac.create=true \
-  --set enableAnalytics=false
-
-
 #######################################################################################
 ### Add Radix helm repo
 ### 
@@ -596,6 +579,8 @@ data:
     imageRegistry: "radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io"
     clusterName: "$CLUSTER_NAME"
     clusterType: "$CLUSTER_TYPE"
+    config:
+      clusterName: "$CLUSTER_NAME"
 EOF
 
 kubectl apply -f radix-platform-config.yaml
