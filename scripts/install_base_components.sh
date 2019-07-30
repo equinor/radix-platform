@@ -139,6 +139,14 @@ if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
   fi
 fi
 
+if [[ -z "$RADIX_API_PREFIX" ]]; then
+  RADIX_API_PREFIX="server-radix-api-prod"
+fi
+
+if [[ -z "$RADIX_WEBHOOK_PREFIX" ]]; then
+  RADIX_WEBHOOK_PREFIX="webhook-radix-github-webhook-prod"
+fi
+
 CICDCANARY_IMAGE_TAG="master-latest"
 
 #######################################################################################
@@ -161,6 +169,8 @@ echo -e "FLUX_GITOPS_REPO        : $FLUX_GITOPS_REPO"
 echo -e "FLUX_GITOPS_BRANCH      : $FLUX_GITOPS_BRANCH"
 echo -e "FLUX_GITOPS_PATH        : $FLUX_GITOPS_PATH"
 echo -e "CICDCANARY_IMAGE_TAG    : $CICDCANARY_IMAGE_TAG"
+echo -e "RADIX_API_PREFIX        : $RADIX_API_PREFIX"
+echo -e "RADIX_WEBHOOK_PREFIX    : $RADIX_WEBHOOK_PREFIX"
 echo -e ""
 
 # Check for Azure login
@@ -647,23 +657,25 @@ fi
 echo "Done."
 
 #######################################################################################
-### Install Radix CICD Canary
+### Install Radix CICD Canary Golang
 ###
 
 echo ""
-echo "Install Radix CICD Canary"
+echo "Install Radix CICD Canary Golang"
 az keyvault secret download \
   --vault-name "$VAULT_NAME" \
   --name radix-cicd-canary-values \
   --file radix-cicd-canary-values.yaml
 
-helm upgrade --install radix-cicd-canary \
-  "$HELM_REPO"/radix-cicd-canary \
-  --namespace radix-cicd-canary \
-  --set clusterFQDN="$CLUSTER_NAME.$DNS_ZONE" \
+helm upgrade --install radix-cicd-canary-golang \
+  "$HELM_REPO"/radix-cicd-canary-golang \
+  --namespace radix-cicd-canary-golang \
+  --set clusterFqdn="$CLUSTER_NAME.$DNS_ZONE" \
   --set image.tag="$CICDCANARY_IMAGE_TAG" \
   --set imageCredentials.registry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
   --set clusterType="$CLUSTER_TYPE" \
+  --set radixApiPrefix="$RADIX_API_PREFIX" \
+	--set radixWebhookPrefix="$RADIX_WEBHOOK_PREFIX" \
   -f radix-cicd-canary-values.yaml
 
 rm -f radix-cicd-canary-values.yaml
