@@ -1,40 +1,26 @@
 # How to deploy the Radix platform and required infrastructure
 
-## Deploy infrastructure
+Each environment (prod, dev) has multiple clusters that use shared infrastructure like dns and acr in that environment.  
+The deploy and removal of mostly everything is done by script.
 
-### Install and update of shared infrastructure
+## Prerequisites
 
-Run script `install_infrastructure.sh`.   
-Instructions for how to run it can be found in the file.
+- You must have the az role `Owner` for the az subscription that is the infrastructure environment
+- Be able to run `bash` scripts (linux/macOs)
 
-Example:
-```
-RADIX_INFRASTRUCTURE_ENVIRONMENT="dev" ./install_infrastructure.sh
-```
+## Install and update shared infrastructure
 
-### Create cluster
+Handled by script, see file header in [install_infrastructure.sh](./install_infrastructure.sh) for usage.
 
-Run script `install_cluster.sh`.  
-Instructions for how to run it can be found in the file.  
+## Bootstrap and teardown of a radix cluster
 
-Example:
-```
-INFRASTRUCTURE_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_cluster.sh
-```
-
-At the end of the `install_cluster.sh` script, a reminder to enable AKS diagnostics logs is presented. If AKS diagnostics logs is needed to be enabled in the cluster, it should be set manually via Azure portal. The complete procedures are available on https://github.com/equinor/radix-private/blob/master/docs/infrastructure/logging.md.
+- [bootstrap](./aks/README.md#bootstrap)
+- [teardown](./aks/README.md#teardown)
 
 ## Deploy base components
 
-This will deploy third party components (nginx, external-dns etc) and some radix components (radix-operator).
-
-Run script `install_base_components.sh`.  
-Instructions for how to run it can be found in the file. 
-
-Example:
-```
-SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_base_components.sh
-```
+This will deploy third party components (nginx, external-dns etc).  
+Handled by script, see file header in [install_base_components.sh](./install_base_components.sh) for usage.
 
 ### Dependencies
 
@@ -58,19 +44,11 @@ The base components include `radix-operator`, and for this component to be succe
 * `radix-image-builder` (from `master` and `release` branches in `radix-operator` project)
 * `gitclone` (from `master` branch in `radix-api` project)
 
-For backup of custom resources (RR, RA, RD) - Image `radix-backup-cr`, from `master` and `release` braches in [radix-backup-cr](https://github.com/equinor/radix-backup-cr) project, is also required
-
 ## Deploy Radix applications
 
-This will deploy Radix applications like radix-api, webhook, web-console etc.
+This will deploy Radix applications like radix-api, webhook, web-console etc.  
 
-Run script `deploy_radix_apps.sh`.  
-Instructions for how to run it can be found in the file. 
-
-Example:
-```
-SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./deploy_radix_apps.sh
-```
+Scripted, see file header in [deploy_radix_apps.sh](./deploy_radix_apps.sh) for usage.
 
 ### Dependencies
 
@@ -87,9 +65,7 @@ This script requires several secret files that contain `RadixRegistration` objec
 ## Create Web Hooks for Radix apps
 
 This will create webhooks that will connect Radix application github repos with the radix CI/CD.  
-
-Run script `create_web_hooks_radix_apps.sh`.  
-Instructions for how to run it can be found in the file. 
+Handled by script, see file header in [create_web_hooks_radix_apps.sh](./create_web_hooks_radix_apps.sh) for usage.
 
 ### Dependencies
 
@@ -101,13 +77,7 @@ _Aliases should only be set for apps running in the production cluster_.
 
 It is a way to provide a more user friendly url to a selected set of apps (i.e. Web console, public site, API server, Webhook, canary).  
 
-Run script `create_alias.sh`.  
-Instructions for how to run it can be found in the file. 
-
-Example:
-```
-RADIX_ALIAS_CONFIG_VARS_PATH=./alias_config_console.sh ./create_alias.sh
-```
+Handled by script, see file header in [create_alias.sh](./create_alias.sh) for usage.
 
 ### Dependencies
 
