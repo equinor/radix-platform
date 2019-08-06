@@ -140,11 +140,19 @@ if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
 fi
 
 if [[ -z "$RADIX_API_PREFIX" ]]; then
-  RADIX_API_PREFIX="server-radix-api-prod"
+  if [ "$CLUSTER_TYPE" = "production" ] || [ "$CLUSTER_TYPE" = "playground" ]; then
+    RADIX_API_PREFIX="server-radix-api-prod"
+  else
+    RADIX_API_PREFIX="server-radix-api-qa"
+  fi
 fi
 
 if [[ -z "$RADIX_WEBHOOK_PREFIX" ]]; then
-  RADIX_WEBHOOK_PREFIX="webhook-radix-github-webhook-prod"
+   if [ "$CLUSTER_TYPE" = "production" ] || [ "$CLUSTER_TYPE" = "playground" ]; then
+    RADIX_WEBHOOK_PREFIX="webhook-radix-github-webhook-prod"
+  else
+    RADIX_WEBHOOK_PREFIX="webhook-radix-github-webhook-qa"
+  fi
 fi
 
 CICDCANARY_IMAGE_TAG="master-latest"
