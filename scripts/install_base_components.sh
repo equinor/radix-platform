@@ -657,19 +657,19 @@ fi
 echo "Done."
 
 #######################################################################################
-### Install Radix CICD Canary Golang
+### Install Radix CICD Canary
 ###
 
 echo ""
-echo "Install Radix CICD Canary Golang"
+echo "Install Radix CICD Canary"
 az keyvault secret download \
   --vault-name "$VAULT_NAME" \
   --name radix-cicd-canary-values \
   --file radix-cicd-canary-values.yaml
 
-helm upgrade --install radix-cicd-canary-golang \
-  "$HELM_REPO"/radix-cicd-canary-golang \
-  --namespace radix-cicd-canary-golang \
+helm upgrade --install radix-cicd-canary \
+  "$HELM_REPO"/radix-cicd-canary \
+  --namespace radix-cicd-canary \
   --set clusterFqdn="$CLUSTER_NAME.$DNS_ZONE" \
   --set image.tag="$CICDCANARY_IMAGE_TAG" \
   --set imageCredentials.registry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
