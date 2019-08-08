@@ -515,20 +515,6 @@ helm repo update
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
 
-
-#######################################################################################
-### Install backup of radix custom resources (RR, RA, RD)
-### https://github.com/equinor/radix-backup-cr
-
-echo "Installing radix-backup-cr"
-
-helm upgrade --install radix-backup-cr \
-    $HELM_REPO/radix-backup-cr \
-    --namespace default \
-    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
-    --set image.tag=release-latest
-
-
 #######################################################################################
 ### Install radix-e2e-monitoring
 ###
