@@ -3,25 +3,31 @@
 # PRECONDITIONS
 #
 # It is assumed that cluster is installed using the aks/bootstrap.sh script
-#
+
 # PURPOSE
 #
 # The purpose of the shell script is to set up all base
 # components of the cluster
+
+# USAGE
 #
 # To run this script from terminal:
 # SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_NAME=dd ./install_base_components.sh
 #
-# Example: Configure Playground, use default settings
-# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" CLUSTER_TYPE="playground" ./install_base_components.sh
-#
 # Example: Configure DEV, use default settings
 # SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" ./install_base_components.sh
+#
+# Example: Configure Playground, use default settings
+# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="playground-1" CLUSTER_TYPE="playground" ./install_base_components.sh
 #
 # Example: Configure PROD, use default settings
 # SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="cluster1" CLUSTER_TYPE="production" ./install_base_components.sh
 #
-# Input environment variables:
+# Example: Configure a dev cluster to use custom configs
+# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="cluster1" FLUX_GITOPS_BRANCH=testing-something FLUX_GITOPS_DIR=development-configs ./install_base_components.sh
+
+# REQUIRED ENVIRONMENT VARS
+#
 #   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
 #   CLUSTER_NAME                (Mandatory. Example: prod42)
 #   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
@@ -37,7 +43,6 @@
 #   FLUX_GITOPS_PATH            (Optional. Defaulted if omitted)
 #   USER_PROMPT                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 #
-# CREDENTIALS:
 # The script expects the slack-token to be found as secret in keyvault.
 
 # We don't use Helm to add extra resources any more. Instead we use three different methods:
@@ -123,23 +128,6 @@ if [[ -z "$PROMETHEUS_NAME" ]]; then
     PROMETHEUS_NAME="radix-stage1"
 fi
 
-if [[ -z "$FLUX_GITOPS_REPO" ]]; then
-  FLUX_GITOPS_REPO="git@github.com:equinor/radix-flux.git"
-fi
-
-if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
-  if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
-    FLUX_GITOPS_BRANCH="release"
-    FLUX_GITOPS_PATH="production-configs"
-  elif [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]] && [ "$CLUSTER_TYPE" == "playground" ]; then
-    FLUX_GITOPS_BRANCH="release"
-    FLUX_GITOPS_PATH="playground-configs"
-  elif [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]] && [ "$CLUSTER_TYPE" == "development" ]; then
-    FLUX_GITOPS_BRANCH="master"
-    FLUX_GITOPS_PATH="development-configs"
-  fi
-fi
-
 if [[ -z "$RADIX_API_PREFIX" ]]; then
   if [ "$CLUSTER_TYPE" = "production" ] || [ "$CLUSTER_TYPE" = "playground" ]; then
     RADIX_API_PREFIX="server-radix-api-prod"
@@ -178,9 +166,6 @@ echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
 echo -e "HELM_VERSION            : $HELM_VERSION"
 echo -e "HELM_REPO               : $HELM_REPO"
 echo -e "SLACK_CHANNEL           : $SLACK_CHANNEL"
-echo -e "FLUX_GITOPS_REPO        : $FLUX_GITOPS_REPO"
-echo -e "FLUX_GITOPS_BRANCH      : $FLUX_GITOPS_BRANCH"
-echo -e "FLUX_GITOPS_PATH        : $FLUX_GITOPS_PATH"
 echo -e "CICDCANARY_IMAGE_TAG    : $CICDCANARY_IMAGE_TAG"
 echo -e "RADIX_API_PREFIX        : $RADIX_API_PREFIX"
 echo -e "RADIX_WEBHOOK_PREFIX    : $RADIX_WEBHOOK_PREFIX"
@@ -496,26 +481,16 @@ helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
 wait # wait for subshell to finish
 
 #######################################################################################
-### Install external-dns
+### Install prerequisites for external-dns (flux handles the main installation)
 ###
 
-echo "Installing external-dns"
+echo "Installing external-dns secret"
 az keyvault secret download \
     --vault-name $VAULT_NAME \
     --name external-dns-azure-secret \
     --file external-dns-azure-secret.yaml
 
 kubectl apply -f external-dns-azure-secret.yaml
-
-helm upgrade --install external-dns stable/external-dns \
-  --version 1.8.2 \
-  --set rbac.create=true \
-  --set interval=60s \
-  --set txtOwnerId=$CLUSTER_NAME \
-  --set provider=azure \
-  --set azure.secretName=external-dns-azure-secret \
-  --set domainFilters[0]=$DNS_ZONE \
-  --set policy=sync
 
 rm -f external-dns-azure-secret.yaml
 
@@ -598,74 +573,17 @@ rm radix-platform-config.yaml
 echo "Done."
 
 #######################################################################################
-### Install and configure Flux
+### Install Flux
 
 echo ""
-echo "Start installing Flux..."
-
-FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
-FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
-FLUX_DEPLOY_KEYS_GENERATED=false
-
-FLUX_PRIVATE_KEY=`az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$VAULT_NAME"`
-FLUX_PUBLIC_KEY=`az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$VAULT_NAME"`
-
-if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
-    echo "Missing flux deploy keys for GitHub in keyvault: $VAULT_NAME"
-    echo "Generating flux private and public keys..."
-    ssh-keygen -t rsa -b 4096 -N "" -C "gm_radix@equinor.com" -f id_rsa."$SUBSCRIPTION_ENVIRONMENT"
-    az keyvault secret set --file=./id_rsa."$SUBSCRIPTION_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$VAULT_NAME"
-    az keyvault secret set --file=./id_rsa."$SUBSCRIPTION_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$VAULT_NAME"
-    rm id_rsa."$SUBSCRIPTION_ENVIRONMENT"
-    rm id_rsa."$SUBSCRIPTION_ENVIRONMENT".pub
-    FLUX_DEPLOY_KEYS_GENERATED=true
-else
-    echo "Flux deploy keys for GitHub already exist in keyvault: $VAULT_NAME"
-fi
-
-echo ""
-echo "Creating $FLUX_PRIVATE_KEY_NAME secret"
-az keyvault secret download \
-    --vault-name $VAULT_NAME \
-    --name "$FLUX_PRIVATE_KEY_NAME" \
-    --file "$FLUX_PRIVATE_KEY_NAME"
-
-kubectl create secret generic "$FLUX_PRIVATE_KEY_NAME" --from-file=identity="$FLUX_PRIVATE_KEY_NAME"
-rm "$FLUX_PRIVATE_KEY_NAME"
-
-echo ""
-echo "Adding Weaveworks repository to Helm"
-helm repo add fluxcd https://fluxcd.github.io/flux
-
-echo ""
-echo "Adding Flux CRDs, no longer included in the helm chart"
-kubectl apply -f https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml
-
-echo ""
-echo "Installing Flux with Helm operator"
-helm upgrade --install flux \
-   --set rbac.create=true \
-   --set helmOperator.create=true \
-   --set helmOperator.pullSecret=radix-docker \
-   --set git.url="$FLUX_GITOPS_REPO" \
-   --set git.branch="$FLUX_GITOPS_BRANCH" \
-   --set git.path="$FLUX_GITOPS_PATH" \
-   --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
-   --set registry.acr.enabled=true \
-   fluxcd/flux > /dev/null
-
-echo -e ""
-echo -e ""
-echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
-
-if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
-    FLUX_DEPLOY_KEY_NOTIFICATION="*** IMPORTANT ***\nPlease add a new deploy key in the radix-flux repository (https://github.com/equinor/radix-flux/settings/keys) with the value from $FLUX_PUBLIC_KEY_NAME secret in $VAULT_NAME Azure keyvault."
-    echo ""
-    echo -e "${__style_yellow}$FLUX_DEPLOY_KEY_NOTIFICATION${__style_end}"
-    echo ""
-fi
-
-echo "Done."
+(AZ_INFRASTRUCTURE_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" \
+  CLUSTER_NAME="$CLUSTER_NAME" \
+  CLUSTER_TYPE="$CLUSTER_TYPE" \
+  GIT_REPO="$FLUX_GITOPS_REPO" \
+  GIT_BRANCH="$FLUX_GITOPS_BRANCH" \
+  GIT_DIR="$FLUX_GITOPS_DIR" \
+  ./install_flux.sh)
+wait
 
 #######################################################################################
 ### Install Radix CICD Canary
