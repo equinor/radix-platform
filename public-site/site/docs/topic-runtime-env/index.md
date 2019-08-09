@@ -23,7 +23,7 @@ Other ports/protocols can be used, e.g. `fileserver:22` for an FTP port.
 
 ## Request size
 
-For external requests there is an upload limit of 100MB. If your application need to receive larger payloads, these should be split across separate requests.
+For external requests there is an upload limit of 100MB. If your application needs to receive larger payloads, these should be split across separate requests.
 
 # Storage
 
