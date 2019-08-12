@@ -53,6 +53,12 @@ The `environments` section of the spec lists the environments for the applicatio
 
 ## `components`
 
+This is where you specify the various components for your application - it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). Source for the component can be; a folder in the repository, a dockerfile or an image.  
+
+Note! `image` config cannot be used in conjunction with the `src` or the `dockerfileName` config.
+
+### `src`
+
 ```yaml
 spec:
   components:
@@ -68,7 +74,9 @@ spec:
           port: 5000
 ```
 
-This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`. An alternative to this is to use the `dockerfileName` setting of the component.
+Specify `src` for a folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`. An alternative to this is to use the `dockerfileName` setting of the component.
+
+### `dockerfileName`
 
 ```yaml
 spec:
@@ -84,10 +92,11 @@ spec:
         - name: http
           port: 5000
 ```
+An alternative to this is to use the `dockerfileName` setting of the component.
 
 ### `image`
 
-An alternative configuration of a component could be to use a publicly available image, which won't trigger any build of the component. `image` config cannot be used in conjunction with the `src` or the `dockerfileName` config. An example of such a configuration would be:
+An alternative configuration of a component could be to use a publicly available image, this will not trigger any build of the component.  An example of such a configuration would be:
 
 ```yaml
 spec:
