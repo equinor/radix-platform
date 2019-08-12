@@ -68,7 +68,39 @@ spec:
           port: 5000
 ```
 
-This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`.
+This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`. An alternative to this is to use the `dockerfileName` setting of the component.
+
+```yaml
+spec:
+  components:
+    - name: frontend
+      dockerfileName: frontend.Dockerfile
+      ports:
+        - name: http
+          port: 80
+    - name: backend
+      dockerfileName: backend.Dockerfile
+      ports:
+        - name: http
+          port: 5000
+```
+
+### `image`
+
+An alternative configuration of a component could be to use a publicly available image, which won't trigger any build of the component. `image` config cannot be used in conjunction with the `src` or the `dockerfileName` config. An example of such a configuration would be:
+
+```yaml
+spec:
+  components:
+    - name: redis
+        image: redis:5.0-alpine
+    - name: swagger-ui
+      image: swaggerapi/swagger-ui
+      ports:
+       - name: http
+         port: 8080
+      publicPort: http
+```
 
 ### `publicPort`
 
