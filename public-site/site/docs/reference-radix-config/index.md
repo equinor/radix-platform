@@ -102,7 +102,7 @@ An alternative configuration of a component could be to use a publicly available
 spec:
   components:
     - name: redis
-        image: redis:5.0-alpine
+      image: redis:5.0-alpine
     - name: swagger-ui
       image: swaggerapi/swagger-ui
       ports:
