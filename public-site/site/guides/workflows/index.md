@@ -15,7 +15,7 @@ If we **map** a git branch to an environment, commits to that branch will trigge
 
 It is fine to combine these features to produce the workflow that we want. For instance, we can automatically build and deploy `master` to the `dev` environment, and the `release` branch to `preprod`. We can then manually promote the deployment in `preprod` to the `prod` environment.
 
-# An example
+# An example with branches mapped to different environments
 
 Let's go over the example above in more detail. We are continuously working on `master`, and we want commits here to be automatically deployed to `dev`:
 
@@ -48,7 +48,9 @@ spec:
         from: qa
 ```
 
-Finally, if `preprod` is working fine, we can then manually **promote** the deployment to the `prod` environment:
+# An example of promotion
+
+Finally, building on the previous example, if `preprod` is working fine, we can then manually **promote** the deployment to the `prod` environment:
 
 ![Dev, QA, and prod workflow](workflow-dev-qa-prod.png)
 
