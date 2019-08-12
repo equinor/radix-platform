@@ -55,8 +55,6 @@ We also support wildcard branch mapping using `*` and `%`. Examples of this are:
 - `feature-%`
 - `hotfix/**/*`
 
-> Promotion of deployments between environments is implemented in the [Radix API](../reference-radix-api/) but there is no user interface for it in the Web Console yet.
-
 ## `components`
 
 ```yaml
