@@ -67,3 +67,25 @@ spec:
         from: qa
     - name: prod
 ```
+
+# An example of multiple branches to one environment
+
+There is also an ability in Radix to map many branches to one environment. I.e. you could map feature/* branches to one feature environment. This is particularly useful for developers needing to pre-test their features in an environment as close to production as possible. Team needs to take care on who can use this environment at one point in time. Example of this mapping:
+
+```yaml
+spec:
+  environments:
+    - name: feature
+      build:
+        from: feature/*
+    - name: release
+      build:
+        from: release/*
+    - name: hotfix
+      build:
+        from: hotfix/**/*
+    - name: preprod
+      build:
+        from: master
+    - name: prod
+```
