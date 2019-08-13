@@ -49,7 +49,11 @@ spec:
 
 The `environments` section of the spec lists the environments for the application and the branch each environment will build from. If you omit the `build.from` key for the environment, no automatic builds or deployments will be created. This configuration is useful for a promotion-based [workflow](../../guides/workflows/).
 
-> Promotion of deployments between environments is implemented in the [Radix API](../reference-radix-api/) but there is no user interface for it in the Web Console yet.
+We also support wildcard branch mapping using `*` and `%`. Examples of this are:
+
+- `feature/*`
+- `feature-%`
+- `hotfix/**/*`
 
 ## `components`
 
