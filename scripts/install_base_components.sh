@@ -239,28 +239,37 @@ helm repo update
 ### Install cert-manager
 ###
 
-# Apply CRDs
-echo "Installing cert-manager"
-kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
+# Install the CustomResourceDefinition resources separately
+kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.8/deploy/manifests/00-crds.yaml
 
+# Create the namespace for cert-manager
 kubectl create namespace cert-manager
 
-# Create some empty TLS secrets that are required for cert-manager to start
-kubectl apply -n cert-manager -f manifests/cert-manager-secrets.yaml
+### Create some empty TLS secrets that are required for cert-manager to start
+## kubectl apply -n cert-manager -f manifests/cert-manager-secrets.yaml
 
+
+# Label the cert-manager namespace to disable resource validation
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 
-# Install cert-manager using helm
+# Add the Jetstack Helm repository
+helm repo add jetstack https://charts.jetstack.io
+
+# Update your local Helm chart repository cache
+helm repo update
+
+# Install the cert-manager Helm chart
 # We also disable the admissions webhook since it's only causing problems
 helm upgrade --install cert-manager \
-    --namespace cert-manager \
-    --version v0.6.0 \
-    --set ingressShim.defaultIssuerName=letsencrypt-prod \
-    --set ingressShim.defaultIssuerKind=ClusterIssuer \
-    --set ingressShim.defaultACMEChallengeType="dns01" \
-    --set ingressShim.defaultACMEDNS01ChallengeProvider="azure-dns" \
-    --set webhook.enabled=false \
-    stable/cert-manager
+  --namespace cert-manager \
+  --version v0.8.1 \
+  --set global.rbac.create=true \
+  --set ingressShim.defaultIssuerName=letsencrypt-prod \
+  --set ingressShim.defaultIssuerKind=ClusterIssuer \
+  --set ingressShim.defaultACMEChallengeType="dns01" \
+  --set ingressShim.defaultACMEDNS01ChallengeProvider="azure-dns" \
+  --set webhook.enabled=false \
+  jetstack/cert-manager
 
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation-
 
