@@ -67,7 +67,7 @@ echo ""
 
 WORKDIR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/../add_reply_url_for_cluster.sh"
+ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/../../add_reply_url_for_cluster.sh"
 if ! [[ -x "$ADD_REPLY_URL_SCRIPT" ]]; then
    # Print to stderror
    echo "The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2 
@@ -275,6 +275,15 @@ echo "Adding replyUrl for Grafana..."
 (AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 printf "Done."
+
+# Update replyUrl for web-console
+echo ""
+echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
+while [[ "$(kubectl get ing web -n radix-web-console-prod 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo "Ingress is ready, adding replyUrl... "
 
 echo ""
 echo "Adding replyUrl for radix web-console..." 
