@@ -1,7 +1,7 @@
 apiVersion: velero.io/v1
 kind: Restore
 metadata:
-  name: ${BACKUP_NAME}-rd
+  name: ${BACKUP_NAME}-rj
   namespace: velero
 spec:
   backupName: ${BACKUP_NAME}
