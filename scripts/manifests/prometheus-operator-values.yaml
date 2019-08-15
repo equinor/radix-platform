@@ -20,7 +20,7 @@ prometheus:
       requests:
         cpu: "0m" # Added to a default of 200m
         memory: "950Mi" # Added to a default of 50m
-    retention: 180d
+    retention: 30d
     serviceMonitorNamespaceSelector:
       any: true
     storageSpec:

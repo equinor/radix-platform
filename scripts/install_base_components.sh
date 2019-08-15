@@ -140,11 +140,19 @@ if [[ -z "$FLUX_GITOPS_BRANCH" ]]; then
 fi
 
 if [[ -z "$RADIX_API_PREFIX" ]]; then
-  RADIX_API_PREFIX="server-radix-api-prod"
+  if [ "$CLUSTER_TYPE" = "production" ] || [ "$CLUSTER_TYPE" = "playground" ]; then
+    RADIX_API_PREFIX="server-radix-api-prod"
+  else
+    RADIX_API_PREFIX="server-radix-api-qa"
+  fi
 fi
 
 if [[ -z "$RADIX_WEBHOOK_PREFIX" ]]; then
-  RADIX_WEBHOOK_PREFIX="webhook-radix-github-webhook-prod"
+   if [ "$CLUSTER_TYPE" = "production" ] || [ "$CLUSTER_TYPE" = "playground" ]; then
+    RADIX_WEBHOOK_PREFIX="webhook-radix-github-webhook-prod"
+  else
+    RADIX_WEBHOOK_PREFIX="webhook-radix-github-webhook-qa"
+  fi
 fi
 
 CICDCANARY_IMAGE_TAG="master-latest"
@@ -507,20 +515,6 @@ helm repo update
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
 
-
-#######################################################################################
-### Install backup of radix custom resources (RR, RA, RD)
-### https://github.com/equinor/radix-backup-cr
-
-echo "Installing radix-backup-cr"
-
-helm upgrade --install radix-backup-cr \
-    $HELM_REPO/radix-backup-cr \
-    --namespace default \
-    --set imageRegistry="radix$SUBSCRIPTION_ENVIRONMENT.azurecr.io" \
-    --set image.tag=release-latest
-
-
 #######################################################################################
 ### Install radix-e2e-monitoring
 ###
@@ -657,19 +651,19 @@ fi
 echo "Done."
 
 #######################################################################################
-### Install Radix CICD Canary Golang
+### Install Radix CICD Canary
 ###
 
 echo ""
-echo "Install Radix CICD Canary Golang"
+echo "Install Radix CICD Canary"
 az keyvault secret download \
   --vault-name "$VAULT_NAME" \
   --name radix-cicd-canary-values \
   --file radix-cicd-canary-values.yaml
 
-helm upgrade --install radix-cicd-canary-golang \
-  "$HELM_REPO"/radix-cicd-canary-golang \
-  --namespace radix-cicd-canary-golang \
+helm upgrade --install radix-cicd-canary \
+  "$HELM_REPO"/radix-cicd-canary \
+  --namespace radix-cicd-canary \
   --set clusterFqdn="$CLUSTER_NAME.$DNS_ZONE" \
   --set image.tag="$CICDCANARY_IMAGE_TAG" \
   --set imageCredentials.registry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
