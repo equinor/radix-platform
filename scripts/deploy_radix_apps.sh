@@ -3,9 +3,9 @@
 # PRECONDITIONS
 #
 # It is assumed that:
-# 1. cluster is installed using the cluster_install.sh script,
-# 2. that the base components exists
-# 3. sha256sum should be installed
+# 1. cluster is installed using the aks/bootstrap.sh script,
+# 2. that the base components exists (install_base_components.sh has been run)
+# 3. az, helm, jq, sha256sum should be installed
 #
 # PURPOSE
 #
@@ -22,6 +22,14 @@
 #   HELM_REPO                   (Optional. Example: radixprod|radixdev)
 #   VAULT_NAME                  (Optional. Example: radix-vault-prod|radix-vault-dev|radix-boot-dev-vault)
 
+function assert_dep {
+    while [ -n "$1" ]; do
+        command -v "$1" >/dev/null 2>&1 || { echo >&2 "Command \`$1\` is not installed. Aborting."; exit 1; }
+        shift
+    done
+}
+
+assert_dep az helm jq sha256sum
 
 # Validate mandatory input
 if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
