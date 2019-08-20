@@ -12,13 +12,16 @@ Bootstrap and teardown of Azure Kubernetes Service instances for Omnia Radix.
 
 ### Prerequisites
 
-- You must have the az role `Owner` for the az subscription that is the infrastructure environment
+- You must have the Azure role `Owner` for the Azure subscription that is the infrastructure environment
 - Be able to run `bash` scripts (linux/macOs)
+- Make sure you are authenticated in the command line (`az login`)
+- `cd aks`
 
 ### Configuration
 
-Set in env files:
-- [`prod.env` ](./prod.env)  
+Cluster configuration for each environment is set in `env` files. You can edit these prior to bootstrap, if you don't like the defaults.
+
+- [`prod.env`](./prod.env)  
   Cluster config for production
 - [`dev.env`](./dev.env)  
   Cluster config for development
@@ -41,5 +44,4 @@ AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=bad-hamster ./teardown.sh
 
 ## Misc
 
-If you need to enable AKS diagnostic logs then you have to set that manually via the Azure portal.  
-For more information on how to do this please see https://github.com/equinor/radix-private/blob/master/docs/infrastructure/logging.md
+If you need to enable AKS diagnostic logs then you have to set that manually via the Azure portal. For more information on how to do this please see https://github.com/equinor/radix-private/blob/master/docs/infrastructure/logging.md
