@@ -1,16 +1,12 @@
+# Omnia Radix
+
 ![Logo](logo/Banner%20energy%20red@2x.png)
 
-[Public site](https://www.radix.equinor.com)
-
-# Omnia Radix
+[www.radix.equinor.com (public site)](https://www.radix.equinor.com)
 
 This repository is the umbrella for Omnia Radix with issue tracking and feature requests and pointers to other resources.
 
-## What is Radix?
-
-It's [Equinor](https://www.equinor.com/)'s Platform-as-a-Service that offers testing, building, deploying, running and monitoring of software.
-
-The goal is to automate "the boring stuff" and let developers focus on business logic and features and offloading much of the tooling and automation to Radix.
+Radix is [Equinor](https://www.equinor.com/)'s Platform-as-a-Service that offers testing, building, deploying, running and monitoring of software. Its goal is to automate "the boring stuff" and let developers focus on business logic and features and offloading much of the tooling and automation to Radix.
 
 ## Getting started
 
@@ -22,18 +18,18 @@ Contact us on Equinor Slack on [#omnia_radix_support](https://equinor.slack.com/
 
 Bugs and feature requests can be submitted using the [issue tracker in this repo](https://github.com/equinor/radix-platform/issues). If you are external to Equinor, the issue tracker is for now the best way to get in touch, too.
 
-## Develop or set up Radix
+## Develop or deploy Radix
 
 Please go to [scripts](https://github.com/equinor/radix-platform/tree/master/scripts) for information on how to set up the platform.
 
-### Documentation
+## Documentation
 
-> **NB:** We are moving fast and making changes, so portions of the documentation will be outdated at any time. Stable documentation is a work in progress.
+We are moving fast and making changes, so portions of the documentation will be outdated at any time. Stable documentation is a work in progress.
 
-### Code
+## Code
 
 All of our source code for the platform is on [GitHub repositories prefixed with _radix-_](https://github.com/equinor?utf8=%E2%9C%93&q=radix-). You need to be a member of the _Omnia Radix Readers_ group to have access to some private repositories (we are still working on open-sourcing all parts of Radix). Contact us to get access.
 
-### Jira
+## Jira
 
 We have a [Jira board](https://equinor.atlassian.net/secure/RapidBoard.jspa?rapidView=41&projectKey=RA) for tracking progress in the team. Right now this is internal for the team only.
