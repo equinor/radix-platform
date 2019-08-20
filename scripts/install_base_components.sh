@@ -2,7 +2,7 @@
 
 # PRECONDITIONS
 #
-# It is assumed that cluster is installed using the cluster_install.sh script
+# It is assumed that cluster is installed using the aks/bootstrap.sh script
 #
 # PURPOSE
 #
@@ -622,7 +622,7 @@ helm repo add fluxcd https://fluxcd.github.io/flux
 
 echo ""
 echo "Adding Flux CRDs, no longer included in the helm chart"
-kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml
 
 echo ""
 echo "Installing Flux with Helm operator"
