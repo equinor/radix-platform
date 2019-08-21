@@ -230,6 +230,15 @@ echo "Wait for deployments to be picked up by radix-operator..."
 please_wait 10
 
 echo ""
+echo "Restore jobs..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ./restore_rj.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+# TODO: How to determine when jobs are done?
+echo "Wait for jobs to be picked up by radix-operator..."
+please_wait 10
+
+echo ""
 echo "Restore app specific secrets..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ./restore_secret.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
