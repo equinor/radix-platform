@@ -412,7 +412,7 @@ kubectl apply -f manifests/storageclass-retain-nocache.yaml
 
 echo "Installing prometheus-operator"
 helm upgrade --install prometheus-operator stable/prometheus-operator \
-  --version 4.3.3 \
+  --version 6.7.3 \
   -f manifests/prometheus-operator-values.yaml \
   --set prometheus.prometheusSpec.serviceMonitorSelector.any=true
 
