@@ -679,7 +679,7 @@ helm upgrade --install radix-cicd-canary \
   --set clusterType="$CLUSTER_TYPE" \
   --set radixApiPrefix="$RADIX_API_PREFIX" \
 	--set radixWebhookPrefix="$RADIX_WEBHOOK_PREFIX" \
-  --set sleepIntervalTestRuns=60 \
+  --set sleepIntervalTestRuns=300 \
   -f radix-cicd-canary-values.yaml
 
 rm -f radix-cicd-canary-values.yaml
