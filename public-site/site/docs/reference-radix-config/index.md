@@ -194,17 +194,7 @@ spec:
 
 An array of objects containing the `environment` name and variables to be set in the component.
 
-Environment variables are defined per Radix environment. By default, each application container will have the following default environment variables.
-
-- RADIX_APP
-- RADIX_CLUSTERNAME
-- RADIX_CONTAINER_REGISTRY
-- RADIX_COMPONENT
-- RADIX_ENVIRONMENT
-- RADIX_DNS_ZONE
-- RADIX_PORTS (only available if `ports` are set)
-- RADIX_PORT_NAMES (only available if `ports` are set)
-- RADIX_PUBLIC_DOMAIN_NAME (if `component.publicPort: <PORT_NAME>`)
+Environment variables are defined per Radix environment. In addition to what is defined here, running containers will also have some [variables automatically set by Radix](../topic-runtime-env/#environment-variables).
 
 ### `secrets`
 
