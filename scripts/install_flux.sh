@@ -5,11 +5,24 @@
 # Install flux in radix cluster.
 #
 # To run this script from terminal: 
-# AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 ./install_flux.sh
+#   AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 ./install_flux.sh
 #
-# When you want to use custom configs then provide branch and dir
-# AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./install_flux.sh
+# When you want to use your own custom configs then provide git branch and directory
+#   AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./install_flux.sh
+
+# DOCS
 #
+# - https://github.com/fluxcd/flux/tree/master/chart/flux
+
+# COMPONENTS
+#
+# - AZ keyvault
+#     Holds git deploy key to ocnfig repo
+# - Flux CRDs
+#     The CRDs are no longer in the Helm chart and must be installed separately
+# - Flux Helm Chart
+#     Installs everything else 
+
 # INPUTS:
 #   AZ_INFRASTRUCTURE_ENVIRONMENT   : Mandatory - "prod" or "dev"
 #   CLUSTER_NAME                    : Mandatory. Example: "prod43"
@@ -43,6 +56,7 @@ fi
 FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
 FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
 FLUX_DEPLOY_KEYS_GENERATED=false
+FLUX_HELM_CRD_PATH="https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml"
 
 if [[ -z "$GIT_REPO" ]]; then
   GIT_REPO="git@github.com:equinor/radix-flux.git"
@@ -125,7 +139,7 @@ helm repo add fluxcd https://fluxcd.github.io/flux
 
 echo ""
 echo "Adding Flux CRDs, no longer included in the helm chart"
-kubectl apply -f https://raw.githubusercontent.com/weaveworks/flux/master/deploy-helm/flux-helm-release-crd.yaml 2>&1 >/dev/null
+kubectl apply -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
 
 echo ""
 echo "Installing Flux with Helm operator"
