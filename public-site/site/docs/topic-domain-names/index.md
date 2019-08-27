@@ -44,8 +44,6 @@ For instance, the Radix admins can have two `prod` clusters, `prod-27` and `prod
 
 The _public name_ always points to components in the active cluster, and is the domain name that should be publicised. It is also the domain name that has [SLA guarantees](../topic-sla/).
 
-> **Please note** that _public names_ are currently not working for the Production cluster (they work in Playground). We are trying to enable this as a matter of priority.
-
 - Only allocated for **active clusters**
 - Automatically allocated
 - One per component
