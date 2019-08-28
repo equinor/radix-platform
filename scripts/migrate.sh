@@ -1,7 +1,10 @@
+#!/bin/bash
+
 # USAGE
 #
 # Example: Restore into same cluster from where the backup was done
-# SUBSCRIPTION_ENVIRONMENT=prod SOURCE_CLUSTER=prod-1 DEST_CLUSTER=prod-2 ./migrate.sh
+# SUBSCRIPTION_ENVIRONMENT=prod SOURCE_CLUSTER=prod-1 DEST_CLUSTER=prod-2 CLUSTER_TYPE=production ./migrate.sh
+# SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=playground-4 DEST_CLUSTER=playground-5 CLUSTER_TYPE=playground ./migrate.sh
 # SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-33 DEST_CLUSTER=weekly-34 ./migrate.sh
 
 # INPUTS:
@@ -46,6 +49,12 @@ RESTORE_APPS_PATH="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_PATH" ]]; then
    # Print to stderror
    echo "The restore apps script is not found or it is not executable in path $RESTORE_APPS_PATH" >&2 
+fi
+
+CREATE_ALIAS_PATH="$WORKDIR_PATH/create_alias.sh"
+if ! [[ -x "$CREATE_ALIAS_PATH" ]]; then
+   # Print to stderror
+   echo "The create alias script is not found or it is not executable in path $CREATE_ALIAS_PATH" >&2 
 fi
 
 #######################################################################################
@@ -207,3 +216,30 @@ printf "Restore into destination cluster... "
 (SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" source "$RESTORE_APPS_PATH")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
+
+
+echo ""
+printf "Point to source cluster... "
+az aks get-credentials --resource-group "$RESOURCE_GROUP"  --name "$SOURCE_CLUSTER" \
+    --overwrite-existing \
+    --admin \
+    2>&1 >/dev/null
+printf "Done.\n"
+
+echo ""
+printf "Delete custom ingresses... "
+while read -r line; do
+    if [[ "$line" ]]; then
+        helm delete ${line} --purge
+    fi
+done <<< "$(helm list --short | grep radix-ingress)"
+
+echo ""
+printf "Point to destination cluster... "
+az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$DEST_CLUSTER"
+
+echo ""
+printf "Create aliases in destination cluster... "
+(SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" BACKUP_NAME="$BACKUP_NAME" source "$CREATE_ALIAS_PATH")
+wait # wait for subshell to finish
+printf "Done creating aliases."
