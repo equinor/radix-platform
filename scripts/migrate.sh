@@ -253,3 +253,12 @@ printf "Create aliases in destination cluster... "
 (SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" BACKUP_NAME="$BACKUP_NAME" SILENT_MODE="$SILENT_MODE" source "$CREATE_ALIAS_PATH")
 wait # wait for subshell to finish
 printf "Done creating aliases."
+
+echo ""
+echo "###########################################################"
+echo ""
+echo "NOTE: You need to manually activate the cluster"
+echo ""
+echo "You do this in the https://github.com/equinor/radix-flux repo"
+echo ""
+echo "###########################################################"
