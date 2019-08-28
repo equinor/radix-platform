@@ -11,6 +11,7 @@
 # INPUTS:
 #   AZ_INFRASTRUCTURE_ENVIRONMENT   (Mandatory - "prod" or "dev")
 #   CLUSTER_NAME                    (Mandatory. Example: "prod43")
+#   SILENT_MODE                     (Optional. Defaulted if omitted. ex: false,true)
 #
 # CREDENTIALS:
 # See "Set credentials" for key/value pairs.
@@ -68,6 +69,10 @@ else
     credentials_source="$CREDENTIALS_FILE"
 fi
 
+if [[ -z "$SILENT_MODE" ]]; then
+    SILENT_MODE=false
+fi
+
 ### Get cluster config that correnspond to selected environment
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${AZ_INFRASTRUCTURE_ENVIRONMENT}.env"
 
@@ -116,16 +121,21 @@ echo -e ""
 echo -e "   AZ_SUBSCRIPTION            : $AZ_SUBSCRIPTION"
 echo -e "   AZ_USER                    : $(az account show --query user.name -o tsv)"
 echo -e ""
+echo -e "   SILENT_MODE                : $SILENT_MODE"
+echo -e ""
 
 echo ""
 
-read -p "Is this correct? (Y/n) " -n 1 -r
-if [[ "$REPLY" =~ (N|n) ]]; then
-   echo ""
-   echo "Quitting."
-   exit 0
+if [[ $SILENT_MODE != true ]]; then
+    read -p "Is this correct? (Y/n) " -n 1 -r
+    if [[ "$REPLY" =~ (N|n) ]]; then
+    echo ""
+    echo "Quitting."
+    exit 0
+    fi
+    echo ""
 fi
-echo ""
+
 echo ""
 
 

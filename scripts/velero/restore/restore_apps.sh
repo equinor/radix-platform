@@ -46,6 +46,7 @@
 #   BACKUP_NAME                 (Mandatory. Example: all-hourly-20190703064411)
 #   DEST_CLUSTER                (Optional. Example: prod2)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
+#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true)
 
 
 #######################################################################################
@@ -101,6 +102,10 @@ if [[ -z "$RESOURCE_GROUP" ]]; then
     RESOURCE_GROUP="clusters"
 fi
 
+if [[ -z "$SILENT_MODE" ]]; then
+    SILENT_MODE=false
+fi
+
 # Print inputs
 echo -e ""
 echo -e "Start restore using the following settings:"
@@ -109,6 +114,7 @@ echo -e "RESOURCE_GROUP             : $RESOURCE_GROUP"
 echo -e "SOURCE_CLUSTER             : $SOURCE_CLUSTER"
 echo -e "DEST_CLUSTER               : $DEST_CLUSTER"
 echo -e "BACKUP_NAME                : $BACKUP_NAME"
+echo -e "SILENT_MODE                : $SILENT_MODE"
 echo -e ""
 
 # Check for Azure login
@@ -123,10 +129,12 @@ echo -n "As user "
 echo -n $AZ_ACCOUNT | jq '.user.name'
 echo ""
 
-read -p "Is this correct? (Y/n) " correct_az_login
-if [[ $correct_az_login =~ (N|n) ]]; then
-  echo "Please use 'az login' command to login to the correct account. Quitting."
-  exit 1
+if [[ $SILENT_MODE != true ]]; then
+    read -p "Is this correct? (Y/n) " correct_az_login
+    if [[ $correct_az_login =~ (N|n) ]]; then
+    echo "Please use 'az login' command to login to the correct account. Quitting."
+    exit 1
+    fi
 fi
 
 
@@ -281,7 +289,7 @@ echo "Updating replyUrls for those radix apps that require AD authentication"
 
 echo ""
 echo "Adding replyUrl for Grafana..."   
-(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" source "$ADD_REPLY_URL_SCRIPT")
+(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" SILENT_MODE="$SILENT_MODE" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 printf "Done."
 
@@ -298,13 +306,13 @@ echo ""
 echo "Adding replyUrl for radix web-console..." 
 # The web console has an aad app per cluster type. This script does not know about cluster type, so we will have to go with subscription environment.
 if [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" SILENT_MODE="$SILENT_MODE" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
-    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" SILENT_MODE="$SILENT_MODE" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi
 if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" SILENT_MODE="$SILENT_MODE" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi
 printf "Done."
