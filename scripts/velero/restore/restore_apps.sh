@@ -166,7 +166,7 @@ function please_wait() {
 # Exit if cluster does not exist
 echo ""
 echo "Connecting kubectl to vendelo-destination..."
-if [[ ""$(az aks get-credentials --overwrite-existing --resource-group "$RESOURCE_GROUP"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
    # Send message to stderr
    echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
    exit 0        
