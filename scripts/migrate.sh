@@ -13,7 +13,7 @@
 #   SOURCE_CLUSTER              (Mandatory. Example: prod1)
 #   DEST_CLUSTER                (Mandatory. Example: prod2)
 #   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
-#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true)
+#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -148,9 +148,13 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
         fi
     fi
 
+    # Copy spec of source cluster
+    # NOTE: The normal spec of a cluster is determined by the (dev.env|prod.env in the AKS folder)
+    NUM_NODES_IN_SOURCE_CLUSTER="$(kubectl get nodes --no-headers | wc -l | tr -d '[:space:]')"
+
     echo ""
     echo "Creating destination cluster..."   
-    (AZ_INFRASTRUCTURE_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" SILENT_MODE="$SILENT_MODE" source "$CREATE_CLUSTER_PATH")
+    (AZ_INFRASTRUCTURE_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" NODE_COUNT="$NUM_NODES_IN_SOURCE_CLUSTER" SILENT_MODE="$SILENT_MODE" source "$CREATE_CLUSTER_PATH")
     wait # wait for subshell to finish
     printf "Done creating cluster."
 
