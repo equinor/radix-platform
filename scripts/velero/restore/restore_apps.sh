@@ -46,7 +46,7 @@
 #   BACKUP_NAME                 (Mandatory. Example: all-hourly-20190703064411)
 #   DEST_CLUSTER                (Optional. Example: prod2)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
-#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true)
+#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 
 #######################################################################################

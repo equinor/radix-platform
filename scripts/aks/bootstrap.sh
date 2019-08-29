@@ -11,7 +11,7 @@
 # INPUTS:
 #   AZ_INFRASTRUCTURE_ENVIRONMENT   (Mandatory - "prod" or "dev")
 #   CLUSTER_NAME                    (Mandatory. Example: "prod43")
-#   SILENT_MODE                     (Optional. Defaulted if omitted. ex: false,true)
+#   SILENT_MODE                     (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 #
 # CREDENTIALS:
 # See "Set credentials" for key/value pairs.

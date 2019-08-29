@@ -15,7 +15,7 @@
 #   K8S_NAMESPACE           (Mandatory)
 #   K8S_INGRESS_NAME        (Mandatory)
 #   REPLY_PATH              (Mandatory)
-#   SILENT_MODE             (Optional. Defaulted if omitted. ex: false,true)
+#   SILENT_MODE             (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 echo ""
 echo "Updating replyUrls for AAD app \"${AAD_APP_NAME}\"..."

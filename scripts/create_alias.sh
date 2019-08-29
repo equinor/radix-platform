@@ -14,7 +14,7 @@
 #   HELM_REPO                   (Optional. Defaulted if omitted)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
 #   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
-#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true)
+#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 #######################################################################################
 ### Validate mandatory input

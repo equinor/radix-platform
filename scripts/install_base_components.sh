@@ -35,7 +35,7 @@
 #   FLUX_GITOPS_REPO            (Optional. Defaulted if omitted)
 #   FLUX_GITOPS_BRANCH          (Optional. Defaulted if omitted)
 #   FLUX_GITOPS_PATH            (Optional. Defaulted if omitted)
-#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true)
+#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 #
 # CREDENTIALS:
 # The script expects the slack-token to be found as secret in keyvault.
