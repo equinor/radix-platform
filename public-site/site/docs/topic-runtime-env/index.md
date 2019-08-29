@@ -42,13 +42,13 @@ Requests reaching your components from outside Radix are routed, and will have s
 
 Radix does not currently support persistent storage. Any files written to the filesystem will be lost when a component restarts or is redeployed. If you need persistence, cloud-based systems like [Azure storage](https://docs.microsoft.com/en-us/azure/storage/common/storage-introduction) are recommended.
 
-# Running instances
+# Multiple copies
 
 Although you can configure the number of [replicas](../topic-concepts/#replica) for a component, Radix will occasionally run a different number of these. For instance, a component that has been configured to run with just one replica (this is the default) might momentarily have two replicas running during a Radix cluster migration.
 
-This is a common characteristic of high-availability cloud-based environments. Your application should be written in a way that can cope with multiple running copies of a component, even if momentarily.
+This is a common characteristic of high-availability cloud-based environments. Your application should be written in a way that can cope with multiple running copies of a component (or the whole application), even if momentarily.
 
-## Environment variables
+# Environment variables
 
 In addition to [variables defined in `radixconfig.yaml`](../reference-radix-config/#variables), Radix will automatically set the following variables:
 
