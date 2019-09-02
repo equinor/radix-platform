@@ -28,7 +28,7 @@ NOTE: If there is a need to migrate to a new cluster with a different setup, ple
 
 This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
-The whole process should be handled by the [migrate.sh](./migrate.sh) script. See file header in  for usage. The only exception is the last manual step to make the cluster the active one.
+The whole process should be handled by the [migrate.sh](./migrate.sh) script. See file header in for usage. The only exception is the last manual step to make the cluster the active one.
 
 ### 2.2 Setting up a cluster from scratch
 

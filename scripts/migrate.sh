@@ -13,7 +13,7 @@
 #   SOURCE_CLUSTER              (Mandatory. Example: prod1)
 #   DEST_CLUSTER                (Mandatory. Example: prod2)
 #   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
-#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
+#   USER_PROMPT                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -85,8 +85,8 @@ if [[ -z "$CLUSTER_TYPE" ]]; then
     CLUSTER_TYPE="development"
 fi
 
-if [[ -z "$SILENT_MODE" ]]; then
-    SILENT_MODE=false
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
 fi
 
 BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
@@ -100,7 +100,7 @@ echo -e "SOURCE_CLUSTER             : $SOURCE_CLUSTER"
 echo -e "DEST_CLUSTER               : $DEST_CLUSTER"
 echo -e "CLUSTER_TYPE               : $CLUSTER_TYPE"
 echo -e "BACKUP_NAME                : $BACKUP_NAME"
-echo -e "SILENT_MODE                : $SILENT_MODE"
+echo -e "USER_PROMPT                : $USER_PROMPT"
 echo -e ""
 
 # Check for Azure login
@@ -115,7 +115,7 @@ echo -n "As user "
 echo -n $AZ_ACCOUNT | jq '.user.name'
 echo ""
 
-if [[ $SILENT_MODE != true ]]; then
+if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " correct_az_login
     if [[ $correct_az_login =~ (N|n) ]]; then
     echo "Please use 'az login' command to login to the correct account. Quitting."
@@ -140,7 +140,7 @@ fi
 echo ""
 echo "Verifying destination cluster existence..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
-    if [[ $SILENT_MODE != true ]]; then
+    if [[ $USER_PROMPT == true ]]; then
         read -p "Destination cluster does not exists. Create cluster? (Y/n) " create_dest_cluster
         if [[ $create_dest_cluster =~ (N|n) ]]; then
             echo "Aborting..."
@@ -154,13 +154,13 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 
     echo ""
     echo "Creating destination cluster..."   
-    (AZ_INFRASTRUCTURE_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" NODE_COUNT="$NUM_NODES_IN_SOURCE_CLUSTER" SILENT_MODE="$SILENT_MODE" source "$CREATE_CLUSTER_PATH")
+    (AZ_INFRASTRUCTURE_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" NODE_COUNT="$NUM_NODES_IN_SOURCE_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$CREATE_CLUSTER_PATH")
     wait # wait for subshell to finish
     printf "Done creating cluster."
 
     echo ""
     echo "Installing base components..." 
-    (SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" SILENT_MODE="$SILENT_MODE" source "$INSTALL_BASECOMPONENTS_PATH")
+    (SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASECOMPONENTS_PATH")
     wait # wait for subshell to finish
     printf "Done installing base components."
 
@@ -227,7 +227,7 @@ EOF
 
 echo ""
 printf "Restore into destination cluster... "
-(SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" SILENT_MODE="$SILENT_MODE" source "$RESTORE_APPS_PATH")
+(SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_PATH")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
@@ -254,7 +254,7 @@ az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_
 
 echo ""
 printf "Create aliases in destination cluster... "
-(SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" BACKUP_NAME="$BACKUP_NAME" SILENT_MODE="$SILENT_MODE" source "$CREATE_ALIAS_PATH")
+(SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$CREATE_ALIAS_PATH")
 wait # wait for subshell to finish
 printf "Done creating aliases."
 

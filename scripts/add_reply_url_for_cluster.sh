@@ -15,7 +15,7 @@
 #   K8S_NAMESPACE           (Mandatory)
 #   K8S_INGRESS_NAME        (Mandatory)
 #   REPLY_PATH              (Mandatory)
-#   SILENT_MODE             (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
+#   USER_PROMPT             (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 echo ""
 echo "Updating replyUrls for AAD app \"${AAD_APP_NAME}\"..."
@@ -38,8 +38,8 @@ if [[ -z "$REPLY_PATH" ]]; then
     exit 1
 fi
 
-if [[ -z "$SILENT_MODE" ]]; then
-    SILENT_MODE=false
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
 fi
 
 function updateReplyUrls() {
@@ -70,7 +70,7 @@ function updateReplyUrls() {
     echo "$newReplyURLs"
     echo ""
 
-    if [[ $SILENT_MODE != true ]]; then
+    if [[ $USER_PROMPT == true ]]; then
         echo "Do you want to continue?"
         read -p "[Y]es or [N]o " -n 1 -r
         echo ""

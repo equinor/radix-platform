@@ -14,7 +14,7 @@
 #   HELM_REPO                   (Optional. Defaulted if omitted)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
 #   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
-#   SILENT_MODE                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
+#   USER_PROMPT                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 #######################################################################################
 ### Validate mandatory input
@@ -47,8 +47,8 @@ if [[ -z "$HELM_REPO" ]]; then
     HELM_REPO="radix${SUBSCRIPTION_ENVIRONMENT}"
 fi
 
-if [[ -z "$SILENT_MODE" ]]; then
-    SILENT_MODE=false
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
 fi
 
 # Check for Azure login
@@ -63,7 +63,7 @@ echo -n "As user "
 echo -n $AZ_ACCOUNT | jq '.user.name'
 echo ""
 
-if [[ $SILENT_MODE != true ]]; then
+if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " correct_az_login
     if [[ $correct_az_login =~ (N|n) ]]; then
     echo "Please use 'az login' command to login to the correct account. Quitting."
