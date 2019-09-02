@@ -20,7 +20,11 @@ Handled by script, see file header in [install_infrastructure.sh](./install_infr
 
 ## 2 Set up cluster
 
+A cluster can be set up in two different ways. Either by migrating from an existing cluster to a non-existing cluster (ref 2.1) or by creating a new cluster from scratch.
+
 ### 2.1 Migrate cluster
+
+NOTE: If there is a need to migrate to a new cluster with a different setup, please run through the bootstrap and installation of base components described below
 
 This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
@@ -38,7 +42,7 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 6. Create aliases (`prod` only)
 7. Install network security test
 
-### Step 2 Bootstrap and teardown of a Radix cluster
+#### Step 2 Bootstrap and teardown of a Radix cluster
 
 - [bootstrap](./aks/README.md#bootstrap)
 - [teardown](./aks/README.md#teardown)
