@@ -35,6 +35,7 @@
 #   FLUX_GITOPS_REPO            (Optional. Defaulted if omitted)
 #   FLUX_GITOPS_BRANCH          (Optional. Defaulted if omitted)
 #   FLUX_GITOPS_PATH            (Optional. Defaulted if omitted)
+#   USER_PROMPT                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 #
 # CREDENTIALS:
 # The script expects the slack-token to be found as secret in keyvault.
@@ -155,6 +156,10 @@ if [[ -z "$RADIX_WEBHOOK_PREFIX" ]]; then
   fi
 fi
 
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
 CICDCANARY_IMAGE_TAG="master-latest"
 
 #######################################################################################
@@ -179,6 +184,7 @@ echo -e "FLUX_GITOPS_PATH        : $FLUX_GITOPS_PATH"
 echo -e "CICDCANARY_IMAGE_TAG    : $CICDCANARY_IMAGE_TAG"
 echo -e "RADIX_API_PREFIX        : $RADIX_API_PREFIX"
 echo -e "RADIX_WEBHOOK_PREFIX    : $RADIX_WEBHOOK_PREFIX"
+echo -e "USER_PROMPT             : $USER_PROMPT"
 echo -e ""
 
 # Check for Azure login
@@ -193,10 +199,12 @@ echo -n "As user "
 echo -n $AZ_ACCOUNT | jq '.user.name'
 echo ""
 
-read -p "Is this correct? (Y/n) " correct_az_login
-if [[ $correct_az_login =~ (N|n) ]]; then
-  echo "Please use 'az login' command to login to the correct account. Quitting."
-  exit 1
+if [[ $USER_PROMPT == true ]]; then
+  read -p "Is this correct? (Y/n) " correct_az_login
+  if [[ $correct_az_login =~ (N|n) ]]; then
+    echo "Please use 'az login' command to login to the correct account. Quitting."
+    exit 1
+  fi
 fi
 
 #######################################################################################
@@ -484,7 +492,7 @@ helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
     --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$DNS_ZONE"
 
 # Add grafana replyUrl to AAD app    
-(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
+(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
 wait # wait for subshell to finish
 
 #######################################################################################
