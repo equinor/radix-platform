@@ -15,7 +15,52 @@ prometheusOperator:
       memory: "100Mi"
 
 prometheus:
+  service:
+    targetPort: 4180
   prometheusSpec:
+    listenLocal: true
+    containers:
+      - name: prometheus-oauth2-proxy
+        image: quay.io/pusher/oauth2_proxy:v4.0.0
+        imagePullPolicy: Always
+        env:
+        - name: OAUTH2_PROXY_EMAIL_DOMAINS
+          value: "*"
+        - name: OAUTH2_PROXY_HTTP_ADDRESS
+          value: "http://:4180"
+        - name: OAUTH2_PROXY_PASS_ACCESS_TOKEN
+          value: "true"
+        - name: OAUTH2_PROXY_PASS_BASIC_AUTH
+          value: "false"
+        - name: OAUTH2_PROXY_PROVIDER
+          value: "azure"
+        - name: OAUTH2_PROXY_SKIP_PROVIDER_BUTTON
+          value: "true"
+        - name: OAUTH2_PROXY_UPSTREAMS
+          value: "http://0.0.0.0:9090"
+        - name: OAUTH2_PROXY_CLIENT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: prometheus-oauth2-proxy-config
+              key: OAUTH2_PROXY_CLIENT_ID
+        - name: OAUTH2_PROXY_REDIRECT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: prometheus-oauth2-proxy-config
+              key: OAUTH2_PROXY_REDIRECT_URL
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: prometheus-oauth2-proxy-secrets
+              key: OAUTH2_PROXY_CLIENT_SECRET
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: prometheus-oauth2-proxy-secrets
+              key: OAUTH2_PROXY_COOKIE_SECRET
+        ports:
+        - containerPort: 4180
+          protocol: TCP
     resources:
       requests:
         cpu: "0m" # Added to a default of 200m
