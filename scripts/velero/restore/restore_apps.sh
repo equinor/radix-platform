@@ -46,6 +46,7 @@
 #   BACKUP_NAME                 (Mandatory. Example: all-hourly-20190703064411)
 #   DEST_CLUSTER                (Optional. Example: prod2)
 #   RESOURCE_GROUP              (Optional. Example: "clusters")
+#   USER_PROMPT                 (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 
 #######################################################################################
@@ -101,6 +102,10 @@ if [[ -z "$RESOURCE_GROUP" ]]; then
     RESOURCE_GROUP="clusters"
 fi
 
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
 # Print inputs
 echo -e ""
 echo -e "Start restore using the following settings:"
@@ -109,6 +114,7 @@ echo -e "RESOURCE_GROUP             : $RESOURCE_GROUP"
 echo -e "SOURCE_CLUSTER             : $SOURCE_CLUSTER"
 echo -e "DEST_CLUSTER               : $DEST_CLUSTER"
 echo -e "BACKUP_NAME                : $BACKUP_NAME"
+echo -e "USER_PROMPT                : $USER_PROMPT"
 echo -e ""
 
 # Check for Azure login
@@ -123,10 +129,12 @@ echo -n "As user "
 echo -n $AZ_ACCOUNT | jq '.user.name'
 echo ""
 
-read -p "Is this correct? (Y/n) " correct_az_login
-if [[ $correct_az_login =~ (N|n) ]]; then
-  echo "Please use 'az login' command to login to the correct account. Quitting."
-  exit 1
+if [[ $USER_PROMPT == true ]]; then
+    read -p "Is this correct? (Y/n) " correct_az_login
+    if [[ $correct_az_login =~ (N|n) ]]; then
+    echo "Please use 'az login' command to login to the correct account. Quitting."
+    exit 1
+    fi
 fi
 
 
@@ -158,7 +166,7 @@ function please_wait() {
 # Exit if cluster does not exist
 echo ""
 echo "Connecting kubectl to vendelo-destination..."
-if [[ ""$(az aks get-credentials --overwrite-existing --resource-group "$RESOURCE_GROUP"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
    # Send message to stderr
    echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
    exit 0        
@@ -202,7 +210,7 @@ echo "Done."
 
 echo ""
 echo "Restore app registrations..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ./restore_rr.yaml)"
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rr.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when radix-operator is done?
@@ -212,7 +220,7 @@ please_wait 10
 
 echo ""
 echo "Restore app config..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ./restore_ra.yaml)"
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_ra.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when radix-operator is done?
@@ -222,7 +230,7 @@ please_wait 10
 
 echo ""
 echo "Restore deployments..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ./restore_rd.yaml)"
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rd.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when deployments are done?
@@ -231,7 +239,7 @@ please_wait 10
 
 echo ""
 echo "Restore jobs..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ./restore_rj.yaml)"
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rj.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when jobs are done?
@@ -240,7 +248,7 @@ please_wait 10
 
 echo ""
 echo "Restore app specific secrets..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ./restore_secret.yaml)"
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_secret.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when secrets are done?
@@ -281,7 +289,7 @@ echo "Updating replyUrls for those radix apps that require AD authentication"
 
 echo ""
 echo "Adding replyUrl for Grafana..."   
-(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" source "$ADD_REPLY_URL_SCRIPT")
+(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 printf "Done."
 
@@ -298,13 +306,13 @@ echo ""
 echo "Adding replyUrl for radix web-console..." 
 # The web console has an aad app per cluster type. This script does not know about cluster type, so we will have to go with subscription environment.
 if [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
-    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi
 if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi
 printf "Done."

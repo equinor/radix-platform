@@ -11,6 +11,7 @@
 # INPUTS:
 #   AZ_INFRASTRUCTURE_ENVIRONMENT   (Mandatory - "prod" or "dev")
 #   CLUSTER_NAME                    (Mandatory. Example: "prod43")
+#   USER_PROMPT                     (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 #
 # CREDENTIALS:
 # See "Set credentials" for key/value pairs.
@@ -68,6 +69,10 @@ else
     credentials_source="$CREDENTIALS_FILE"
 fi
 
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
 ### Get cluster config that correnspond to selected environment
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${AZ_INFRASTRUCTURE_ENVIRONMENT}.env"
 
@@ -116,16 +121,21 @@ echo -e ""
 echo -e "   AZ_SUBSCRIPTION            : $AZ_SUBSCRIPTION"
 echo -e "   AZ_USER                    : $(az account show --query user.name -o tsv)"
 echo -e ""
+echo -e "   USER_PROMPT                : $USER_PROMPT"
+echo -e ""
 
 echo ""
 
-read -p "Is this correct? (Y/n) " -n 1 -r
-if [[ "$REPLY" =~ (N|n) ]]; then
-   echo ""
-   echo "Quitting."
-   exit 0
+if [[ $USER_PROMPT == true ]]; then
+    read -p "Is this correct? (Y/n) " -n 1 -r
+    if [[ "$REPLY" =~ (N|n) ]]; then
+    echo ""
+    echo "Quitting."
+    exit 0
+    fi
+    echo ""
 fi
-echo ""
+
 echo ""
 
 
