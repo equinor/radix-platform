@@ -198,7 +198,7 @@ kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(ec
 
 echo ""
 echo "Wait for backup \"$BACKUP_NAME\" to be available in destination cluster \"DEST_CLUSTER\" before we can restore..."
-while [[ "$(kubectl get backup -n velero $BACKUP_NAME 2>&1)" == *"error"* ]]; do
+while [[ "$(velero backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
     printf "."
     sleep 2s
 done
