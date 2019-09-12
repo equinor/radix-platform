@@ -58,6 +58,7 @@ printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
 hash envsubst 2> /dev/null  || { echo -e "\nError: envsubst not found in PATH. Exiting...";  exit 1; }
+hash velero 2> /dev/null  || { echo -e "\nError: velero not found in PATH. Exiting...";  exit 1; }
 printf "Done."
 echo ""
 
@@ -197,7 +198,7 @@ kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(ec
 
 echo ""
 echo "Wait for backup \"$BACKUP_NAME\" to be available in destination cluster \"DEST_CLUSTER\" before we can restore..."
-while [[ "$(velero backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
+while [[ "$(kubectl get backup -n velero $BACKUP_NAME 2>&1)" == *"error"* ]]; do
     printf "."
     sleep 2s
 done
@@ -216,7 +217,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 # TODO: How to determine when radix-operator is done?
 echo ""
 echo "Wait for registrations to be picked up by radix-operator..."
-please_wait 10
+please_wait 360
 
 echo ""
 echo "Restore app config..."
@@ -226,7 +227,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 # TODO: How to determine when radix-operator is done?
 echo ""
 echo "Wait for app config to be picked up by radix-operator..."
-please_wait 10
+please_wait 360
 
 echo ""
 echo "Restore deployments..."
@@ -235,7 +236,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when deployments are done?
 echo "Wait for deployments to be picked up by radix-operator..."
-please_wait 10
+please_wait 60
 
 echo ""
 echo "Restore jobs..."
@@ -244,7 +245,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when jobs are done?
 echo "Wait for jobs to be picked up by radix-operator..."
-please_wait 10
+please_wait 60
 
 echo ""
 echo "Restore app specific secrets..."
@@ -254,7 +255,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 # TODO: How to determine when secrets are done?
 echo ""
 echo "Wait for secrets to be picked up by radix-operator..."
-please_wait 10
+please_wait 60
 
 
 #######################################################################################
