@@ -210,8 +210,10 @@ fi
 ### Read secrets from keyvault
 ###
 
-echo "Getting Slack API Token"
-SLACK_TOKEN="$(az keyvault secret show --vault-name $VAULT_NAME --name slack-token | jq -r .value)"
+if [[ "$SUBSCRIPTION_ENVIRONMENT" != "test" ]]; then
+  echo "Getting Slack API Token"
+  SLACK_TOKEN="$(az keyvault secret show --vault-name $VAULT_NAME --name slack-token | jq -r .value)"
+fi
 
 
 #######################################################################################
@@ -405,57 +407,66 @@ kubectl apply -f manifests/storageclass-retain-nocache.yaml
 
 echo "Installing prometheus-operator"
 
+###########
+# !! Work in progress. OAUTH2_PROXY is NOT ready for production
+##########
+
 # Set up templated configmap for prometheus oauth2 proxy
 # OAUTH2_PROXY_CLIENT_ID is the Azure app ID for Prometheus
 
-OAUTH2_PROXY_CLIENT_ID_dev='cac8523e-81c3-499e-80a3-4d84e685a3f7'
-OAUTH2_PROXY_CLIENT_ID_prod='1151f027-569e-41a7-8cb4-601c7a408573'
+# OAUTH2_PROXY_CLIENT_ID_dev='cac8523e-81c3-499e-80a3-4d84e685a3f7'
+# OAUTH2_PROXY_CLIENT_ID_prod='1151f027-569e-41a7-8cb4-601c7a408573'
 
-OAUTH2_PROXY_CLIENT_ID_VAR="OAUTH2_PROXY_CLIENT_ID_${SUBSCRIPTION_ENVIRONMENT}"
-OAUTH2_PROXY_CLIENT_ID="${!OAUTH2_PROXY_CLIENT_ID_VAR}"
+# OAUTH2_PROXY_CLIENT_ID_VAR="OAUTH2_PROXY_CLIENT_ID_${SUBSCRIPTION_ENVIRONMENT}"
+# OAUTH2_PROXY_CLIENT_ID="${!OAUTH2_PROXY_CLIENT_ID_VAR}"
 
-# OAUTH2_PROXY_CLIENT_ID: 130124d4-aa0e-439a-90a9-8983f610e594
+# # OAUTH2_PROXY_CLIENT_ID: 130124d4-aa0e-439a-90a9-8983f610e594
 
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: prometheus-oauth2-proxy-config
-data:
-  OAUTH2_PROXY_REDIRECT_URL: https://prometheus-oauth2.$CLUSTER_NAME.$DNS_ZONE/oauth2/callback
-  OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
-EOF
-
-# Set up secret used by the prometheus oauth2 proxy
-#
-# You need an app registration in Azure for Promotheus so that OAuth2 can authenticate against it
-#
-# To generate a new file:
-# 1) Generate a client secret (app password) in the Azure app registration
-# 2) Generate a cookie secret using `python -c 'import os,base64; print base64.urlsafe_b64encode(os.urandom(16))'`
-# 3) Run `echo -n '<client-secret-from-step-1>' | base64`
-# 4) Run `echo -n '<client-secret-from-step-2>' | base64`
-# 5) Fill this template, save it as e.g. secrets.yaml, and save it to the keyvault in Azure:
-#    az keyvault secret set --name prometheus-oauth2-proxy-secrets --vault-name radix-vault-<dev|prod> --file secrets.yaml
-#
+# cat <<EOF | kubectl apply -f -
 # apiVersion: v1
-# kind: Secret
-# type: Opaque
+# kind: ConfigMap
 # metadata:
-#   name: prometheus-oauth2-proxy-secrets
+#   name: prometheus-oauth2-proxy-config
 # data:
-#   OAUTH2_PROXY_CLIENT_SECRET: <secret-from-step-3>
-#   OAUTH2_PROXY_COOKIE_SECRET: <secret-from-step-4>
+#   OAUTH2_PROXY_REDIRECT_URL: https://prometheus-oauth2.$CLUSTER_NAME.$DNS_ZONE/oauth2/callback
+#   OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
+# EOF
 
-az keyvault secret download \
-    --vault-name $VAULT_NAME \
-    --name prometheus-oauth2-proxy-secrets \
-    --file prometheus-oauth2-proxy-secrets.yaml
+# # Set up secret used by the prometheus oauth2 proxy
+# #
+# # You need an app registration in Azure for Promotheus so that OAuth2 can authenticate against it
+# #
+# # To generate a new file:
+# # 1) Generate a client secret (app password) in the Azure app registration
+# # 2) Generate a cookie secret using `python -c 'import os,base64; print base64.urlsafe_b64encode(os.urandom(16))'`
+# # 3) Run `echo -n '<client-secret-from-step-1>' | base64`
+# # 4) Run `echo -n '<client-secret-from-step-2>' | base64`
+# # 5) Fill this template, save it as e.g. secrets.yaml, and save it to the keyvault in Azure:
+# #    az keyvault secret set --name prometheus-oauth2-proxy-secrets --vault-name radix-vault-<dev|prod> --file secrets.yaml
+# #
+# # apiVersion: v1
+# # kind: Secret
+# # type: Opaque
+# # metadata:
+# #   name: prometheus-oauth2-proxy-secrets
+# # data:
+# #   OAUTH2_PROXY_CLIENT_SECRET: <secret-from-step-3>
+# #   OAUTH2_PROXY_COOKIE_SECRET: <secret-from-step-4>
 
-# kubectl create secret generic prometheus-oauth2-proxy-secrets --from-file prometheus-oauth2-proxy-secrets.yaml
-kubectl apply -f prometheus-oauth2-proxy-secrets.yaml
+# az keyvault secret download \
+#     --vault-name $VAULT_NAME \
+#     --name prometheus-oauth2-proxy-secrets \
+#     --file prometheus-oauth2-proxy-secrets.yaml
 
-rm -f prometheus-oauth2-proxy-secrets.yaml
+# # kubectl create secret generic prometheus-oauth2-proxy-secrets --from-file prometheus-oauth2-proxy-secrets.yaml
+# kubectl apply -f prometheus-oauth2-proxy-secrets.yaml
+
+# rm -f prometheus-oauth2-proxy-secrets.yaml
+
+###########
+# End OAUTH2_PROXY code
+##########
+
 
 helm upgrade --install prometheus-operator stable/prometheus-operator \
   --version 6.7.3 \
