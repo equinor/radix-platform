@@ -45,18 +45,18 @@ echo ""
 ###
 
 if [[ -z "$AZ_INFRASTRUCTURE_ENVIRONMENT" ]]; then
-    echo -e "\nError: Please provide INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"." >&2
+    echo -e "\nError: Please provide INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\", \"test\"." >&2
     exit 1
 fi
 
 case "$AZ_INFRASTRUCTURE_ENVIRONMENT" in
-    "prod" | "dev")
+    "prod" | "dev" | "test")
         # We got a valid value, lets override base env var
         AZ_INFRASTRUCTURE_ENVIRONMENT="$AZ_INFRASTRUCTURE_ENVIRONMENT"
         ;;
     *)
         echo ""
-        echo "Error: INFRASTRUCTURE_ENVIRONMENT has an invalid value ($AZ_INFRASTRUCTURE_ENVIRONMENT).\nValue must be one of: \"prod\", \"dev\"." >&2
+        echo "Error: INFRASTRUCTURE_ENVIRONMENT has an invalid value ($AZ_INFRASTRUCTURE_ENVIRONMENT).\nValue must be one of: \"prod\", \"dev\", \"test\"." >&2
         exit 1
 esac
 

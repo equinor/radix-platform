@@ -747,12 +747,14 @@ echo ""
 ### Notify on slack channel
 ###
 
-echo "Notifying on Slack"
-helm upgrade --install radix-boot-notify \
-    "$HELM_REPO"/slack-notification \
-    --set channel="$SLACK_CHANNEL" \
-    --set slackToken="$SLACK_TOKEN" \
-    --set text="Base components have been installed or updated on $CLUSTER_NAME."
+if [[ "$SUBSCRIPTION_ENVIRONMENT" != "test" ]]; then
+  echo "Notifying on Slack"
+  helm upgrade --install radix-boot-notify \
+      "$HELM_REPO"/slack-notification \
+      --set channel="$SLACK_CHANNEL" \
+      --set slackToken="$SLACK_TOKEN" \
+      --set text="Base components have been installed or updated on $CLUSTER_NAME."
+fi
 
 
 #######################################################################################
