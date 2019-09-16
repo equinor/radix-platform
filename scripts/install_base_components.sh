@@ -76,7 +76,7 @@ echo ""
 ###
 
 if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
-    echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+    echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\", \"test\"."
     exit 1
 fi
 
