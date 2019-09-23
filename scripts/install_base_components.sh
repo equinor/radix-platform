@@ -587,24 +587,6 @@ helm repo update
 kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
-### Install radix-e2e-monitoring
-###
-
-echo "Installing radix-e2e-monitoring"
-az keyvault secret download \
-    --vault-name "$VAULT_NAME" \
-    --name radix-e2e-monitoring \
-    --file radix-e2e-monitoring.yaml
-
-helm upgrade --install radix-e2e-monitoring \
-    "$HELM_REPO"/radix-e2e-monitoring \
-    --set clusterFQDN=$CLUSTER_NAME.$DNS_ZONE \
-    -f radix-e2e-monitoring.yaml
-
-rm -f radix-e2e-monitoring.yaml
-
-
-#######################################################################################
 # Create radix platform shared configs and secrets
 # Create 2 secrets for Radix platform radix-sp-acr-azure and radix-docker
 
