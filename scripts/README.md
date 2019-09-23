@@ -64,7 +64,6 @@ This script requires secret files to be available in the `keyvault` of the corre
 * `prometheus-basic-auth` # htpasswd file used to authenticate towards Prometheus
 * `grafana-secrets` # grafana secret envs file
 * `external-dns-azure-secret` # external-dns credentials file
-* `radix-e2e-monitoring` # radix-e2e-monitoring values file
 
 **NB: The `keyvault` is created by the "install infrastructure" step**
 
