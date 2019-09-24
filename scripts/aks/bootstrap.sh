@@ -54,7 +54,7 @@ printf "Done.\n"
 ### Validate mandatory input
 
 if [[ -z "$AZ_INFRASTRUCTURE_ENVIRONMENT" ]]; then
-    echo "Please provide AZ_INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+    echo "Please provide AZ_INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\", \"test\"."
     exit 1
 fi
 
@@ -153,7 +153,6 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
-    SLACK_TOKEN="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-token | jq -r .value)"
 else
     # Credentials are provided from input.
     # Source the file to make the key/value pairs readable as script vars    

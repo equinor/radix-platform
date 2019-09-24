@@ -69,6 +69,10 @@ if [[ -z "$GIT_REPO" ]]; then
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
+  # Default
+  GIT_BRANCH="master"
+  GIT_DIR="development-configs"
+  # Peculiar specific logic for env and cluster type
   if [[ "$AZ_INFRASTRUCTURE_ENVIRONMENT" == "prod" ]]; then
     GIT_BRANCH="release"
     GIT_DIR="production-configs"

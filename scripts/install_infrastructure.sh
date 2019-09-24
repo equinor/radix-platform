@@ -48,16 +48,20 @@ echo ""
 # So we check the values using case statements instead
 case "$RADIX_INFRASTRUCTURE_ENVIRONMENT" in
     "dev" )
-        # Valid
+        # Long running dev environment
         ;;
 
     "prod" )
-        # Valid
+        # Guess three times
+        ;;
+
+    "test" )
+        # For testing infrastructure scripts
         ;;
 
     *)
         # Exit for anything else
-        echo "Please provide RADIX_INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+        echo "Please provide RADIX_INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\", \"test\"."
         exit 1
         ;;
 esac
@@ -76,6 +80,10 @@ case "$RADIX_INFRASTRUCTURE_ENVIRONMENT" in
 
     "prod" )
         RADIX_INFRASTRUCTURE_SUBSCRIPTION="Omnia Radix Production"
+        ;;
+
+    "test" )
+        RADIX_INFRASTRUCTURE_SUBSCRIPTION="LKSK-Community"
         ;;
 esac
 
@@ -543,7 +551,7 @@ function destroy() {
 function install() {
     echo ""
     # echo_step "Provision all prerequisite infrastructure."
-    echo -e "Use \"install_cluster.sh\" to provision clusters when all prerequisite infrastructure is ready."
+    echo -e "We will now install all the infrastructure required to later bootstrap clusters."
     ask_user "Do you want to continue?"
     if [[ ! "$REPLY" =~ ^[Yy]$ ]]
     then
