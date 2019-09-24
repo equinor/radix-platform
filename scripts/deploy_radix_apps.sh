@@ -29,6 +29,18 @@ function assert_dep {
     done
 }
 
+function wait_for_app_namespace() {
+    local name # Input 1
+    name="${1}"
+    list_ns_command="kubectl get ns --selector="radixApp=$name" --output=name"
+    echo "Waiting for app namespace..."
+
+    while [[ $($list_ns_command) == "" ]]; do   
+        printf "."
+        sleep 2s
+    done
+}
+
 assert_dep az helm jq sha256sum
 
 # Validate mandatory input
@@ -115,11 +127,11 @@ helm upgrade --install radix-github-webhook \
 rm radix-github-webhook-radixregistration-values.yaml
 
 # Wait a few seconds until radix-operator can process the RadixRegistration
-sleep 3s
+wait_for_app_namespace radix-github-webhook
 
 helm upgrade --install radix-pipeline-github-webhook-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:equinor/radix-github-webhook.git" \
     --set cloneBranch="master" \
@@ -132,7 +144,7 @@ sleep 4s
 
 helm upgrade --install radix-pipeline-github-webhook-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-github-webhook" \
     --set cloneURL="git@github.com:equinor/radix-github-webhook.git" \
     --set cloneBranch="release" \
@@ -153,32 +165,30 @@ helm upgrade --install radix-api \
 rm radix-api-radixregistration-values.yaml
 
 # Wait a few seconds until radix-operator can process the RadixRegistration
-sleep 3s
+wait_for_app_namespace "radix-api"
 
 helm upgrade --install radix-pipeline-api-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
-    --set useCache="false"
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
 sleep 4s
 
 helm upgrade --install radix-pipeline-api-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-api" \
     --set cloneURL="git@github.com:equinor/radix-api.git" \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="radix${SUBSCRIPTION_ENVIRONMENT}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`" \
-    --set useCache="false"
+    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
 
 # Radix Canary app
 az keyvault secret download \
@@ -193,11 +203,11 @@ helm upgrade --install radix-canary \
 rm radix-canary-radixregistration-values.yaml
 
 # Wait a few seconds until radix-operator can process the RadixRegistration
-sleep 3s
+wait_for_app_namespace "radix-canary-golang"
 
 helm upgrade --install radix-pipeline-canary-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:equinor/radix-canary-golang.git" \
     --set cloneBranch="master" \
@@ -210,7 +220,7 @@ sleep 4s
 
 helm upgrade --install radix-pipeline-canary-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-canary-golang" \
     --set cloneURL="git@github.com:equinor/radix-canary-golang.git" \
     --set cloneBranch="release" \
@@ -231,11 +241,11 @@ helm upgrade --install radix-web-console \
 rm radix-web-console-radixregistration-values.yaml
 
 # Wait a few seconds until radix-operator can process the RadixRegistration
-sleep 3s
+wait_for_app_namespace "radix-web-console"
 
 helm upgrade --install radix-pipeline-web-console-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:equinor/radix-web-console.git" \
     --set cloneBranch="master" \
@@ -248,7 +258,7 @@ sleep 4s
 
 helm upgrade --install radix-pipeline-web-console-release \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-web-console" \
     --set cloneURL="git@github.com:equinor/radix-web-console.git" \
     --set cloneBranch="release" \
@@ -269,11 +279,11 @@ helm upgrade --install radix-public-site \
 rm radix-public-site-values.yaml
 
 # Wait a few seconds until radix-operator can process the RadixRegistration
-sleep 3s
+wait_for_app_namespace "radix-platform"
 
 helm upgrade --install radix-pipeline-public-site-master \
     "$HELM_REPO"/radix-pipeline-invocation \
-    --version 1.0.11 \
+    --version 1.0.12 \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:equinor/radix-platform.git" \
     --set cloneBranch="master" \

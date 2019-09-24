@@ -1,84 +1,21 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: radix.equinor.com/v1
+kind: RadixJob
 metadata:
+  annotations:
+    radix-branch: {{ .Values.cloneBranch }}
+  labels:
+    radix-app: {{ .Values.name }}
   name: {{ .Values.name }}-{{ .Values.cloneBranch }}-init-deploy-{{ .Values.imageTag }}
   namespace: {{ .Values.name }}-app
-  labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    release: "{{ .Release.Name }}"
-    heritage: "{{ .Release.Service }}"
-    radix-app: {{ .Values.name }}
-    radix-app-name: {{ .Values.name }}
-    radix-branch: {{ .Values.cloneBranch }}
-    radix-commit: ""
-    radix-image-tag: {{ .Values.imageTag }}
-    radix-job-name: {{ .Values.name }}-{{ .Values.cloneBranch }}-init-deploy-{{ .Values.imageTag }}
-    radix-job-type: job
-    radix-pipeline: build-deploy
 spec:
-  backoffLimit: 0
-  completions: 1
-  parallelism: 1
-  template:
-    spec:
-      serviceAccountName: radix-pipeline
-      containers:
-      - args:
-        - BRANCH={{ .Values.cloneBranch }}
-        - RADIX_FILE_NAME=/workspace/radixconfig.yaml
-        - IMAGE_TAG={{ .Values.imageTag }}
-        - USE_CACHE={{ .Values.useCache }}
-        image: {{ .Values.containerRegistry }}/radix-pipeline:{{ .Values.pipelineImageTag }}
-        name: radix-pipeline-init
-        volumeMounts:
-        - mountPath: /workspace
-          name: build-context
-      imagePullSecrets:
-      - name: {{ .Values.pipelineImagePullSecret }}
-      initContainers:
-      - args:
-        - n=1;max=10;delay=2;while true; do if [ "$n" -lt "$max" ]; then nslookup
-          github.com && break; n=$((n+1)); sleep $(($delay*$n)); else echo "The command
-          has failed after $n attempts."; break; fi done
-        command:
-        - /bin/sh
-        - -c
-        image: alpine
-        imagePullPolicy: Always
-        name: internal-nslookup
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-      - args:
-        - clone
-        - {{ .Values.cloneURL }}
-        - -b
-        - master
-        - --verbose
-        - --progress
-        - /workspace
-        image: alpine/git
-        imagePullPolicy: Always
-        name: clone
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /workspace
-          name: build-context
-        - mountPath: /root/.ssh
-          name: git-ssh-keys
-          readOnly: true
-      restartPolicy: Never
-      schedulerName: default-scheduler
-      securityContext: {}
-      serviceAccount: radix-pipeline
-      serviceAccountName: radix-pipeline
-      terminationGracePeriodSeconds: 30
-      volumes:
-      - emptyDir: {}
-        name: build-context
-      - name: git-ssh-keys
-        secret:
-          defaultMode: 256
-          secretName: git-ssh-keys
+  appName: {{ .Values.name }}
+  build:
+    branch: {{ .Values.cloneBranch }}
+    commitID: ""
+    imageTag: {{ .Values.imageTag }}
+    pushImage: true
+    radixFileName: /workspace/radixconfig.yaml
+  cloneURL: {{ .Values.cloneURL }}
+  dockerRegistry: {{ .Values.containerRegistry }}
+  pipeLineType: build-deploy
+  pipelineImage: {{ .Values.pipelineImageTag }}

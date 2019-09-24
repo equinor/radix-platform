@@ -5,7 +5,5 @@ cloneBranch: master
 
 containerRegistry: xx
 imageTag: xx
-useCache: true
 
 pipelineImageTag: latest
-pipelineImagePullSecret: radix-docker
