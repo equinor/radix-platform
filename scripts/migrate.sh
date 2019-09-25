@@ -231,6 +231,11 @@ printf "Restore into destination cluster... "
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
+read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " really_sure
+if [[ $really_sure =~ (N|n) ]]; then
+  echo "Chicken!1"
+  exit 1
+fi
 
 echo ""
 printf "Point to source cluster... "
