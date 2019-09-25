@@ -9,7 +9,7 @@
 DESTINATION_CLUSTER="$(kubectl config current-context)"
 
 echo ""
-echo "WARNIG!"
+echo "WARNING!"
 echo "This script is a tool for testing restore operations in a development cluster."
 echo "The intention is to reset the destination cluster for anything the restore_apps.sh script produced."
 echo "You cannot undo the actions performed by this script."
@@ -19,7 +19,7 @@ echo ""
 
 read -p "Are you sure you want to continue? (Y/n) " really_sure
 if [[ $really_sure =~ (N|n) ]]; then
-  echo "Chicken!1"
+  echo "Chicken!"
   exit 1
 fi
 
