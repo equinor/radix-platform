@@ -477,13 +477,11 @@ helm upgrade --install prometheus-operator stable/prometheus-operator \
 
 # To generate a new file: `htpasswd -c ./auth prometheus`
 # This file MUST be named `auth` when creating the secret!
+htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $VAULT_NAME --name prometheus-token | jq -r .value)"
 
-az keyvault secret download \
-    --vault-name $VAULT_NAME \
-    --name prometheus-basic-auth \
-    --file auth
-
-kubectl create secret generic prometheus-htpasswd --from-file auth
+kubectl create secret generic prometheus-htpasswd \
+  --from-file auth --dry-run -o yaml |
+  kubectl apply -f -
 
 rm -f auth
 
