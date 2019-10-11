@@ -11,7 +11,7 @@ Prometheus and Grafana is the main tools provided in Radix for analytics and mon
 
 Click the *Monitoring* link in the top right corner of the Radix Web Console, log in to Grafana using Azure AD credentials and explore dashboards.
 
-All dashboards in Radix are shared, i.e. another project/team will also be able to open your dashboard. Therefor it is a good idea to create a folder for your dashboard with a sensible name. Create your own dashboards from scratch or just make a copy of the sample dashboard and modify the content to meet your needs.
+All dashboards in Radix are shared, i.e. another project/team will also be able to open your dashboard. Therefore, it is a good idea to create a folder for your dashboard with a sensible name. Create your own dashboards from scratch or just make a copy of the sample dashboard and modify the content to meet your needs.
 
 # Standard metrics
 
