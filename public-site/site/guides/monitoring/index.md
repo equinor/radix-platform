@@ -5,11 +5,17 @@ parent: ['Guides', '../../guides.html']
 toc: true
 ---
 
+# Metrics visualisation
+
+Prometheus and Grafana is the main tools provided in Radix for analytics and monitoring visualisation.
+
+Click the *Monitoring* link in the top right corner of the Radix Web Console, log in to Grafana using Azure AD credentials and explore dashboards.
+
+All dashboards in Radix are shared, i.e. another project/team will also be able to open your dashboard. Therefor it is a good idea to create a folder for your dashboard with a sensible name. Create your own dashboards from scratch or just make a copy of the sample dashboard and modify the content to meet your needs.
+
 # Standard metrics
 
 By default every application on Radix gets the standard metrics about CPU, memory, disk and network usage out of the box. 
-
-Click the *Monitoring* link in the top right corner of the Radix Web Console, log in to Grafana using Azure AD credentials and view dashboards in the `Radix - dashboard templates > Default dashboard` page.
 
 # Application-specific metrics
 
@@ -19,10 +25,10 @@ When you add `monitoring: true` to [`radixconfig.yaml`](../../docs/reference-rad
 
 The Prometheus format looks like this ([full documentation](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md)):
 
-    internal_queue_size{hostname="myhost",env="dev"} 100
-    worker_pool_size{hostname="myhost",env="dev"} 10
+    myapp_internal_queue_size{hostname="myhost",env="dev"} 100
+    myapp_worker_pool_size{hostname="myhost",env="dev"} 10
 
-In the first line `internal_queue_size` is the name of the time-series, and `hostname` and `env` are labels. `100` is the value of the metric right now. It's a good idea to look into the types of metrics; counter, gauge and histogram: [https://prometheus.io/docs/concepts/metric_types/](https://prometheus.io/docs/concepts/metric_types/)
+In the first line `myapp_internal_queue_size` is the name of the time-series, and `hostname` and `env` are labels. `100` is the value of the metric right now. It's a good idea to look into the types of metrics; counter, gauge and histogram: [https://prometheus.io/docs/concepts/metric_types/](https://prometheus.io/docs/concepts/metric_types/)
 
 You can either write the handler to construct this format yourself, or use one of the many available [client libraries](https://prometheus.io/docs/instrumenting/clientlibs/).
 
