@@ -214,8 +214,19 @@ function please_wait_for_rd_to_exist() {
     sleep 5s
     rdExists=($(kubectl get rd --all-namespaces 2> /dev/null | wc -l | xargs))
   done
-  echo "Deployments applieds."
-  sleep 60s
+  
+  # Sometimes ETCD takes a bit of time before all are applied
+  first=($(kubectl get rd --all-namespaces 2> /dev/null | wc -l | xargs))
+  sleep 5s
+  second=($(kubectl get rd --all-namespaces 2> /dev/null | wc -l | xargs))
+
+  while [[ $((second-first)) != 0 ]]; do
+    first=($(kubectl get rd --all-namespaces 2> /dev/null | wc -l | xargs))
+    printf "$iterator"
+    sleep 5s
+    second=($(kubectl get rd --all-namespaces 2> /dev/null | wc -l | xargs))
+  done 
+
 }
 
 function please_wait_for_rd_to_reconcile() {
@@ -242,8 +253,18 @@ function please_wait_for_rj_to_exist() {
     sleep 5s
     rjExists=($(kubectl get rj --all-namespaces 2> /dev/null | wc -l | xargs))
   done
-  echo "Jobs applieds."
-  sleep 60s
+
+  # Sometimes ETCD takes a bit of time before all are applied
+  first=($(kubectl get rj --all-namespaces 2> /dev/null | wc -l | xargs))
+  sleep 5s
+  second=($(kubectl get rj --all-namespaces 2> /dev/null | wc -l | xargs))
+
+  while [[ $((second-first)) != 0 ]]; do
+    first=($(kubectl get rj --all-namespaces 2> /dev/null | wc -l | xargs))
+    printf "$iterator"
+    sleep 5s
+    second=($(kubectl get rj --all-namespaces 2> /dev/null | wc -l | xargs))
+  done 
 }
 
 function please_wait_for_rj_to_reconcile() {
