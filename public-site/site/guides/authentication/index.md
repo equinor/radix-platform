@@ -2,34 +2,62 @@
 
 Equinor uses Azure AD for authentication of applications hosted outside Equinor internal network. Azure AD is synced with Equinor internal AD, and contains information on Equinor users and groups++. 
 
-When doing authentication for applications and apis hosted outside Equinor internal network, we use OAuth 2.0 protocol and OpenId Connect. Information on these protocols can be found at [Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-overview) or a more compact explination by Equinor [Nils Hofseth Andersen](https://equinor.github.io/mss-architecture/oauth2/openid/2019/08/22/oauth2-basics-playground.html). 
+When doing authentication for applications and apis hosted outside Equinor internal network, we use OAuth 2.0 protocol and OpenId Connect. OAuth 2.0 is an industry-standard protocol developed by IETF OAuth Working Group. Information on these protocols can be found at [oauth.net](https://oauth.net/2/), [openid.net](https://openid.net/connect/), [Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-overview) or a more compact explanation by Equinor [Nils Hofseth Andersen](https://equinor.github.io/mss-architecture/oauth2/openid/2019/08/22/oauth2-basics-playground.html). 
 
-Radix does not support any authentication for your application out of the box, but we'll go through some scenarios and describe how this can be added. 
+Radix does not support any authentication for your application out of the box, but we'll go through the basic to get authentication going between a client and api. 
 
 **The rest of this document assumes you have basic knowledge of OAuth 2.0, OpenId Connect and JWT tokens.**
 
+## Note
+
+It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is developed and maintained by Microsoft, and can be used for many scenarios/languages. 
+
 ## Client authentication
+
+How do you get an ID tokens to represent the authenticated user and also access tokens needed to call protected APIs?
 
 ### Oauth-proxy
 
-Its possible to use a proxy in front of the client application that takes care of the authentication flow. This can be introduced to any existing components, and is a good alternative if you have an old web application where you do not want to implement authentication in the client itself. 
+Its possible to use a proxy in front of the client application that takes care of the authentication flow. This can be introduced to any existing components, and is a good alternative if you have an existing web application where you do not want to implement authentication in the client itself. 
 
 !!IMAGE 
 
-In the end this will create a JWT token which can be used to call other resouces (e.g. API). 
+For an example using [pusher oauth2_proxy](https://github.com/pusher/oauth2_proxy) see [link](https://github.com/equinor/radix-example-front-proxy). 
 
-### Directly in client
+In the end this will create a JWT token which can be used to call other resources (e.g. API). 
 
-There are several examples out there on how to implement this for different clients, Microsoft provides a set:
-https://github.com/Azure-Samples/?utf8=%E2%9C%93&q=active-directory&type=&language=
+Pro
+- No need to introduce extra libraries and complexity in client which handles auth
+- Security patching can be done by updating auth proxy image, no need for changes in client. 
+- New versions or changes to OAuth protocol can be supported without changing client
 
-Equinor also have a template for developing Single page ReactJS applications: https://github.com/equinor/videx-react-template
+Cons
+- During development, to get the same experience as in production, you need to run the proxy in front of client.
+- All calls to other resources (as an API) that uses the auth token, need to go through the proxy. 
+
+### In client - Single page application
+
+A single-page application (SPA) is a web application or web site that interacts with the user by dynamically rewriting the current page rather than loading entire new pages from a server. Web browser JavaScript frameworks, such as React, AngularJS, Vue.js, Ember.js, and ExtJS have adopted SPA principles
+
+Microsoft has a set of examples in their [documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/authentication-flows-app-scenarios#application-scenarios) or on [github](https://github.com/Azure-Samples?utf8=%E2%9C%93&q=active-directory&type=&language=) for how to authenticate a client from different languages. Equinor also have a [template](https://github.com/equinor/videx-react-template) for developing Single page ReactJS applications. This is currently used and maintained by an Omnia team.
+
+Pro
+- Can perform API calls to other resources directly from client, without having to go through a proxy.  
+- Same experience under development and when running in production. 
+
+Cons
+- MSAL use implicit flow for SPA. OAuth 2.0 Security best practice (draft) says this [SHOULD NOT](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) be used. However both [Google](https://developers.google.com/identity/protocols/OAuth2UserAgent) and [Microsoft](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-implicit-grant-flow) uses it when explaining OAuth 2.0 authorization for SPAs. Microsoft explain when to use this and not in [link](https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-implicit-grant-flow)
+
+### In client - Web app (not SPA)
+
+For web application where html is rendered on the server side, served to the browser and all API calls are done through the web app server, see [Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-web-app-call-api-overview) on how to use MSAL for authentication. This document how to get authentication going with Python, Java and .Net core. 
 
 ## API authentication
 
-In general its recommended (by software development security adivisor) that any API should be responsible for access control of its own endpoints. This indicates that all requests to an API should be authenticated and authorized from inside the API, and not by a proxy in front of the API. 
+How should you protect a web API, so that only authenticated and authorized users can access the API?
 
-## Client-API requests
+In general its recommended that any API should be responsible for access control of its own endpoints. This indicates that all requests to an API should be authenticated and authorized from inside the API, and not by a proxy in front of the API.
 
-## API-API authentication
+Again Microsoft has a set of examples on [github](https://github.com/Azure-Samples?utf8=%E2%9C%93&q=active-directory+api&type=&language=) on how this can be done for different languages. Their [documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/authentication-flows-app-scenarios#application-scenarios) contains an example using dotnet core. 
 
+There are of course other examples out there for other languages (not done by Microsoft). Ask on #development slack channel for input on frameworks to use for your need. 
