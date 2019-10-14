@@ -142,6 +142,125 @@ fi
 #######################################################################################
 ### Support funcs
 ###
+function please_wait_for_rr_to_exist() {
+  rrExists=($(kubectl get rr 2> /dev/null | wc -l | xargs))
+
+  while [[ $rrExists == 0 ]]; do
+    printf "$iterator"
+    sleep 5s
+    rrExists=($(kubectl get rr 2> /dev/null | wc -l | xargs))
+  done
+  echo "Registrations applieds."
+  sleep 10s
+}
+
+function please_wait_until_rr_synced() {
+  local nsAtStart=($(kubectl get ns | wc -l | xargs))
+  please_wait_for_rr_to_exist
+  
+  # Loop for $1 iterations.
+  # For every iteration, sleep 1s and print $2 delimiter.
+  local iteration_end=($(kubectl get rr | wc -l | xargs))
+  local delimiter_default="."
+  local delimiter="${2:-$delimiter_default}"
+  local iterator=0
+
+  while [[ $(($iterator)) < $(($iteration_end-1)) ]]; do
+    iterator=($(kubectl get ns | wc -l | xargs))
+    iterator=$((iterator-nsAtStart))
+    printf "$delimiter"
+    sleep 1s
+  done
+  echo "Done."
+}
+
+function please_wait_for_ra_to_exist() {
+  raExists=($(kubectl get ra --all-namespaces 2> /dev/null | wc -l | xargs))
+
+  while [[ $raExists == 0 ]]; do
+    printf "$iterator"
+    sleep 5s
+    raExists=($(kubectl get ra --all-namespaces 2> /dev/null | wc -l | xargs))
+  done
+  echo "Applications applieds."
+  sleep 20s
+}
+
+function please_wait_until_ra_synced() {
+  local nsAtStart=($(kubectl get ns | wc -l | xargs))
+  please_wait_for_ra_to_exist
+  
+  # Loop for $1 iterations.
+  # For every iteration, sleep 1s and print $2 delimiter.
+  local nsNow=($(kubectl get ns | wc -l | xargs))
+  local delimiter_default="."
+  local delimiter="${2:-$delimiter_default}"
+
+  while [[ $((nsNow-nsAtStart)) > 0 ]]; do
+    nsAtStart=($(kubectl get ns | wc -l | xargs))
+    printf "$delimiter"
+    sleep 20s
+    nsNow=($(kubectl get ns | wc -l | xargs))
+  done
+  echo "Done."
+  sleep 20s
+}
+
+function please_wait_for_rd_to_exist() {
+  rdExists=($(kubectl get rd --all-namespaces 2> /dev/null | wc -l | xargs))
+
+  while [[ $rdExists == 0 ]]; do
+    printf "$iterator"
+    sleep 5s
+    rdExists=($(kubectl get rd --all-namespaces 2> /dev/null | wc -l | xargs))
+  done
+  echo "Deployments applieds."
+  sleep 60s
+}
+
+function please_wait_for_rd_to_reconcile() {
+  please_wait_for_rd_to_exist
+  
+  local all=($(kubectl get rd --all-namespaces | wc -l | xargs))
+  local current=($(kubectl get rd --all-namespaces -o custom-columns=':status.condition' | grep '<none>' | wc -l | xargs))
+  diff=$((all-current))
+  while [[ "$diff" -lt "$all" ]]; do
+    percentage=$(( (all-current)*100/all ))
+    showProgress $percentage
+    sleep 5s
+    current=($(kubectl get rd --all-namespaces -o custom-columns=':status.condition' | grep '<none>' | wc -l | xargs))
+    diff=$((all-current))
+  done
+  echo "\nDone."
+}
+
+function please_wait_for_rj_to_exist() {
+  rjExists=($(kubectl get rj --all-namespaces 2> /dev/null | wc -l | xargs))
+
+  while [[ $rdExists == 0 ]]; do
+    printf "$iterator"
+    sleep 5s
+    rjExists=($(kubectl get rj --all-namespaces 2> /dev/null | wc -l | xargs))
+  done
+  echo "Jobs applieds."
+  sleep 60s
+}
+
+function please_wait_for_rj_to_reconcile() {
+  please_wait_for_rj_to_exist
+  
+  local all=($(kubectl get rj --all-namespaces | wc -l | xargs))
+  local current=($(kubectl get rj --all-namespaces -o custom-columns=':status.condition' | grep '<none>' | wc -l | xargs))
+  diff=$((all-current))
+  while [[ "$diff" -lt "$all" ]]; do
+    percentage=$(( (all-current)*100/all ))
+    showProgress $percentage
+    sleep 5s
+    current=($(kubectl get rj --all-namespaces -o custom-columns=':status.condition' | grep '<none>' | wc -l | xargs))
+    diff=$((all-current))
+  done
+  echo "\nDone."
+}
 
 function please_wait() {
   # Loop for $1 iterations.
@@ -159,6 +278,19 @@ function please_wait() {
   echo "Done."
 }
 
+function showProgress() {
+  local percentage="${1:-5}"
+  local progress=""
+  local iterator=$percentage
+  
+  while [[ "$iterator" > 0 ]]; do
+    iterator="$((iterator-1))"
+    progress="$progress#"
+  done
+
+  progress="$progress  ($percentage%)\r"
+  echo -ne $progress
+}
 
 #######################################################################################
 ### Connect kubectl
@@ -217,7 +349,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 # TODO: How to determine when radix-operator is done?
 echo ""
 echo "Wait for registrations to be picked up by radix-operator..."
-please_wait 360
+please_wait_until_rr_synced
 
 echo ""
 echo "Restore app config..."
@@ -227,7 +359,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 # TODO: How to determine when radix-operator is done?
 echo ""
 echo "Wait for app config to be picked up by radix-operator..."
-please_wait 360
+please_wait_until_ra_synced
 
 echo ""
 echo "Restore deployments..."
@@ -236,16 +368,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 
 # TODO: How to determine when deployments are done?
 echo "Wait for deployments to be picked up by radix-operator..."
-please_wait 60
-
-echo ""
-echo "Restore jobs..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rj.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-# TODO: How to determine when jobs are done?
-echo "Wait for jobs to be picked up by radix-operator..."
-please_wait 60
+please_wait_for_rd_to_reconcile
 
 echo ""
 echo "Restore app specific secrets..."
@@ -256,30 +379,6 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 echo ""
 echo "Wait for secrets to be picked up by radix-operator..."
 please_wait 60
-
-
-#######################################################################################
-### Configure velero back to normal operation in destination
-### 
-
-echo ""
-echo "Configure velero back to normal operation in destination..."
-
-# Set velero in destination to read destination backup location
-PATCH_JSON="$(cat << END
-{
-   "spec": {
-      "objectStorage": {
-         "bucket": "$DEST_CLUSTER"
-      }
-   }
-}
-END
-)"
-kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
-# Set velero in read/write mode
-kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
-
 
 #######################################################################################
 ### Update replyUrls for those radix apps that require AD authentication
@@ -318,6 +417,40 @@ if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
 fi
 printf "Done."
 
+#######################################################################################
+### Restore jobs
+### 
+
+echo ""
+echo "Restore jobs..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rj.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+# TODO: How to determine when jobs are done?
+echo "Wait for jobs to be picked up by radix-operator..."
+please_wait_for_rj_to_reconcile
+
+#######################################################################################
+### Configure velero back to normal operation in destination
+### 
+
+echo ""
+echo "Configure velero back to normal operation in destination..."
+
+# Set velero in destination to read destination backup location
+PATCH_JSON="$(cat << END
+{
+   "spec": {
+      "objectStorage": {
+         "bucket": "$DEST_CLUSTER"
+      }
+   }
+}
+END
+)"
+kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
+# Set velero in read/write mode
+kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 
 #######################################################################################
 ### Done!
