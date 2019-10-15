@@ -126,6 +126,18 @@ spec:
 
 The `publicPort` field of a component, if set to `<PORT_NAME>`, is used to make the component accessible on the internet by generating a public endpoint. Any component without `publicPort: <PORT_NAME>` can only be accessed from another component in the app. If specified, the `<PORT_NAME>` should exist in the `ports` field.
 
+### `ingressConfiguration`
+
+```yaml
+spec:
+  components:
+    - name: frontend
+      ingressConfiguration:
+      - websocketfriendly
+```
+
+The `ingressConfiguration` field of a component is used to put [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) useful for a specific scenario. In the case above the `frontend` component is set to be `websocketfriendly`, meaning it will have annotations dealing with connection timeouts.
+
 ### `environmentConfig`
 
 The `environmentConfig` section is to set environment specific settings for each component
