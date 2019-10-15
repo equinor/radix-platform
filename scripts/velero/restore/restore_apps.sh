@@ -216,7 +216,6 @@ function please_wait_for_reconciling() {
   done
 
   showProgress 100
-  echo "Done."
 }
 
 function please_wait() {
