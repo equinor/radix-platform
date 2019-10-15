@@ -142,6 +142,9 @@ fi
 #######################################################################################
 ### Support funcs
 ###
+
+# RRs are synced when there is a corresponding app namespace
+# for every RR
 function please_wait_until_rr_synced() {
   local nsAtStart=($(kubectl get ns | wc -l | xargs))
   please_wait_for_existance_of_resource "rr"
@@ -166,6 +169,8 @@ function please_wait_until_rr_synced() {
   echo "Done."
 }
 
+# RAs can be considered synced, although this is not certain, when there no
+# new namespaces (environment namespaces) appear
 function please_wait_until_ra_synced() {
   local nsAtStart=($(kubectl get ns | wc -l | xargs))
   please_wait_for_existance_of_resource "ra"
@@ -192,6 +197,8 @@ function please_wait_until_ra_synced() {
   sleep 20s
 }
 
+# Common function for reconciling resources that have a status.condition field. When all have 
+# a status.condition != <none> they can be considered reconciled
 function please_wait_for_reconciling() {
   local resource="${1}" 
   please_wait_for_existance_of_resource "$resource"
@@ -230,6 +237,8 @@ function please_wait() {
   echo "Done."
 }
 
+# It takes a little while before all resources are visible in the cluster after having
+# been restored
 function please_wait_for_existance_of_resource() {
   local resource="${1}"  
   
