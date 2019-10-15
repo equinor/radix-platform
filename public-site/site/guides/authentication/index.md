@@ -10,7 +10,7 @@ Radix does not support any authentication for your application out of the box, b
 
 ## Note
 
-It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is developed and maintained by Microsoft, and can be used for many scenarios/languages. It's the recommended library to use by Equinor for the languages it support.
+It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is the recommended library to use in Equinor. It is developed and maintained by Microsoft, and can be used for many scenarios/languages.
 
 ## Client authentication
 
@@ -32,6 +32,8 @@ Pro
 Cons
 - During development, to get the same experience as in production, you need to run the proxy in front of client.
 - All calls to other resources (as an API) that uses the auth token, need to go through the proxy. 
+
+We have not investigated using oauth-proxy when you need to call multiple API, with different resources ids, from the client.
 
 ### In client - Single page application
 
