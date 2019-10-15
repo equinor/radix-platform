@@ -347,7 +347,6 @@ echo "Restore app registrations..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rr.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when radix-operator is done?
 echo ""
 echo "Wait for registrations to be picked up by radix-operator..."
 please_wait_until_rr_synced
@@ -357,7 +356,7 @@ echo "Restore app config..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_ra.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when radix-operator is done?
+# TODO: Is the current mechansim sufficient?
 echo ""
 echo "Wait for app config to be picked up by radix-operator..."
 please_wait_until_ra_synced
@@ -367,7 +366,6 @@ echo "Restore deployments..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rd.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when deployments are done?
 echo "Wait for deployments to be picked up by radix-operator..."
 please_wait_for_reconciling "rd"
 
@@ -376,7 +374,6 @@ echo "Restore app specific secrets..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_secret.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when secrets are done?
 echo ""
 echo "Wait for secrets to be picked up by radix-operator..."
 please_wait_for_all_resources "secret"
@@ -427,7 +424,6 @@ echo "Restore jobs..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rj.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when jobs are done?
 echo "Wait for jobs to be picked up by radix-operator..."
 please_wait_for_reconciling "rj"
 
