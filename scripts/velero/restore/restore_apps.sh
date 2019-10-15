@@ -227,6 +227,8 @@ function please_wait_for_existance_of_resource() {
     sleep 5s
     exists=($(kubectl get $resource --all-namespaces 2> /dev/null | wc -l | xargs))
   done
+
+  please_wait_for_all_resources "$resource"
 }
 
 function please_wait_for_all_resources() {
