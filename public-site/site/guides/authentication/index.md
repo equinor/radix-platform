@@ -10,7 +10,7 @@ Radix does not support any authentication for your application out of the box, b
 
 ## Note
 
-It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is developed and maintained by Microsoft, and can be used for many scenarios/languages. It is also recommended library to use by Equinor, for the languages it support.
+It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is developed and maintained by Microsoft, and can be used for many scenarios/languages. It's the recommended library to use by Equinor for the languages it support.
 
 ## Client authentication
 
