@@ -241,23 +241,22 @@ function please_wait_for_existance_of_resource() {
     exists=($(kubectl get $resource --all-namespaces 2> /dev/null | wc -l | xargs))
   done
 
-  please_wait_for_etcd_resource "$resource"
+  please_wait_for_all_resources "$resource"
 }
 
-function please_wait_for_etcd_resource() {
+function please_wait_for_all_resources() {
   local resource="${1}"
-  please_wait_for_etcd "kubectl get $resource --all-namespaces"
-}
+  local command="kubectl get $resource --all-namespaces"
 
-function please_wait_for_etcd() {
-  local command="${1}"
-
-  # Sometimes ETCD takes a bit of time before all are applied
+  # Sometimes it takes a bit of time before all resources 
+  # are visible in the cluster
   first=($($command 2> /dev/null | wc -l | xargs))
 
   sleep 5s
   second=($($command 2> /dev/null | wc -l | xargs))
 
+  # The the resources stop growing, we
+  # can assume all are visible
   while [[ $((second-first)) != 0 ]]; do
     first=($($command 2> /dev/null | wc -l | xargs))
     printf "$iterator"
@@ -371,7 +370,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 # TODO: How to determine when secrets are done?
 echo ""
 echo "Wait for secrets to be picked up by radix-operator..."
-please_wait_for_etcd_resource "secret"
+please_wait_for_all_resources "secret"
 
 #######################################################################################
 ### Update replyUrls for those radix apps that require AD authentication
