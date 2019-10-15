@@ -136,7 +136,7 @@ spec:
       - websocketfriendly
 ```
 
-The `ingressConfiguration` field of a component will add extra configuartion by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario
+The `ingressConfiguration` field of a component will add extra configuration by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario
 
 - `websocketfriendly` will change connection timeout to 1 hour for the component.
 
