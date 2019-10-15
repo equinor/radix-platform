@@ -2,7 +2,7 @@
 
 Equinor uses Azure AD for authentication of applications hosted outside the internal network. Azure AD is synced with Equinor internal AD, and contains information on Equinor users and groups++. 
 
-When doing authentication for applications and apis hosted outside Equinor internal network, we use OAuth 2.0 protocol and OpenId Connect. OAuth 2.0 is an industry-standard protocol developed by IETF OAuth Working Group. Information on these protocols can be found at [oauth.net](https://oauth.net/2/), [openid.net](https://openid.net/connect/), [Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-overview) or a more compact explanation by Equinor [Nils Hofseth Andersen](https://equinor.github.io/mss-architecture/oauth2/openid/2019/08/22/oauth2-basics-playground.html). 
+When doing authentication for applications and apis hosted outside Equinor internal network, we use [OAuth 2.0](https://tools.ietf.org/html/rfc6749) protocol and OpenId Connect. OAuth 2.0 is an industry-standard protocol developed by IETF OAuth Working Group. Information on these protocols can be found at [oauth.net](https://oauth.net/2/), [openid.net](https://openid.net/connect/), [Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-overview) or a more compact explanation by Equinor [Nils Hofseth Andersen](https://equinor.github.io/mss-architecture/oauth2/openid/2019/08/22/oauth2-basics-playground.html). 
 
 Radix does not support any authentication for your application out of the box, but we'll go through the basic to get authentication going between a client and api. 
 
@@ -12,9 +12,11 @@ Radix does not support any authentication for your application out of the box, b
 
 It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is the recommended library to use in Equinor. It is developed and maintained by Microsoft, and can be used for many scenarios/languages.
 
+If your web app should access one or more resources, e.g. api, you have to take time to understand OAuth 2.0 and Openid Connect. It is not trivial to setup authentication for these scenarios, either using oauth-proxy or a library as MSAL. 
+
 ## Client authentication
 
-How do you get an ID tokens to represent the authenticated user and also access tokens needed to call protected APIs?
+How do you get an ID tokens to represent the authenticated user and also access tokens needed to call protected APIs? 
 
 ### Oauth-proxy
 
@@ -33,7 +35,7 @@ Cons
 - During development, to get the same experience as in production, you need to run the proxy in front of client.
 - All calls to other resources (as an API) that uses the auth token, need to go through the proxy. 
 
-We have not investigated using oauth-proxy when you need to call multiple API, with different resources ids, from the client.
+We have not investigated using oauth-proxy when you need to call multiple API, with different resources ids from the client.
 
 ### In client - Single page application
 
