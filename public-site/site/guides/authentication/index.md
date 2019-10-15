@@ -1,6 +1,6 @@
 # Authentication
 
-Equinor uses Azure AD for authentication of applications hosted outside Equinor internal network. Azure AD is synced with Equinor internal AD, and contains information on Equinor users and groups++. 
+Equinor uses Azure AD for authentication of applications hosted outside the internal network. Azure AD is synced with Equinor internal AD, and contains information on Equinor users and groups++. 
 
 When doing authentication for applications and apis hosted outside Equinor internal network, we use OAuth 2.0 protocol and OpenId Connect. OAuth 2.0 is an industry-standard protocol developed by IETF OAuth Working Group. Information on these protocols can be found at [oauth.net](https://oauth.net/2/), [openid.net](https://openid.net/connect/), [Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-overview) or a more compact explanation by Equinor [Nils Hofseth Andersen](https://equinor.github.io/mss-architecture/oauth2/openid/2019/08/22/oauth2-basics-playground.html). 
 
@@ -10,7 +10,7 @@ Radix does not support any authentication for your application out of the box, b
 
 ## Note
 
-It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is developed and maintained by Microsoft, and can be used for many scenarios/languages. 
+It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is developed and maintained by Microsoft, and can be used for many scenarios/languages. It is also recommended library to use by Equinor, for the languages it support.
 
 ## Client authentication
 
@@ -18,13 +18,11 @@ How do you get an ID tokens to represent the authenticated user and also access 
 
 ### Oauth-proxy
 
-Its possible to use a proxy in front of the client application that takes care of the authentication flow. This can be introduced to any existing components, and is a good alternative if you have an existing web application where you do not want to implement authentication in the client itself. 
+Its possible to use a proxy in front of the client application that takes care of the authentication flow. This can be introduced to any existing components, and is a good alternative if you have an existing web application where you do not want to implement authentication in the client itself. This is also a suitable solution if you need to make sure that only Equinor people can access my app - but you have no need for finer grained authorization.
 
-!!IMAGE 
+![Diagram](radix-front-proxy.png "Application diagram")
 
 For an example using [pusher oauth2_proxy](https://github.com/pusher/oauth2_proxy) see [link](https://github.com/equinor/radix-example-front-proxy). 
-
-In the end this will create a JWT token which can be used to call other resources (e.g. API). 
 
 Pro
 - No need to introduce extra libraries and complexity in client which handles auth
@@ -37,16 +35,17 @@ Cons
 
 ### In client - Single page application
 
-A single-page application (SPA) is a web application or web site that interacts with the user by dynamically rewriting the current page rather than loading entire new pages from a server. Web browser JavaScript frameworks, such as React, AngularJS, Vue.js, Ember.js, and ExtJS have adopted SPA principles
+A single-page application (SPA) is a web application or web site that interacts with the user by dynamically rewriting the current page rather than loading entire new pages from a server. Web browser JavaScript frameworks, such as React, AngularJS, Vue.js, Ember.js, and ExtJS have adopted SPA principles. Most of these applications lives entirely in the browser, which is an unsafe environment. 
 
-Microsoft has a set of examples in their [documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/authentication-flows-app-scenarios#application-scenarios) or on [github](https://github.com/Azure-Samples?utf8=%E2%9C%93&q=active-directory&type=&language=) for how to authenticate a client from different languages. Equinor also have a [template](https://github.com/equinor/videx-react-template) for developing Single page ReactJS applications. This is currently used and maintained by an Omnia team.
+Microsoft has a set of examples in their [documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/authentication-flows-app-scenarios#application-scenarios) or on [github](https://github.com/Azure-Samples?utf8=%E2%9C%93&q=active-directory&type=&language=) for how to authenticate a client from different languages using a [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview). Equinor also have a [template](https://github.com/equinor/videx-react-template) for developing Single page ReactJS applications. This is currently used and maintained by an Omnia team.
 
 Pro
 - Can perform API calls to other resources directly from client, without having to go through a proxy.  
 - Same experience under development and when running in production. 
+- MSAL is the recommended library to use for authentication by Equinor
 
 Cons
-- MSAL use implicit flow for SPA. OAuth 2.0 Security best practice (draft) says this [SHOULD NOT](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) be used. However both [Google](https://developers.google.com/identity/protocols/OAuth2UserAgent) and [Microsoft](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-implicit-grant-flow) uses it when explaining OAuth 2.0 authorization for SPAs. Microsoft explain when to use this and not in [link](https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-implicit-grant-flow)
+- MSAL use an authentication flow called [implicit grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-implicit-grant-flow) for SPA. This is [less secure](https://tools.ietf.org/html/draft-ietf-oauth-security-topics-13#section-3.1.2) then [authorization code grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow) used by the oauth-proxy and for web applications rendered on the server side. However both [Google](https://developers.google.com/identity/protocols/OAuth2UserAgent) and [Microsoft](https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-implicit-grant-flow) uses it for their examples on how to do OAuth 2.0 authorization for SPAs.
 
 ### In client - Web app (not SPA)
 
