@@ -169,8 +169,8 @@ function please_wait_until_rr_synced() {
   echo "Done."
 }
 
-# RAs can be considered synced, although this is not certain, when there no
-# new namespaces (environment namespaces) appear
+# RAs can be considered synced, although this is not certain, when no
+# new namespaces appear, after some sleep
 function please_wait_until_ra_synced() {
   local nsAtStart=($(kubectl get ns | wc -l | xargs))
   please_wait_for_existance_of_resource "ra"
