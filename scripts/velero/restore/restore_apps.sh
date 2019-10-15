@@ -146,76 +146,23 @@ fi
 # RRs are synced when there is a corresponding app namespace
 # for every RR
 function please_wait_until_rr_synced() {
-  local nsAtStart=($(kubectl get ns | wc -l | xargs))
-  please_wait_for_existance_of_resource "rr"
-  
-  echo ""
-  echo "Reconciling rr..."
+  local resource="rr" 
+  local allCmd="kubectl get rr --all-namespaces -o custom-columns=':metadata.name' --no-headers"
+  local currentCmd="kubectl get ns -o custom-columns=':metadata.name'"
+  local condition="grep '\-app'"
 
-  # count(rr) should match count(app-ns)
-  local iteration_end=($(kubectl get rr | wc -l | xargs))
-  local delimiter_default="."
-  local delimiter="${2:-$delimiter_default}"
-  local iterator=0
-
-  while [[ $(($iterator)) < $(($iteration_end-1)) ]]; do
-    iterator=($(kubectl get ns | wc -l | xargs))
-    iterator=$((iterator-nsAtStart))
-    printf "$delimiter"
-    sleep 1s
-  done
-
-  echo "Done."
+  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
 }
 
-# RAs can be considered synced, although this is not certain, when no
-# new namespaces appear, after some sleep
+# RAs are synced when number of environments = number of environment namespaces
 function please_wait_until_ra_synced() {
-  local nsAtStart=($(kubectl get ns | wc -l | xargs))
-  please_wait_for_existance_of_resource "ra"
+  local resource="ra" 
+  local allCmd="kubectl get ra --all-namespaces -o custom-columns=':spec.environments[*].name' | tr ',' '\n'"
+  local currentCmd="kubectl get ns --selector=app-wildcard-sync=app-wildcard-tls-cert"
+  # No condition
+  local condition="grep ''"
 
-  echo ""
-  echo "Reconciling ra..."
-  
-  # RA sync is complete when growth of namespaces stop
-  local nsNow=($(kubectl get ns | wc -l | xargs))
-  local delimiter_default="."
-  local delimiter="${2:-$delimiter_default}"
-
-  while [[ $((nsNow-nsAtStart)) > 0 ]]; do
-    nsAtStart=($(kubectl get ns | wc -l | xargs))
-    printf "$delimiter"
-    sleep 20s
-    nsNow=($(kubectl get ns | wc -l | xargs))
-  done
-
-  echo "Done."
-
-  # Have an extra window to shield issues occuring when we are too eager
-  sleep 20s
-}
-
-# Common function for reconciling resources that have a status.condition field. When all have 
-# a status.condition != <none> they can be considered reconciled
-function please_wait_for_reconciling() {
-  local resource="${1}" 
-  please_wait_for_existance_of_resource "$resource"
-  
-  echo ""
-  echo "Reconciling $resource..."
-
-  local all=($(kubectl get $resource --all-namespaces | wc -l | xargs))
-  local current=($(kubectl get $resource --all-namespaces -o custom-columns=':status.condition' | grep '<none>' | wc -l | xargs))
-  diff=$((all-current))
-  while [[ "$diff" -lt "$all" ]]; do
-    percentage=$(( (all-current)*100/all ))
-    showProgress $percentage
-    sleep 5s
-    current=($(kubectl get $resource --all-namespaces -o custom-columns=':status.condition' | grep '<none>' | wc -l | xargs))
-    diff=$((all-current))
-  done
-
-  showProgress 100
+  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
 }
 
 function please_wait() {
@@ -234,6 +181,40 @@ function please_wait() {
   echo "Done."
 }
 
+# Common function for reconciling resources that have a status.condition field. When all have 
+# a status.condition != <none> they can be considered reconciled
+function please_wait_for_reconciling() {
+  local resource="${1}" 
+  local allCmd="kubectl get $resource --all-namespaces"
+  local currentCmd="kubectl get $resource --all-namespaces -o custom-columns=':status.condition'"
+  local condition="grep -v '<none>'"
+
+  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
+}
+
+
+# Common function for reconciling resources
+function please_wait_for_reconciling_withcondition() {
+  local resource="${1}" 
+  local allCmd="${2}"
+  local currentCmd="${3}"
+  local condition="${4}"
+
+  please_wait_for_existance_of_resource "$resource"
+
+  local all="$(bash -c "$allCmd" | wc -l | xargs)"
+  local current="$(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs)"
+
+  while [[ "$current" -lt "$all" ]]; do
+    percentage=$(( current*100/all ))
+    showProgress $percentage
+    sleep 5s
+    current=($(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs))
+  done
+
+  showProgress 100
+}
+
 # It takes a little while before all resources are visible in the cluster after having
 # been restored
 function please_wait_for_existance_of_resource() {
@@ -246,8 +227,6 @@ function please_wait_for_existance_of_resource() {
     sleep 5s
     exists=($(kubectl get $resource --all-namespaces 2> /dev/null | wc -l | xargs))
   done
-
-  please_wait_for_all_resources "$resource"
 }
 
 function please_wait_for_all_resources() {
