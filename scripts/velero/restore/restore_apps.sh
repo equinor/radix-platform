@@ -200,6 +200,10 @@ function please_wait_for_reconciling_withcondition() {
   local currentCmd="${3}"
   local condition="${4}"
 
+  # Sometimes reconciling gets stuck
+  local treshholdPercentage=98
+  local treshholdBroken=0
+
   please_wait_for_existance_of_resource "$resource"
 
   local all="$(bash -c "$allCmd" | wc -l | xargs)"
@@ -209,6 +213,15 @@ function please_wait_for_reconciling_withcondition() {
     percentage=$(( current*100/all ))
     showProgress $percentage
     sleep 5s
+
+    if [[ "$treshholdBroken" == '10' ]]; then
+      break
+    fi
+
+    if [[ "$percentage" -gt "$treshholdPercentage" ]]; then
+      treshholdBroken="$((treshholdBroken+1))"
+    fi
+
     current=($(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs))
   done
 
