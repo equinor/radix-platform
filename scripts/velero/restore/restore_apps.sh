@@ -165,7 +165,6 @@ function please_wait_until_rr_synced() {
     sleep 1s
   done
 
-  echo ""
   echo "Done."
 }
 
@@ -190,7 +189,6 @@ function please_wait_until_ra_synced() {
     nsNow=($(kubectl get ns | wc -l | xargs))
   done
 
-  echo ""
   echo "Done."
 
   # Have an extra window to shield issues occuring when we are too eager
@@ -217,7 +215,7 @@ function please_wait_for_reconciling() {
     diff=$((all-current))
   done
 
-  echo ""
+  showProgress 100
   echo "Done."
 }
 
