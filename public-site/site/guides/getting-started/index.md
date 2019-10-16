@@ -25,16 +25,20 @@ It is also expected that you have a [basic understanding of Git](http://rogerdud
 
 # The Radix clusters
 
-Your applications will run in a *Radix cluster*. We currently have two: **Production** and **Playground**. Use Playground for testing Radix, see if it's a good fit for your projects, and provide feedback to us. When you are ready to commit, you can register your application in the Production cluster, which has improved stability.
+Your applications will run in a *Radix cluster*. We currently have two: **Production** and **Playground**. Use Playground for testing Radix and see if it's a good fit for your needs. When your project and team are happy with Radix, you can register your application in the Production cluster, which provides [specific guarantees](../../docs/topic-sla/).
 
 ## Getting access
 
-Access to Radix is managed in Access IT. To get started, request the role "[Radix Playground Users](https://accessit.equinor.com/Search/Search?term=Radix+Playground+Users+%28OMNIA+RADIX%29)"; this will grant access to register, build, deploy and maintain applications in the **Playground** cluster.
+Access to Radix is managed in Access IT. To get started, decide if you want to try the Playground cluster or go straight to Prodction. You will have access to register, build, deploy and maintain applications in that cluster.
 
-When you are ready to move to **Production**, come [speak with us on Slack](https://equinor.slack.com/messages/C8U7XGGAJ) and we'll guide you through the process. We expect this to be open in the future and just as easy as getting set up in the Playground.
+- Playground: request the role "[Radix Playground Users](https://accessit.equinor.com/Search/Search?term=Radix+Playground+Users+%28OMNIA+RADIX%29)"
 
-# Onwards
+- Production: request the role "[Radix Platform Users](https://accessit.equinor.com/Search/Search?term=Radix+Platform+Users+%28OMNIA+RADIX%29)"
 
-Let's jump right in and see how to [configure an application](../configure-an-app/) in Radix.
+You can configure your app in Playground first, and then in Production; there is no special "migrate to production" process. If you have questions, [speak with us on Slack](https://equinor.slack.com/messages/CBKM6N2JY) and we'll help.
 
-Or, if you prefer reading rather than coding right now, you can read about the [concepts in Radix](../../docs/topic-concepts/) instead.
+# Configure your application
+
+The next step is to [configure your application](../configure-an-app/) on Radix; follow that guide to set things up in the cluster you chose.
+
+(Or, if you prefer reading rather than coding right now, you can get familiar with the [concepts in Radix](../../docs/topic-concepts/) first.)
