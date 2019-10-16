@@ -147,7 +147,7 @@ fi
 # for every RR
 function please_wait_until_rr_synced() {
   local resource="rr" 
-  local allCmd="kubectl get rr --all-namespaces -o custom-columns=':metadata.name' --no-headers"
+  local allCmd="kubectl get rr -o custom-columns=':metadata.name' --no-headers"
   local currentCmd="kubectl get ns -o custom-columns=':metadata.name'"
   local condition="grep '\-app'"
 
