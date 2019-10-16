@@ -5,48 +5,46 @@ parent: ["Docs", "../../docs.html"]
 toc: true
 ---
 
-
 # Service level agreement
 
-We are experimenting with an approach with "release channels" which differ in update frequency, service level agreement(SLA) and expected stability. See [link](/public-site/site/guides/getting-started/index.md#the-radix-clusters) for more information on clusters
+We are experimenting with an approach with "release channels" which differ in update frequency, service level agreement (SLA) and expected stability.
 
-|    Cluster            |             Purpose                              |  Termination/Upgrade  |   Support    |     
-|-----------------------|--------------------------------------------------|:---------------------:|:------------:|
-| **Production**        | For products under development or in production  | Every ~6 months       | Yes          |   
-| **Playground**        | For testing and experimenting with Radix     |                           | Best-effort  |  
+| Cluster        | Purpose                                     | Termination/Upgrade |   Support   |
+| -------------- | ------------------------------------------- | :-----------------: | :---------: |
+| **Production** | Products under development or in production |   Every ~6 months   |     Yes     |
+| **Playground** | Testing and experimenting with Radix        |                     | Best-effort |
 
-## SLA - Production 
+## SLA — Production
 
-The Radix production cluster should be used when your team has chosen Radix as PaaS (Platform as a Service) for a product under development or in production. 
+The Radix Production cluster should be used when your team has chosen Radix as PaaS (Platform-as-a-Service) for a product under development or in production.
 
 ### Support
 
 Schedule for Radix DevOps/Support team - 08:00 - 16:00 CET/CEST on Norwegian working days
-  * **Support channels:** File issue on [radix-platform repo](https://github.com/equinor/radix-platform/issues) or ask on #omnia_radix_support on Slack.  
-  * **Response time:** As soon as possible within business hours, at least next business day. 
-  * **On call duty:** No.
-  * **Resolution time:** Cannot be guaranteed, but for critical issues work on fixing the problem will start immediately and continue within business hours until resolved.
 
+- **Support channels:** File issue on [radix-platform repo](https://github.com/equinor/radix-platform/issues) or ask on [#omnia_radix_support](https://equinor.slack.com/messages/CBKM6N2JY) on Slack
+- **Response time:** As soon as possible within business hours, at least next business day
+- **On-call duty:** No
+- **Resolution time:** Cannot be guaranteed, but for critical issues work on fixing the problem will start immediately and continue within business hours until resolved
 
 ### Uptime
 
-  * **Platform monthly uptime:  99.5%** - expected uptime for Radix as a hosting platform. 
-  * **Radix services monthly uptime:  98%** - expected uptime for Radix services, as CI/CD and monitoring. 
-  * **Planned maintenance:**  We will announce planned maintenance at least 2 business days in advance. Downtime during planned maintenance does not count towards uptime goals.
-  
+- **Platform monthly uptime: 99.5%** - expected uptime for Radix as a hosting platform
+- **Radix services monthly uptime: 98%** - expected uptime for Radix services, like CI/CD and monitoring
+- **Planned maintenance:** We will announce planned maintenance at least 2 business days in advance. Downtime during planned maintenance does not affect uptime goals
+
 ### Associated operational risks
-- No incident management beyond schedule "Norway - default" - i.e. no support after 16:00 CET/CEST on Norwegian working days.
-- Infrastructure downtime despite robust, high availability infrastructure.
-- Disaster recovery is in experimental state for Radix platform and hosted application.
 
+- No incident management beyond schedule "Norway - default" - i.e. no support after 16:00 CET/CEST on Norwegian working days
+- Infrastructure downtime despite robust, high-availability infrastructure
+- Disaster recovery is in experimental state for Radix platform and hosted applications
 
-## SLA - Playground
+## SLA — Playground
 
-Use Playground for testing Radix, see if it’s a good fit for your projects, and provide feedback to us. When you are ready to commit, you can register your application in the Production cluster, which has improved stability.
+Use Playground for testing Radix, see if it’s a good fit for your projects, and provide feedback. When you are ready to commit, register your application in the Production cluster, which has improved stability.
 
-**Support:** same channel as for Production cluster. Help will be provided when team has the time. 
+- **Support channels:** Same as for Production cluster (see above). Help will be provided when team has capacity
 
-**Uptime:** "Best-effort", but no guarantee uptime. Planned maintenance is announced as early as possible. 
+- **Uptime:** "Best-effort", but no guarantee of uptime. Planned maintenance is announced as early as possible.
 
-**In Playground cluster - hosted applications may need to be re-registered after maintenance, upgrades or migrations.**
-
+**Please note:** applications hosted in the Playground cluster may need to be re-registered after maintenance, upgrades or migrations.

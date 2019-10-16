@@ -25,7 +25,7 @@ It is also expected that you have a [basic understanding of Git](http://rogerdud
 
 # The Radix clusters
 
-Your applications will run in a *Radix cluster*. We currently have two: **Production** and **Playground**. Use Playground for testing Radix, see if it's a good fit for your projects, and provide feedback to us. When you are ready to commit, you can register your application in the Production cluster, which has improved stability.
+Your applications will run in a *Radix cluster*. We currently have two: **Production** and **Playground**. Use Playground for testing Radix and see if it's a good fit for your needs. When your project and team are happy with Radix, you can register your application in the Production cluster, which provides [specific guarantees](../../docs/topic-sla/).
 
 ## Getting access
 
