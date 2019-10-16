@@ -559,6 +559,7 @@ kubectl apply -f grafana-secrets.yaml
 rm -f grafana-secrets.yaml
 
 helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
+    --version v3.9.1 \
     --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$DNS_ZONE" \
     --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \

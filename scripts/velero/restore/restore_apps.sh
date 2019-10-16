@@ -143,6 +143,28 @@ fi
 ### Support funcs
 ###
 
+# RRs are synced when there is a corresponding app namespace
+# for every RR
+function please_wait_until_rr_synced() {
+  local resource="rr" 
+  local allCmd="kubectl get rr -o custom-columns=':metadata.name' --no-headers"
+  local currentCmd="kubectl get ns -o custom-columns=':metadata.name'"
+  local condition="grep '\-app'"
+
+  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
+}
+
+# RAs are synced when number of environments = number of environment namespaces
+function please_wait_until_ra_synced() {
+  local resource="ra" 
+  local allCmd="kubectl get ra --all-namespaces -o custom-columns=':spec.environments[*].name' | tr ',' '\n'"
+  local currentCmd="kubectl get ns --selector=app-wildcard-sync=app-wildcard-tls-cert"
+  # No condition
+  local condition="grep ''"
+
+  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
+}
+
 function please_wait() {
   # Loop for $1 iterations.
   # For every iteration, sleep 1s and print $2 delimiter.
@@ -159,6 +181,108 @@ function please_wait() {
   echo "Done."
 }
 
+# Common function for reconciling resources that have a status.condition field. When all have 
+# a status.condition != <none> they can be considered reconciled
+function please_wait_for_reconciling() {
+  local resource="${1}" 
+  local allCmd="kubectl get $resource --all-namespaces"
+  local currentCmd="kubectl get $resource --all-namespaces -o custom-columns=':status.condition'"
+  local condition="grep -v '<none>'"
+
+  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
+}
+
+
+# Common function for reconciling resources
+function please_wait_for_reconciling_withcondition() {
+  local resource="${1}" 
+  local allCmd="${2}"
+  local currentCmd="${3}"
+  local condition="${4}"
+
+  # Sometimes reconciling gets stuck
+  local treshholdPercentage=98
+  local treshholdBroken=0
+
+  please_wait_for_existance_of_resource "$resource"
+
+  local all="$(bash -c "$allCmd" | wc -l | xargs)"
+  local current="$(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs)"
+
+  while [[ "$current" -lt "$all" ]]; do
+    percentage=$(( current*100/all ))
+    showProgress $percentage
+    sleep 5s
+
+    if [[ "$treshholdBroken" == '10' ]]; then
+      break
+    fi
+
+    if [[ "$percentage" -gt "$treshholdPercentage" ]]; then
+      treshholdBroken="$((treshholdBroken+1))"
+    fi
+
+    current=($(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs))
+  done
+
+  showProgress 100
+}
+
+# It takes a little while before all resources are visible in the cluster after having
+# been restored
+function please_wait_for_existance_of_resource() {
+  local resource="${1}"  
+  
+  exists=($(kubectl get $resource --all-namespaces 2> /dev/null | wc -l | xargs))
+
+  while [[ $exists == 0 ]]; do
+    printf "$iterator"
+    sleep 5s
+    exists=($(kubectl get $resource --all-namespaces 2> /dev/null | wc -l | xargs))
+  done
+
+  please_wait_for_all_resources "$resource"
+}
+
+function please_wait_for_all_resources() {
+  local resource="${1}"
+  local command="kubectl get $resource --all-namespaces"
+
+  # Sometimes it takes a bit of time before all resources 
+  # are visible in the cluster
+  first=($($command 2> /dev/null | wc -l | xargs))
+
+  sleep 5s
+  second=($($command 2> /dev/null | wc -l | xargs))
+
+  # The the resources stop growing, we
+  # can assume all are visible
+  while [[ $((second-first)) != 0 ]]; do
+    first=($($command 2> /dev/null | wc -l | xargs))
+    printf "$iterator"
+    sleep 5s
+    second=($($command 2> /dev/null | wc -l | xargs))
+  done 
+}
+
+function showProgress() {
+  local percentage="${1:-5}"
+
+  if [[ $percentage < 0 ]]; then
+    percentage=0
+  fi
+
+  local progress=""
+  local iterator=$percentage
+  
+  while [[ "$iterator" > 0 ]]; do
+    iterator="$((iterator-1))"
+    progress="$progress#"
+  done
+
+  progress="$progress  ($percentage%)\r"
+  echo -ne $progress
+}
 
 #######################################################################################
 ### Connect kubectl
@@ -214,72 +338,36 @@ echo "Restore app registrations..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rr.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when radix-operator is done?
 echo ""
 echo "Wait for registrations to be picked up by radix-operator..."
-please_wait 360
+please_wait_until_rr_synced
 
 echo ""
 echo "Restore app config..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_ra.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when radix-operator is done?
+# TODO: Is the current mechansim sufficient?
 echo ""
 echo "Wait for app config to be picked up by radix-operator..."
-please_wait 360
+please_wait_until_ra_synced
 
 echo ""
 echo "Restore deployments..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rd.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when deployments are done?
 echo "Wait for deployments to be picked up by radix-operator..."
-please_wait 60
-
-echo ""
-echo "Restore jobs..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rj.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-# TODO: How to determine when jobs are done?
-echo "Wait for jobs to be picked up by radix-operator..."
-please_wait 60
+please_wait_for_reconciling "rd"
 
 echo ""
 echo "Restore app specific secrets..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_secret.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
-# TODO: How to determine when secrets are done?
 echo ""
 echo "Wait for secrets to be picked up by radix-operator..."
-please_wait 60
-
-
-#######################################################################################
-### Configure velero back to normal operation in destination
-### 
-
-echo ""
-echo "Configure velero back to normal operation in destination..."
-
-# Set velero in destination to read destination backup location
-PATCH_JSON="$(cat << END
-{
-   "spec": {
-      "objectStorage": {
-         "bucket": "$DEST_CLUSTER"
-      }
-   }
-}
-END
-)"
-kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
-# Set velero in read/write mode
-kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
-
+please_wait_for_all_resources "secret"
 
 #######################################################################################
 ### Update replyUrls for those radix apps that require AD authentication
@@ -318,6 +406,39 @@ if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
 fi
 printf "Done."
 
+#######################################################################################
+### Restore jobs
+### 
+
+echo ""
+echo "Restore jobs..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rj.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+echo "Wait for jobs to be picked up by radix-operator..."
+please_wait_for_reconciling "rj"
+
+#######################################################################################
+### Configure velero back to normal operation in destination
+### 
+
+echo ""
+echo "Configure velero back to normal operation in destination..."
+
+# Set velero in destination to read destination backup location
+PATCH_JSON="$(cat << END
+{
+   "spec": {
+      "objectStorage": {
+         "bucket": "$DEST_CLUSTER"
+      }
+   }
+}
+END
+)"
+kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
+# Set velero in read/write mode
+kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 
 #######################################################################################
 ### Done!
