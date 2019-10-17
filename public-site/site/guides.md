@@ -24,7 +24,7 @@ Another functionality available is the ability to [restart, stop and start a com
 
 # Authentication
 
-There are no checkbox that automatically provide authentication for your application in Radix. However there is still several way to introduce it to new and existing applications, without to much work. The [Authentication](./guides/authentication/index.md) guide goes through the basic to get authentication going for a Client and API. 
+There is no checkbox that automatically provide authentication for your application in Radix. However there is still several way to introduce it to new and existing applications, without to much work. The [Authentication](./guides/authentication/index.md) guide goes through the basic to get authentication going for a Client and API. 
 
 # Monitoring
 
