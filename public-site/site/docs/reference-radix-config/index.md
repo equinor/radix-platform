@@ -49,10 +49,10 @@ spec:
 
 The `environments` section of the spec lists the environments for the application and the branch each environment will build from. If you omit the `build.from` key for the environment, no automatic builds or deployments will be created. This configuration is useful for a promotion-based [workflow](../../guides/workflows/).
 
-We also support wildcard branch mapping using `*` and `%`. Examples of this are:
+We also support wildcard branch mapping using `*` and `?`. Examples of this are:
 
 - `feature/*`
-- `feature-%`
+- `feature-?`
 - `hotfix/**/*`
 
 ## `components`
