@@ -1,3 +1,11 @@
+---
+title: Authentication
+layout: document
+parent: ['Guides', '../../guides.html']
+toc: true
+---
+
+
 # Authentication
 
 Equinor uses Azure AD for authentication of applications hosted outside the internal network. Azure AD is synced with Equinor internal AD, and contains information on Equinor users and groups. 
