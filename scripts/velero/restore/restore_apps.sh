@@ -328,6 +328,15 @@ while [[ "$(velero backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
 done
 echo "Done."
 
+#######################################################################################
+### Restart operator to get proper metrics
+###
+
+echo "Restarting Radix operator."
+$(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 0}]" --type json 2>&1 >/dev/null)
+sleep 2s
+$(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 1}]" --type json 2>&1 >/dev/null)
+echo "Done."
 
 #######################################################################################
 ### Restore data
@@ -353,14 +362,6 @@ echo "Wait for app config to be picked up by radix-operator..."
 please_wait_until_ra_synced
 
 echo ""
-echo "Restore deployments..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rd.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-echo "Wait for deployments to be picked up by radix-operator..."
-please_wait_for_reconciling "rd"
-
-echo ""
 echo "Restore app specific secrets..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_secret.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
@@ -368,6 +369,14 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 echo ""
 echo "Wait for secrets to be picked up by radix-operator..."
 please_wait_for_all_resources "secret"
+
+echo ""
+echo "Restore deployments..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' < ${WORKDIR_PATH}/restore_rd.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+echo "Wait for deployments to be picked up by radix-operator..."
+please_wait_for_reconciling "rd"
 
 #######################################################################################
 ### Update replyUrls for those radix apps that require AD authentication
