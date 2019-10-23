@@ -1,7 +1,7 @@
 customHostname: xx
 
 application: xx
-applicationEnv: xx
+namespace: xx
 component: xx
 componentPort: xx
 

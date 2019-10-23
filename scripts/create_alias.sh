@@ -100,6 +100,10 @@ for filename in alias_config/*.sh; do
 
     RADIX_APP_ALIAS_URL="$RADIX_APP_ALIAS_NAME.$RADIX_ZONE_NAME"
 
+    if [[ -z "$RADIX_NAMESPACE" ]]; then
+        RADIX_NAMESPACE="$RADIX_APP_NAME-$RADIX_APP_ENVIRONMENT"
+    fi
+
     # Show what we got before starting on the The Great Work
     echo -e ""
     echo -e "Start creating alias using the following settings:"
@@ -110,6 +114,7 @@ for filename in alias_config/*.sh; do
     echo -e "RADIX_APP_ALIAS_URL          : $RADIX_APP_ALIAS_URL"
     echo -e "RADIX_APP_NAME               : $RADIX_APP_NAME"
     echo -e "RADIX_APP_ENVIRONMENT        : $RADIX_APP_ENVIRONMENT"
+    echo -e "RADIX_NAMESPACE              : $RADIX_NAMESPACE"
     echo -e "RADIX_APP_COMPONENT          : $RADIX_APP_COMPONENT"
     echo -e "RADIX_APP_COMPONENT_PORT     : $RADIX_APP_COMPONENT_PORT"
     echo -e "HELM_REPO                    : $HELM_REPO"
@@ -124,11 +129,12 @@ for filename in alias_config/*.sh; do
         --cname "$RADIX_APP_CNAME"
 
     # Create ingress object in the cluster
-    helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" "$HELM_REPO"/ingress \
-        --version 1.0.4 \
+    # NOTE: Now using the helm chart version of the branch
+    helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" \
+        ../charts/ingress/ \
         --set aliasUrl="$RADIX_APP_ALIAS_URL" \
         --set application="$RADIX_APP_NAME" \
-        --set applicationEnv="$RADIX_APP_ENVIRONMENT" \
+        --set namespace="$RADIX_NAMESPACE" \
         --set component="$RADIX_APP_COMPONENT" \
         --set componentPort="$RADIX_APP_COMPONENT_PORT" \
         --set enableAutoTLS=true
