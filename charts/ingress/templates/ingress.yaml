@@ -12,6 +12,9 @@ metadata:
   labels:
     radix-app: {{ .Values.application }}
     radix-component: {{ .Values.component }}
+    chart: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
   name: {{ .Values.component }}.custom-domain
   namespace: {{ .Values.namespace }}
 spec:
