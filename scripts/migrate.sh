@@ -89,6 +89,16 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+if [[ -z "$DNS_ZONE" ]]; then
+    DNS_ZONE="radix.equinor.com"
+
+    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
+      DNS_ZONE="playground.$DNS_ZONE"
+    elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
+      DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
+    fi
+fi
+
 BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
 
 # Print inputs
@@ -99,6 +109,7 @@ echo -e "RESOURCE_GROUP             : $RESOURCE_GROUP"
 echo -e "SOURCE_CLUSTER             : $SOURCE_CLUSTER"
 echo -e "DEST_CLUSTER               : $DEST_CLUSTER"
 echo -e "CLUSTER_TYPE               : $CLUSTER_TYPE"
+echo -e "DNS_ZONE                   : $DNS_ZONE"
 echo -e "BACKUP_NAME                : $BACKUP_NAME"
 echo -e "USER_PROMPT                : $USER_PROMPT"
 echo -e ""
@@ -253,6 +264,10 @@ while read -r line; do
     fi
 done <<< "$(helm list --short | grep radix-ingress)"
 
+# Point granana to cluster specific ingress
+GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$DNS_ZONE"
+kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
+
 echo ""
 printf "Point to destination cluster... "
 az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_GROUP"  --name "$DEST_CLUSTER"
@@ -262,6 +277,10 @@ printf "Create aliases in destination cluster... "
 (SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$CREATE_ALIAS_PATH")
 wait # wait for subshell to finish
 printf "Done creating aliases."
+
+# Point granana to cluster type ingress
+GRAFANA_ROOT_URL="https://grafana.$DNS_ZONE"
+kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
 echo ""
 echo "###########################################################"
