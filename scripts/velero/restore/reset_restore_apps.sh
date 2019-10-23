@@ -30,7 +30,7 @@ kubectl delete rr --all
 
 echo ""
 echo "Waiting for all radix app namespaces to be deleted..."
-while [[ "$(kubectl get ns --selector='radixApp' --output=name)" != "" ]]; do   
+while [[ "$(kubectl get ns --selector='radix-app' --output=name)" != "" ]]; do   
    printf "."
    sleep 2s
 done
