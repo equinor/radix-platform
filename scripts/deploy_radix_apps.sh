@@ -32,7 +32,7 @@ function assert_dep {
 function wait_for_app_namespace() {
     local name # Input 1
     name="${1}"
-    list_ns_command="kubectl get ns --selector="radixApp=$name" --output=name"
+    list_ns_command="kubectl get ns --selector="radix-app=$name" --output=name"
     echo "Waiting for app namespace..."
 
     while [[ $($list_ns_command) == "" ]]; do   
