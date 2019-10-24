@@ -7,3 +7,4 @@ export RADIX_APP_NAME="prometheus"                                  # The name o
 export RADIX_NAMESPACE="default"                                    # Ovverided namespace
 export RADIX_APP_COMPONENT="prometheus-operator-prometheus"         # The component which should receive the traffic
 export RADIX_APP_COMPONENT_PORT="9090"
+export RADIX_AUTH_SECRET="prometheus-htpasswd"                      # Have basic authentication on ingress

@@ -117,6 +117,7 @@ for filename in alias_config/*.sh; do
     echo -e "RADIX_NAMESPACE              : $RADIX_NAMESPACE"
     echo -e "RADIX_APP_COMPONENT          : $RADIX_APP_COMPONENT"
     echo -e "RADIX_APP_COMPONENT_PORT     : $RADIX_APP_COMPONENT_PORT"
+    echo -e "RADIX_AUTH_SECRET            : $RADIX_AUTH_SECRET"
     echo -e "HELM_REPO                    : $HELM_REPO"
 
     echo -e ""
@@ -137,6 +138,7 @@ for filename in alias_config/*.sh; do
         --set namespace="$RADIX_NAMESPACE" \
         --set component="$RADIX_APP_COMPONENT" \
         --set componentPort="$RADIX_APP_COMPONENT_PORT" \
+        --set authSecret="$RADIX_AUTH_SECRET" \
         --set enableAutoTLS=true
         
 done

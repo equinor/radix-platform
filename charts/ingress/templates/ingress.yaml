@@ -9,6 +9,12 @@ metadata:
     kubernetes.io/tls-acme: "true"
     {{- end }}
 
+    {{- if .Values.authSecret }}
+    nginx.ingress.kubernetes.io/auth-realm: Authentication Required - ok
+    nginx.ingress.kubernetes.io/auth-secret: {{ .Values.authSecret }}
+    nginx.ingress.kubernetes.io/auth-type: basic
+    {{- end }}
+
   labels:
     radix-app: {{ .Values.application }}
     radix-component: {{ .Values.component }}

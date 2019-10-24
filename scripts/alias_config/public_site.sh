@@ -7,3 +7,4 @@ export RADIX_APP_NAME="radix-platform"                                          
 unset RADIX_NAMESPACE                                                                      # Use the radix app environment
 export RADIX_APP_COMPONENT="public-site"                                                   # The component which should receive the traffic
 export RADIX_APP_COMPONENT_PORT="80"
+unset RADIX_AUTH_SECRET                                                                    # No annotation on ingress
