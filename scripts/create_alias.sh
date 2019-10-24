@@ -138,7 +138,7 @@ for filename in alias_config/*.sh; do
         --set namespace="$RADIX_NAMESPACE" \
         --set component="$RADIX_APP_COMPONENT" \
         --set componentPort="$RADIX_APP_COMPONENT_PORT" \
-        --set authSecret="$RADIX_AUTH_SECRET"
+        --set authSecret="$RADIX_AUTH_SECRET" \
         --set enableAutoTLS=true
         
 done
