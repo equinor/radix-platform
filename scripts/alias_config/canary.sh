@@ -7,3 +7,4 @@ export RADIX_APP_NAME="radix-canary-golang"                                     
 unset RADIX_NAMESPACE                                                                   # Use the radix app environment
 export RADIX_APP_COMPONENT="www"                                                        # The component which should receive the traffic
 export RADIX_APP_COMPONENT_PORT="5000"
+unset RADIX_AUTH_SECRET                                                                 # No annotation on ingress

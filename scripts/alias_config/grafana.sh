@@ -7,3 +7,4 @@ export RADIX_APP_NAME="grafana"                                  # The name of t
 export RADIX_NAMESPACE="default"                                 # Ovverided namespace
 export RADIX_APP_COMPONENT="grafana"                             # The component which should receive the traffic
 export RADIX_APP_COMPONENT_PORT="80"
+unset RADIX_AUTH_SECRET                                          # No annotation on ingress
