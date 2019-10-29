@@ -85,7 +85,7 @@ git clone https://github.com/equinor/radix-platform
 cd radix-platform/scripts/velero
 
 # Install in DEV environment. See script header for more info on usage.
-AZ_INFRASTRUCTURE_ENVIRONMENT=dev ./bootstrap.sh
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap.sh
 ```
 
 ## Deployment
@@ -100,7 +100,7 @@ cd radix-platform/scripts
 # Velero is managed by flux, but in order for flux to be able to install it using cluster specific settings then we need to 
 # add these settings as prerequisites in the cluster before handing it over to flux.
 # We can do this as part of installing/upgrading base components
-SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_NAME="democluster" ./install_base_components.sh
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="democluster-2" ./install_base_components.sh
 
 # And now you just wait for flux to sync manifests from the config repo. This can take a couple of minutes.
 
@@ -115,8 +115,6 @@ helm list --namespace velero
 ## Removal
 
 ### Remove from cluster
-
-TODO - Most likely this feature will be added to the `teardaon_cluster.sh` script
 
 Manual way
 ```sh
@@ -140,7 +138,7 @@ git clone https://github.com/equinor/radix-platform
 cd radix-platform/scripts/velero
 
 # Remove from DEV environment. See script header for more info on usage.
-INFRASTRUCTURE_ENVIRONMENT=dev ./teardown.sh
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
 ```
 
 ## Operations
