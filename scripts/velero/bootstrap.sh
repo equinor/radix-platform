@@ -10,7 +10,7 @@
 
 # USAGE
 #
-# AZ_INFRASTRUCTURE_ENVIRONMENT=dev ./bootstrap.sh
+# RADIX_ENVIRONMENT=dev ./bootstrap.sh
 
 # KNOWN ISSUES
 #
@@ -19,7 +19,7 @@
 
 # INPUTS:
 #
-# AZ_INFRASTRUCTURE_ENVIRONMENT  (Mandatory. Example: prod|dev)
+# RADIX_ENVIRONMENT  (Mandatory. Example: prod|dev)
 
 
 #######################################################################################
@@ -44,19 +44,19 @@ echo ""
 ### Validate mandatory input
 ###
 
-if [[ -z "$AZ_INFRASTRUCTURE_ENVIRONMENT" ]]; then
+if [[ -z "$RADIX_ENVIRONMENT" ]]; then
     echo -e "\nError: Please provide INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\", \"test\"." >&2
     exit 1
 fi
 
-case "$AZ_INFRASTRUCTURE_ENVIRONMENT" in
+case "$RADIX_ENVIRONMENT" in
     "prod" | "dev" | "test")
         # We got a valid value, lets override base env var
-        AZ_INFRASTRUCTURE_ENVIRONMENT="$AZ_INFRASTRUCTURE_ENVIRONMENT"
+        RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT"
         ;;
     *)
         echo ""
-        echo "Error: INFRASTRUCTURE_ENVIRONMENT has an invalid value ($AZ_INFRASTRUCTURE_ENVIRONMENT).\nValue must be one of: \"prod\", \"dev\", \"test\"." >&2
+        echo "Error: INFRASTRUCTURE_ENVIRONMENT has an invalid value ($RADIX_ENVIRONMENT).\nValue must be one of: \"prod\", \"dev\", \"test\"." >&2
         exit 1
 esac
 
@@ -68,7 +68,7 @@ esac
 # Get velero env vars
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
 # Get base radix env var
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../${AZ_INFRASTRUCTURE_ENVIRONMENT}.env"
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../${RADIX_ENVIRONMENT}.env"
 
 
 #######################################################################################
@@ -93,7 +93,7 @@ echo -e ""
 echo -e "AZ_VELERO_RESOURCE_GROUP        : $AZ_VELERO_RESOURCE_GROUP"
 echo -e "AZ_VELERO_STORAGE_ACCOUNT_ID    : $AZ_VELERO_STORAGE_ACCOUNT_ID"
 echo -e "AZ_VELERO_SERVICE_PRINCIPAL_NAME: $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
-echo -e "INFRASTRUCTURE_ENVIRONMENT      : $AZ_INFRASTRUCTURE_ENVIRONMENT"
+echo -e "INFRASTRUCTURE_ENVIRONMENT      : $RADIX_ENVIRONMENT"
 echo -e "AZ_SUBSCRIPTION                 : $AZ_SUBSCRIPTION"
 echo -e "AZ_USER                         : $(az account show --query user.name -o tsv)"
 echo -e ""

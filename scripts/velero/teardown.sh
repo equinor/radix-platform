@@ -1,12 +1,17 @@
 #!/bin/bash
 
-# PURPOSE
-#
+#######################################################################################
+### PURPOSE
+### 
+
 # Remove all infrastructure in a given az subscription that is related to Velero.
 # ...Basically an "undo" for what ever the velero bootstrap script did.
 
-# USAGE
-#
+
+#######################################################################################
+### USAGE
+### 
+
 # INFRASTRUCTURE_ENVIRONMENT=dev ./teardown.sh
 
 
@@ -42,7 +47,7 @@ fi
 case "$INFRASTRUCTURE_ENVIRONMENT" in
    "prod" | "dev")
         # We got a valid value, lets override base env var
-        AZ_INFRASTRUCTURE_ENVIRONMENT="$INFRASTRUCTURE_ENVIRONMENT"
+        RADIX_ENVIRONMENT="$INFRASTRUCTURE_ENVIRONMENT"
       ;;
    *)
       echo ""
@@ -82,7 +87,7 @@ echo -e "Remove velero resources using the following settings:"
 echo -e ""
 echo -e "AZ_VELERO_RESOURCE_GROUP    : $AZ_VELERO_RESOURCE_GROUP"
 echo -e "AZ_VELERO_STORAGE_ACCOUNT_ID: $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "INFRASTRUCTURE_ENVIRONMENT  : $AZ_INFRASTRUCTURE_ENVIRONMENT"
+echo -e "INFRASTRUCTURE_ENVIRONMENT  : $RADIX_ENVIRONMENT"
 echo -e "AZ_SUBSCRIPTION             : $AZ_SUBSCRIPTION"
 echo -e "AZ_USER                     : $(az account show --query user.name -o tsv)"
 echo -e ""

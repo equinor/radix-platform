@@ -3,13 +3,13 @@
 # USAGE
 #
 # Example: Restore into same cluster from where the backup was done
-# SUBSCRIPTION_ENVIRONMENT=prod SOURCE_CLUSTER=prod-1 DEST_CLUSTER=prod-2 CLUSTER_TYPE=production ./migrate.sh
-# SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=playground-4 DEST_CLUSTER=playground-5 CLUSTER_TYPE=playground ./migrate.sh
-# SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-33 DEST_CLUSTER=weekly-34 ./migrate.sh
+# RADIX_ENVIRONMENT=prod SOURCE_CLUSTER=prod-1 DEST_CLUSTER=prod-2 CLUSTER_TYPE=production ./migrate.sh
+# RADIX_ENVIRONMENT=dev SOURCE_CLUSTER=playground-4 DEST_CLUSTER=playground-5 CLUSTER_TYPE=playground ./migrate.sh
+# RADIX_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-33 DEST_CLUSTER=weekly-34 ./migrate.sh
 
 # INPUTS:
 #
-#   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
+#   RADIX_ENVIRONMENT    (Mandatory. Example: prod|dev)
 #   SOURCE_CLUSTER              (Mandatory. Example: prod1)
 #   DEST_CLUSTER                (Mandatory. Example: prod2)
 #   CLUSTER_TYPE                (Optional. Defaulted if omitted. ex: "production", "playground", "development")
@@ -52,18 +52,18 @@ if ! [[ -x "$RESTORE_APPS_PATH" ]]; then
    echo "The restore apps script is not found or it is not executable in path $RESTORE_APPS_PATH" >&2 
 fi
 
-CREATE_ALIAS_PATH="$WORKDIR_PATH/create_alias.sh"
-if ! [[ -x "$CREATE_ALIAS_PATH" ]]; then
+BOOTSTRAP_APP_ALIAS_PATH="$WORKDIR_PATH/app_alias/bootstrap.sh"
+if ! [[ -x "$BOOTSTRAP_APP_ALIAS_PATH" ]]; then
    # Print to stderror
-   echo "The create alias script is not found or it is not executable in path $CREATE_ALIAS_PATH" >&2 
+   echo "The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_PATH" >&2 
 fi
 
 #######################################################################################
 ### Validate mandatory input
 ###
 
-if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
-    echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+if [[ -z "$RADIX_ENVIRONMENT" ]]; then
+    echo "Please provide RADIX_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
     exit 1
 fi
 
@@ -92,10 +92,10 @@ fi
 if [[ -z "$DNS_ZONE" ]]; then
     DNS_ZONE="radix.equinor.com"
 
-    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
+    if [[ "$RADIX_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
       DNS_ZONE="playground.$DNS_ZONE"
-    elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
-      DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
+    elif [[ "$RADIX_ENVIRONMENT" != "prod" ]]; then
+      DNS_ZONE="${RADIX_ENVIRONMENT}.${DNS_ZONE}"
     fi
 fi
 
@@ -104,7 +104,7 @@ BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
 # Print inputs
 echo -e ""
 echo -e "Start restore using the following settings:"
-echo -e "SUBSCRIPTION_ENVIRONMENT   : $SUBSCRIPTION_ENVIRONMENT"
+echo -e "RADIX_ENVIRONMENT   : $RADIX_ENVIRONMENT"
 echo -e "RESOURCE_GROUP             : $RESOURCE_GROUP"
 echo -e "SOURCE_CLUSTER             : $SOURCE_CLUSTER"
 echo -e "DEST_CLUSTER               : $DEST_CLUSTER"
@@ -165,13 +165,13 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 
     echo ""
     echo "Creating destination cluster..."   
-    (AZ_INFRASTRUCTURE_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" NODE_COUNT="$NUM_NODES_IN_SOURCE_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$CREATE_CLUSTER_PATH")
+    (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" NODE_COUNT="$NUM_NODES_IN_SOURCE_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$CREATE_CLUSTER_PATH")
     wait # wait for subshell to finish
     printf "Done creating cluster."
 
     echo ""
     echo "Installing base components..." 
-    (SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASECOMPONENTS_PATH")
+    (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASECOMPONENTS_PATH")
     wait # wait for subshell to finish
     printf "Done installing base components."
 
@@ -238,7 +238,7 @@ EOF
 
 echo ""
 printf "Restore into destination cluster... "
-(SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_PATH")
+(RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_PATH")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
@@ -274,7 +274,7 @@ az aks get-credentials --overwrite-existing --admin --resource-group "$RESOURCE_
 
 echo ""
 printf "Create aliases in destination cluster... "
-(SUBSCRIPTION_ENVIRONMENT="$SUBSCRIPTION_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$CREATE_ALIAS_PATH")
+(RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$CLUSTER_TYPE" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_APP_ALIAS_PATH")
 wait # wait for subshell to finish
 printf "Done creating aliases."
 

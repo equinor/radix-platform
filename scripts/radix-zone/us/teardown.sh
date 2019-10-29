@@ -1,11 +1,10 @@
 #!/bin/bash
 
-
 #######################################################################################
 ### PURPOSE
 ### 
 
-# Tear down of a aks cluster and any related infrastructure (vnet and similar) or configuration that was created to specifically support that cluster.
+# Tear down radix zone infrastructure
 
 
 #######################################################################################
@@ -14,39 +13,16 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
-# - CLUSTER_NAME        :
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-# - CREDENTIALS_FILE    : Path to credentials in the form of shell vars. See "Set credentials" for required key/value pairs. 
 
 
 #######################################################################################
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=radix_zone_us.env CLUSTER_NAME=beastmode-11 ./bootstrap.sh
-
-
-
-
-
-
-
-
-#----------------------------
-# PURPOSE
-#
-# Teardown of a aks cluster and any related infrastructure (vnet and similar) or configuration that was created to specifically support that cluster.
-
-# INPUTS:
-#   RADIX_ENVIRONMENT   (Mandatory - "prod" or "dev")
-#   CLUSTER_NAME                    (Mandatory. Example: "prod43")
-
-# USAGE
-#
-# RADIX_ENVIRONMENT=dev CLUSTER_NAME=bad-hamster ./teardown.sh
-
+# RADIX_ZONE_ENV=../radix_zone_us.env ./teardown.sh
 
 
 #######################################################################################
@@ -54,7 +30,7 @@
 ### 
 
 echo ""
-echo "Start teardown of aks instance... "
+echo "Start tear down of Radix Zone... "
 
 
 #######################################################################################
@@ -64,14 +40,13 @@ echo "Start teardown of aks instance... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
+
 
 #######################################################################################
 ### Read inputs and configs
 ###
 
-# Required inputs
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
@@ -83,18 +58,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
-    exit 1
-fi
-
-# Read the cluster config that correnspond to selected environment in the zone config.
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${RADIX_ENVIRONMENT}.env"
-
-# Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
+
 
 
 #######################################################################################
@@ -112,7 +79,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Teardown will use the following configuration:"
+echo -e "Tear down will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -122,15 +89,17 @@ echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY   : $AZ_RESOURCE_CONTAINER_REGISTRY"
+echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
-
 echo -e ""
+
+echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " -n 1 -r
@@ -143,50 +112,22 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 echo ""
-echo ""
+
+
 
 
 #######################################################################################
-### TODO: delete replyUrls
+### Remove infrastructure
 ###
 
-# Use ingress host name to filter AAD app replyUrl list.
+echo "Deleting Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
+az acr delete --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" 2>&1 >/dev/null
+echo "...Done."
 
+echo "Deleting Azure DNS: ${AZ_RESOURCE_DNS}..."
+az network dns zone delete --yes -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
+echo "...Done."
 
-#######################################################################################
-### Delete cluster
-###
-
-printf "Verifying that cluster exist and/or the user can access it... "
-# We use az aks get-credentials to test if both the cluster exist and if the user has access to it. 
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
-    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
-    exit 0        
-fi
-printf "Done.\n"
-
-echo "Deleting cluster... "
-az aks delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --yes 2>&1 >/dev/null
-echo "Done."
-
-
-#######################################################################################
-### Delete related stuff
-###
-
-echo "Cleaning up local kube config... "
-kubectl config delete-context "${CLUSTER_NAME}-admin" 2>&1 >/dev/null
-if [[ "$(kubectl config get-contexts -o name)" == *"${CLUSTER_NAME}"* ]]; then
-    kubectl config delete-context "${CLUSTER_NAME}" 2>&1 >/dev/null
-fi
-kubectl config delete-cluster "${CLUSTER_NAME}" 2>&1 >/dev/null
-echo "Done."
-
-echo "Deleting vnet... "
-az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n $VNET_NAME 2>&1 >/dev/null
-echo "Done."
-
-# TODO: Clean up velero blob dialog (yes/no)
 
 
 #######################################################################################
@@ -195,4 +136,3 @@ echo "Done."
 
 echo ""
 echo "Teardown done!"
-

@@ -13,11 +13,11 @@
 # USAGE
 #
 # Example: Restore into same cluster from where the backup was done
-# SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+# RADIX_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
 #
 # Example: Restore into different cluster from where the backup was done
-# SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=prod-1 DEST_CLUSTER=prod-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
-# SUBSCRIPTION_ENVIRONMENT=dev SOURCE_CLUSTER=iknu-velero-test-source DEST_CLUSTER=iknu-velero-test-dest BACKUP_NAME=radix-backup-all ./restore_apps.sh
+# RADIX_ENVIRONMENT=dev SOURCE_CLUSTER=prod-1 DEST_CLUSTER=prod-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+# RADIX_ENVIRONMENT=dev SOURCE_CLUSTER=iknu-velero-test-source DEST_CLUSTER=iknu-velero-test-dest BACKUP_NAME=radix-backup-all ./restore_apps.sh
 
 # DEVELOPMENT
 #
@@ -41,7 +41,7 @@
 
 # INPUTS:
 #
-#   SUBSCRIPTION_ENVIRONMENT    (Mandatory. Example: prod|dev)
+#   RADIX_ENVIRONMENT    (Mandatory. Example: prod|dev)
 #   SOURCE_CLUSTER              (Mandatory. Example: prod1)
 #   BACKUP_NAME                 (Mandatory. Example: all-hourly-20190703064411)
 #   DEST_CLUSTER                (Optional. Example: prod2)
@@ -80,8 +80,8 @@ fi
 ### Validate mandatory input
 ###
 
-if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
-    echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+if [[ -z "$RADIX_ENVIRONMENT" ]]; then
+    echo "Please provide RADIX_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
     exit 1
 fi
 
@@ -110,7 +110,7 @@ fi
 # Print inputs
 echo -e ""
 echo -e "Start restore using the following settings:"
-echo -e "SUBSCRIPTION_ENVIRONMENT   : $SUBSCRIPTION_ENVIRONMENT"
+echo -e "RADIX_ENVIRONMENT   : $RADIX_ENVIRONMENT"
 echo -e "RESOURCE_GROUP             : $RESOURCE_GROUP"
 echo -e "SOURCE_CLUSTER             : $SOURCE_CLUSTER"
 echo -e "DEST_CLUSTER               : $DEST_CLUSTER"
@@ -387,7 +387,7 @@ echo "Updating replyUrls for those radix apps that require AD authentication"
 
 echo ""
 echo "Adding replyUrl for Grafana..."   
-(AAD_APP_NAME="radix-cluster-aad-server-${SUBSCRIPTION_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+(AAD_APP_NAME="radix-cluster-aad-server-${RADIX_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 printf "Done."
 
@@ -403,13 +403,13 @@ echo "Ingress is ready, adding replyUrl... "
 echo ""
 echo "Adding replyUrl for radix web-console..." 
 # The web console has an aad app per cluster type. This script does not know about cluster type, so we will have to go with subscription environment.
-if [[ "$SUBSCRIPTION_ENVIRONMENT" == "dev" ]]; then
+if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
     (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
     (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi
-if [[ "$SUBSCRIPTION_ENVIRONMENT" == "prod" ]]; then
+if [[ "$RADIX_ENVIRONMENT" == "prod" ]]; then
     (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi

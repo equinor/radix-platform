@@ -110,14 +110,5 @@ The radix component `radix-github-webhook-prod` must be available in the cluster
 
 It is a way to provide a more user friendly url to a selected set of apps (i.e. Web Console, Public Site, API server, Webhook, Canary).  
 
-Handled by script, see file header in [create_alias.sh](./create_alias.sh) for usage.
+Handled by script, see [app_alias/README](./app_alias/README.md)
 
-##### Dependencies
-
-This script depends on configuration files (one config for aliasing each application):
-
-- `alias_config_console.sh`
-- `alias_config_public_site.sh`
-- `alias_config_api.sh`
-- `alias_config_webhook.sh`
-- `alias_config_canary.sh`.

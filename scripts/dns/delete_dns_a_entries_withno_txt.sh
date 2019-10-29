@@ -7,15 +7,15 @@
 # USAGE
 #
 # To run this script from terminal:
-# SUBSCRIPTION_ENVIRONMENT=aa CLUSTER_TYPE=dd ./delete_dns_a_entries_withno_txt.sh
+# RADIX_ENVIRONMENT=aa CLUSTER_TYPE=dd ./delete_dns_a_entries_withno_txt.sh
 #
 # Example: Delete from dev
-# SUBSCRIPTION_ENVIRONMENT="dev" ./delete_dns_a_entries_withno_txt.sh
+# RADIX_ENVIRONMENT="dev" ./delete_dns_a_entries_withno_txt.sh
 #
 # Example: Delete from playground
-# SUBSCRIPTION_ENVIRONMENT="dev" CLUSTER_TYPE="playground" ./delete_dns_a_entries_withno_txt.sh
+# RADIX_ENVIRONMENT="dev" CLUSTER_TYPE="playground" ./delete_dns_a_entries_withno_txt.sh
 #
-# SUBSCRIPTION_ENVIRONMENT         (Mandatory. Example: prod|dev)
+# RADIX_ENVIRONMENT         (Mandatory. Example: prod|dev)
 # CLUSTER_TYPE                     (Optional. Defaulted if omitted. ex: "production", "playground", "development")
 # RESOURCE_GROUP                   (Optional. Example: common)
 # DNS_ZONE                         (Optional. Example:e.g. radix.equinor.com|dev.radix.equinor.com|playground.radix.equinor.com)
@@ -24,8 +24,8 @@
 ### Validate mandatory input
 ###
 
-if [[ -z "$SUBSCRIPTION_ENVIRONMENT" ]]; then
-    echo "Please provide SUBSCRIPTION_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+if [[ -z "$RADIX_ENVIRONMENT" ]]; then
+    echo "Please provide RADIX_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
     exit 1
 fi
 
@@ -40,10 +40,10 @@ fi
 if [[ -z "$DNS_ZONE" ]]; then
     DNS_ZONE="radix.equinor.com"
 
-    if [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
+    if [[ "$RADIX_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
       DNS_ZONE="playground.$DNS_ZONE"
-    elif [[ "$SUBSCRIPTION_ENVIRONMENT" != "prod" ]]; then
-      DNS_ZONE="${SUBSCRIPTION_ENVIRONMENT}.${DNS_ZONE}"
+    elif [[ "$RADIX_ENVIRONMENT" != "prod" ]]; then
+      DNS_ZONE="${RADIX_ENVIRONMENT}.${DNS_ZONE}"
     fi
 fi
 
@@ -58,7 +58,7 @@ fi
 # Print inputs
 echo -e ""
 echo -e "Start deploy of base components using the following settings:"
-echo -e "SUBSCRIPTION_ENVIRONMENT: $SUBSCRIPTION_ENVIRONMENT"
+echo -e "RADIX_ENVIRONMENT: $RADIX_ENVIRONMENT"
 echo -e "CLUSTER_TYPE            : $CLUSTER_TYPE"
 echo -e "DNS_ZONE                : $DNS_ZONE"
 echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
