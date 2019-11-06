@@ -34,6 +34,19 @@ spec:
 
 `name` needs to match the name given in when registering an application.
 
+## `build`
+
+
+```yaml
+spec:
+  build:
+    secrets:
+    - SECRET_1
+    - SECRET_2
+```
+
+The `build` section of the spec contains configuration needed during build (CI part) of the components. Currently it allows for defining build secrets, needed for pulling from locked registries, or cloning from locked repositories.
+
 ## `environments`
 
 ```yaml
@@ -266,6 +279,10 @@ kind: RadixApplication
 metadata:
   name: myapp
 spec:
+  build:
+    secrets:
+    - SECRET_1
+    - SECRET_2
   environments:
     - name: dev
       build:
