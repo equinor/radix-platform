@@ -133,6 +133,7 @@ echo -e "   -  SLACK_CHANNEL                    : $SLACK_CHANNEL"
 echo -e "   -  CICDCANARY_IMAGE_TAG             : $CICDCANARY_IMAGE_TAG"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
+echo -e "   -  IMAGE_REGISTRY                   : $IMAGE_REGISTRY"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -600,7 +601,7 @@ data:
     dnsZone: "$AZ_RESOURCE_DNS"
     appAliasBaseURL: "app.$AZ_RESOURCE_DNS"
     prometheusName: radix-stage1
-    imageRegistry: "radix${RADIX_ENVIRONMENT}.azurecr.io"
+    imageRegistry: "$IMAGE_REGISTRY"
     clusterName: "$CLUSTER_NAME"
     clusterType: "$CLUSTER_TYPE"
 EOF
