@@ -103,6 +103,7 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 CICDCANARY_IMAGE_TAG="master-latest"
+IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
 
 
 #######################################################################################
