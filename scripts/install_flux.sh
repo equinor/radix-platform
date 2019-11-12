@@ -176,6 +176,7 @@ helm upgrade --install flux \
    --set registry.acr.enabled=true \
    --set prometheus.enabled=true \
    --set manifestGeneration=true \
+   --set registry.excludeImage="k8s.gcr.io/*,aksrepos.azurecr.io/*,quay.io/*" \
    fluxcd/flux \
    2>&1 >/dev/null
 
