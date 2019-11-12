@@ -45,7 +45,16 @@ spec:
     - SECRET_2
 ```
 
-The `build` section of the spec contains configuration needed during build (CI part) of the components. Currently it allows for defining build secrets, needed for pulling from locked registries, or cloning from locked repositories.
+The `build` section of the spec contains configuration needed during build (CI part) of the components. Currently it allows for defining build secrets, needed for pulling from locked registries, or cloning from locked repositories. To ensure that multiline build secrets are handled ok by the build they are passed base-64 encoded. This means that you will need to base-64 decode them before use:
+
+```
+FROM alpine:latest
+ARG SECRET_1
+
+RUN echo "${SECRET_1}" | base64 --decode
+
+```
+
 
 ## `environments`
 
