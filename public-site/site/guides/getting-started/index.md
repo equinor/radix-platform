@@ -37,8 +37,13 @@ Access to Radix is managed in Access IT. To get started, decide if you want to t
 
 You can configure your app in Playground first, and then in Production; there is no special "migrate to production" process. If you have questions, [speak with us on Slack](https://equinor.slack.com/messages/CBKM6N2JY) and we'll help.
 
+# Onboarding
+
+Radix team offer onboarding for teams or projects, where we walk through your application and togheter try to find out if Radix is a good fit for you. Contact us on [slack](https://equinor.slack.com/archives/C8U7XGGAJ) for more information.
+
 # Configure your application
 
 The next step is to [configure your application](../configure-an-app/) on Radix; follow that guide to set things up in the cluster you chose.
 
 (Or, if you prefer reading rather than coding right now, you can get familiar with the [concepts in Radix](../../docs/topic-concepts/) first.)
+
