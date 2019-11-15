@@ -272,9 +272,9 @@ spec:
       email: radix@statoilsrm.onmicrosoft.com 
 ```
 
-Its possible to pull images from private image hubs during deployment for an application. This means that you can reference a private image hub directly in radixconfig.yaml file through the `image:` tag. See example above. A `password` for these must be set via the Radix Web Console (under Configuration -> Private image hubs). 
+It is possible to pull images from private image hubs during deployment for an application. This means that you can add a reference to a private image hub in radixconfig.yaml file using the `image:` tag. See example above. A `password` for these must be set via the Radix Web Console (under Configuration -> Private image hubs). 
 
-To connect to a private Azure container registry (ACR), see the following [guide](https://thorsten-hans.com/how-to-use-private-azure-container-registry-with-kubernetes) under chapter `Provisioning an Azure Container Registry` for how to get service principle `username` and `password`. Its also possible to create a Service Principle in Azure AD, manually grant it access to your ACR.
+To get more information on how to connect to a private Azure container registry (ACR), see the following [guide](https://thorsten-hans.com/how-to-use-private-azure-container-registry-with-kubernetes). The chapter `Provisioning an Azure Container Registry` provide information on how to get service principle `username` and `password`. It is also possible to create a Service Principle in Azure AD, and then manually grant it access to your ACR.
 
 
 # Example `radixconfig.yaml` file
