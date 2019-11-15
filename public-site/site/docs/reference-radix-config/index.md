@@ -45,7 +45,11 @@ spec:
     - SECRET_2
 ```
 
-The `build` section of the spec contains configuration needed during build (CI part) of the components. Currently it allows for defining build secrets, needed for pulling from locked registries, or cloning from locked repositories. Once added to the Radix config on the master branch in your repository, you will be able to set the secret values in the configuration section of your app in the Radix web console. To ensure that multiline build secrets are handled ok by the build they are passed base-64 encoded. This means that you will need to base-64 decode them before use:
+The `build` section of the spec contains configuration needed during build (CI part) of the components. In this section you can specify build secrets, which is needed when pulling from locked registries, or cloning from locked repositories. 
+
+Add the secrets to Radix config on the master branch in your repository this will trigger a new build and deploy (this build will fail),  you will now be able to set the secret **values** in the configuration section of your app in the Radix Web Console. 
+
+To ensure that multiline build secrets are handled ok by the build they are passed base-64 encoded. This means that you will need to base-64 decode them before use:
 
 ```
 FROM alpine:latest
