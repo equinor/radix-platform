@@ -210,6 +210,23 @@ An array of objects containing the `environment` name and variables to be set in
 
 Environment variables are defined per Radix environment. In addition to what is defined here, running containers will also have some [variables automatically set by Radix](../topic-runtime-env/#environment-variables).
 
+#### `horizontalScaling`
+
+```yaml
+spec:
+  components:
+    - name: backend
+      environmentConfig:
+        - environment: prod
+          horizontalScaling:
+            minReplicas: 2
+            maxReplicas: 6
+```
+
+The `horizontalScaling` field of a component environment config is used for enabling automatic scaling of the component in the environment. This field is optional, and if set, it will override `replicas` value of the component. One exception is when the `replicas` value is set to `0` (i.e. the component is stopped), the `horizontalScaling` config will not be used. 
+
+The `horizontalScaling` field contains two sub-fields: `minReplicas` and `maxReplicas`, that specify the minimum and maximum number of replicas for a component, respectively. The value of `minReplicas` must strictly be smaller or equal to the value of `maxReplicas`.
+
 ### `secrets`
 
 ```yaml
