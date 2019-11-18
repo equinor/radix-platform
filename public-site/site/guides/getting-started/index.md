@@ -33,11 +33,13 @@ Your applications will run in a *Radix cluster*. We currently have three: **Prod
 
 **Production US** cluster is hosted on Azure US South Central region, and provides same [specific guarantees](../../docs/topic-sla/) as **Production**. 
 
-**Warning**: this cluster run as a Proof of Concept (PoC) between mid November 2019 and early January 2020. Together with participants of the PoC there will be a discussion if Radix should continue to be supported with own cluster running in US. The decisions to continue is based on activity in the US cluster, and how much extra work it is for Radix team to maintain an extra cluster (cost / benefit). The cluster will run until the decision has been made.
+**Warning**: This cluster will run as a Proof of Concept (PoC) from mid November 2019 till early January 2020. 
 
-If we decide to continue to support Radix in US - the cluster will change from a PoC to a prod cluster, all apps will continue to run. 
+At the end of the PoC period, the Radix team together with participants of the PoC will decide if Radix should continue to be available on cluster running in US. The decisions will be based on activity in the US cluster, and the amount of extra work it is for Radix team to maintain an extra cluster (cost/benefit). The cluster will run until the decision has been made.
 
-If we decide to terminate it - we'll keep cluster running long enough for you to migrate to other hosting alternatives. 
+If it is decided to continue to support Radix in US - the cluster will change from a PoC to a prod cluster, all apps will continue to run. 
+
+If it is decided to terminate it, the cluster will be kept alive until you have been able to migrate your apps to other hosting alternatives. 
 
 **Anyone can participate in the PoC by simply registering applications in US cluster.**
 
