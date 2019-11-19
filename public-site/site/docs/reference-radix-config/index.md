@@ -48,7 +48,7 @@ The `build` section of the spec contains configuration needed during build (CI p
 
 Add the secrets to Radix config on the master branch in your repository this will trigger a new build and deploy (this build will fail), you will now be able to set the secret **values** in the configuration section of your app in the Radix Web Console.
 
-To ensure that multiline build secrets are handled ok by the build they are passed base-64 encoded. This means that you will need to base-64 decode them before use:
+To ensure that multiline build secrets are handled ok by the build **all** build secrets are passed base-64 encoded. This means that you will need to base-64 decode them before use:
 
 ```
 FROM node:10.5.0-alpine
