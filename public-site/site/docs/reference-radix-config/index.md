@@ -44,16 +44,16 @@ spec:
       - SECRET_2
 ```
 
-The `build` section of the spec contains configuration needed during build (CI part) of the components. In this section you can specify build secrets, which is needed when pulling from locked registries, or cloning from locked repositories. 
+The `build` section of the spec contains configuration needed during build (CI part) of the components. In this section you can specify build secrets, which is needed when pulling from locked registries, or cloning from locked repositories.
 
-Add the secrets to Radix config on the master branch in your repository this will trigger a new build and deploy (this build will fail),  you will now be able to set the secret **values** in the configuration section of your app in the Radix Web Console. 
+Add the secrets to Radix config on the master branch in your repository this will trigger a new build and deploy (this build will fail), you will now be able to set the secret **values** in the configuration section of your app in the Radix Web Console.
 
 To ensure that multiline build secrets are handled ok by the build they are passed base-64 encoded. This means that you will need to base-64 decode them before use:
 
 ```
 FROM node:10.5.0-alpine
 
-# Contains base64
+# Install base64
 RUN apk update && \
     apk add coreutils
 
