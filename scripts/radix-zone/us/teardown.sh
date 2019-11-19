@@ -4,8 +4,7 @@
 ### PURPOSE
 ### 
 
-# Remove all infrastructure in a given az subscription that is related to Velero.
-# ...Basically an "undo" for what ever the velero bootstrap script did.
+# Tear down radix zone infrastructure
 
 
 #######################################################################################
@@ -23,14 +22,15 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
+# RADIX_ZONE_ENV=../radix_zone_us.env ./teardown.sh
 
 
 #######################################################################################
 ### START
 ### 
 
-echo "Start Velero teardown..."
+echo ""
+echo "Start tear down of Radix Zone... "
 
 
 #######################################################################################
@@ -39,16 +39,13 @@ echo "Start Velero teardown..."
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
-printf "Done."
-echo ""
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+printf "Done.\n"
 
 
 #######################################################################################
 ### Read inputs and configs
 ###
-
-# Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "Please provide RADIX_ZONE_ENV" >&2
@@ -61,26 +58,20 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-# Optional inputs
-
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Get velero env vars
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
 
 
 #######################################################################################
 ### Prepare az session
 ###
 
-echo ""
-echo "Logging you in to Azure if not already logged in..."
-az account show > /dev/null || az login > /dev/null
-az account set --subscription "$AZ_SUBSCRIPTION" > /dev/null
-printf "Done."
-echo ""
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
+printf "Done.\n"
 
 
 #######################################################################################
@@ -88,23 +79,24 @@ echo ""
 ###
 
 echo -e ""
-echo -e "Tear down of Velero will use the following configuration:"
+echo -e "Tear down will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
 echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
-echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY   : $AZ_RESOURCE_CONTAINER_REGISTRY"
+echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e ""
 echo -e ""
 
 echo ""
@@ -122,39 +114,25 @@ fi
 echo ""
 
 
+
+
 #######################################################################################
-### DESTROY!1
+### Remove infrastructure
 ###
 
-# We need to delete the storage account first due to azure weirdness.
-# Normally we would just delete the RG and that would also delete everything inside of it,
-# but it turns out that azure does not handle deletion of storage accounts properly when doing so.
-echo ""
-echo "Deleting storage account..."
-az storage account delete --yes -g "$AZ_VELERO_RESOURCE_GROUP" -n "$AZ_VELERO_STORAGE_ACCOUNT_ID" 2>&1 >/dev/null
-echo "Done."
+echo "Deleting Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
+az acr delete --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" 2>&1 >/dev/null
+echo "...Done."
 
-echo ""
-echo "Deleting resource group..."
-az group delete --yes --name "$AZ_VELERO_RESOURCE_GROUP" 2>&1 >/dev/null
-echo "Done."
+echo "Deleting Azure DNS: ${AZ_RESOURCE_DNS}..."
+az network dns zone delete --yes -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
+echo "...Done."
 
-echo ""
-echo "Deleting service principal..."
-# More az weirdness, az sp name require "http://"...
-[ "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" != "http://"* ] && { AZ_VELERO_SERVICE_PRINCIPAL_NAME="http://${AZ_VELERO_SERVICE_PRINCIPAL_NAME}"; }
-az ad sp delete --id "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" 2>&1 >/dev/null
-echo "Done."
-
-echo ""
-echo "Deleting service principal credentials..."
-az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$AZ_VELERO_SECRET_NAME" 2>&1 >/dev/null
-echo "Done."
 
 
 #######################################################################################
 ### END
-### 
+###
 
 echo ""
-echo "All done!"
+echo "Teardown done!"

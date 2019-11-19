@@ -30,17 +30,7 @@ Cluster configuration for each environment is set in `env` files. You can edit t
 
 ### Bootstrap
 
-```sh
-# Bootstrap a radix cluster in DEV environment. See script header for more info on usage.
-AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=improved-hamster ./bootstrap.sh
-```
-
-### Teardown
-
-```sh
-# Remove a radix cluster from DEV environment. See script header for more info on usage.
-AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=bad-hamster ./teardown.sh
-```
+See script header for info on usage.
 
 ## Misc
 

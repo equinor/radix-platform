@@ -232,6 +232,23 @@ An array of objects containing the `environment` name and variables to be set in
 
 Environment variables are defined per Radix environment. In addition to what is defined here, running containers will also have some [variables automatically set by Radix](../topic-runtime-env/#environment-variables).
 
+#### `horizontalScaling`
+
+```yaml
+spec:
+  components:
+    - name: backend
+      environmentConfig:
+        - environment: prod
+          horizontalScaling:
+            minReplicas: 2
+            maxReplicas: 6
+```
+
+The `horizontalScaling` field of a component environment config is used for enabling automatic scaling of the component in the environment. This field is optional, and if set, it will override `replicas` value of the component. One exception is when the `replicas` value is set to `0` (i.e. the component is stopped), the `horizontalScaling` config will not be used. 
+
+The `horizontalScaling` field contains two sub-fields: `minReplicas` and `maxReplicas`, that specify the minimum and maximum number of replicas for a component, respectively. The value of `minReplicas` must strictly be smaller or equal to the value of `maxReplicas`.
+
 ### `secrets`
 
 ```yaml
@@ -277,6 +294,27 @@ In the example above, the component **frontend** hosted in environment **prod** 
 Once the configuration is set in `radixconfig.yaml`, two secrets for every external alias will be automatically created for the component: one for the TLS certificate, and one for the private key used to create the certificate.
 
 There is a [detailed guide](../../guides/external-alias/) on how to set up external aliases.
+
+## `privateImageHubs`
+
+```yaml
+spec:
+  components:
+    - name: webserver
+      image: privaterepodeleteme.azurecr.io/nginx:latest
+  privateImageHubs:
+    privaterepodeleteme.azurecr.io:
+      username: 23452345-3d71-44a7-8476-50e8b281abbc
+      email: radix@statoilsrm.onmicrosoft.com
+    privaterepodeleteme2.azurecr.io:
+      username: 23423424-3d71-44a7-8476-50e8b281abb2
+      email: radix@statoilsrm.onmicrosoft.com 
+```
+
+It is possible to pull images from private image hubs during deployment for an application. This means that you can add a reference to a private image hub in radixconfig.yaml file using the `image:` tag. See example above. A `password` for these must be set via the Radix Web Console (under Configuration -> Private image hubs). 
+
+To get more information on how to connect to a private Azure container registry (ACR), see the following [guide](https://thorsten-hans.com/how-to-use-private-azure-container-registry-with-kubernetes). The chapter `Provisioning an Azure Container Registry` provide information on how to get service principle `username` and `password`. It is also possible to create a Service Principle in Azure AD, and then manually grant it access to your ACR.
+
 
 # Example `radixconfig.yaml` file
 
