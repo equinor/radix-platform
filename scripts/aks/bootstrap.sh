@@ -1,30 +1,31 @@
 #!/bin/bash
 
-# PURPOSE
-#
-# The purpose of the shell script is to set up a new cluster 
-# within a subscription on an existing resource group
-#
-# To run this script from terminal: 
-# AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 ./bootstrap.sh
-#
-# INPUTS:
-#   AZ_INFRASTRUCTURE_ENVIRONMENT   (Mandatory - "prod" or "dev")
-#   CLUSTER_NAME                    (Mandatory. Example: "prod43")
-#   USER_PROMPT                     (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
-#
-# CREDENTIALS:
-# See "Set credentials" for key/value pairs.
-#
-# Default (no file provided as input)
-#   The script will read credentials from keyvault each required system user and slack token.
-#
-# Custom (user provide CREDENTIALS_FILE)
-# The credentials file must contain a list of key/value pairs which when sourced will be read as a variable list by the script.
-# Example:
-# CLUSTER_SYSTEM_USER_ID=(guid)
-# CLUSTER_SYSTEM_USER_PASSWORD=(string)
-# AAD_SERVER_APP_ID=(guid)
+
+#######################################################################################
+### PURPOSE
+### 
+
+# Bootstrap aks instance in a radix zone
+
+
+#######################################################################################
+### INPUTS
+### 
+
+# Required:
+# - RADIX_ZONE_ENV      : Path to *.env file
+# - CLUSTER_NAME        : Keep name short due to Azure weirdness. Ex: "test-2", "weekly-93".
+
+# Optional:
+# - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+# - CREDENTIALS_FILE    : Path to credentials in the form of shell vars. See "Set credentials" for required key/value pairs. 
+
+
+#######################################################################################
+### HOW TO USE
+### 
+
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 ./bootstrap.sh
 
 
 #######################################################################################
@@ -48,37 +49,44 @@ printf "Done.\n"
 
 
 #######################################################################################
-### CONFIGS
+### Read inputs and configs
 ###
 
-### Validate mandatory input
+# Required inputs
 
-if [[ -z "$AZ_INFRASTRUCTURE_ENVIRONMENT" ]]; then
-    echo "Please provide AZ_INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\", \"test\"."
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+    echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME."
+    echo "Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
+# Read the cluster config that correnspond to selected environment in the zone config.
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${RADIX_ENVIRONMENT}.env"
+
+# Optional inputs
+
 if [[ -z "$CREDENTIALS_FILE" ]]; then
-    credentials_source="keyvault"
+    CREDENTIALS_FILE=""
 else
-    credentials_source="$CREDENTIALS_FILE"
+    if [[ ! -f "$CREDENTIALS_FILE" ]]; then
+        echo "CREDENTIALS_FILE=\"${CREDENTIALS_FILE}\" is not a valid file path." >&2
+        exit 1
+    fi
 fi
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
-
-### Get cluster config that correnspond to selected environment
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${AZ_INFRASTRUCTURE_ENVIRONMENT}.env"
-
-
-### Get radix base env vars
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../${AZ_INFRASTRUCTURE_ENVIRONMENT}.env"
 
 
 #######################################################################################
@@ -96,32 +104,38 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap will use the following configuration:"
+echo -e "Bootstrap AKS will use the following configuration:"
 echo -e ""
-echo -e "   INFRASTRUCTURE_ENVIRONMENT : $AZ_INFRASTRUCTURE_ENVIRONMENT"
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
+echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e ""
-echo -e "   CLUSTER_NAME               : $CLUSTER_NAME"
-echo -e "   KUBERNETES_VERSION         : $KUBERNETES_VERSION"
-echo -e "   NODE_COUNT                 : $NODE_COUNT"
-echo -e "   NODE_DISK_SIZE             : $NODE_DISK_SIZE"
-echo -e "   NODE_VM_SIZE               : $NODE_VM_SIZE"
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  KUBERNETES_VERSION               : $KUBERNETES_VERSION"
+echo -e "   -  NODE_COUNT                       : $NODE_COUNT"
+echo -e "   -  NODE_DISK_SIZE                   : $NODE_DISK_SIZE"
+echo -e "   -  NODE_VM_SIZE                     : $NODE_VM_SIZE"
 echo -e ""
-echo -e "   VNET_NAME                  : $VNET_NAME"
-echo -e "   VNET_ADDRESS_PREFIX        : $VNET_ADDRESS_PREFIX"
-echo -e "   VNET_SUBNET_PREFIX         : $VNET_SUBNET_PREFIX"
-echo -e "   NETWORK_PLUGIN             : $NETWORK_PLUGIN"
-echo -e "   NETWORK_POLICY             : $NETWORK_POLICY"
-echo -e "   SUBNET_NAME                : $SUBNET_NAME"
-echo -e "   VNET_DOCKER_BRIDGE_ADDRESS : $VNET_DOCKER_BRIDGE_ADDRESS"
-echo -e "   VNET_DNS_SERVICE_IP        : $VNET_DNS_SERVICE_IP"
-echo -e "   VNET_SERVICE_CIDR          : $VNET_SERVICE_CIDR"
+echo -e "   -  VNET_NAME                        : $VNET_NAME"
+echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
+echo -e "   -  VNET_SUBNET_PREFIX               : $VNET_SUBNET_PREFIX"
+echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
+echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
+echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
+echo -e "   -  VNET_DOCKER_BRIDGE_ADDRESS       : $VNET_DOCKER_BRIDGE_ADDRESS"
+echo -e "   -  VNET_DNS_SERVICE_IP              : $VNET_DNS_SERVICE_IP"
+echo -e "   -  VNET_SERVICE_CIDR                : $VNET_SERVICE_CIDR"
 echo -e ""
-echo -e "   USE CREDENTIALS FROM       : $credentials_source"
+echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf $AZ_RESOURCE_KEYVAULT; else printf $CREDENTIALS_FILE; fi)"
 echo -e ""
-echo -e "   AZ_SUBSCRIPTION            : $AZ_SUBSCRIPTION"
-echo -e "   AZ_USER                    : $(az account show --query user.name -o tsv)"
-echo -e ""
-echo -e "   USER_PROMPT                : $USER_PROMPT"
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
 echo ""
@@ -168,10 +182,11 @@ echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
 printf "   Creating azure VNET ${VNET_NAME}... " 
 az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    -n $VNET_NAME \
-    --address-prefix $VNET_ADDRESS_PREFIX \
-    --subnet-name $SUBNET_NAME \
-    --subnet-prefix $VNET_SUBNET_PREFIX \
+    -n "$VNET_NAME" \
+    --address-prefix "$VNET_ADDRESS_PREFIX" \
+    --subnet-name "$SUBNET_NAME" \
+    --subnet-prefix "$VNET_SUBNET_PREFIX" \
+    --location "$AZ_RADIX_ZONE_LOCATION" \
     2>&1 >/dev/null
 printf "Done.\n"
 
@@ -221,6 +236,7 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
     --aad-tenant-id "$AAD_TENANT_ID" \
     --network-policy "$NETWORK_POLICY" \
+    --location "$AZ_RADIX_ZONE_LOCATION" \
     2>&1 >/dev/null
 
 echo "Done."
@@ -242,7 +258,7 @@ printf "Done.\n"
 ### END
 ###
 
-if [ "$AZ_INFRASTRUCTURE_ENVIRONMENT" == "prod" ]; then
+if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
 
    echo ""
    echo "###########################################################"

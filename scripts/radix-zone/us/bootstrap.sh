@@ -1,11 +1,10 @@
 #!/bin/bash
 
-
 #######################################################################################
 ### PURPOSE
 ### 
 
-# Tear down of a aks cluster and any related infrastructure (vnet and similar) or configuration that was created to specifically support that cluster.
+# Bootstrap radix zone infrastructure
 
 
 #######################################################################################
@@ -14,39 +13,16 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
-# - CLUSTER_NAME        :
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-# - CREDENTIALS_FILE    : Path to credentials in the form of shell vars. See "Set credentials" for required key/value pairs. 
 
 
 #######################################################################################
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=radix_zone_us.env CLUSTER_NAME=beastmode-11 ./bootstrap.sh
-
-
-
-
-
-
-
-
-#----------------------------
-# PURPOSE
-#
-# Teardown of a aks cluster and any related infrastructure (vnet and similar) or configuration that was created to specifically support that cluster.
-
-# INPUTS:
-#   RADIX_ENVIRONMENT   (Mandatory - "prod" or "dev")
-#   CLUSTER_NAME                    (Mandatory. Example: "prod43")
-
-# USAGE
-#
-# RADIX_ENVIRONMENT=dev CLUSTER_NAME=bad-hamster ./teardown.sh
-
+# RADIX_ZONE_ENV=../radix_zone_us.env ./bootstrap.sh
 
 
 #######################################################################################
@@ -54,7 +30,7 @@
 ### 
 
 echo ""
-echo "Start teardown of aks instance... "
+echo "Start bootstrap of Radix Zone... "
 
 
 #######################################################################################
@@ -64,14 +40,13 @@ echo "Start teardown of aks instance... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
+
 
 #######################################################################################
 ### Read inputs and configs
 ###
 
-# Required inputs
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
@@ -83,15 +58,6 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
-    exit 1
-fi
-
-# Read the cluster config that correnspond to selected environment in the zone config.
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${RADIX_ENVIRONMENT}.env"
-
-# Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
@@ -112,7 +78,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Teardown will use the following configuration:"
+echo -e "Bootstrap will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -122,7 +88,8 @@ echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY   : $AZ_RESOURCE_CONTAINER_REGISTRY"
+echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -130,7 +97,7 @@ echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
-echo -e ""
+echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " -n 1 -r
@@ -142,51 +109,70 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
+
+#######################################################################################
+### SUPPORT FUNCS
+###
+
+function assignRoleForResourceToUser() {
+   local ROLE="${1}"
+   local ROLE_SCOPE="${2}"
+   local USER_ID="$(az ad sp show --id http://${3} --query appId --output tsv)"
+
+   # Delete any existing roles before creating new roles
+   az role assignment delete --assignee "${USER_ID}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null
+   az role assignment create --assignee "${USER_ID}" --role "${ROLE}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null   
+}
+
+
+#######################################################################################
+### CONTAINER REGISTRY
+###
+
 echo ""
+
+echo "Azure Container Registry: Creating ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
+az acr create --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+    --sku "Standard" \
+    --location "$AZ_RADIX_ZONE_LOCATION" \
+    2>&1 >/dev/null
+echo "...Done."
+
+# Permissions
+ROLE_SCOPE="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
+
+echo "Azure Container Registry: Update permissions for SP ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}..."
+assignRoleForResourceToUser "AcrPull" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}"
+echo "...Done."
+
+echo "Azure Container Registry: Update permissions for SP ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}..."
+assignRoleForResourceToUser "Contributor" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}"
+echo "...Done."
+
+echo "Azure Container Registry: Update permissions for SP ${AZ_SYSTEM_USER_CLUSTER}..."
+assignRoleForResourceToUser "AcrPull" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_CLUSTER}"
+echo "...Done."
+
+
+
+#######################################################################################
+### DNS ZONE
+###
+
 echo ""
 
+# Note - AZ DNS Zones locations are "global", meaning you cannot set a location.
+echo "Azure DNS: Creating ${AZ_RESOURCE_DNS}..."
+az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
+echo "...Done."
 
-#######################################################################################
-### TODO: delete replyUrls
-###
+# Permissions
+ROLE_SCOPE="$(az network dns zone show --name ${AZ_RESOURCE_DNS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 
-# Use ingress host name to filter AAD app replyUrl list.
-
-
-#######################################################################################
-### Delete cluster
-###
-
-printf "Verifying that cluster exist and/or the user can access it... "
-# We use az aks get-credentials to test if both the cluster exist and if the user has access to it. 
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
-    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
-    exit 0        
-fi
-printf "Done.\n"
-
-echo "Deleting cluster... "
-az aks delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --yes 2>&1 >/dev/null
-echo "Done."
-
-
-#######################################################################################
-### Delete related stuff
-###
-
-echo "Cleaning up local kube config... "
-kubectl config delete-context "${CLUSTER_NAME}-admin" 2>&1 >/dev/null
-if [[ "$(kubectl config get-contexts -o name)" == *"${CLUSTER_NAME}"* ]]; then
-    kubectl config delete-context "${CLUSTER_NAME}" 2>&1 >/dev/null
-fi
-kubectl config delete-cluster "${CLUSTER_NAME}" 2>&1 >/dev/null
-echo "Done."
-
-echo "Deleting vnet... "
-az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n $VNET_NAME 2>&1 >/dev/null
-echo "Done."
-
-# TODO: Clean up velero blob dialog (yes/no)
+echo "Azure DNS: Update permissions for SP ${AZ_SYSTEM_USER_DNS}..."
+assignRoleForResourceToUser "DNS Zone Contributor" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_DNS}"
+echo "...Done."
 
 
 #######################################################################################
@@ -194,5 +180,8 @@ echo "Done."
 ###
 
 echo ""
-echo "Teardown done!"
+echo "Azure DNS Zone delegation is a manual step."
+echo "See how to in https://github.com/equinor/radix-private/blob/master/docs/infrastructure/dns.md#how-to-delegate-from-prod-to-dev-or-playground"
 
+echo ""
+echo "Bootstrap done!"

@@ -1,63 +1,103 @@
 #!/bin/bash
 
-# PURPOSE
-#
+
+#######################################################################################
+### PURPOSE
+### 
+
 # Install flux in radix cluster.
-#
-# To run this script from terminal: 
-#   AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 CLUSTER_TYPE="development" ./install_flux.sh
-#
-# When you want to use your own custom configs then provide git branch and directory
-#   AZ_INFRASTRUCTURE_ENVIRONMENT=dev CLUSTER_NAME=weekly-10 CLUSTER_TYPE="development" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./install_flux.sh
 
-# DOCS
-#
+
+#######################################################################################
+### INPUTS
+### 
+
+# Required:
+# - RADIX_ZONE_ENV          : Path to *.env file
+# - CLUSTER_NAME            : Ex: "test-2", "weekly-93"
+
+# Optional:
+# - GIT_REPO                : Default to radix-flux
+# - GIT_BRANCH              : Default to "master"
+# - GIT_DIR                 : Default to "development-configs"
+# - USER_PROMPT             : Is human interaction is required to run script? true/false. Default is true.
+
+
+#######################################################################################
+### HOW TO USE
+### 
+
+# Normal usage
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./install_flux.sh
+
+# Configure a dev cluster to use custom configs
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./install_flux.sh
+
+
+#######################################################################################
+### DOCS
+### 
+
 # - https://github.com/fluxcd/flux/tree/master/chart/flux
+# - https://github.com/equinor/radix-flux/
 
-# COMPONENTS
-#
+
+#######################################################################################
+### COMPONENTS
+### 
+
 # - AZ keyvault
-#     Holds git deploy key to ocnfig repo
+#     Holds git deploy key to config repo
 # - Flux CRDs
 #     The CRDs are no longer in the Helm chart and must be installed separately
 # - Flux Helm Chart
 #     Installs everything else 
 
-# INPUTS:
-#   AZ_INFRASTRUCTURE_ENVIRONMENT   : Mandatory - "prod" || "dev"
-#   CLUSTER_NAME                    : Mandatory. Example: "prod43"
-#   CLUSTER_TYPE                    : Mandatory - "production" || "development" || "playground"
-#   GIT_REPO                        : Optional
-#   GIT_BRANCH                      : Optional
-#   GIT_DIR                         : Optional
 
+#######################################################################################
+### START
+### 
 
 echo ""
 echo "Start installing Flux..."
 
 
 #######################################################################################
-### CONFIGS
+### Check for prerequisites binaries
 ###
 
-### Validate mandatory input
+echo ""
+printf "Check for neccesary executables... "
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
+hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
+printf "All is good."
+echo ""
 
-if [[ -z "$AZ_INFRASTRUCTURE_ENVIRONMENT" ]]; then
-    echo "Please provide AZ_INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"."
+
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
+
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+    echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME."
+    echo "Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
-if [[ -z "$CLUSTER_TYPE" ]]; then
-    echo "Please provide CLUSTER_TYPE."
-    exit 1
-fi
-
-### Default values
+# Optional inputs
 
 FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
 FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
@@ -69,36 +109,64 @@ if [[ -z "$GIT_REPO" ]]; then
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
-  # Default
   GIT_BRANCH="master"
   GIT_DIR="development-configs"
-  # Peculiar specific logic for env and cluster type
-  if [[ "$AZ_INFRASTRUCTURE_ENVIRONMENT" == "prod" ]]; then
-    GIT_BRANCH="release"
-    GIT_DIR="production-configs"
-  elif [[ "$AZ_INFRASTRUCTURE_ENVIRONMENT" == "dev" ]] && [ "$CLUSTER_TYPE" == "playground" ]; then
-    GIT_BRANCH="release"
-    GIT_DIR="playground-configs"
-  elif [[ "$AZ_INFRASTRUCTURE_ENVIRONMENT" == "dev" ]] && [ "$CLUSTER_TYPE" == "development" ]; then
-    GIT_BRANCH="master"
-    GIT_DIR="development-configs"
-  fi
 fi
 
-### Get radix base env vars
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${AZ_INFRASTRUCTURE_ENVIRONMENT}.env"
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
 
 
 #######################################################################################
-### Output settings
+### Prepare az session
 ###
 
-echo "Installing Flux with the following settings:"
-echo "   AZ_INFRASTRUCTURE_ENVIRONMENT : ${AZ_INFRASTRUCTURE_ENVIRONMENT}"
-echo "   CLUSTER_NAME                  : ${CLUSTER_NAME}"
-echo "   GIT_REPO                      : ${GIT_REPO}"
-echo "   GIT_BRANCH                    : ${GIT_BRANCH}"
-echo "   GIT_DIR                       : ${GIT_DIR}"
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
+printf "Done.\n"
+
+
+#######################################################################################
+### Verify task at hand
+###
+
+echo -e ""
+echo -e "Install Flux will use the following configuration:"
+echo -e ""
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  GIT_REPO                         : $GIT_REPO"
+echo -e "   -  GIT_BRANCH                       : $GIT_BRANCH"
+echo -e "   -  GIT_DIR                          : $GIT_DIR"
+echo -e ""
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e ""
+
+echo ""
+
+if [[ $USER_PROMPT == true ]]; then
+    read -p "Is this correct? (Y/n) " -n 1 -r
+    if [[ "$REPLY" =~ (N|n) ]]; then
+    echo ""
+    echo "Quitting."
+    exit 0
+    fi
+    echo ""
+fi
+
+echo ""
+
 
 
 #######################################################################################
@@ -125,11 +193,11 @@ FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vaul
 if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
     echo "Missing flux deploy keys for GitHub in keyvault: $AZ_RESOURCE_KEYVAULT"
     echo "Generating flux private and public keys..."
-    ssh-keygen -t rsa -b 4096 -N "" -C "gm_radix@equinor.com" -f id_rsa."$AZ_INFRASTRUCTURE_ENVIRONMENT"
-    az keyvault secret set --file=./id_rsa."$AZ_INFRASTRUCTURE_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT"
-    az keyvault secret set --file=./id_rsa."$AZ_INFRASTRUCTURE_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT"
-    rm id_rsa."$AZ_INFRASTRUCTURE_ENVIRONMENT"
-    rm id_rsa."$AZ_INFRASTRUCTURE_ENVIRONMENT".pub
+    ssh-keygen -t rsa -b 4096 -N "" -C "gm_radix@equinor.com" -f id_rsa."$RADIX_ENVIRONMENT"
+    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT"
+    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT"
+    rm id_rsa."$RADIX_ENVIRONMENT"
+    rm id_rsa."$RADIX_ENVIRONMENT".pub
     FLUX_DEPLOY_KEYS_GENERATED=true
 else
     echo "Found Flux deploy keys for GitHub in keyvault: $AZ_RESOURCE_KEYVAULT"
@@ -176,7 +244,7 @@ helm upgrade --install flux \
    --set registry.acr.enabled=true \
    --set prometheus.enabled=true \
    --set manifestGeneration=true \
-   --set registry.excludeImage="k8s.gcr.io/*,aksrepos.azurecr.io/*,quay.io/*" \
+   --set registry.excludeImage="k8s.gcr.io/*\,aksrepos.azurecr.io/*\,quay.io/*" \
    fluxcd/flux \
    2>&1 >/dev/null
 
@@ -190,4 +258,10 @@ if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
     echo ""
 fi
 
-echo "Done."
+
+#######################################################################################
+### END
+###
+
+echo "Install of Flux is done!"
+echo ""

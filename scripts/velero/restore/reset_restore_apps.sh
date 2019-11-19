@@ -1,10 +1,23 @@
 #!/bin/bash
 
-# PURPOSE
+
+#######################################################################################
+### PURPOSE
+### 
+
 # Reset the destination cluster found in kubectl current context for anything the restore_apps.sh script produced.
-#
-# USAGE
+
+
+#######################################################################################
+### HOW TO USE
+### 
+
 # ./reset_restore_apps.sh
+
+
+#######################################################################################
+### GO! GO! GO!
+### 
 
 DESTINATION_CLUSTER="$(kubectl config current-context)"
 
