@@ -34,6 +34,35 @@ spec:
 
 `name` needs to match the name given in when registering an application.
 
+## `build`
+
+```yaml
+spec:
+  build:
+    secrets:
+      - SECRET_1
+      - SECRET_2
+```
+
+The `build` section of the spec contains configuration needed during build (CI part) of the components. In this section you can specify build secrets, which is needed when pulling from locked registries, or cloning from locked repositories.
+
+Add the secrets to Radix config on the master branch in your repository this will trigger a new build and deploy (this build will fail), you will now be able to set the secret **values** in the configuration section of your app in the Radix Web Console.
+
+To ensure that multiline build secrets are handled ok by the build, **all** build secrets are passed base-64 encoded. This means that you will need to base-64 decode them before use:
+
+```
+FROM node:10.5.0-alpine
+
+# Install base64
+RUN apk update && \
+    apk add coreutils
+
+ARG SECRET_1
+
+RUN echo "${SECRET_1}" | base64 --decode
+
+```
+
 ## `environments`
 
 ```yaml
@@ -57,7 +86,7 @@ We also support wildcard branch mapping using `*` and `?`. Examples of this are:
 
 ## `components`
 
-This is where you specify the various components for your application - it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). Source for the component can be; a folder in the repository, a dockerfile or an image.  
+This is where you specify the various components for your application - it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). Source for the component can be; a folder in the repository, a dockerfile or an image.
 
 Note! `image` config cannot be used in conjunction with the `src` or the `dockerfileName` config.
 
@@ -96,11 +125,12 @@ spec:
         - name: http
           port: 5000
 ```
+
 An alternative to this is to use the `dockerfileName` setting of the component.
 
 ### `image`
 
-An alternative configuration of a component could be to use a publicly available image, this will not trigger any build of the component.  An example of such a configuration would be:
+An alternative configuration of a component could be to use a publicly available image, this will not trigger any build of the component. An example of such a configuration would be:
 
 ```yaml
 spec:
@@ -110,8 +140,8 @@ spec:
     - name: swagger-ui
       image: swaggerapi/swagger-ui
       ports:
-       - name: http
-         port: 8080
+        - name: http
+          port: 8080
       publicPort: http
 ```
 
@@ -133,7 +163,7 @@ spec:
   components:
     - name: frontend
       ingressConfiguration:
-      - websocketfriendly
+        - websocketfriendly
 ```
 
 The `ingressConfiguration` field of a component will add extra configuration by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario
@@ -223,7 +253,7 @@ spec:
             maxReplicas: 6
 ```
 
-The `horizontalScaling` field of a component environment config is used for enabling automatic scaling of the component in the environment. This field is optional, and if set, it will override `replicas` value of the component. One exception is when the `replicas` value is set to `0` (i.e. the component is stopped), the `horizontalScaling` config will not be used. 
+The `horizontalScaling` field of a component environment config is used for enabling automatic scaling of the component in the environment. This field is optional, and if set, it will override `replicas` value of the component. One exception is when the `replicas` value is set to `0` (i.e. the component is stopped), the `horizontalScaling` config will not be used.
 
 The `horizontalScaling` field contains two sub-fields: `minReplicas` and `maxReplicas`, that specify the minimum and maximum number of replicas for a component, respectively. The value of `minReplicas` must strictly be smaller or equal to the value of `maxReplicas`.
 
@@ -286,13 +316,12 @@ spec:
       email: radix@statoilsrm.onmicrosoft.com
     privaterepodeleteme2.azurecr.io:
       username: 23423424-3d71-44a7-8476-50e8b281abb2
-      email: radix@statoilsrm.onmicrosoft.com 
+      email: radix@statoilsrm.onmicrosoft.com
 ```
 
-It is possible to pull images from private image hubs during deployment for an application. This means that you can add a reference to a private image hub in radixconfig.yaml file using the `image:` tag. See example above. A `password` for these must be set via the Radix Web Console (under Configuration -> Private image hubs). 
+It is possible to pull images from private image hubs during deployment for an application. This means that you can add a reference to a private image hub in radixconfig.yaml file using the `image:` tag. See example above. A `password` for these must be set via the Radix Web Console (under Configuration -> Private image hubs).
 
 To get more information on how to connect to a private Azure container registry (ACR), see the following [guide](https://thorsten-hans.com/how-to-use-private-azure-container-registry-with-kubernetes). The chapter `Provisioning an Azure Container Registry` provide information on how to get service principle `username` and `password`. It is also possible to create a Service Principle in Azure AD, and then manually grant it access to your ACR.
-
 
 # Example `radixconfig.yaml` file
 
@@ -304,6 +333,10 @@ kind: RadixApplication
 metadata:
   name: myapp
 spec:
+  build:
+    secrets:
+      - SECRET_1
+      - SECRET_2
   environments:
     - name: dev
       build:
