@@ -25,27 +25,7 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=radix_zone_us.env CLUSTER_NAME=beastmode-11 ./bootstrap.sh
-
-
-
-
-
-
-
-
-#----------------------------
-# PURPOSE
-#
-# Teardown of a aks cluster and any related infrastructure (vnet and similar) or configuration that was created to specifically support that cluster.
-
-# INPUTS:
-#   RADIX_ENVIRONMENT   (Mandatory - "prod" or "dev")
-#   CLUSTER_NAME                    (Mandatory. Example: "prod43")
-
-# USAGE
-#
-# RADIX_ENVIRONMENT=dev CLUSTER_NAME=bad-hamster ./teardown.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_us.env CLUSTER_NAME=beastmode-11 ./teardown.sh
 
 
 
