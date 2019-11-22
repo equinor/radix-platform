@@ -19,12 +19,8 @@ App which authenticates the user in AD, if logged in read basic user information
 Example for Omnia Radix showing how to use a OAuth proxy for authentication
 - [ Omnia Radix OAuth proxy for authentication](https://github.com/equinor/radix-example-oauth-proxy)
 
-Alt : web app from mobile team, integrating with graph api and azure storage account
 
-<del>https://github.com/equinor/radix-example-scenario-8-mad-webpage</del>
-
-
-# Other samples
+## Other samples
 
 App with ''multiple'' containers. No external dependencies. No back end dependencies. No storage. No secrets. Static/Dynamic web page  
 
