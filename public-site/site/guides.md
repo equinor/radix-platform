@@ -12,13 +12,19 @@ The most beginner-friendly way to get started is the [Configuring an app](guides
 
 We also have a collection of [scenarios](guides/scenarios/) that can be used as templates for new or existing projects.
 
-# Building and deploying
+# Building, deploying and managing the app
 
 How should you set up Git branches and Radix environments? Read about [workflows](guides/workflows/) for an overview. A common strategy is to use [promotion](guides/deployment-promotion) to control how deployments end up in environments.
 
 Builds in Radix are Docker builds! The [Docker builds](guides/docker/) guide has recommendations for creating good `Dockerfile`s that work well in the cloud ☁️
 
 Radix will generate automatic domains with SSL certificates for your application, but you can also have [your own custom domains](guides/external-alias), as long as you bring your own certificate.
+
+Another functionality available is the ability to [restart, stop and start a component](guides/component-start-stop-restart/), the feature is available on your app component page in the Web Console
+
+# Authentication
+
+There is no checkbox that automatically provide authentication for your application in Radix. However there is still several way to introduce it to new and existing applications, without to much work. The [Authentication](guides/authentication/) guide goes through the basic to get authentication going for a Client and API. 
 
 # Monitoring
 

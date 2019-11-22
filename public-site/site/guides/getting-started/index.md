@@ -25,16 +25,41 @@ It is also expected that you have a [basic understanding of Git](http://rogerdud
 
 # The Radix clusters
 
-Your applications will run in a *Radix cluster*. We currently have two: **Production** and **Playground**. Use Playground for testing Radix, see if it's a good fit for your projects, and provide feedback to us. When you are ready to commit, you can register your application in the Production cluster, which has improved stability.
+Your applications will run in a *Radix cluster*. We currently have three: **Production**, **Production US** and **Playground**. Use Playground for testing Radix and see if it's a good fit for your needs. When your project and team are happy with Radix, you can register your application in one of the Production clusters, which provides [specific guarantees](../../docs/topic-sla/).
+
+**Production** and **Playground** clusters is hosted on Azure North Europe region.
+
+## Production US - Proof of Concept 
+
+**Production US** cluster is hosted on Azure US South Central region, and provides same [specific guarantees](../../docs/topic-sla/) as **Production**. 
+
+**Warning**: This cluster will run as a Proof of Concept (PoC) from mid November 2019 till early January 2020. 
+
+At the end of the PoC period, the Radix team together with participants of the PoC will decide if Radix should continue to be available on cluster running in US. The decisions will be based on activity in the US cluster, and the amount of extra work it is for Radix team to maintain an extra cluster (cost/benefit). The cluster will run until the decision has been made.
+
+If it is decided to continue to support Radix in US - the cluster will change from a PoC to a prod cluster, all apps will continue to run. 
+
+If it is decided to terminate it, the cluster will be kept alive until you have been able to migrate your apps to other hosting alternatives. 
+
+**Anyone can participate in the PoC by simply registering applications in US cluster.**
 
 ## Getting access
 
-Access to Radix is managed in Access IT. To get started, request the role "[Radix Playground Users](https://accessit.equinor.com/Search/Search?term=Radix+Playground+Users+%28OMNIA+RADIX%29)"; this will grant access to register, build, deploy and maintain applications in the **Playground** cluster.
+Access to Radix is managed in Access IT. To get started, decide if you want to try the Playground cluster or go straight to one of the Production clusters. You will have access to register, build, deploy and maintain applications in that cluster.
 
-When you are ready to move to **Production**, come [speak with us on Slack](https://equinor.slack.com/messages/C8U7XGGAJ) and we'll guide you through the process. We expect this to be open in the future and just as easy as getting set up in the Playground.
+- Playground cluster: request the role "[Radix Playground Users](https://accessit.equinor.com/Search/Search?term=Radix+Playground+Users+%28OMNIA+RADIX%29)"
 
-# Onwards
+- Production clusters: request the role "[Radix Platform Users](https://accessit.equinor.com/Search/Search?term=Radix+Platform+Users+%28OMNIA+RADIX%29)"
 
-Let's jump right in and see how to [configure an application](../configure-an-app/) in Radix.
+You can configure your app in Playground first, and then in Production; there is no special "migrate to production" process. If you have questions, [speak with us on Slack](https://equinor.slack.com/messages/CBKM6N2JY) and we'll help.
 
-Or, if you prefer reading rather than coding right now, you can read about the [concepts in Radix](../../docs/topic-concepts/) instead.
+# Onboarding
+
+Radix team offer onboarding for teams or projects, where we walk through your application and togheter try to find out if Radix is a good fit for you. Contact us on [slack](https://equinor.slack.com/archives/C8U7XGGAJ) for more information.
+
+# Configure your application
+
+The next step is to [configure your application](../configure-an-app/) on Radix; follow that guide to set things up in the cluster you chose.
+
+(Or, if you prefer reading rather than coding right now, you can get familiar with the [concepts in Radix](../../docs/topic-concepts/) first.)
+

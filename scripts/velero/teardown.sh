@@ -1,14 +1,29 @@
 #!/bin/bash
 
-# PURPOSE
-#
+#######################################################################################
+### PURPOSE
+### 
+
 # Remove all infrastructure in a given az subscription that is related to Velero.
 # ...Basically an "undo" for what ever the velero bootstrap script did.
 
-# USAGE
-#
-# INFRASTRUCTURE_ENVIRONMENT=dev ./teardown.sh
 
+#######################################################################################
+### INPUTS
+### 
+
+# Required:
+# - RADIX_ZONE_ENV      : Path to *.env file
+
+# Optional:
+# - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+
+
+#######################################################################################
+### HOW TO USE
+### 
+
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
 
 
 #######################################################################################
@@ -30,35 +45,30 @@ echo ""
 
 
 #######################################################################################
-### Validate mandatory input
+### Read inputs and configs
 ###
 
-if [[ -z "$INFRASTRUCTURE_ENVIRONMENT" ]]; then
-   echo ""
-   echo "Error: Please provide INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"." >&2
-   exit 1
+# Required inputs
+
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+    echo "Please provide RADIX_ZONE_ENV" >&2
+    exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
 fi
 
-case "$INFRASTRUCTURE_ENVIRONMENT" in
-   "prod" | "dev")
-        # We got a valid value, lets override base env var
-        AZ_INFRASTRUCTURE_ENVIRONMENT="$INFRASTRUCTURE_ENVIRONMENT"
-      ;;
-   *)
-      echo ""
-      echo "Error: INFRASTRUCTURE_ENVIRONMENT has an invalid value ($INFRASTRUCTURE_ENVIRONMENT).\nValue must be one of: \"prod\", \"dev\"." >&2
-      exit 1
-esac
+# Optional inputs
 
-
-#######################################################################################
-### CONFIGS
-###
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
 
 # Get velero env vars
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
-# Get base radix env var
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../${INFRASTRUCTURE_ENVIRONMENT}.env"
 
 
 #######################################################################################
@@ -78,21 +88,37 @@ echo ""
 ###
 
 echo -e ""
-echo -e "Remove velero resources using the following settings:"
+echo -e "Tear down of Velero will use the following configuration:"
 echo -e ""
-echo -e "AZ_VELERO_RESOURCE_GROUP    : $AZ_VELERO_RESOURCE_GROUP"
-echo -e "AZ_VELERO_STORAGE_ACCOUNT_ID: $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "INFRASTRUCTURE_ENVIRONMENT  : $AZ_INFRASTRUCTURE_ENVIRONMENT"
-echo -e "AZ_SUBSCRIPTION             : $AZ_SUBSCRIPTION"
-echo -e "AZ_USER                     : $(az account show --query user.name -o tsv)"
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
+echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
+echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+echo -e ""
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
-read -p "Is this correct? (Y/n) " -n 1 -r
-if [[ "$REPLY" =~ (N|n) ]]; then
-   echo ""
-   echo "Quitting."
-   exit 0
+echo ""
+
+if [[ $USER_PROMPT == true ]]; then
+    read -p "Is this correct? (Y/n) " -n 1 -r
+    if [[ "$REPLY" =~ (N|n) ]]; then
+    echo ""
+    echo "Quitting."
+    exit 0
+    fi
+    echo ""
 fi
+
 echo ""
 
 

@@ -1,55 +1,73 @@
 # How to deploy the Radix platform and required infrastructure
 
-## Deploy infrastructure
+Each environment (`prod`, `dev`) has multiple clusters that use shared infrastructure like DNS and ACR in that environment. The deployment and removal of mostly everything is done by script.
 
-### Install and update of shared infrastructure
+**Note** The recommended approach for creating new official clusters (be it new weekly, new playground or new prod cluster) now is to use migration from the current active cluster.
 
-Run script `install_infrastructure.sh`.   
-Instructions for how to run it can be found in the file.
+## Prerequisites
 
-Example:
-```
-RADIX_INFRASTRUCTURE_ENVIRONMENT="dev" ./install_infrastructure.sh
-```
+- You must have the Azure role `Owner` for the Azure subscription that is the infrastructure environment
+- Be able to run `bash` scripts (linux/macOs)
+- Clone this repo
+- `cd scripts`
+- `az login` into the correct subscription
 
-### Create cluster
+## 1. Install and update shared infrastructure
 
-Run script `install_cluster.sh`.  
-Instructions for how to run it can be found in the file.  
+**NB: You only need to do this once per Azure subscription!** Multiple clusters will share the same base infrastructure.
 
-Example:
-```
-INFRASTRUCTURE_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_cluster.sh
-```
+Handled by script, see file header in [install_infrastructure.sh](./install_infrastructure.sh) for usage.
 
-At the end of the `install_cluster.sh` script, a reminder to enable AKS diagnostics logs is presented. If AKS diagnostics logs is needed to be enabled in the cluster, it should be set manually via Azure portal. The complete procedures are available on https://github.com/equinor/radix-private/blob/master/docs/infrastructure/logging.md.
+## 2 Set up cluster
 
-## Deploy base components
+A cluster can be set up in two different ways. Either by migrating from an existing cluster to a non-existing cluster (ref 2.1) or by creating a new cluster from scratch.
 
-This will deploy third party components (nginx, external-dns etc) and some radix components (radix-operator).
+### 2.1 Migrate cluster
 
-Run script `install_base_components.sh`.  
-Instructions for how to run it can be found in the file. 
+NOTE: If there is a need to migrate to a new cluster with a different setup, please run through the bootstrap and installation of base components described below
 
-Example:
-```
-SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./install_base_components.sh
-```
+This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
-### Dependencies
+The whole process should be handled by the [migrate.sh](./migrate.sh) script. See file header in for usage. The only exception is the last manual step to make the cluster the active one.
 
-#### Secrets
+### 2.2 Setting up a cluster from scratch
+
+There are seven steps to setting up a Radix cluster from scratch. These steps can be run individually when modifying an existing cluster, or sequentially when setting up a new cluster:
+
+1. Install infrastructure (described above)
+2. Bootstrap
+3. Deploy base components
+4. Deploy Radix applications
+5. Create GitHub webhooks
+6. Create aliases (`prod` only)
+7. Install network security test
+
+#### Step 2 Bootstrap and teardown of a Radix cluster
+
+- [bootstrap](./aks/README.md#bootstrap)
+- [teardown](./aks/README.md#teardown)
+
+#### Step 3 Deploy base components
+
+This will deploy third party components (`nginx`, `external-dns` etc).
+
+Handled by script, see file header in [install_base_components.sh](./install_base_components.sh) for usage.
+
+##### Dependencies
+
+###### Secrets
 
 This script requires secret files to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
 
 * `slack-token`
 * `prometheus-operator-values` # prometheus-operator values file
 * `prometheus-basic-auth` # htpasswd file used to authenticate towards Prometheus
-* `grafana-secrets` # grafana secret envs file 
+* `grafana-secrets` # grafana secret envs file
 * `external-dns-azure-secret` # external-dns credentials file
-* `radix-e2e-monitoring` # radix-e2e-monitoring values file
 
-#### Images
+**NB: The `keyvault` is created by the "install infrastructure" step**
+
+###### Images
 
 The base components include `radix-operator`, and for this component to be successfully deployed, the following images need to be built and pushed to the ACR.
 
@@ -58,23 +76,15 @@ The base components include `radix-operator`, and for this component to be succe
 * `radix-image-builder` (from `master` and `release` branches in `radix-operator` project)
 * `gitclone` (from `master` branch in `radix-api` project)
 
-For backup of custom resources (RR, RA, RD) - Image `radix-backup-cr`, from `master` and `release` braches in [radix-backup-cr](https://github.com/equinor/radix-backup-cr) project, is also required
+#### Step 4 Deploy Radix applications
 
-## Deploy Radix applications
+This will deploy Radix applications like radix-api, webhook, web-console etc.  
 
-This will deploy Radix applications like radix-api, webhook, web-console etc.
+Scripted, see file header in [deploy_radix_apps.sh](./deploy_radix_apps.sh) for usage.
 
-Run script `deploy_radix_apps.sh`.  
-Instructions for how to run it can be found in the file. 
+##### Dependencies
 
-Example:
-```
-SUBSCRIPTION_ENVIRONMENT="prod" CLUSTER_NAME="beta-3" ./deploy_radix_apps.sh
-```
-
-### Dependencies
-
-#### Secrets
+###### Secrets
 
 This script requires several secret files that contain `RadixRegistration` object configurations to be available in the `keyvault` of the corresponding subscription (ex: `radix-vault-dev`), as follows.
 
@@ -84,40 +94,21 @@ This script requires several secret files that contain `RadixRegistration` objec
 * `radix-public-site-values`
 * `radix-web-console-radixregistration-values`
 
-## Create Web Hooks for Radix apps
+#### Step 5 Create Github webhooks for Radix apps
 
-This will create webhooks that will connect Radix application github repos with the radix CI/CD.  
+This will create webhooks that will connect Radix application github repos with the radix CI/CD.
 
-Run script `create_web_hooks_radix_apps.sh`.  
-Instructions for how to run it can be found in the file. 
+Handled by script, see file header in [create_web_hooks_radix_apps.sh](./create_web_hooks_radix_apps.sh) for usage.
 
-### Dependencies
+##### Dependencies
 
 The radix component `radix-github-webhook-prod` must be available in the cluster.
 
-## Create/update aliases
+#### Step 6 Create/update aliases
 
-_Aliases should only be set for apps running in the production cluster_.
+**NB: Aliases should only be set for apps running in the `prod` cluster**
 
-It is a way to provide a more user friendly url to a selected set of apps (i.e. Web console, public site, API server, Webhook, canary).  
+It is a way to provide a more user friendly url to a selected set of apps (i.e. Web Console, Public Site, API server, Webhook, Canary).  
 
-Run script `create_alias.sh`.  
-Instructions for how to run it can be found in the file. 
+Handled by script, see [app_alias/README](./app_alias/README.md)
 
-Example:
-```
-RADIX_ALIAS_CONFIG_VARS_PATH=./alias_config_console.sh ./create_alias.sh
-```
-
-### Dependencies
-
-This script depends on configuration files (one config for aliasing each application): 
-- `alias_config_console.sh`
-- `alias_config_public_site.sh`
-- `alias_config_api.sh`
-- `alias_config_webhook.sh`
-- `alias_config_canary.sh`.
-
-## Install Network security test
-
-When radix-canary is up running go to https://github.com/equinor/radix-nsp-test and register this as a radix application. 

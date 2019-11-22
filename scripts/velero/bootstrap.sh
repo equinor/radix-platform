@@ -1,25 +1,42 @@
 #!/bin/bash
 
-# PURPOSE
-#
+
+#######################################################################################
+### PURPOSE
+### 
+
 # Provision all az resources required to be able to use Velero in a radix cluster.
-#
+
 # Velero require az role Contributor for the resource group that contains the storage.
 # Due to that requirement and because we do not want to run the risk of anything else touching the backups,
 # we will set everything up in a new resource group dedicated to velero.
 
-# USAGE
-#
-# AZ_INFRASTRUCTURE_ENVIRONMENT=dev ./bootstrap.sh
 
-# KNOWN ISSUES
-#
+#######################################################################################
+### INPUTS
+### 
+
+# Required:
+# - RADIX_ZONE_ENV      : Path to *.env file
+
+# Optional:
+# - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+
+
+#######################################################################################
+### HOW TO USE
+### 
+
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap.sh
+
+
+#######################################################################################
+### KNOWN ISSUES
+### 
+
 # You have to manually add owners to the service principal.
 # See https://github.com/Azure/azure-cli/issues/9250
 
-# INPUTS:
-#
-# AZ_INFRASTRUCTURE_ENVIRONMENT  (Mandatory. Example: prod|dev)
 
 
 #######################################################################################
@@ -41,34 +58,30 @@ echo ""
 
 
 #######################################################################################
-### Validate mandatory input
+### Read inputs and configs
 ###
 
-if [[ -z "$AZ_INFRASTRUCTURE_ENVIRONMENT" ]]; then
-    echo -e "\nError: Please provide INFRASTRUCTURE_ENVIRONMENT. Value must be one of: \"prod\", \"dev\"." >&2
+# Required inputs
+
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+    echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
 fi
 
-case "$AZ_INFRASTRUCTURE_ENVIRONMENT" in
-    "prod" | "dev")
-        # We got a valid value, lets override base env var
-        AZ_INFRASTRUCTURE_ENVIRONMENT="$AZ_INFRASTRUCTURE_ENVIRONMENT"
-        ;;
-    *)
-        echo ""
-        echo "Error: INFRASTRUCTURE_ENVIRONMENT has an invalid value ($AZ_INFRASTRUCTURE_ENVIRONMENT).\nValue must be one of: \"prod\", \"dev\"." >&2
-        exit 1
-esac
+# Optional inputs
 
-
-#######################################################################################
-### CONFIGS
-###
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
 
 # Get velero env vars
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
-# Get base radix env var
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../${AZ_INFRASTRUCTURE_ENVIRONMENT}.env"
 
 
 #######################################################################################
@@ -88,22 +101,37 @@ echo ""
 ###
 
 echo -e ""
-echo -e "Start provision of velero resources using the following settings:"
+echo -e "Bootstrap Velero will use the following configuration:"
 echo -e ""
-echo -e "AZ_VELERO_RESOURCE_GROUP        : $AZ_VELERO_RESOURCE_GROUP"
-echo -e "AZ_VELERO_STORAGE_ACCOUNT_ID    : $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "AZ_VELERO_SERVICE_PRINCIPAL_NAME: $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
-echo -e "INFRASTRUCTURE_ENVIRONMENT      : $AZ_INFRASTRUCTURE_ENVIRONMENT"
-echo -e "AZ_SUBSCRIPTION                 : $AZ_SUBSCRIPTION"
-echo -e "AZ_USER                         : $(az account show --query user.name -o tsv)"
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
+echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
+echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+echo -e ""
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
-read -p "Is this correct? (Y/n) " -n 1 -r
-if [[ "$REPLY" =~ (N|n) ]]; then
-   echo ""
-   echo "Quitting."
-   exit 0
+echo ""
+
+if [[ $USER_PROMPT == true ]]; then
+    read -p "Is this correct? (Y/n) " -n 1 -r
+    if [[ "$REPLY" =~ (N|n) ]]; then
+    echo ""
+    echo "Quitting."
+    exit 0
+    fi
+    echo ""
 fi
+
 echo ""
 
 
@@ -184,5 +212,5 @@ echo "as this is not possible to do by script (yet)."
 echo ""
 
 echo ""
-echo "All done!"
+echo "Bootstrap of Velero is done!"
 

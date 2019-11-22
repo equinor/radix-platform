@@ -34,6 +34,35 @@ spec:
 
 `name` needs to match the name given in when registering an application.
 
+## `build`
+
+```yaml
+spec:
+  build:
+    secrets:
+      - SECRET_1
+      - SECRET_2
+```
+
+The `build` section of the spec contains configuration needed during build (CI part) of the components. In this section you can specify build secrets, which is needed when pulling from locked registries, or cloning from locked repositories.
+
+Add the secrets to Radix config on the master branch in your repository this will trigger a new build. This build will fail as no specified build secret has been set. You will now be able to set the secret **values** in the configuration section of your app in the Radix Web Console.Add the secrets to Radix config on the master branch in your repository this will trigger a new build. This build will fail as no specified build secret has been set. You will now be able to set the secret **values** in the configuration section of your app in the Radix Web Console.
+
+To ensure that multiline build secrets are handled ok by the build, **all** build secrets are passed base-64 encoded. This means that you will need to base-64 decode them before use:
+
+```
+FROM node:10.5.0-alpine
+
+# Install base64
+RUN apk update && \
+    apk add coreutils
+
+ARG SECRET_1
+
+RUN echo "${SECRET_1}" | base64 --decode
+
+```
+
 ## `environments`
 
 ```yaml
@@ -49,9 +78,19 @@ spec:
 
 The `environments` section of the spec lists the environments for the application and the branch each environment will build from. If you omit the `build.from` key for the environment, no automatic builds or deployments will be created. This configuration is useful for a promotion-based [workflow](../../guides/workflows/).
 
-> Promotion of deployments between environments is implemented in the [Radix API](../reference-radix-api/) but there is no user interface for it in the Web Console yet.
+We also support wildcard branch mapping using `*` and `?`. Examples of this are:
+
+- `feature/*`
+- `feature-?`
+- `hotfix/**/*`
 
 ## `components`
+
+This is where you specify the various components for your application - it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). Source for the component can be; a folder in the repository, a dockerfile or an image.
+
+Note! `image` config cannot be used in conjunction with the `src` or the `dockerfileName` config.
+
+### `src`
 
 ```yaml
 spec:
@@ -68,7 +107,43 @@ spec:
           port: 5000
 ```
 
-This is where you specify the various components for your application — it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). It needs a `src`, which is the folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`.
+Specify `src` for a folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`. An alternative to this is to use the `dockerfileName` setting of the component.
+
+### `dockerfileName`
+
+```yaml
+spec:
+  components:
+    - name: frontend
+      dockerfileName: frontend.Dockerfile
+      ports:
+        - name: http
+          port: 80
+    - name: backend
+      dockerfileName: backend.Dockerfile
+      ports:
+        - name: http
+          port: 5000
+```
+
+An alternative to this is to use the `dockerfileName` setting of the component.
+
+### `image`
+
+An alternative configuration of a component could be to use a publicly available image, this will not trigger any build of the component. An example of such a configuration would be:
+
+```yaml
+spec:
+  components:
+    - name: redis
+      image: redis:5.0-alpine
+    - name: swagger-ui
+      image: swaggerapi/swagger-ui
+      ports:
+        - name: http
+          port: 8080
+      publicPort: http
+```
 
 ### `publicPort`
 
@@ -80,6 +155,20 @@ spec:
 ```
 
 The `publicPort` field of a component, if set to `<PORT_NAME>`, is used to make the component accessible on the internet by generating a public endpoint. Any component without `publicPort: <PORT_NAME>` can only be accessed from another component in the app. If specified, the `<PORT_NAME>` should exist in the `ports` field.
+
+### `ingressConfiguration`
+
+```yaml
+spec:
+  components:
+    - name: frontend
+      ingressConfiguration:
+        - websocketfriendly
+```
+
+The `ingressConfiguration` field of a component will add extra configuration by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario
+
+- `websocketfriendly` will change connection timeout to 1 hour for the component.
 
 ### `environmentConfig`
 
@@ -96,7 +185,7 @@ spec:
           replicas: 2
 ```
 
-`replicas` can be used to [horizontally scale](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) the component. If `replicas` is not set it defaults to `1`.
+`replicas` can be used to [horizontally scale](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) the component. If `replicas` is not set, it defaults to `1`. If `replicas` is set to `0`, the component will not be deployed (i.e. stopped).
 
 #### `monitoring`
 
@@ -149,17 +238,24 @@ spec:
 
 An array of objects containing the `environment` name and variables to be set in the component.
 
-Environment variables are defined per Radix environment. By default, each application container will have the following default environment variables.
+Environment variables are defined per Radix environment. In addition to what is defined here, running containers will also have some [variables automatically set by Radix](../topic-runtime-env/#environment-variables).
 
-- RADIX_APP
-- RADIX_CLUSTERNAME
-- RADIX_CONTAINER_REGISTRY
-- RADIX_COMPONENT
-- RADIX_ENVIRONMENT
-- RADIX_DNS_ZONE
-- RADIX_PORTS (only available if `ports` are set)
-- RADIX_PORT_NAMES (only available if `ports` are set)
-- RADIX_PUBLIC_DOMAIN_NAME (if `component.publicPort: <PORT_NAME>`)
+#### `horizontalScaling`
+
+```yaml
+spec:
+  components:
+    - name: backend
+      environmentConfig:
+        - environment: prod
+          horizontalScaling:
+            minReplicas: 2
+            maxReplicas: 6
+```
+
+The `horizontalScaling` field of a component environment config is used for enabling automatic scaling of the component in the environment. This field is optional, and if set, it will override `replicas` value of the component. One exception is when the `replicas` value is set to `0` (i.e. the component is stopped), the `horizontalScaling` config will not be used.
+
+The `horizontalScaling` field contains two sub-fields: `minReplicas` and `maxReplicas`, that specify the minimum and maximum number of replicas for a component, respectively. The value of `minReplicas` must strictly be smaller or equal to the value of `maxReplicas`.
 
 ### `secrets`
 
@@ -207,6 +303,26 @@ Once the configuration is set in `radixconfig.yaml`, two secrets for every exter
 
 There is a [detailed guide](../../guides/external-alias/) on how to set up external aliases.
 
+## `privateImageHubs`
+
+```yaml
+spec:
+  components:
+    - name: webserver
+      image: privaterepodeleteme.azurecr.io/nginx:latest
+  privateImageHubs:
+    privaterepodeleteme.azurecr.io:
+      username: 23452345-3d71-44a7-8476-50e8b281abbc
+      email: radix@statoilsrm.onmicrosoft.com
+    privaterepodeleteme2.azurecr.io:
+      username: 23423424-3d71-44a7-8476-50e8b281abb2
+      email: radix@statoilsrm.onmicrosoft.com
+```
+
+It is possible to pull images from private image hubs during deployment for an application. This means that you can add a reference to a private image hub in radixconfig.yaml file using the `image:` tag. See example above. A `password` for these must be set via the Radix Web Console (under Configuration -> Private image hubs).
+
+To get more information on how to connect to a private Azure container registry (ACR), see the following [guide](https://thorsten-hans.com/how-to-use-private-azure-container-registry-with-kubernetes). The chapter `Provisioning an Azure Container Registry` provide information on how to get service principle `username` and `password`. It is also possible to create a Service Principle in Azure AD, and then manually grant it access to your ACR.
+
 # Example `radixconfig.yaml` file
 
 This example showcases all options; in many cases the defaults will be a good choice instead.
@@ -217,6 +333,10 @@ kind: RadixApplication
 metadata:
   name: myapp
 spec:
+  build:
+    secrets:
+      - SECRET_1
+      - SECRET_2
   environments:
     - name: dev
       build:

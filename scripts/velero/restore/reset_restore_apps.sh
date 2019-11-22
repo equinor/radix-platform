@@ -1,15 +1,28 @@
 #!/bin/bash
 
-# PURPOSE
+
+#######################################################################################
+### PURPOSE
+### 
+
 # Reset the destination cluster found in kubectl current context for anything the restore_apps.sh script produced.
-#
-# USAGE
+
+
+#######################################################################################
+### HOW TO USE
+### 
+
 # ./reset_restore_apps.sh
+
+
+#######################################################################################
+### GO! GO! GO!
+### 
 
 DESTINATION_CLUSTER="$(kubectl config current-context)"
 
 echo ""
-echo "WARNIG!"
+echo "WARNING!"
 echo "This script is a tool for testing restore operations in a development cluster."
 echo "The intention is to reset the destination cluster for anything the restore_apps.sh script produced."
 echo "You cannot undo the actions performed by this script."
@@ -19,7 +32,7 @@ echo ""
 
 read -p "Are you sure you want to continue? (Y/n) " really_sure
 if [[ $really_sure =~ (N|n) ]]; then
-  echo "Chicken!1"
+  echo "Chicken!"
   exit 1
 fi
 
@@ -30,7 +43,7 @@ kubectl delete rr --all
 
 echo ""
 echo "Waiting for all radix app namespaces to be deleted..."
-while [[ "$(kubectl get ns --selector='radixApp' --output=name)" != "" ]]; do   
+while [[ "$(kubectl get ns --selector='radix-app' --output=name)" != "" ]]; do   
    printf "."
    sleep 2s
 done

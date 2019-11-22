@@ -15,6 +15,7 @@
 #   K8S_NAMESPACE           (Mandatory)
 #   K8S_INGRESS_NAME        (Mandatory)
 #   REPLY_PATH              (Mandatory)
+#   USER_PROMPT             (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 echo ""
 echo "Updating replyUrls for AAD app \"${AAD_APP_NAME}\"..."
@@ -35,6 +36,10 @@ fi
 if [[ -z "$REPLY_PATH" ]]; then
     echo "Please provide REPLY_PATH."
     exit 1
+fi
+
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
 fi
 
 function updateReplyUrls() {
@@ -64,13 +69,16 @@ function updateReplyUrls() {
     echo "This will be the new list of replyUrls for AAD app $AAD_APP_NAME:"
     echo "$newReplyURLs"
     echo ""
-    echo "Do you want to continue?"
-    read -p "[Y]es or [N]o " -n 1 -r
-    echo ""
-    if [[ "$REPLY" =~ ^[Nn]$ ]]
-    then
-        echo "Skipping updating replyUrls."
-        exit 0
+
+    if [[ $USER_PROMPT == true ]]; then
+        echo "Do you want to continue?"
+        read -p "[Y]es or [N]o " -n 1 -r
+        echo ""
+        if [[ "$REPLY" =~ ^[Nn]$ ]]
+        then
+            echo "Skipping updating replyUrls."
+            exit 0
+        fi
     fi
 
     # Workaround for newReplyURLs param expansion

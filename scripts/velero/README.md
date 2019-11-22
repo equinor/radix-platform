@@ -3,116 +3,148 @@
 [Heptio Velero official docs](https://heptio.github.io/velero)  
 [Velero on GitHub](https://github.com/heptio/velero)  
 
-## Purpose
-
-- _Disaster Recovery_  
-  Sudden loss of cluster, all config and persisted data.  
-  The goal is to restore Radix platform itself as well as running applications with minimal downtime and user intervention.  
-
-- _Planned migration_  
-  Need to move configuration and persistent data from one healthy cluster to another with minimal downtime. We want to use Planned migration to also reduce configuration drift.  
-
-- _Possible other use-cases_  
-  Clone a cluster and do a test-upgrade on the shadow cluster.  
-  Snapshot before in-place upgrade. Provides a possible way of roll-back in case of problems after upgrade.
-
-## Constraints/limitations
-
-- _No support for cross-cloud DR_  
-  that would involve transporting backups to a different cloud vendor causing all kinds of new challenges  
-
-- _No backup of persistant storage_
-
-## Architecture
-
-_Infrastructure_  
-- _Azure resource group_  
- to limit acccess to backups and because Velero has to have Contributor access to the rg  
-
-- _Azure Blob Storage_  
-  for storing backup of configs (etcd)  
-
-- _Azure storage account and service principal_  
- for automation purposes
-
-Velero
-- Configuration is handled by Velero k8s CRDs
-- Radix installation and configuration manifests are stored in config repo (flux)
+Velero is a third party tool that we use for handling backup and restore of radix apps and related manifests in radix k8s clusters.  
 
 
-## Installation
+Related repos:
+- [Radix config repo](https://github.com/equinor/radix-flux)
+- [Radix Velero plugin](https://github.com/equinor/radix-velero-plugin)
 
-### Step 1: Install client
+Related info:
+- [Official Velero docs](https://heptio.github.io/velero)
+- [Spike: Can we use Velero for disaster/recovery?](./spike-result.md)  
+  - [Spike recovery](./spike-recovery.md)
+
+Operations:
+- [Velero operations](./operations.md)
+- [Restore](./restore/)
+
+## Components
+
+- _Velero server_  
+  - Runs in the cluster
+  - Configuration is handled by velero custom resource definitions in radix flux repo
+  - Install when creating a radix cluster  
+
+- _Velero cli client_  
+  - Runs locally
+  - Installed as-needed for operations  
+
+- _Azure blob storage_  
+  - Store backups
+  - Unique per cluster
+  - Created when velero is installed in the cluster
+  - Installed/removed once per environment using script  
+
+- _Azure storage accoount_  
+  - Controls the blob storage
+  - Unique per infrastructure environment
+  - Shared among all velero instances in the same infrastructure environment
+  - Installed/removed once per environment using script  
+
+- _Azure resource group_
+  - Holds the blob storage
+  - Limit outside access to backups
+  - Limit access for velero to anything else as velero require Contributor access to the entire resource group
+  - Unique per infrastructure environment
+  - Shared among all velero instances in the same infrastructure environment
+  - Installed/removed once per environment using script  
+
+- _Azure service principal_  
+  - System user for velero to access azure storage and resource group
+  - Unique per infrastructure environment
+  - Shared among all velero instances in the same infrastructure environment
+  - Installed/removed once per environment using script
+ 
+
+## Getting Started
+
+### Prerequisites
+
+- You must have the az role `Owner` for the az subscription that is the infrastructure environment
+- Be able to run `bash` scripts (linux/macOs)
+
+
+### Installing
+
+#### Install local client
 
 ```sh
+# Linux
 wget https://github.com/heptio/velero/releases/download/v1.0.0/velero-v1.0.0-linux-amd64.tar.gz
 tar zxvf velero-v1.0.0-linux-amd64.tar.gz
 sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
-``` 
 
-### Step 2: Install infrastructure per environment
+# MacOs
+brew install velero
+```
 
-Dev/Prod.
+If this does not work the see https://velero.io/docs/v1.0.0/get-started
 
-Handled by scripts [bootstrap.sh](./bootstrap.sh)
+#### Install infrastructure per environment
 
-### Step 3: Install in cluster
+```sh
+# Clone repo and navigate to velero dir
+git clone https://github.com/equinor/radix-platform
+cd radix-platform/scripts/velero
 
-Managed by Flux, see [radix-flux](https://github.com/equinor/radix-flux) repo.  
+# Install in DEV environment. See script header for more info on usage.
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap.sh
+```
 
-1. Install velero flux prerequisites in the target cluster by executing the `install_base_components.sh` script  
-    This will create the namespace `velero`, secret and configmap later used by flux
-2. Sync flux in target cluster (wait for timer or use fluxctl)  
-    The velero flux manifest will now use the prerequisite secret and configmap to install the velero helm chart
+## Deployment
+
+Velero is deployed as part of the installation of radix base components.
+
+```sh
+# Clone repo and navigate to script dir
+git clone https://github.com/equinor/radix-platform
+cd radix-platform/scripts
+
+# Velero is managed by flux, but in order for flux to be able to install it using cluster specific settings then we need to 
+# add these settings as prerequisites in the cluster before handing it over to flux.
+# We can do this as part of installing/upgrading base components
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="democluster-2" ./install_base_components.sh
+
+# And now you just wait for flux to sync manifests from the config repo. This can take a couple of minutes.
+
+# DEBUGGING
+# To see if manifest has been synced then run
+kubectl get helmRelease -n velero
+# When the helmRelease is present then this will trigger the flux-helm-operator to install the chart as specified in the helmRelease manifest
+# To see status of the helm release then run
+helm list --namespace velero
+```
 
 ## Removal
 
 ### Remove from cluster
 
-Removing Velero from a cluster is a three-step operation:
-
+Manual way
 ```sh
+
+#####################################################
+# If you want to remove everything
+#
 # Deleting the namespace will also delete the flux helmRelease, which again trigger a helm delete --purge
 kubectl delete namespace/velero
 # Clean up that which is unfortunately not removed by helm delete
 kubectl delete clusterrolebinding/velero
 kubectl delete crds --selector=app.kubernetes.io/name=velero
+
 ```
 
-### Remove infrastructure from an environment
-
-Dev/Prod.
-
-Handled by script [teardown.sh](./teardown.sh)
-
-## Operation
-
-### Restore
-
-See script [./restore/restore_apps.sh](./restore/restore_apps.sh)
-
-### General
-
-Gotcha: After running velero in `--restore-only` mode it's easy to forget to revert to "read/write" mode. You will still be able to create new backup jobs but they will be queued in pending until you remove `--restore-only` with no warnings or notifications that the jobs are only queued and might never start.
-
-#### Velero modes
-
-*To find out which mode velero is in:*
-```sh  
-   kubectl get deploy/velero -n velero -o=jsonpath='{.spec.template.spec.containers[0].args}'
-```
-
-*Set read/write mode:*
+### Remove infrastructure
 
 ```sh
-    kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
+# Clone repo and navigate to velero dir
+git clone https://github.com/equinor/radix-platform
+cd radix-platform/scripts/velero
+
+# Remove from DEV environment. See script header for more info on usage.
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
 ```
 
-*Set restore-only mode:*
-
-```sh
-    kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server", "--restore-only"]}]}}}}'
-```
 
 (Yes, this is the official way of changing between read only and read write according to Velero Slack)
 
@@ -124,5 +156,7 @@ This behaviour will change in version 1.1 when read/read-write will apply to the
 
 
 
+## Operations
 
 
+See [./operations.md](./operations.md)

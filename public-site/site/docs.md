@@ -28,6 +28,3 @@ toc: true
 - [The `radixconfig.yaml` file](docs/reference-radix-config/)
 - [Radix API](docs/reference-radix-api/)
 
-# What's new
-
-- [06-2019 - Specify your own URL aliases](guides/external-alias/)
