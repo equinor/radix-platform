@@ -635,7 +635,9 @@ az keyvault secret download \
   --name radix-cicd-canary-values \
   --file radix-cicd-canary-values.yaml
 
-kubectl create ns radix-cicd-canary
+kubectl create ns radix-cicd-canary --dry-run --save-config -o yaml |
+  kubectl apply -f -
+
 kubectl create secret generic canary-secrets --namespace radix-cicd-canary \
   --from-file=./radix-cicd-canary-values.yaml \
   --dry-run -o yaml |
