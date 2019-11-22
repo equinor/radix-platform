@@ -1,6 +1,10 @@
 # Velero
 
+[Heptio Velero official docs](https://heptio.github.io/velero)  
+[Velero on GitHub](https://github.com/heptio/velero)  
+
 Velero is a third party tool that we use for handling backup and restore of radix apps and related manifests in radix k8s clusters.  
+
 
 Related repos:
 - [Radix config repo](https://github.com/equinor/radix-flux)
@@ -141,6 +145,18 @@ cd radix-platform/scripts/velero
 RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
 ```
 
+
+(Yes, this is the official way of changing between read only and read write according to Velero Slack)
+
+>>Notes!  
+This behaviour will change in version 1.1 when read/read-write will apply to the storage location rather than the server itself: https://github.com/heptio/velero/pull/1517
+
+>> PS: If a restore has warnings (shown in `velero restore get`) they will not show up in the logs. You need to `velero restore describe backupname-1234` to view warnings (and probably errors).
+
+
+
+
 ## Operations
+
 
 See [./operations.md](./operations.md)
