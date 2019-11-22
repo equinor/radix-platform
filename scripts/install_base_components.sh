@@ -79,6 +79,10 @@ echo ""
 ### Read inputs and configs
 ###
 
+# Overridable input
+FLUX_GITOPS_BRANCH_OVERRIDE=$FLUX_GITOPS_BRANCH
+FLUX_GITOPS_DIR_OVERRIDE=$FLUX_GITOPS_DIR
+
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
@@ -90,6 +94,15 @@ else
     exit 1
   fi
   source "$RADIX_ZONE_ENV"
+fi
+
+# Return to overrided values, if present
+if [[ -n "$FLUX_GITOPS_BRANCH_OVERRIDE" ]]; then
+  FLUX_GITOPS_BRANCH=$FLUX_GITOPS_BRANCH_OVERRIDE
+fi
+
+if [[ -n "$FLUX_GITOPS_DIR_OVERRIDE" ]]; then
+  FLUX_GITOPS_DIR=$FLUX_GITOPS_DIR_OVERRIDE
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
