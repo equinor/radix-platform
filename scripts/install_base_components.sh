@@ -1,16 +1,14 @@
 #!/bin/bash
 
-
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Install required base components in a radix cluster.
 
-
 #######################################################################################
 ### PRECONDITIONS
-### 
+###
 
 # It is assumed that cluster is installed using the aks/bootstrap.sh script
 # The script expects the slack-token to be found as secret in keyvault.
@@ -20,26 +18,24 @@
 # Resources that need non-secret customizations: inline the resource in this script and use environment variables
 # Resources that need secret values: store the entire yaml file in Azure KeyVault
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - SLACK_CHANNEL            
-# - FLUX_GITOPS_REPO            
-# - FLUX_GITOPS_BRANCH          
-# - FLUX_GITOPS_PATH            
+# - SLACK_CHANNEL
+# - FLUX_GITOPS_REPO
+# - FLUX_GITOPS_BRANCH
+# - FLUX_GITOPS_PATH
 # - USER_PROMPT                 : Is human interaction is required to run script? true/false. Default is true.
-
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # Normal usage
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./install_base_components.sh
@@ -47,14 +43,12 @@
 # Configure a dev cluster to use custom configs
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="please-work-4" FLUX_GITOPS_BRANCH=testing-something FLUX_GITOPS_DIR=development-configs ./install_base_components.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start install of base components... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -62,49 +56,72 @@ echo "Start install of base components... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting...";  exit 1; }
+hash az 2>/dev/null || {
+  echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+  exit 1
+}
+hash kubectl 2>/dev/null || {
+  echo -e "\nError: kubectl not found in PATH. Exiting..."
+  exit 1
+}
+hash helm 2>/dev/null || {
+  echo -e "\nError: helm not found in PATH. Exiting..."
+  exit 1
+}
+hash jq 2>/dev/null || {
+  echo -e "\nError: jq not found in PATH. Exiting..."
+  exit 1
+}
 printf "All is good."
 echo ""
-
 
 #######################################################################################
 ### Read inputs and configs
 ###
 
+# Overridable input
+FLUX_GITOPS_BRANCH_OVERRIDE=$FLUX_GITOPS_BRANCH
+FLUX_GITOPS_DIR_OVERRIDE=$FLUX_GITOPS_DIR
+
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+  echo "Please provide RADIX_ZONE_ENV" >&2
+  exit 1
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+  if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+    echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+    exit 1
+  fi
+  source "$RADIX_ZONE_ENV"
+fi
+
+# Return to overrided values, if present
+if [[ -n "$FLUX_GITOPS_BRANCH_OVERRIDE" ]]; then
+  FLUX_GITOPS_BRANCH=$FLUX_GITOPS_BRANCH_OVERRIDE
+fi
+
+if [[ -n "$FLUX_GITOPS_DIR_OVERRIDE" ]]; then
+  FLUX_GITOPS_DIR=$FLUX_GITOPS_DIR_OVERRIDE
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
-    exit 1
+  echo "Please provide CLUSTER_NAME" >&2
+  exit 1
 fi
 
 # Optional inputs
 
 if [[ -z "$SLACK_CHANNEL" ]]; then
-    SLACK_CHANNEL="CCFLFKM39"
+  SLACK_CHANNEL="CCFLFKM39"
 fi
 
 if [[ -z "$USER_PROMPT" ]]; then
-    USER_PROMPT=true
+  USER_PROMPT=true
 fi
 
 CICDCANARY_IMAGE_TAG="master-latest"
 IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
-
 
 #######################################################################################
 ### Prepare az session
@@ -114,7 +131,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -145,17 +161,16 @@ echo -e ""
 echo ""
 
 if [[ $USER_PROMPT == true ]]; then
-    read -p "Is this correct? (Y/n) " -n 1 -r
-    if [[ "$REPLY" =~ (N|n) ]]; then
+  read -p "Is this correct? (Y/n) " -n 1 -r
+  if [[ "$REPLY" =~ (N|n) ]]; then
     echo ""
     echo "Quitting."
     exit 0
-    fi
-    echo ""
+  fi
+  echo ""
 fi
 
 echo ""
-
 
 #######################################################################################
 ### Connect kubectl
@@ -164,12 +179,11 @@ echo ""
 # Exit if cluster does not exist
 echo ""
 echo "Connecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
-    # Send message to stderr
-    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 0        
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then
+  # Send message to stderr
+  echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
+  exit 0
 fi
-
 
 #######################################################################################
 ### Read secrets from keyvault
@@ -179,7 +193,6 @@ if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
   echo "Getting Slack API Token"
   SLACK_TOKEN="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-token | jq -r .value)"
 fi
-
 
 #######################################################################################
 ### Install Helm and related rbac
@@ -193,7 +206,6 @@ kubectl apply -f manifests/rbac-config-helm.yaml
 echo "Initializing and/or upgrading helm in cluster"
 helm init --service-account tiller --upgrade --wait
 helm repo update
-
 
 #######################################################################################
 ### Install cert-manager
@@ -225,13 +237,13 @@ helm upgrade --install cert-manager \
   --set ingressShim.defaultACMEDNS01ChallengeProvider="azure-dns" \
   jetstack/cert-manager
 
- # Wait for cert-manager to be ready before adding issuers and certs
+# Wait for cert-manager to be ready before adding issuers and certs
 printf "\nWaiting for cert-manager webhook to spin up..."
 while [[ ! "$(kubectl -n cert-manager get pod --selector=app=webhook -o=jsonpath='{.items[*].status.phase}' 2>&1)" == "Running" ]]; do
-    printf "."
-    sleep 5s
+  printf "."
+  sleep 5s
 done
- printf "...Done.\n"
+printf "...Done.\n"
 
 # Create a letsencrypt production issuer for cert-manager
 # The contents of this cluster-issuer need to be unique per dns zone
@@ -239,19 +251,20 @@ clusterissuer_config="cert-manager-production-clusterissuer"
 # TODO: why is the cluster-issuer for dev named the same as production?
 # Yes they are in different keyvaults, but if zones now can share keyvaults then this is not doable anymore.
 case "$RADIX_ZONE" in
-            
-  "prod" | "dev" )           
-      clusterissuer_config="cert-manager-production-clusterissuer"
-      ;;
-      
-  *)
-      clusterissuer_config="cert-manager-${RADIX_ZONE}-clusterissuer"
-esac    
+
+"prod" | "dev")
+  clusterissuer_config="cert-manager-production-clusterissuer"
+  ;;
+
+*)
+  clusterissuer_config="cert-manager-${RADIX_ZONE}-clusterissuer"
+  ;;
+esac
 
 az keyvault secret download \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name "$clusterissuer_config" \
-    --file "${clusterissuer_config}.yaml"
+  --vault-name $AZ_RESOURCE_KEYVAULT \
+  --name "$clusterissuer_config" \
+  --file "${clusterissuer_config}.yaml"
 
 kubectl apply -n cert-manager -f "${clusterissuer_config}.yaml"
 
@@ -342,8 +355,8 @@ EOF
 echo ""
 echo "Waiting for cert-manager to create certificate secret app-wildcard-tls-cert before annotating it..."
 while [[ "$(kubectl get secret app-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5s
+  printf "."
+  sleep 5s
 done
 echo "Certificate secret app-wildcard-tls-cert has been created, annotating it..."
 kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
@@ -351,8 +364,8 @@ kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildc
 echo ""
 echo "Waiting for cert-manager to create certificate secret cluster-wildcard-tls-cert before annotating it..."
 while [[ "$(kubectl get secret cluster-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5s
+  printf "."
+  sleep 5s
 done
 echo "Certificate secret cluster-wildcard-tls-cert has been created, annotating it..."
 kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="cluster-wildcard-sync=cluster-wildcard-tls-cert"
@@ -360,8 +373,8 @@ kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="clust
 echo ""
 echo "Waiting for cert-manager to create certificate secret active-cluster-wildcard-tls-cert before annotating it..."
 while [[ "$(kubectl get secret active-cluster-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5s
+  printf "."
+  sleep 5s
 done
 echo "Certificate secret active-cluster-wildcard-tls-cert has been created, annotating it..."
 kubectl annotate Secret active-cluster-wildcard-tls-cert kubed.appscode.com/sync="active-cluster-wildcard-sync=active-cluster-wildcard-tls-cert"
@@ -373,7 +386,6 @@ kubectl annotate Secret active-cluster-wildcard-tls-cert kubed.appscode.com/sync
 echo "Creating storage classes"
 kubectl apply -f manifests/storageclass-retain.yaml
 kubectl apply -f manifests/storageclass-retain-nocache.yaml
-
 
 #######################################################################################
 ### Install prometheus-operator
@@ -440,7 +452,6 @@ echo "Installing prometheus-operator"
 ###########
 # End OAUTH2_PROXY code
 ##########
-
 
 helm upgrade --install prometheus-operator stable/prometheus-operator \
   --version 6.7.3 \
@@ -516,7 +527,7 @@ EOF
 # Change kubelet ServiceMonitor from https to http, ref https://github.com/coreos/prometheus-operator/issues/1522
 
 kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
-     --patch "$(cat ./manifests/kubelet-service-monitor-patch.yaml)"
+  --patch "$(cat ./manifests/kubelet-service-monitor-patch.yaml)"
 
 #######################################################################################
 ### Install grafana
@@ -524,22 +535,22 @@ kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
 
 echo "Installing grafana"
 az keyvault secret download \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name grafana-secrets \
-    --file grafana-secrets.yaml
+  --vault-name $AZ_RESOURCE_KEYVAULT \
+  --name grafana-secrets \
+  --file grafana-secrets.yaml
 
 kubectl apply -f grafana-secrets.yaml
 
 rm -f grafana-secrets.yaml
 
 helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
-    --version v3.9.1 \
-    --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
-    --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
-    --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-    --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS"
+  --version v3.9.1 \
+  --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
+  --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
+  --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
+  --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS"
 
-# Add grafana replyUrl to AAD app    
+# Add grafana replyUrl to AAD app
 (AAD_APP_NAME="radix-cluster-aad-server-${RADIX_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
 wait # wait for subshell to finish
 
@@ -549,9 +560,9 @@ wait # wait for subshell to finish
 
 echo "Installing external-dns secret"
 az keyvault secret download \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name external-dns-azure-secret \
-    --file external-dns-azure-secret.yaml
+  --vault-name $AZ_RESOURCE_KEYVAULT \
+  --name external-dns-azure-secret \
+  --file external-dns-azure-secret.yaml
 
 kubectl apply -f external-dns-azure-secret.yaml
 
@@ -559,10 +570,9 @@ rm -f external-dns-azure-secret.yaml
 
 #######################################################################################
 ### Prepare helm
-### 
+###
 
 helm repo update
-
 
 #######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
@@ -577,24 +587,24 @@ echo "Start on radix platform shared configs and secrets..."
 
 echo "Creating radix-sp-acr-azure secret"
 az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
-    --file sp_credentials.json
+  --vault-name "$AZ_RESOURCE_KEYVAULT" \
+  --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
+  --file sp_credentials.json
 
 kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run -o yaml | kubectl apply -f -
 
 echo "Creating radix-docker secret"
 kubectl create secret docker-registry radix-docker \
-   --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
-   --docker-username=$"$(jq -r '.id' sp_credentials.json)" \
-   --docker-password="$(jq -r '.password' sp_credentials.json)" \
-   --docker-email=radix@statoilsrm.onmicrosoft.com \
-   --dry-run -o yaml \
-   | kubectl apply -f -
+  --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
+  --docker-username=$"$(jq -r '.id' sp_credentials.json)" \
+  --docker-password="$(jq -r '.password' sp_credentials.json)" \
+  --docker-email=radix@statoilsrm.onmicrosoft.com \
+  --dry-run -o yaml |
+  kubectl apply -f -
 
 rm -f sp_credentials.json
 
-cat << EOF > radix-platform-config.yaml
+cat <<EOF >radix-platform-config.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -638,24 +648,20 @@ az keyvault secret download \
   --name radix-cicd-canary-values \
   --file radix-cicd-canary-values.yaml
 
-helm upgrade --install radix-cicd-canary \
-  "https://github.com/equinor/radix-cicd-canary/blob/master/charts/radix-cicd-canary-1.0.4.tgz?raw=true" \
-  --namespace radix-cicd-canary \
-  --set clusterFqdn="$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
-  --set image.tag="$CICDCANARY_IMAGE_TAG" \
-  --set imageCredentials.registry="radix${RADIX_ENVIRONMENT}.azurecr.io" \
-  --set clusterType="$CLUSTER_TYPE" \
-  --set radixApiPrefix="$RADIX_API_PREFIX" \
-	--set radixWebhookPrefix="$RADIX_WEBHOOK_PREFIX" \
-  --set sleepIntervalTestRuns=300 \
-  -f radix-cicd-canary-values.yaml
+kubectl create ns radix-cicd-canary --dry-run --save-config -o yaml |
+  kubectl apply -f -
+
+kubectl create secret generic canary-secrets --namespace radix-cicd-canary \
+  --from-file=./radix-cicd-canary-values.yaml \
+  --dry-run -o yaml |
+  kubectl apply -f -
 
 rm -f radix-cicd-canary-values.yaml
 echo "Done."
 
 #######################################################################################
 ### Install prerequisites for Velero
-### 
+###
 
 echo ""
 echo "Installing Velero prerequisites..."
@@ -666,15 +672,15 @@ AZ_VELERO_SECRET_PAYLOAD_FILE="./velero-credentials"
 
 # Create secret for az credentials
 az keyvault secret download \
-   --vault-name "$AZ_RESOURCE_KEYVAULT" \
-   --name "$AZ_VELERO_SECRET_NAME" \
-   -f "$AZ_VELERO_SECRET_PAYLOAD_FILE"
+  --vault-name "$AZ_RESOURCE_KEYVAULT" \
+  --name "$AZ_VELERO_SECRET_NAME" \
+  -f "$AZ_VELERO_SECRET_PAYLOAD_FILE"
 
 kubectl create ns "$VELERO_NAMESPACE"
 kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
-   --from-env-file="$AZ_VELERO_SECRET_PAYLOAD_FILE" \
-   --dry-run -o yaml \
-   | kubectl apply -f -
+  --from-env-file="$AZ_VELERO_SECRET_PAYLOAD_FILE" \
+  --dry-run -o yaml |
+  kubectl apply -f -
 
 rm "$AZ_VELERO_SECRET_PAYLOAD_FILE"
 
@@ -682,12 +688,12 @@ rm "$AZ_VELERO_SECRET_PAYLOAD_FILE"
 AZ_VELERO_STORAGE_ACCOUNT_ID="radixvelero${RADIX_ENVIRONMENT}"
 
 az storage container create -n "$CLUSTER_NAME" \
-    --public-access off \
-    --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
-    2>&1 >/dev/null
+  --public-access off \
+  --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
+  2>&1 >/dev/null
 
 # Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
-cat << EOF | kubectl apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -705,7 +711,6 @@ EOF
 echo "Done."
 echo ""
 
-
 #######################################################################################
 ### Notify on slack channel
 ###
@@ -713,25 +718,22 @@ echo ""
 if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
   echo "Notifying on Slack"
   helm upgrade --install radix-boot-notify \
-      ../charts/slack-notification \
-      --set channel="$SLACK_CHANNEL" \
-      --set slackToken="$SLACK_TOKEN" \
-      --set text="Base components have been installed or updated on $CLUSTER_NAME."
+    ../charts/slack-notification \
+    --set channel="$SLACK_CHANNEL" \
+    --set slackToken="$SLACK_TOKEN" \
+    --set text="Base components have been installed or updated on $CLUSTER_NAME."
 fi
-
 
 #######################################################################################
 ### Patching kube-dns metrics
 ###
 
 # TODO: Even with this, kube-dns is not discovered in prometheus. Needs to be debugged.
-# 
+#
 # echo "Patching kube-dns metrics"
 # kubectl patch deployment -n kube-system kube-dns-v20 \
 #     --patch "$(cat ./manifests/kube-dns-metrics-patch.yaml)"
-# 
-
-
+#
 
 #######################################################################################
 ### END
