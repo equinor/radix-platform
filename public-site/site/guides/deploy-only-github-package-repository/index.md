@@ -34,7 +34,7 @@ jobs:
           docker push docker.pkg.github.com/equinor/<your repository>/<image name>:${GITHUB_REF##*/}-latest
 ```
 
-# Set up Radix to use package
+# Set up Radix to use github package
 
 Add the following to your radixconfig.yaml file:
 
@@ -87,3 +87,5 @@ spec:
       username: <your username>
       email: <your email>
 ```
+
+Then a change to the master branch would trigger the action which produces a new image to package repository as well as a new deployment on Radix. For now the deployment may be made before the new latest image is produced, so you may need to [restart](guides/component-start-stop-restart/) the app to ensure that it is running with the latest master-latest image.
