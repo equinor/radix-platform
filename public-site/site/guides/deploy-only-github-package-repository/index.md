@@ -17,7 +17,6 @@ on:
   push:
     branches:
       - master
-      - release
 jobs:
   build:
     name: build-push-gpr
@@ -26,12 +25,12 @@ jobs:
       - uses: actions/checkout@v1
 
       - run: |
-          docker build -t docker.pkg.github.com/equinor/<your repository>/<image name>:${GITHUB_REF##*/}-latest .
+          docker build -t docker.pkg.github.com/equinor/<repository>/<image>:master-latest .
 
       - name: Push the image to GPR
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u publisher --password-stdin
-          docker push docker.pkg.github.com/equinor/<your repository>/<image name>:${GITHUB_REF##*/}-latest
+          docker push docker.pkg.github.com/equinor/<repository>/<image>:master-latest
 ```
 
 # Set up Radix to use github package
@@ -75,7 +74,7 @@ spec:
         from: master
   components:
     - name: your-component
-      image: docker.pkg.github.com/equinor/<your repository>/<image name>:master-latest
+      image: docker.pkg.github.com/equinor/<repository>/<image>:master-latest
       ports:
         - name: http
           port: 8080
