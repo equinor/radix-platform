@@ -120,7 +120,6 @@ if [[ -z "$USER_PROMPT" ]]; then
   USER_PROMPT=true
 fi
 
-CICDCANARY_IMAGE_TAG="master-latest"
 IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
 
 #######################################################################################
@@ -147,7 +146,6 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  SLACK_CHANNEL                    : $SLACK_CHANNEL"
-echo -e "   -  CICDCANARY_IMAGE_TAG             : $CICDCANARY_IMAGE_TAG"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
 echo -e "   -  IMAGE_REGISTRY                   : $IMAGE_REGISTRY"
