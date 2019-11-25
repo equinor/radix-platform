@@ -323,6 +323,8 @@ It is possible to pull images from private image hubs during deployment for an a
 
 To get more information on how to connect to a private Azure container registry (ACR), see the following [guide](https://thorsten-hans.com/how-to-use-private-azure-container-registry-with-kubernetes). The chapter `Provisioning an Azure Container Registry` provide information on how to get service principle `username` and `password`. It is also possible to create a Service Principle in Azure AD, and then manually grant it access to your ACR.
 
+If you want to make use of Github package registry see [this](../../guides/deploy-only-github-package-repository/) guide on how to set that up.
+
 # Example `radixconfig.yaml` file
 
 This example showcases all options; in many cases the defaults will be a good choice instead.
