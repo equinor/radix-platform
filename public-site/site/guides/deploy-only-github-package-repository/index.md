@@ -5,7 +5,7 @@ parent: ['Guides', '../../guides.html']
 toc: true
 ---
 
-Disclaimer: Please seek advice elsewhere on wether or not github actions and/or github package repository is the right option for you. A private Azure container registry (ACR) would for instance allow you to set it up with a service account, rather than using your personal account. This document is meant to be a user guide on how to combine these with Radix, if you have decided to go ahead with this.
+Disclaimer: Please seek advice elsewhere on wether or not github actions and/or github package repository is the right option for you. Now both features are new and we have little experience with both of them, both in terms of robustness and in terms of cost. A private Azure container registry (ACR) would for instance allow you to set it up with a service account, rather than using your personal account. This document is meant to be a user guide on how to combine these with Radix, if you have decided to go ahead with this.
 
 # Building using github actions
 
