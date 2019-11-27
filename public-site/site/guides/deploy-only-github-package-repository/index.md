@@ -1,5 +1,5 @@
 ---
-title: Deploy to Radix using github actions and github package
+title: Deploy to Radix using github actions and github package registry
 layout: document
 parent: ['Guides', '../../guides.html']
 toc: true
