@@ -646,6 +646,9 @@ az keyvault secret download \
   --name radix-cicd-canary-values \
   --file radix-cicd-canary-values.yaml
 
+echo "clusterType: $CLUSTER_TYPE" >> radix-cicd-canary-values.yaml
+echo "clusterFqdn: $CLUSTER_NAME.$AZ_RESOURCE_DNS" >> radix-cicd-canary-values.yaml
+
 kubectl create ns radix-cicd-canary --dry-run --save-config -o yaml |
   kubectl apply -f -
 
