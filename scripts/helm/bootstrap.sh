@@ -128,9 +128,9 @@ echo ""
 if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " -n 1 -r
     if [[ "$REPLY" =~ (N|n) ]]; then
-    echo ""
-    echo "Quitting."
-    exit 0
+        echo ""
+        echo "Quitting."
+        exit 0
     fi
     echo ""
 fi

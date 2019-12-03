@@ -175,35 +175,37 @@ echo ""
 ###
 
 # Exit if cluster does not exist
-echo ""
-echo "Connecting kubectl..."
+printf "\nConnecting kubectl..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then
   # Send message to stderr
   echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
   exit 0
 fi
+printf "...Done.\n"
 
 #######################################################################################
 ### Read secrets from keyvault
 ###
 
 if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
-  echo "Getting Slack API Token"
+  printf "\nGetting Slack API Token..."
   SLACK_TOKEN="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-token | jq -r .value)"
+  printf "...Done\n"
 fi
 
 #######################################################################################
 ### Install Helm and related rbac
 ###
 
-$(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME="${CLUSTER_NAME}" USER_PROMPT="false" ./helm/bootstrap.sh)
+(USER_PROMPT="false" ./helm/bootstrap.sh)
 wait
+
 
 #######################################################################################
 ### Install cert-manager
 ###
 
-$(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME="${CLUSTER_NAME}" USER_PROMPT="false" ./cert-manager/bootstrap.sh)
+(USER_PROMPT="false" ./cert-manager/bootstrap.sh)
 wait
 
 
