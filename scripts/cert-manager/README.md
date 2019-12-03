@@ -50,7 +50,7 @@ Until this process is complete, and `{appName}-tls-secret` is populated, then th
 Run script [`./bootstrap.sh`](./bootstrap.sh), see script header for more info.  
 Bootstrap will
 1. Read dns credentials from keyvault
-1. Install cert-manager
+1. Install cert-manager using the official helm chart
 1. Transform the templated custom resources and apply them to the cluster
 1. Annotate the tls secrets for `Kubed` syncronization
 

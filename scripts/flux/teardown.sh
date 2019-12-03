@@ -5,7 +5,7 @@
 ### PURPOSE
 ### 
 
-# Tear down cert-manager in a radix cluster, v0.11.0
+# Tear down flux from a cluster
 
 
 #######################################################################################
@@ -39,18 +39,11 @@
 
 
 #######################################################################################
-### DOCS
-### 
-
-# - https://docs.cert-manager.io/en/release-0.11/tasks/uninstall/kubernetes.html
-
-
-#######################################################################################
 ### START
 ### 
 
 echo ""
-echo "Start tear down of cert-manager... "
+echo "Start tear down of flux... "
 
 
 #######################################################################################
@@ -97,6 +90,7 @@ fi
 # Script vars
 
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$WORK_DIR"/flux.env
 
 
 
@@ -115,7 +109,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Tear down of cert-manager will use the following configuration:"
+echo -e "Tear down of fluxwill use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -124,7 +118,7 @@ echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CERT-MANAGER                     : v0.11.0"
+echo -e "   -  FLUX                             : Kill it with fire!"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -165,36 +159,24 @@ printf "...Done.\n"
 ### MAIN
 ###
 
-# Step 1: Remove all custom resources
-#kubectl get Issuers,ClusterIssuers,Certificates,CertificateRequests,Orders,Challenges --all-namespaces
-printf "\nDelete all custom resources..."
-kubectl delete Issuers --all --all-namespaces 2>&1 >/dev/null
-kubectl delete ClusterIssuers --all --all-namespaces 2>&1 >/dev/null
-kubectl delete Certificates --all --all-namespaces 2>&1 >/dev/null
-kubectl delete CertificateRequests --all --all-namespaces 2>&1 >/dev/null
-kubectl delete Orders --all --all-namespaces 2>&1 >/dev/null
-kubectl delete Challenges --all --all-namespaces 2>&1 >/dev/null
-printf "...Done.\n"
-
-# Step 2: Remove the helm release
+# Step 1: Remove the helm release
 printf "\nDelete and purge the helm release..."
-helm delete cert-manager --purge 2>&1 >/dev/null
+helm delete flux --purge 2>&1 >/dev/null
 printf "...Done.\n"
 
-# Step 3: Remove the namespace
-printf "\nDelete the namespace..."
-kubectl delete namespace cert-manager 2>&1 >/dev/null
-printf "...Done.\n"
-
-# Step 3.5: Making sure the webhook is really gone
+# Step 1.5: Making sure the webhook is really gone
 printf "\nMaking sure the webhook is really gone..."
-kubectl delete apiservice v1beta1.webhook.cert-manager.io 2>&1 >/dev/null
+kubectl delete apiservice v1beta1.flux.weave.works 2>&1 >/dev/null
 printf "...Done.\n"
 
-# Step 4: Remove all the custom resource definitions
+# Step 2: Delete the repo credentials
+printf "\nDelete the repo credentials..."
+kubectl delete secret "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
+printf "...Done.\n"
+
+# Step 3: Remove all the custom resource definitions
 printf "\nDelete all the custom resource definitions..."
-# If this step fails then look at https://docs.cert-manager.io/en/release-0.11/tasks/uninstall/kubernetes.html#namespace-stuck-in-terminating-state
-kubectl delete -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml 2>&1 >/dev/null
+kubectl delete -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
 printf "...Done.\n"
 
 
@@ -203,4 +185,4 @@ printf "...Done.\n"
 ###
 
 echo ""
-echo "Tear down of cert-manager is done!"
+echo "Tear down of flux is done!"

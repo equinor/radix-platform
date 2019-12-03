@@ -398,11 +398,6 @@ kubectl apply -f external-dns-azure-secret.yaml
 
 rm -f external-dns-azure-secret.yaml
 
-#######################################################################################
-### Prepare helm
-###
-
-helm repo update
 
 #######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
@@ -459,12 +454,11 @@ echo "Done."
 ### Install Flux
 
 echo ""
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
-  CLUSTER_NAME="$CLUSTER_NAME" \
+(USER_PROMPT="false" \
   GIT_REPO="$FLUX_GITOPS_REPO" \
   GIT_BRANCH="$FLUX_GITOPS_BRANCH" \
   GIT_DIR="$FLUX_GITOPS_DIR" \
-  ./install_flux.sh)
+  ./flux/bootstrap.sh)
 wait
 
 #######################################################################################
