@@ -196,14 +196,14 @@ fi
 ### Install Helm and related rbac
 ###
 
-$(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME="${CLUSTER_NAME}" source ./helm/bootstrap.sh)
+$(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME="${CLUSTER_NAME}" USER_PROMPT="false" ./helm/bootstrap.sh)
 wait
 
 #######################################################################################
 ### Install cert-manager
 ###
 
-$(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME="${CLUSTER_NAME}" source ./cert-manager/bootstrap.sh)
+$(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME="${CLUSTER_NAME}" USER_PROMPT="false" ./cert-manager/bootstrap.sh)
 wait
 
 
