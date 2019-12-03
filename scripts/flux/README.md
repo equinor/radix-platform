@@ -5,6 +5,7 @@ Please see [radix-flux](https://github.com/equinor/radix-flux/) for what, why an
 ## Bootstrap
 
 Run script [`./bootstrap.sh`](./bootstrap.sh), see script header for more how.  
+
 Bootstrap will
 1. Read config repo credentials from keyvault
 1. Install flux using the official helm chart
@@ -29,6 +30,8 @@ RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-cluster-flux GIT
 ## Teardown
 
 Run script [`./teardown.sh`](./teardown.sh), see script header for more how.  
+
 Teardown will
 1. Delete flux and all related custom resources
-1. Delete the repo credentials
+1. Delete the repo credentials in the cluster
+   -  It will _not_ touch the keyvault
