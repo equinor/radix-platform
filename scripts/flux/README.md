@@ -15,6 +15,8 @@ Bootstrap will
 Note that if you use the default repo then some of the components installed by flux expects certain prerequisite resources to exist in the cluster.  
 The pre-req resources are normally created by the `install_base_components.sh` script.
 
+### Examples
+
 ```sh
 # Example: Bootstrap a debug cluster
 

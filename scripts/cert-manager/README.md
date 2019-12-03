@@ -48,11 +48,14 @@ Until this process is complete, and `{appName}-tls-secret` is populated, then th
 ## Bootstrap
 
 Run script [`./bootstrap.sh`](./bootstrap.sh), see script header for more info.  
+
 Bootstrap will
 1. Read dns credentials from keyvault
 1. Install cert-manager using the official helm chart
 1. Transform the templated custom resources and apply them to the cluster
 1. Annotate the tls secrets for `Kubed` syncronization
+
+### Examples
 
 ```sh
 # Example: Bootstrap a debug cluster
@@ -70,6 +73,7 @@ RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster S
 ## Teardown
 
 Run script [`./teardown.sh`](./teardown.sh), see script header for more info.  
+
 Teardown will
 1. Delete cert-manager and all related custom resources
 1. It will _not_ delete the k8s tls secrets
