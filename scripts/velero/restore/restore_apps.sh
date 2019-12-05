@@ -441,7 +441,7 @@ printf "Done."
 # Update replyUrl for web-console
 echo ""
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
-while [[ "$(kubectl get ing web -n radix-web-console-prod 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get ing auth -n radix-web-console-prod 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
@@ -451,13 +451,13 @@ echo ""
 echo "Adding replyUrl for radix web-console..." 
 # The web console has an aad app per cluster type. This script does not know about cluster type, so we will have to go with subscription environment.
 if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="auth" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
-    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="auth" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi
 if [[ "$RADIX_ENVIRONMENT" == "prod" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="auth" REPLY_PATH="/auth-callback" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
     wait # wait for subshell to finish
 fi
 printf "Done."
