@@ -367,14 +367,14 @@ az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT"
 
 WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
-OAUTH_PROXY_CLIENT_SECRET=$(cat radix-web-console-client-secret.yaml)
+OAUTH2_PROXY_CLIENT_SECRET=$(cat radix-web-console-client-secret.yaml)
 OAUTH2_PROXY_COOKIE_SECRET=$(python -c 'import os,base64; print base64.urlsafe_b64encode(os.urandom(16))')
 host_name=$(kubectl get ing -n "$WEB_CONSOLE_NAMESPACE" "$AUTH_PROXY_COMPONENT" -o json | jq --raw-output .spec.rules[0].host)
 OAUTH2_PROXY_REDIRECT_URL="https://${host_name}${AUTH_PROXY_REPLY_PATH}"
 AUTH_SECRET_ENV_FILE="auth_secret.env"
 
 echo "OAUTH2_PROXY_CLIENT_ID=$OAUTH2_PROXY_CLIENT_ID" >>"$AUTH_SECRET_ENV_FILE"
-echo "OAUTH_PROXY_CLIENT_SECRET=$OAUTH_PROXY_CLIENT_SECRET" >>"$AUTH_SECRET_ENV_FILE"
+echo "OAUTH2_PROXY_CLIENT_SECRET=$OAUTH2_PROXY_CLIENT_SECRET" >>"$AUTH_SECRET_ENV_FILE"
 echo "OAUTH2_PROXY_COOKIE_SECRET=$OAUTH2_PROXY_COOKIE_SECRET" >>"$AUTH_SECRET_ENV_FILE"
 echo "OAUTH2_PROXY_REDIRECT_URL=$OAUTH2_PROXY_REDIRECT_URL" >>"$AUTH_SECRET_ENV_FILE"
 echo "OAUTH2_PROXY_SCOPE=$OAUTH2_PROXY_SCOPE" >>"$AUTH_SECRET_ENV_FILE"
