@@ -384,6 +384,11 @@ kubectl create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_
     --dry-run -o yaml |
     kubectl apply -f -
 
+echo ""
+echo "NOTE: Console is set up with redirect url $OAUTH2_PROXY_REDIRECT_URL. If this cluster will be"
+echo "the official cluster, using the custom aliases, you will need to manually modify the OAUTH2_PROXY_REDIRECT_URL"
+echo "in the secret to point to the custom alias"
+
 rm radix-web-console-client-secret.yaml
 rm "$AUTH_SECRET_ENV_FILE"
 
