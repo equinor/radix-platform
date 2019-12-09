@@ -95,7 +95,16 @@ Due to the high possibility of breaking changes you will need to
 1. Remove any trace of old version from the cluster
 1. When previous version is gone, install new version
 
-For Radix then migrating to a fresh installed cluster might be the safest option rather than an in-cluster upgrade.
+The k8s tls secrets will be kept intact during this process as it does not belong to cert-manager.
+
+Example:
+```sh
+# Upgrading cert-manager from v0.8.1 to v0.11.0 in cluster "my-little-cluster" that lives in radix-zone "dev"
+# Step 1: Remove v0.8.1
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster ./teardown_v0.8.1.sh
+# Step 2: Install v0.11.0
+RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster ./bootstrap.sh
+```
 
 
 ## Troubleshooting
