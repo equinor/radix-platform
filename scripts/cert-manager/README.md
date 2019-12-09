@@ -6,6 +6,7 @@ Depending on use case we can use it to either create certificates according to a
 - [Overview](#overview)
 - [Bootstrap](#bootstrap)
 - [Teardown](#teardown)
+- [Upgrade](#upgrade)
 - [Troubleshooting](#troubleshooting)
 
 
