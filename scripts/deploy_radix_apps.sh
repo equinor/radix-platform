@@ -360,37 +360,15 @@ if [[ "$RADIX_ENVIRONMENT" == "prod" ]]; then
     wait # wait for subshell to finish
 fi
 
+echo ""
 echo "For the web console to work we need to apply the secrets for the auth proxy"
-az keyvault secret download \
-    -f radix-web-console-client-secret.yaml \
-    -n "$VAULT_CLIENT_SECRET_NAME" \
-    --vault-name "$AZ_RESOURCE_KEYVAULT"
-
-WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
-OAUTH2_PROXY_CLIENT_SECRET=$(cat radix-web-console-client-secret.yaml)
-OAUTH2_PROXY_COOKIE_SECRET=$(python -c 'import os,base64; print base64.urlsafe_b64encode(os.urandom(16))')
-host_name=$(kubectl get ing -n "$WEB_CONSOLE_NAMESPACE" "$AUTH_PROXY_COMPONENT" -o json | jq --raw-output .spec.rules[0].host)
-OAUTH2_PROXY_REDIRECT_URL="https://${host_name}${AUTH_PROXY_REPLY_PATH}"
-AUTH_SECRET_ENV_FILE="auth_secret.env"
-
-echo "OAUTH2_PROXY_CLIENT_ID=$OAUTH2_PROXY_CLIENT_ID" >>"$AUTH_SECRET_ENV_FILE"
-echo "OAUTH2_PROXY_CLIENT_SECRET=$OAUTH2_PROXY_CLIENT_SECRET" >>"$AUTH_SECRET_ENV_FILE"
-echo "OAUTH2_PROXY_COOKIE_SECRET=$OAUTH2_PROXY_COOKIE_SECRET" >>"$AUTH_SECRET_ENV_FILE"
-echo "OAUTH2_PROXY_REDIRECT_URL=$OAUTH2_PROXY_REDIRECT_URL" >>"$AUTH_SECRET_ENV_FILE"
-echo "OAUTH2_PROXY_SCOPE=$OAUTH2_PROXY_SCOPE" >>"$AUTH_SECRET_ENV_FILE"
-
-kubectl create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
-    --from-env-file="$AUTH_SECRET_ENV_FILE" \
-    --dry-run -o yaml |
-    kubectl apply -f -
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+wait # wait for subshell to finish
 
 echo ""
 echo "NOTE: Console is set up with redirect url $OAUTH2_PROXY_REDIRECT_URL. If this cluster will be"
 echo "the official cluster, using the custom aliases, you will need to manually modify the OAUTH2_PROXY_REDIRECT_URL"
 echo "in the secret to point to the custom alias"
-
-rm radix-web-console-client-secret.yaml
-rm "$AUTH_SECRET_ENV_FILE"
 
 echo ""
 echo "Roses are red, violets are blue"
