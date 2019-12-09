@@ -83,7 +83,8 @@ A pipeline defines a type of job. There are currently three types of pipeline in
 
 This is triggered by a commit in GitHub to a branch mapped to an environment. In turn, this causes all components to be rebuilt and a new deployment to be created in the appropriate environment.
 
-Before the deployment is done, after a build, the image is scanned for security-related issues. If a scan result contains HIGH and/or SEVERE issues, it will not fail the pipeline. It is meant as information for the developer to act upon.
+#### Scanning images for security issues
+Before the deployment is done, after a build, the image is scanned for security-related issues. This scan will be a seperate step in the pipeline and the result will be logged in the step. The complete job will not be failed if the result contains HIGH and/or SEVERE issues. However every developer should investigate and fix any security issues.
 
 ![Diagram of the build-deploy pipeline](pipeline-build-deploy.png "The build-deploy pipeline")
 
