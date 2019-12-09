@@ -97,7 +97,7 @@ To fully automate deployment to Radix, we need to commit the new image tag to ma
 import sys
 from ruamel.yaml import YAML
 
-# Gets component index from component name
+# Gets environment-branch mapping
 def getEnvironmentFromBranch(branch):
   if branch == 'development':
     return 'dev'
