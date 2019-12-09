@@ -58,7 +58,7 @@ spec:
 
 # Building using github actions
 
-Create a workflow file under the folder .github/workflows folder. In below workflow we generate branch latest image tags (i.e. master-latest or release-latest). Any new deployment to environment will trigger a new pull of the image.
+Create a workflow file under the folder .github/workflows folder. In below workflow we will build new images for development and release branches, but not for master (as it is considered the config branch). Only a commit to the master branch will trigger a change on Radix
 
 ```yaml
 name: <name of the workflow>
@@ -91,7 +91,7 @@ jobs:
 
 # Changing radixconfig on builds from development and release branch, and commit to master
 
-To fully automate deployment to Radix, we need to commit the new image tag to master branch for the corresponding environment. In my example I created a python script to do that. In the script the mapping of branch to environment is added since the Radix config states both environments derive from master branch.
+To fully automate deployment to Radix, we need to commit the new image tag to master branch for the corresponding environment. In my example (see link below) I have created a python script to do that. In the script the mapping of branch to environment is added since the Radix config states both environments derive from master branch. **Be careful: if the action was set up to build also on master, the below setup could end up triggering an endless loop**
 
 ```python
 import sys
