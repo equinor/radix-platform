@@ -1,7 +1,7 @@
 ---
 title: Deploy to Radix using github actions and github package registry
 layout: document
-parent: ['Guides', '../../guides.html']
+parent: ["Guides", "../../guides.html"]
 toc: true
 ---
 
@@ -9,7 +9,7 @@ Disclaimer: Please seek advice elsewhere on wether or not github actions and/or 
 
 # Use master branch as a config branch
 
-Set up both environments to deploy from master branch. Both client component and server component has a {tagName} appended to the image string, in order to use the imageTagNam field in environment config.
+Set up both environments to deploy from master branch. Both client component and server component has a {tagName} appended to the image string, in order to use the imageTagName field in environment config.
 
 ```yaml
 apiVersion: radix.equinor.com/v1
@@ -18,35 +18,35 @@ metadata:
   name: <your app name>
 spec:
   environments:
-  - name: dev
-    build:
-      from: master
-  - name: prod
-    build:
-      from: master
+    - name: dev
+      build:
+        from: master
+    - name: prod
+      build:
+        from: master
   components:
-  - name: client
-    image: docker.pkg.github.com/equinor/<repository>/<client-image>:{tagName}
-    environmentConfig:
-    - environment: dev
-      imageTagName: to-be-changed
-    - environment: prod
-      imageTagName: to-be-changed
-    ports:
-    - name: http
-      port: 80
-    public: true
-  - name: server
-    image: docker.pkg.github.com/equinor/<repository>/<server-image>:{tagName}
-    environmentConfig:
-    - environment: dev
-      imageTagName: to-be-changed
-    - environment: prod
-      imageTagName: to-be-changed
-    ports:
-    - name: http
-      port: 8000
-    public: false
+    - name: client
+      image: docker.pkg.github.com/equinor/<repository>/<client-image>:{tagName}
+      environmentConfig:
+        - environment: dev
+          imageTagName: to-be-changed
+        - environment: prod
+          imageTagName: to-be-changed
+      ports:
+        - name: http
+          port: 80
+      public: true
+    - name: server
+      image: docker.pkg.github.com/equinor/<repository>/<server-image>:{tagName}
+      environmentConfig:
+        - environment: dev
+          imageTagName: to-be-changed
+        - environment: prod
+          imageTagName: to-be-changed
+      ports:
+        - name: http
+          port: 8000
+      public: false
   dnsAppAlias:
     environment: prod
     component: client
@@ -153,28 +153,28 @@ if environment != '':
 With the python script in the repository, you can add the following steps to your github actions workflow.
 
 ```yaml
-      - uses: actions/checkout@v2-beta
-        with:
-          ref: master
+- uses: actions/checkout@v2-beta
+  with:
+    ref: master
 
-      - name: Modify radixconfig tag for branch
-        run: |
-          # Install pre-requisite
-          python -m pip install --user ruamel.yaml
+- name: Modify radixconfig tag for branch
+  run: |
+    # Install pre-requisite
+    python -m pip install --user ruamel.yaml
 
-          # Update client tag for development environment
-          python modifyTag.py client ${GITHUB_REF##*/} ${GITHUB_REF##*/}-${{ github.sha }}
+    # Update client tag for development environment
+    python modifyTag.py client ${GITHUB_REF##*/} ${GITHUB_REF##*/}-${{ github.sha }}
 
-          # Update server tag for development environment
-          python modifyTag.py server ${GITHUB_REF##*/} ${GITHUB_REF##*/}-${{ github.sha }}
+    # Update server tag for development environment
+    python modifyTag.py server ${GITHUB_REF##*/} ${GITHUB_REF##*/}-${{ github.sha }}
 
-      - name: Commit radixconfig to master branch
-        run: |
-          git config --global user.name '<your username>'
-          git config --global user.email '<your username>@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.PRIVATE_TOKEN }}@github.com/${{ github.repository }}
-          git commit -am ${GITHUB_REF##*/}-${{ github.sha }}
-          git push origin HEAD:master
+- name: Commit radixconfig to master branch
+  run: |
+    git config --global user.name '<your username>'
+    git config --global user.email '<your username>@users.noreply.github.com'
+    git remote set-url origin https://x-access-token:${{ secrets.PRIVATE_TOKEN }}@github.com/${{ github.repository }}
+    git commit -am ${GITHUB_REF##*/}-${{ github.sha }}
+    git push origin HEAD:master
 ```
 
 # Configure Radix to use github package
