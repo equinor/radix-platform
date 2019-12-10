@@ -273,6 +273,16 @@ read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to
 if [[ "$REPLY" =~ (N|n) ]]; then
     echo ""
     echo "Chicken!1"
+
+    echo ""
+    echo "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url"
+
+    AUTH_PROXY_COMPONENT="auth"
+    AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+    WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+    wait # wait for subshell to finish
+
     exit 1
 fi
 
