@@ -22,8 +22,14 @@ echo "Updating auth-proxy secret for the radix web console"
 # Validate mandatory input
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV."
+    echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
