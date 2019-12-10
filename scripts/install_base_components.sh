@@ -175,207 +175,39 @@ echo ""
 ###
 
 # Exit if cluster does not exist
-echo ""
-echo "Connecting kubectl..."
+printf "\nConnecting kubectl..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then
   # Send message to stderr
   echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
   exit 0
 fi
+printf "...Done.\n"
 
 #######################################################################################
 ### Read secrets from keyvault
 ###
 
 if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
-  echo "Getting Slack API Token"
+  printf "\nGetting Slack API Token..."
   SLACK_TOKEN="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-token | jq -r .value)"
+  printf "...Done\n"
 fi
 
 #######################################################################################
 ### Install Helm and related rbac
 ###
 
-# Apply RBAC config for helm/tiller
-echo "Applying RBAC config for helm/tiller"
-kubectl apply -f manifests/rbac-config-helm.yaml
+(USER_PROMPT="false" ./helm/bootstrap.sh)
+wait
 
-# Install Helm
-echo "Initializing and/or upgrading helm in cluster"
-helm init --service-account tiller --upgrade --wait
-helm repo update
 
 #######################################################################################
 ### Install cert-manager
 ###
 
-# Install the CustomResourceDefinition resources separately
-kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.8/deploy/manifests/00-crds.yaml
+(USER_PROMPT="false" ./cert-manager/bootstrap.sh)
+wait
 
-# Create the namespace for cert-manager
-kubectl create namespace cert-manager
-
-# Label the cert-manager namespace to disable resource validation
-kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
-
-# Add the Jetstack Helm repository
-helm repo add jetstack https://charts.jetstack.io
-
-# Update your local Helm chart repository cache
-helm repo update
-
-# Install the cert-manager Helm chart
-helm upgrade --install cert-manager \
-  --namespace cert-manager \
-  --version v0.8.1 \
-  --set global.rbac.create=true \
-  --set ingressShim.defaultIssuerName=letsencrypt-prod \
-  --set ingressShim.defaultIssuerKind=ClusterIssuer \
-  --set ingressShim.defaultACMEChallengeType="dns01" \
-  --set ingressShim.defaultACMEDNS01ChallengeProvider="azure-dns" \
-  jetstack/cert-manager
-
-# Wait for cert-manager to be ready before adding issuers and certs
-printf "\nWaiting for cert-manager webhook to spin up..."
-while [[ ! "$(kubectl -n cert-manager get pod --selector=app=webhook -o=jsonpath='{.items[*].status.phase}' 2>&1)" == "Running" ]]; do
-  printf "."
-  sleep 5s
-done
-printf "...Done.\n"
-
-# Create a letsencrypt production issuer for cert-manager
-# The contents of this cluster-issuer need to be unique per dns zone
-clusterissuer_config="cert-manager-production-clusterissuer"
-# TODO: why is the cluster-issuer for dev named the same as production?
-# Yes they are in different keyvaults, but if zones now can share keyvaults then this is not doable anymore.
-case "$RADIX_ZONE" in
-
-"prod" | "dev")
-  clusterissuer_config="cert-manager-production-clusterissuer"
-  ;;
-
-*)
-  clusterissuer_config="cert-manager-${RADIX_ZONE}-clusterissuer"
-  ;;
-esac
-
-az keyvault secret download \
-  --vault-name $AZ_RESOURCE_KEYVAULT \
-  --name "$clusterissuer_config" \
-  --file "${clusterissuer_config}.yaml"
-
-kubectl apply -n cert-manager -f "${clusterissuer_config}.yaml"
-
-rm -f "${clusterissuer_config}.yaml"
-
-#######################################################################################
-### Create wildcard certs
-###
-
-# Create app wildcard cert
-echo "Creating app wildcard cert..."
-
-APP_ALIAS_BASE_URL="app.$AZ_RESOURCE_DNS"
-
-cat <<EOF | kubectl apply -f -
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Certificate
-metadata:
-  name: app-wildcard-tls-cert
-spec:
-  secretName: app-wildcard-tls-cert
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt-prod
-  commonName: "*.$APP_ALIAS_BASE_URL"
-  dnsNames:
-  - "$APP_ALIAS_BASE_URL"
-  acme:
-    config:
-    - dns01:
-        provider: azure-dns
-      domains:
-      - "*.$APP_ALIAS_BASE_URL"
-      - "$APP_ALIAS_BASE_URL"
-EOF
-
-# Create cluster wildcard cert
-echo "Creating cluster wildcard cert..."
-
-cat <<EOF | kubectl apply -f -
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Certificate
-metadata:
-  name: cluster-wildcard-tls-cert
-spec:
-  secretName: cluster-wildcard-tls-cert
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt-prod
-  commonName: "*.$CLUSTER_NAME.$AZ_RESOURCE_DNS"
-  dnsNames:
-  - "$CLUSTER_NAME.$AZ_RESOURCE_DNS"
-  acme:
-    config:
-    - dns01:
-        provider: azure-dns
-      domains:
-      - "*.$CLUSTER_NAME.$AZ_RESOURCE_DNS"
-      - "$CLUSTER_NAME.$AZ_RESOURCE_DNS"
-EOF
-
-# Create active cluster wildcard cert
-echo "Creating active cluster wildcard cert..."
-
-cat <<EOF | kubectl apply -f -
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Certificate
-metadata:
-  name: active-cluster-wildcard-tls-cert
-spec:
-  secretName: active-cluster-wildcard-tls-cert
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt-prod
-  commonName: "*.$AZ_RESOURCE_DNS"
-  dnsNames:
-  - "$AZ_RESOURCE_DNS"
-  acme:
-    config:
-    - dns01:
-        provider: azure-dns
-      domains:
-      - "*.$AZ_RESOURCE_DNS"
-      - "$AZ_RESOURCE_DNS"
-EOF
-
-# Waiting for cert-manager to create certificate secrets before annotating them...
-echo ""
-echo "Waiting for cert-manager to create certificate secret app-wildcard-tls-cert before annotating it..."
-while [[ "$(kubectl get secret app-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
-  printf "."
-  sleep 5s
-done
-echo "Certificate secret app-wildcard-tls-cert has been created, annotating it..."
-kubectl annotate Secret app-wildcard-tls-cert kubed.appscode.com/sync="app-wildcard-sync=app-wildcard-tls-cert"
-
-echo ""
-echo "Waiting for cert-manager to create certificate secret cluster-wildcard-tls-cert before annotating it..."
-while [[ "$(kubectl get secret cluster-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
-  printf "."
-  sleep 5s
-done
-echo "Certificate secret cluster-wildcard-tls-cert has been created, annotating it..."
-kubectl annotate Secret cluster-wildcard-tls-cert kubed.appscode.com/sync="cluster-wildcard-sync=cluster-wildcard-tls-cert"
-
-echo ""
-echo "Waiting for cert-manager to create certificate secret active-cluster-wildcard-tls-cert before annotating it..."
-while [[ "$(kubectl get secret active-cluster-wildcard-tls-cert 2>&1)" == *"Error"* ]]; do
-  printf "."
-  sleep 5s
-done
-echo "Certificate secret active-cluster-wildcard-tls-cert has been created, annotating it..."
-kubectl annotate Secret active-cluster-wildcard-tls-cert kubed.appscode.com/sync="active-cluster-wildcard-sync=active-cluster-wildcard-tls-cert"
 
 #######################################################################################
 ### Create storage classes
@@ -566,11 +398,6 @@ kubectl apply -f external-dns-azure-secret.yaml
 
 rm -f external-dns-azure-secret.yaml
 
-#######################################################################################
-### Prepare helm
-###
-
-helm repo update
 
 #######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
@@ -627,12 +454,11 @@ echo "Done."
 ### Install Flux
 
 echo ""
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
-  CLUSTER_NAME="$CLUSTER_NAME" \
+(USER_PROMPT="false" \
   GIT_REPO="$FLUX_GITOPS_REPO" \
   GIT_BRANCH="$FLUX_GITOPS_BRANCH" \
   GIT_DIR="$FLUX_GITOPS_DIR" \
-  ./install_flux.sh)
+  ./flux/bootstrap.sh)
 wait
 
 #######################################################################################

@@ -1,0 +1,16 @@
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: cluster-wildcard-tls-cert
+spec:
+  secretName: cluster-wildcard-tls-cert
+  issuerRef:
+    kind: ClusterIssuer
+    name: ${CERT_ISSUER}
+  duration: 2160h # 90d, Golang’s time.Time string format
+  renewBefore: 360h # 15d, Golang’s time.Time string format
+  commonName: "*.$CLUSTER_NAME.$AZ_RESOURCE_DNS"
+  dnsNames:
+  - "*.$CLUSTER_NAME.$AZ_RESOURCE_DNS"
+  - "$CLUSTER_NAME.$AZ_RESOURCE_DNS"
