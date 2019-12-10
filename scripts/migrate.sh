@@ -272,7 +272,7 @@ echo ""
 read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " -n 1 -r
 if [[ "$REPLY" =~ (N|n) ]]; then
     echo ""
-    echo "Chicken!1"
+    echo "Chicken!"
 
     echo ""
     echo "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url"
