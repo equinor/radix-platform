@@ -203,7 +203,6 @@ function installCertManager(){
 
     # Install the cert-manager Helm chart 
     #
-    # TODO - FIX ingressShim.defaultACMEChallengeType and defaultACMEDNS01ChallengeProvider?
     # Regarding ingress shims, see https://docs.cert-manager.io/en/release-0.11/tasks/issuing-certificates/ingress-shim.html#configuration
     helm upgrade --install cert-manager \
     --namespace cert-manager \
