@@ -371,6 +371,17 @@ echo "the official cluster, using the custom aliases, you will need to manually 
 echo "in the secret to point to the custom alias"
 
 echo ""
+echo "Waiting for radix-api ingress to be ready so that the web console can work properly..."
+while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+
+echo ""
+echo "Radix API ingress is ready, restarting web console... "
+kubectl delete pods $(kubectl get pods -n "$WEB_CONSOLE_NAMESPACE" -o custom-columns=':metadata.name' --no-headers | grep web) -n "$WEB_CONSOLE_NAMESPACE"
+
+echo ""
 echo "Roses are red, violets are blue"
 echo "the deployment of radix apps has come to an end"
 echo "but maybe not so"
