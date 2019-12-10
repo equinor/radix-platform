@@ -366,11 +366,6 @@ echo "For the web console to work we need to apply the secrets for the auth prox
 wait # wait for subshell to finish
 
 echo ""
-echo "NOTE: Console is set up with redirect url $OAUTH2_PROXY_REDIRECT_URL. If this cluster will be"
-echo "the official cluster, using the custom aliases, you will need to manually modify the OAUTH2_PROXY_REDIRECT_URL"
-echo "in the secret to point to the custom alias"
-
-echo ""
 echo "Waiting for radix-api ingress to be ready so that the web console can work properly..."
 while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
     printf "."

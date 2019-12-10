@@ -75,6 +75,10 @@ function updateAuthProxySecret() {
     rm "$AUTH_SECRET_ENV_FILE"
 
     echo "Auth proxy secret updated"
+    echo ""
+    echo "NOTE: Console is set up with redirect url $OAUTH2_PROXY_REDIRECT_URL. If this cluster will be"
+    echo "the official cluster, using the custom aliases, you will need to manually modify the OAUTH2_PROXY_REDIRECT_URL"
+    echo "in the secret to point to the custom alias"
 }
 
 ### MAIN
