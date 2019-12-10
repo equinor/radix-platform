@@ -1,7 +1,7 @@
 ---
 title: Radix concepts
 layout: document
-parent: ['Docs', '../../docs.html']
+parent: ["Docs", "../../docs.html"]
 toc: true
 ---
 
@@ -17,7 +17,7 @@ An application declares all its [components](#component); this allows for them t
 
 The components of an application don't need to share aspects like coding language, runtime, or system resources — they are just running processes. But within an application, components should in principle relate closely by communicating with each other.
 
-The basic configuration for an application (the *application registration*) is composed of a **name**, the URL of a **GitHub repository**, and **access control** configuration (i.e. which Active Directory groups can administer the application in Radix). The remainder of the configuration is provided by the [`radixconfig.yaml` file](../reference-radix-config/), which is kept in the root of the application GitHub repository.
+The basic configuration for an application (the _application registration_) is composed of a **name**, the URL of a **GitHub repository**, and **access control** configuration (i.e. which Active Directory groups can administer the application in Radix). The remainder of the configuration is provided by the [`radixconfig.yaml` file](../reference-radix-config/), which is kept in the root of the application GitHub repository.
 
 ## Environment
 
@@ -29,7 +29,7 @@ Within an environment, components should address each other over the network by 
 
 > If you ❤️ Kubernetes, you'll be happy to know that Radix environments are actually just [K8s namespaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/).
 
-Environments are targets for [deployments](#deployment); at any time an environment will contain at most one *active deployment*. When a deployment is made active, all components within the environment are shut down and new ones are started, using the images defined in the deployment.
+Environments are targets for [deployments](#deployment); at any time an environment will contain at most one _active deployment_. When a deployment is made active, all components within the environment are shut down and new ones are started, using the images defined in the deployment.
 
 ![Diagram of active deployment within environment](environment-deployment.png "Environment with active deployment")
 
@@ -73,7 +73,7 @@ For each environment, a secret can be **consistent** or **missing**. A missing s
 
 Jobs are the core of the continuous integration/deployment (CI/CD) capabilities of Radix. Jobs perform tasks, which can causes changes in an application, its environments, and components. Depending on the type of job (its [pipeline](#pipeline)), different behaviours can be expected.
 
-Jobs consist of a series of *steps*, run either in parallel or sequentially (this is also defined by the pipeline). Each step is a stand-alone process, and its output can be inspected.
+Jobs consist of a series of _steps_, run either in parallel or sequentially (this is also defined by the pipeline). Each step is a stand-alone process, and its output can be inspected.
 
 ## Pipeline
 
@@ -81,7 +81,10 @@ A pipeline defines a type of job. There are currently three types of pipeline in
 
 ### The `build-deploy` pipeline
 
-This is triggered by a commit in GitHub to a branch mapped to an environment. In turn, this causes all components to be rebuilt and a new deployment to be created in the appropriate environment.
+This is triggered by a commit in GitHub to a branch mapped to an environment. In turn, this causes all components to be rebuilt and a new deployment to be created in the appropriate environment. If many components are built from the same source, then one multi-component image is built for all components. If there are several multi-components in the config, the multi-component images will be indexed.
+
+#### Scanning images for security issues
+Before the deployment is done, after a build, the image is scanned for security-related issues using the tool [trivy](https://github.com/aquasecurity/trivy). This scan will be a seperate step in the pipeline and the result will be logged in the step. Please note that the job will not fail if the result contains HIGH and/or SEVERE issues. However every developer should investigate and fix any security issues.
 
 ![Diagram of the build-deploy pipeline](pipeline-build-deploy.png "The build-deploy pipeline")
 
