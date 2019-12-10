@@ -28,10 +28,10 @@
 ### 
 
 # Normal usage
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./install_flux.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 # Configure a dev cluster to use custom configs
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./install_flux.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./bootstrap.sh
 
 
 #######################################################################################
@@ -99,23 +99,26 @@ fi
 
 # Optional inputs
 
-FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
-FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
-FLUX_DEPLOY_KEYS_GENERATED=false
-FLUX_HELM_CRD_PATH="https://raw.githubusercontent.com/fluxcd/flux/helm-0.10.1/deploy-helm/flux-helm-release-crd.yaml"
-
 if [[ -z "$GIT_REPO" ]]; then
   GIT_REPO="git@github.com:equinor/radix-flux.git"
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
   GIT_BRANCH="master"
+fi
+
+if [[ -z "$GIT_DIR" ]]; then
   GIT_DIR="development-configs"
 fi
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
+
+# Script vars
+
+WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$WORK_DIR"/flux.env
 
 
 #######################################################################################
@@ -190,21 +193,21 @@ fi
 FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 
+printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
 if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
-    echo "Missing flux deploy keys for GitHub in keyvault: $AZ_RESOURCE_KEYVAULT"
-    echo "Generating flux private and public keys..."
-    ssh-keygen -t rsa -b 4096 -N "" -C "gm_radix@equinor.com" -f id_rsa."$RADIX_ENVIRONMENT"
-    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT"
-    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT"
-    rm id_rsa."$RADIX_ENVIRONMENT"
-    rm id_rsa."$RADIX_ENVIRONMENT".pub
+    printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
+    ssh-keygen -t rsa -b 4096 -N "" -C "gm_radix@equinor.com" -f id_rsa."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
+    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
+    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
+    rm id_rsa."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
+    rm id_rsa."$RADIX_ENVIRONMENT".pub 2>&1 >/dev/null
     FLUX_DEPLOY_KEYS_GENERATED=true
+    printf "...Done\n"
 else
-    echo "Found Flux deploy keys for GitHub in keyvault: $AZ_RESOURCE_KEYVAULT"
+    printf "...Keys found."
 fi
 
-echo ""
-echo "Creating $FLUX_PRIVATE_KEY_NAME secret"
+printf "\nCreating k8s secret \"$FLUX_PRIVATE_KEY_NAME\"..."
 az keyvault secret download \
     --vault-name $AZ_RESOURCE_KEYVAULT \
     --name "$FLUX_PRIVATE_KEY_NAME" \
@@ -218,21 +221,21 @@ kubectl create secret generic "$FLUX_PRIVATE_KEY_NAME" \
    2>&1 >/dev/null
 
 rm "$FLUX_PRIVATE_KEY_NAME"
+printf "...Done\n"
 
 
 #######################################################################################
 ### INSTALLATION
 
-echo ""
-echo "Adding Weaveworks repository to Helm"
-helm repo add fluxcd https://fluxcd.github.io/flux
+printf "\nAdding Weaveworks repository to Helm..."
+helm repo add fluxcd https://fluxcd.github.io/flux 2>&1 >/dev/null
+printf "...Done\n"
 
-echo ""
-echo "Adding Flux CRDs, no longer included in the helm chart"
+printf "\nAdding Flux CRDs, no longer included in the helm chart"
 kubectl apply -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
+printf "...Done\n"
 
-echo ""
-echo "Installing Flux with Helm operator"
+printf "\nInstalling Flux with Helm operator"
 helm upgrade --install flux \
    --set rbac.create=true \
    --set helmOperator.create=true \
@@ -247,6 +250,7 @@ helm upgrade --install flux \
    --set registry.excludeImage="k8s.gcr.io/*\,aksrepos.azurecr.io/*\,quay.io/*" \
    fluxcd/flux \
    2>&1 >/dev/null
+printf "...Done\n"
 
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
@@ -263,5 +267,5 @@ fi
 ### END
 ###
 
-echo "Install of Flux is done!"
+echo "Bootstrap of Flux is done!"
 echo ""

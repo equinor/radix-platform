@@ -44,8 +44,8 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 
 #### Step 2 Bootstrap and teardown of a Radix cluster
 
-- [bootstrap](./aks/README.md#bootstrap)
-- [teardown](./aks/README.md#teardown)
+- [./aks/bootstrap](./aks/README.md#bootstrap)
+- [./aks/teardown](./aks/README.md#teardown)
 
 #### Step 3 Deploy base components
 
