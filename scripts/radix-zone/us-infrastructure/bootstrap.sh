@@ -4,7 +4,7 @@
 ### PURPOSE
 ### 
 
-# Bootstrap radix zone infrastructure
+# Bootstrap radix zone infrastructure for "us.radix.equinor.com"
 
 
 #######################################################################################
