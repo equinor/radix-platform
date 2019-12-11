@@ -75,7 +75,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 120Gi
+              storage: 512Gi
         selector: {}
     additionalScrapeConfigs:
       # * `prometheus.io/scrape`: Only scrape pods that have a value of `true`

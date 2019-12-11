@@ -284,7 +284,7 @@ echo "Installing prometheus-operator"
 ##########
 
 helm upgrade --install prometheus-operator stable/prometheus-operator \
-  --version 6.7.3 \
+  --version 8.3.2 \
   -f manifests/prometheus-operator-values.yaml \
   --set prometheus.prometheusSpec.serviceMonitorSelector.any=true
 
@@ -374,7 +374,7 @@ kubectl apply -f grafana-secrets.yaml
 rm -f grafana-secrets.yaml
 
 helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
-  --version v3.9.1 \
+  --version v4.1.1 \
   --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
   --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
   --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
