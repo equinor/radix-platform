@@ -1,26 +1,23 @@
 #!/bin/bash
 
-
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Deploy all radix platform apps and make them ready for use
 
-
 #######################################################################################
 ### PRECONDITIONS
-### 
+###
 
 # It is assumed that:
 # 1. cluster is installed using the aks/bootstrap.sh script,
 # 2. that the base components exists (install_base_components.sh has been run)
 # 3. az, helm, jq, sha256sum should be installed
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -29,21 +26,22 @@
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
-
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./deploy_radix_apps.sh
 
-
 #######################################################################################
 ### Support funcs
-### 
+###
 
-function assert_dep {
+function assert_dep() {
     while [ -n "$1" ]; do
-        command -v "$1" >/dev/null 2>&1 || { echo >&2 "Command \`$1\` is not installed. Aborting."; exit 1; }
+        command -v "$1" >/dev/null 2>&1 || {
+            echo >&2 "Command \`$1\` is not installed. Aborting."
+            exit 1
+        }
         shift
     done
 }
@@ -54,19 +52,17 @@ function wait_for_app_namespace() {
     list_ns_command="kubectl get ns --selector="radix-app=$name" --output=name"
     echo "Waiting for app namespace..."
 
-    while [[ $($list_ns_command) == "" ]]; do   
+    while [[ $($list_ns_command) == "" ]]; do
         printf "."
         sleep 2s
     done
 }
 
-
 #######################################################################################
 ### Check for prerequisites binaries
 ###
 
-assert_dep az helm jq sha256sum
-
+assert_dep az helm jq sha256sum python
 
 #######################################################################################
 ### Read inputs and configs
@@ -105,7 +101,6 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
 printf "Done.\n"
 
-
 #######################################################################################
 ### Verify task at hand
 ###
@@ -134,15 +129,14 @@ echo ""
 if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " -n 1 -r
     if [[ "$REPLY" =~ (N|n) ]]; then
-    echo ""
-    echo "Quitting."
-    exit 0
+        echo ""
+        echo "Quitting."
+        exit 0
     fi
     echo ""
 fi
 
 echo ""
-
 
 #######################################################################################
 ### Deploy apps
@@ -152,7 +146,7 @@ echo ""
 helm repo update
 
 # Connect kubectl so we have the correct context
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME"
+az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
 
 # Wait for operator to be deployed from flux
 echo ""
@@ -187,7 +181,7 @@ helm upgrade --install radix-pipeline-github-webhook-master \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
 sleep 4s
@@ -200,7 +194,7 @@ helm upgrade --install radix-pipeline-github-webhook-release \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Radix API
 az keyvault secret download \
@@ -225,7 +219,7 @@ helm upgrade --install radix-pipeline-api-master \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
 sleep 4s
@@ -238,7 +232,7 @@ helm upgrade --install radix-pipeline-api-release \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Radix Canary app
 az keyvault secret download \
@@ -263,7 +257,7 @@ helm upgrade --install radix-pipeline-canary-master \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
 sleep 4s
@@ -276,7 +270,7 @@ helm upgrade --install radix-pipeline-canary-release \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Radix Web Console
 az keyvault secret download \
@@ -301,7 +295,7 @@ helm upgrade --install radix-pipeline-web-console-master \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
 sleep 4s
@@ -314,7 +308,7 @@ helm upgrade --install radix-pipeline-web-console-release \
     --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Public Web Site
 az keyvault secret download \
@@ -339,12 +333,16 @@ helm upgrade --install radix-pipeline-public-site-master \
     --set cloneBranch="master" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --set imageTag="`date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]'`"
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Update replyUrl for web-console
+AUTH_PROXY_COMPONENT="auth"
+AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+
 echo ""
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
-while [[ "$(kubectl get ing web -n radix-web-console-prod 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n "$WEB_CONSOLE_NAMESPACE" 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
@@ -352,15 +350,31 @@ echo "Ingress is ready, adding replyUrl... "
 
 # The web console has an aad app per cluster type. This script does not know about cluster type, so we will have to go with subscription environment.
 if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
+    (AAD_APP_NAME="Omnia Radix Web Console - Development Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./add_reply_url_for_cluster.sh)
     wait # wait for subshell to finish
-    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
+    (AAD_APP_NAME="Omnia Radix Web Console - Playground Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./add_reply_url_for_cluster.sh)
     wait # wait for subshell to finish
 fi
 if [[ "$RADIX_ENVIRONMENT" == "prod" ]]; then
-    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh)
+    (AAD_APP_NAME="Omnia Radix Web Console - Production Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./add_reply_url_for_cluster.sh)
     wait # wait for subshell to finish
 fi
+
+echo ""
+echo "For the web console to work we need to apply the secrets for the auth proxy"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+wait # wait for subshell to finish
+
+echo ""
+echo "Waiting for radix-api ingress to be ready so that the web console can work properly..."
+while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+
+echo ""
+echo "Radix API ingress is ready, restarting web console... "
+kubectl delete pods $(kubectl get pods -n "$WEB_CONSOLE_NAMESPACE" -o custom-columns=':metadata.name' --no-headers | grep web) -n "$WEB_CONSOLE_NAMESPACE"
 
 echo ""
 echo "Roses are red, violets are blue"
