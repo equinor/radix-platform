@@ -5,11 +5,13 @@ parent: ["Guides", "../../guides.html"]
 toc: true
 ---
 
+NOTE: This functionality is currently under development. Please use with caution.
+
 Disclaimer: Please seek advice elsewhere on wether or not github actions and/or github package repository is the right option for you. Both features are new and we have too little experience as an organization to make any recommendations, both in terms of robustness and in terms of cost. A private Azure container registry (ACR) would for instance allow you to set it up with a service account, rather than using your personal account. This document is meant to be a user guide on how to combine these with Radix, as one of many alternatives for running CI outside of Radix.
 
 # Use master branch as a config branch
 
-Set up both environments to deploy from master branch. Both client component and server component has a {tagName} appended to the image string, in order to use the imageTagName field in environment config.
+Set up both environments to deploy from master branch. Both client component and server component has a {imageTagName} appended to the image string, in order to use the imageTagName field in environment config.
 
 ```yaml
 apiVersion: radix.equinor.com/v1
@@ -26,7 +28,7 @@ spec:
         from: master
   components:
     - name: client
-      image: docker.pkg.github.com/equinor/<repository>/<client-image>:{tagName}
+      image: docker.pkg.github.com/equinor/<repository>/<client-image>:{imageTagName}
       environmentConfig:
         - environment: dev
           imageTagName: to-be-changed
@@ -37,7 +39,7 @@ spec:
           port: 80
       public: true
     - name: server
-      image: docker.pkg.github.com/equinor/<repository>/<server-image>:{tagName}
+      image: docker.pkg.github.com/equinor/<repository>/<server-image>:{imageTagName}
       environmentConfig:
         - environment: dev
           imageTagName: to-be-changed
