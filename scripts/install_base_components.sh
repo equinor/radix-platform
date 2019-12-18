@@ -200,14 +200,12 @@ fi
 (USER_PROMPT="false" ./helm/bootstrap.sh)
 wait
 
-
 #######################################################################################
 ### Install cert-manager
 ###
 
 (USER_PROMPT="false" ./cert-manager/bootstrap.sh)
 wait
-
 
 #######################################################################################
 ### Create storage classes
@@ -398,7 +396,6 @@ kubectl apply -f external-dns-azure-secret.yaml
 
 rm -f external-dns-azure-secret.yaml
 
-
 #######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
@@ -466,25 +463,8 @@ wait
 ###
 
 echo ""
-echo "Install Radix CICD Canary"
-az keyvault secret download \
-  --vault-name "$AZ_RESOURCE_KEYVAULT" \
-  --name radix-cicd-canary-values \
-  --file radix-cicd-canary-values.yaml
-
-echo "clusterType: $CLUSTER_TYPE" >> radix-cicd-canary-values.yaml
-echo "clusterFqdn: $CLUSTER_NAME.$AZ_RESOURCE_DNS" >> radix-cicd-canary-values.yaml
-
-kubectl create ns radix-cicd-canary --dry-run --save-config -o yaml |
-  kubectl apply -f -
-
-kubectl create secret generic canary-secrets --namespace radix-cicd-canary \
-  --from-file=./radix-cicd-canary-values.yaml \
-  --dry-run -o yaml |
-  kubectl apply -f -
-
-rm -f radix-cicd-canary-values.yaml
-echo "Done."
+(./cicd-canary/bootstrap.sh)
+wait
 
 #######################################################################################
 ### Install prerequisites for Velero
