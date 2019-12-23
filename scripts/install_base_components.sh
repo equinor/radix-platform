@@ -386,15 +386,9 @@ wait # wait for subshell to finish
 ### Install prerequisites for external-dns (flux handles the main installation)
 ###
 
-echo "Installing external-dns secret"
-az keyvault secret download \
-  --vault-name $AZ_RESOURCE_KEYVAULT \
-  --name external-dns-azure-secret \
-  --file external-dns-azure-secret.yaml
-
-kubectl apply -f external-dns-azure-secret.yaml
-
-rm -f external-dns-azure-secret.yaml
+echo ""
+(./external-dns-prerequisites/bootstrap.sh)
+wait
 
 #######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
