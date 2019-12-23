@@ -25,7 +25,7 @@
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env ./bootstrap-acr.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap-acr.sh
 
 #######################################################################################
 ### START
