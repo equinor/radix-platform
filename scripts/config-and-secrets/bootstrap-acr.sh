@@ -1,0 +1,90 @@
+#!/bin/bash
+
+#######################################################################################
+### PURPOSE
+###
+
+# Bootstrap radix-cr-cicd-dev/radix-cr-cicd-prod in a radix cluster
+
+#######################################################################################
+### PRECONDITIONS
+###
+
+# - AKS cluster is available
+# - User has role cluster-admin
+
+#######################################################################################
+### INPUTS
+###
+
+# Required:
+# - RADIX_ZONE_ENV      : Path to *.env file
+
+#######################################################################################
+### HOW TO USE
+###
+
+# NORMAL
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap-acr.sh
+
+#######################################################################################
+### START
+###
+
+echo ""
+echo "Start bootstrap of radix-sp-acr-azure secret and radix-docker secret"
+
+#######################################################################################
+### Check for prerequisites binaries
+###
+
+echo ""
+printf "Check for neccesary executables... "
+hash az 2>/dev/null || {
+    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nError: kubectl not found in PATH. Exiting..."
+    exit 1
+}
+hash jq 2>/dev/null || {
+    echo -e "\nError: jq not found in PATH. Exiting..."
+    exit 1
+}
+printf "All is good."
+echo ""
+
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
+
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+    echo "Please provide RADIX_ZONE_ENV" >&2
+    exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
+fi
+
+az keyvault secret download \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
+    --file sp_credentials.json
+
+kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run -o yaml | kubectl apply -f -
+
+kubectl create secret docker-registry radix-docker \
+    --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
+    --docker-username=$"$(jq -r '.id' sp_credentials.json)" \
+    --docker-password="$(jq -r '.password' sp_credentials.json)" \
+    --docker-email=radix@statoilsrm.onmicrosoft.com \
+    --dry-run -o yaml |
+    kubectl apply -f -
+
+rm -f sp_credentials.json
