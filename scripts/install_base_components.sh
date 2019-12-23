@@ -407,24 +407,9 @@ kubectl label ns default purpose=radix-base-ns --overwrite
 echo ""
 echo "Start on radix platform shared configs and secrets..."
 
-echo "Creating radix-sp-acr-azure secret"
-az keyvault secret download \
-  --vault-name "$AZ_RESOURCE_KEYVAULT" \
-  --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
-  --file sp_credentials.json
-
-kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run -o yaml | kubectl apply -f -
-
-echo "Creating radix-docker secret"
-kubectl create secret docker-registry radix-docker \
-  --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
-  --docker-username=$"$(jq -r '.id' sp_credentials.json)" \
-  --docker-password="$(jq -r '.password' sp_credentials.json)" \
-  --docker-email=radix@statoilsrm.onmicrosoft.com \
-  --dry-run -o yaml |
-  kubectl apply -f -
-
-rm -f sp_credentials.json
+echo ""
+(./config-and-secrets/bootstrap-acr.sh)
+wait
 
 cat <<EOF >radix-platform-config.yaml
 apiVersion: v1
