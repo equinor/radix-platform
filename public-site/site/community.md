@@ -22,25 +22,9 @@ We are based in Stavanger. If you see us on the corridor, say hello!
 
 ![Radix Team](images/radix-team.jpg)
 
-- Lars Kåre
-
-  ![Lars Kåre](https://ca.slack-edge.com/T02JL00JU-U034H5BAE-1b3bb62a5396-72)
-
 - Kjell Erik
 
   ![Kjell Erik](https://ca.slack-edge.com/T02JL00JU-U046ATQCH-73c57fbcc78a-72)
-
-- Nelson
-
-  ![Nelson](https://ca.slack-edge.com/T02JL00JU-U9NTD5935-43efc6fc12b6-72)
-
-- Stian
-
-  ![Stian](https://ca.slack-edge.com/T02JL00JU-UA1ENCUDR-c28a6459bcfe-72)
-
-- Jonas
-
-  ![Jonas](https://ca.slack-edge.com/T02JL00JU-U2BGZF16E-d9cd9ab419e1-72)
 
 - Dafferianto
 
@@ -49,3 +33,12 @@ We are based in Stavanger. If you see us on the corridor, say hello!
 - Inge
 
   ![Inge](https://ca.slack-edge.com/T02JL00JU-U03L84USJ-g762ddbe2175-72)
+
+- Jonas
+
+  ![Jonas](https://ca.slack-edge.com/T02JL00JU-U2BGZF16E-d9cd9ab419e1-72)
+  
+- Elsa
+
+  ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-512)
+
