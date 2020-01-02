@@ -40,5 +40,5 @@ We are based in Stavanger. If you see us on the corridor, say hello!
   
 - Elsa
 
-  ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-512)
+  ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72)
 
