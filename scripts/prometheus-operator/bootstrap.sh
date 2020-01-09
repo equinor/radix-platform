@@ -77,6 +77,8 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+# IKNU : 2020.01.09 : The following is needed becuase prometheus started failing installation
+# In addition prometheusOperator.createCustomResource=false is set when installing chart
 kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/alertmanager.crd.yaml
 kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/prometheus.crd.yaml
 kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/prometheusrule.crd.yaml
