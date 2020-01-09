@@ -29,6 +29,48 @@
 
 echo "Bootstrap prometheus-operator..."
 
+#######################################################################################
+### Check for prerequisites binaries
+###
+
+echo ""
+printf "Check for neccesary executables... "
+hash az 2>/dev/null || {
+    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nError: kubectl not found in PATH. Exiting..."
+    exit 1
+}
+hash helm 2>/dev/null || {
+    echo -e "\nError: helm not found in PATH. Exiting..."
+    exit 1
+}
+hash jq 2>/dev/null || {
+    echo -e "\nError: jq not found in PATH. Exiting..."
+    exit 1
+}
+printf "All is good."
+echo ""
+
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
+
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+    echo "Please provide RADIX_ZONE_ENV" >&2
+    exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
+fi
+
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
 ##########
@@ -91,7 +133,7 @@ echo "Bootstrap prometheus-operator..."
 
 helm upgrade --install prometheus-operator stable/prometheus-operator \
     --version 8.3.2 \
-    -f manifests/prometheus-operator-values.yaml \
+    -f ./prometheus-operator-values.yaml \
     --set prometheus.prometheusSpec.serviceMonitorSelector.any=true
 
 # Install Prometheus Ingress with HTTP Basic Authentication
