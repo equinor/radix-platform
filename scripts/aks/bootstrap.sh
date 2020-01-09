@@ -1,16 +1,14 @@
 #!/bin/bash
 
-
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Bootstrap aks instance in a radix zone
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -18,23 +16,20 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-# - CREDENTIALS_FILE    : Path to credentials in the form of shell vars. See "Set credentials" for required key/value pairs. 
-
+# - CREDENTIALS_FILE    : Path to credentials in the form of shell vars. See "Set credentials" for required key/value pairs.
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 ./bootstrap.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start bootstrap aks instance... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -42,11 +37,19 @@ echo "Start bootstrap aks instance... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
+hash jq 2>/dev/null || {
+    echo -e "\nError: jq not found in PATH. Exiting... " >&2
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nError: kubectl not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -71,7 +74,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${RADIX_ENVIRONMENT}.env"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${RADIX_ENVIRONMENT}.env"
 
 # Optional inputs
 
@@ -88,7 +91,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -97,7 +99,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -143,15 +144,14 @@ echo ""
 if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " -n 1 -r
     if [[ "$REPLY" =~ (N|n) ]]; then
-    echo ""
-    echo "Quitting."
-    exit 0
+        echo ""
+        echo "Quitting."
+        exit 0
     fi
     echo ""
 fi
 
 echo ""
-
 
 #######################################################################################
 ### Set credentials
@@ -160,7 +160,7 @@ echo ""
 printf "Reading credentials... "
 if [[ -z "$CREDENTIALS_FILE" ]]; then
     # No file found, default to read credentials from keyvault
-    # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)   
+    # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)
     CLUSTER_SYSTEM_USER_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_SYSTEM_USER_CLUSTER | jq -r .value | jq -r .id)"
     CLUSTER_SYSTEM_USER_PASSWORD="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_SYSTEM_USER_CLUSTER | jq -r .value | jq -r .password)"
     AAD_SERVER_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .id)"
@@ -169,7 +169,7 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
 else
     # Credentials are provided from input.
-    # Source the file to make the key/value pairs readable as script vars    
+    # Source the file to make the key/value pairs readable as script vars
     source ./"$CREDENTIALS_FILE"
 fi
 printf "Done.\n"
@@ -180,7 +180,7 @@ printf "Done.\n"
 
 echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
-printf "   Creating azure VNET ${VNET_NAME}... " 
+printf "   Creating azure VNET ${VNET_NAME}... "
 az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
     -n "$VNET_NAME" \
     --address-prefix "$VNET_ADDRESS_PREFIX" \
@@ -203,19 +203,18 @@ printf "Done.\n"
 # Configure new roles
 printf "   Creating new roles... "
 az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" \
-   --role "Network Contributor" \
-   --scope "${VNET_ID}" \
-   2>&1 >/dev/null
+    --role "Network Contributor" \
+    --scope "${VNET_ID}" \
+    2>&1 >/dev/null
 printf "Done.\n"
 
 echo "Bootstrap of advanced network done."
-
 
 #######################################################################################
 ### Create cluster
 ###
 
-echo "Creating aks instance \"${CLUSTER_NAME}\"... " 
+echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
 az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
     --no-ssh-key \
@@ -235,24 +234,21 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
     --aad-tenant-id "$AAD_TENANT_ID" \
-    --network-policy "$NETWORK_POLICY" \
     --location "$AZ_RADIX_ZONE_LOCATION" \
     2>&1 >/dev/null
 
 echo "Done."
-
 
 #######################################################################################
 ### Update local kube config
 ###
 
 printf "Updating local kube config with admin access to cluster \"$CLUSTER_NAME\"... "
-az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" \
+az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### END
@@ -260,17 +256,17 @@ printf "Done.\n"
 
 if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
 
-   echo ""
-   echo "###########################################################"
-   echo ""
-   echo "FOR PRODUCTION ONLY: ENABLE AKS DIAGNOSTIC LOGS"
-   echo ""
-   echo "You need to manually enable AKS Diagnostic logs. See https://docs.microsoft.com/en-us/azure/aks/view-master-logs ."
-   echo ""
-   echo "Complete the steps in the section 'Enable diagnostics logs'. "
-   echo "PS: It has been enabled on our subscriptions so no need to do that step."
-   echo ""
-   echo "###########################################################"
+    echo ""
+    echo "###########################################################"
+    echo ""
+    echo "FOR PRODUCTION ONLY: ENABLE AKS DIAGNOSTIC LOGS"
+    echo ""
+    echo "You need to manually enable AKS Diagnostic logs. See https://docs.microsoft.com/en-us/azure/aks/view-master-logs ."
+    echo ""
+    echo "Complete the steps in the section 'Enable diagnostics logs'. "
+    echo "PS: It has been enabled on our subscriptions so no need to do that step."
+    echo ""
+    echo "###########################################################"
 
 fi
 
