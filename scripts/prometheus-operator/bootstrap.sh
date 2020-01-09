@@ -218,4 +218,4 @@ EOF
 # Change kubelet ServiceMonitor from https to http, ref https://github.com/coreos/prometheus-operator/issues/1522
 
 kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
-    --patch "$(cat ./manifests/kubelet-service-monitor-patch.yaml)"
+    --patch "$(cat ./kubelet-service-monitor-patch.yaml)"
