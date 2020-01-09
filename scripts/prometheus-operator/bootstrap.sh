@@ -12,12 +12,13 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
+# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 #######################################################################################
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 #######################################################################################
 ### KNOWN ISSUES
@@ -70,6 +71,17 @@ else
     fi
     source "$RADIX_ZONE_ENV"
 fi
+
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "Please provide CLUSTER_NAME" >&2
+    exit 1
+fi
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/alertmanager.crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/prometheus.crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/prometheusrule.crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/servicemonitor.crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/podmonitor.crd.yaml
 
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
@@ -134,7 +146,8 @@ fi
 helm upgrade --install prometheus-operator stable/prometheus-operator \
     --version 8.3.2 \
     -f ./prometheus-operator-values.yaml \
-    --set prometheus.prometheusSpec.serviceMonitorSelector.any=true
+    --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
+    --set prometheusOperator.createCustomResource=false
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
