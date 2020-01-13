@@ -1,0 +1,7 @@
+{
+   "tenantId": "$SP_DNS_TENANT_ID",
+   "subscriptionId": "$AZ_SUBSCRIPTION_ID",
+   "aadClientId": "$SP_DNS_ID",
+   "aadClientSecret": "$SP_DNS_PASSWORD",
+   "resourceGroup": "$AZ_RESOURCE_GROUP_COMMON"
+}
