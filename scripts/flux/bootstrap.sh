@@ -237,6 +237,7 @@ printf "...Done\n"
 
 printf "\nInstalling Flux with Helm operator"
 helm upgrade --install flux \
+   --version 0.16.0 \
    --set rbac.create=true \
    --set helmOperator.create=true \
    --set helmOperator.pullSecret=radix-docker \
