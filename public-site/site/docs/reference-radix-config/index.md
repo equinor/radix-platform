@@ -88,7 +88,7 @@ We also support wildcard branch mapping using `*` and `?`. Examples of this are:
 
 This is where you specify the various components for your application - it needs at least one. Each component needs a `name`; this will be used for building the Docker images (appName-componentName). Source for the component can be; a folder in the repository, a dockerfile or an image.
 
-Note! `image` config cannot be used in conjunction with the `src` or the `dockerfileName` config.
+> Note! `image` config cannot be used in conjunction with the `src` or the `dockerfileName` config.
 
 ### `src`
 
