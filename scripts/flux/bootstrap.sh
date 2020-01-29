@@ -1,16 +1,14 @@
 #!/bin/bash
 
-
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Install flux in radix cluster.
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
@@ -22,10 +20,9 @@
 # - GIT_DIR                 : Default to "development-configs"
 # - USER_PROMPT             : Is human interaction is required to run script? true/false. Default is true.
 
-
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # Normal usage
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
@@ -33,34 +30,30 @@
 # Configure a dev cluster to use custom configs
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./bootstrap.sh
 
-
 #######################################################################################
 ### DOCS
-### 
+###
 
 # - https://github.com/fluxcd/flux/tree/master/chart/flux
 # - https://github.com/equinor/radix-flux/
 
-
 #######################################################################################
 ### COMPONENTS
-### 
+###
 
 # - AZ keyvault
 #     Holds git deploy key to config repo
 # - Flux CRDs
 #     The CRDs are no longer in the Helm chart and must be installed separately
 # - Flux Helm Chart
-#     Installs everything else 
-
+#     Installs everything else
 
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start installing Flux..."
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -68,12 +61,20 @@ echo "Start installing Flux..."
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nError: kubectl not found in PATH. Exiting..."
+    exit 1
+}
+hash helm 2>/dev/null || {
+    echo -e "\nError: helm not found in PATH. Exiting..."
+    exit 1
+}
 printf "All is good."
 echo ""
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -100,15 +101,15 @@ fi
 # Optional inputs
 
 if [[ -z "$GIT_REPO" ]]; then
-  GIT_REPO="git@github.com:equinor/radix-flux.git"
+    GIT_REPO="git@github.com:equinor/radix-flux.git"
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
-  GIT_BRANCH="master"
+    GIT_BRANCH="master"
 fi
 
 if [[ -z "$GIT_DIR" ]]; then
-  GIT_DIR="development-configs"
+    GIT_DIR="development-configs"
 fi
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -117,9 +118,8 @@ fi
 
 # Script vars
 
-WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$WORK_DIR"/flux.env
-
 
 #######################################################################################
 ### Prepare az session
@@ -129,7 +129,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -161,16 +160,14 @@ echo ""
 if [[ $USER_PROMPT == true ]]; then
     read -p "Is this correct? (Y/n) " -n 1 -r
     if [[ "$REPLY" =~ (N|n) ]]; then
-    echo ""
-    echo "Quitting."
-    exit 0
+        echo ""
+        echo "Quitting."
+        exit 0
     fi
     echo ""
 fi
 
 echo ""
-
-
 
 #######################################################################################
 ### CLUSTER?
@@ -179,12 +176,11 @@ echo ""
 kubectl_context="$(kubectl config current-context)"
 
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
-   echo "kubectl is ready..."
+    echo "kubectl is ready..."
 else
-   echo "Please set your kubectl current-context to be $CLUSTER_NAME"
-   exit 1
+    echo "Please set your kubectl current-context to be $CLUSTER_NAME"
+    exit 1
 fi
-
 
 #######################################################################################
 ### CREDENTIALS
@@ -215,14 +211,13 @@ az keyvault secret download \
     2>&1 >/dev/null
 
 kubectl create secret generic "$FLUX_PRIVATE_KEY_NAME" \
-   --from-file=identity="$FLUX_PRIVATE_KEY_NAME" \
-   --dry-run -o yaml \
-   | kubectl apply -f - \
-   2>&1 >/dev/null
+    --from-file=identity="$FLUX_PRIVATE_KEY_NAME" \
+    --dry-run -o yaml |
+    kubectl apply -f - \
+        2>&1 >/dev/null
 
 rm "$FLUX_PRIVATE_KEY_NAME"
 printf "...Done\n"
-
 
 #######################################################################################
 ### INSTALLATION
@@ -237,20 +232,20 @@ printf "...Done\n"
 
 printf "\nInstalling Flux with Helm operator"
 helm upgrade --install flux \
-   --version 0.16.0 \
-   --set rbac.create=true \
-   --set helmOperator.create=true \
-   --set helmOperator.pullSecret=radix-docker \
-   --set git.url="$GIT_REPO" \
-   --set git.branch="$GIT_BRANCH" \
-   --set git.path="$GIT_DIR" \
-   --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
-   --set registry.acr.enabled=true \
-   --set prometheus.enabled=true \
-   --set manifestGeneration=true \
-   --set registry.excludeImage="k8s.gcr.io/*\,aksrepos.azurecr.io/*\,quay.io/*" \
-   fluxcd/flux \
-   2>&1 >/dev/null
+    --version 0.16.0 \
+    --set rbac.create=true \
+    --set helmOperator.create=true \
+    --set helmOperator.pullSecret=radix-docker \
+    --set git.url="$GIT_REPO" \
+    --set git.branch="$GIT_BRANCH" \
+    --set git.path="$GIT_DIR" \
+    --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
+    --set registry.acr.enabled=true \
+    --set prometheus.enabled=true \
+    --set manifestGeneration=true \
+    --set registry.excludeImage="k8s.gcr.io/*\,aksrepos.azurecr.io/*\,quay.io/*" \
+    fluxcd/flux \
+    2>&1 >/dev/null
 printf "...Done\n"
 
 echo -e ""
@@ -262,7 +257,6 @@ if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
     echo -e "${__style_yellow}$FLUX_DEPLOY_KEY_NOTIFICATION${__style_end}"
     echo ""
 fi
-
 
 #######################################################################################
 ### END

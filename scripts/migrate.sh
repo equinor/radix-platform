@@ -303,7 +303,7 @@ while read -r line; do
 done <<<"$(helm list --short | grep radix-ingress)"
 
 # Point granana to cluster specific ingress
-GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$DNS_ZONE"
+GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
 kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
 echo ""
@@ -317,7 +317,7 @@ wait # wait for subshell to finish
 printf "Done creating aliases."
 
 # Point granana to cluster type ingress
-GRAFANA_ROOT_URL="https://grafana.$DNS_ZONE"
+GRAFANA_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
 kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
 echo ""
