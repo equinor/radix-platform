@@ -70,8 +70,8 @@ We also have separate processes for how to update credentials for a component ve
 #### Refresh AKS credentials
 
 1. Refresh credentials for 
-   - cluster service principal by using script [`refresh_service_principal_credentials.sh`](./refresh_service_principal_credentials.sh)
-   - rbac integration (cluster aad app) by using script [`refresh_aad_app_credentials.sh`](./refresh_aad_app_credentials.sh)
+   - Cluster service principal by using script [`refresh_service_principal_credentials.sh`](./refresh_service_principal_credentials.sh)
+   - Cluster AD app for RBAC integration by using script [`refresh_aad_app_credentials.sh`](./refresh_aad_app_credentials.sh)
 1. Update AKS credentials using script [`update_aks_credentials_in_cluster.sh`](./update_aks_credentials_in_cluster.sh)
 
 

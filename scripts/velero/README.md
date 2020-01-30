@@ -154,6 +154,20 @@ This behaviour will change in version 1.1 when read/read-write will apply to the
 >> PS: If a restore has warnings (shown in `velero restore get`) they will not show up in the logs. You need to `velero restore describe backupname-1234` to view warnings (and probably errors).
 
 
+## Credentials
+
+
+
+`velero` use dedicated service principal to work with the azure storage account.  
+The name of this service principal is declared in var `AZ_SYSTEM_USER_VELERO` in `radix_zone_*.env` config files
+
+For updating/refreshing the credentials then 
+1. Decide if you need to update the service principal credentials in AAD  
+   Multiple components make use of this service principa and you only need to update AAD once, and then you can proceed to updating the credentials in the cluster for each component 
+   - If yes in step 1: Refresh service principal credentials in AAD and update keyvault by following the instructions provided in doc ["service-principals-and-aad-apps/README.md"](../service-principals-and-aad-apps/README.md#refresh-component-service-principals-credentials)      
+1. Update the credentials in the cluster by executing the `..\install_base_components.sh` script as described in paragraph ["Deployment"](#deployment)
+1. Restart the `cert-manager` pods so that the new replicas will read the updated k8s secrets
+1. Done!
 
 
 ## Operations

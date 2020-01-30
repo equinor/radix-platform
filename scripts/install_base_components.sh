@@ -321,13 +321,16 @@ AZ_VELERO_SECRET_NAME="velero-credentials"
 VELERO_NAMESPACE="velero"
 AZ_VELERO_SECRET_PAYLOAD_FILE="./velero-credentials"
 
+
+kubectl create ns "$VELERO_NAMESPACE" | kubectl apply -f -
+
 # Create secret for az credentials
 az keyvault secret download \
   --vault-name "$AZ_RESOURCE_KEYVAULT" \
   --name "$AZ_VELERO_SECRET_NAME" \
   -f "$AZ_VELERO_SECRET_PAYLOAD_FILE"
 
-kubectl create ns "$VELERO_NAMESPACE"
+
 kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
   --from-env-file="$AZ_VELERO_SECRET_PAYLOAD_FILE" \
   --dry-run -o yaml |
