@@ -47,7 +47,11 @@ We also have separate processes for how to update credentials for a component ve
 
 #### Refresh component service principals credentials
 
-1. Refresh credentials in AAD and store them in keyvault by using script [`refresh_service_principal_credentials.sh`](./refresh_service_principal_credentials.sh)
+
+1. Decide if you need to refresh the service principal credentials in AAD  
+   Multiple components may use the same service principal and refreshing credentials in AAD will impact all of them 
+   - If yes to refresh credentials in AAD: 
+     Refresh credentials in AAD and store them in keyvault by using script [`refresh_service_principal_credentials.sh`](./refresh_service_principal_credentials.sh)
 1. Manually update the credentials in the clusters for the component that use it  
    Usually the easiest way to do this is 
    1. Run install base components script to update k8s secrets
@@ -60,7 +64,10 @@ We also have separate processes for how to update credentials for a component ve
 
 #### Refresh component AAD app credentials
 
-1. Refresh credentials in AAD and store them in keyvault by using script [`refresh_aad_app_credentials.sh`](./refresh_aad_app_credentials.sh)
+1. Decide if you need to refresh the AAD app credentials in AAD  
+   Multiple components may use the same AAD app and refreshing credentials in AAD will impact all of them
+   - If yes to refresh credentials in AAD: 
+     Refresh credentials in AAD and store them in keyvault by using script [`refresh_aad_app_credentials.sh`](./refresh_aad_app_credentials.sh)
 1. Manually update the credentials in the clusters for the component that use it  
    Usually the easiest way to do this is 
    1. Run install base components script to update k8s secrets

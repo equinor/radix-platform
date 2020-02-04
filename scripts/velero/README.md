@@ -175,7 +175,6 @@ cd radix-platform/scripts/velero
 RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
 ```
 
-
 (Yes, this is the official way of changing between read only and read write according to Velero Slack)
 
 >>Notes!  
