@@ -315,67 +315,23 @@ wait
 ###
 
 echo ""
-echo "Installing Velero prerequisites..."
+(USER_PROMPT="$USER_PROMPT" ./velero/install_prerequisites_in_cluster.sh)
+wait
 
-AZ_VELERO_SECRET_NAME="velero-credentials"
-VELERO_NAMESPACE="velero"
-AZ_VELERO_SECRET_PAYLOAD_FILE="./velero-credentials"
-
-
-kubectl create ns "$VELERO_NAMESPACE" | kubectl apply -f -
-
-# Create secret for az credentials
-az keyvault secret download \
-  --vault-name "$AZ_RESOURCE_KEYVAULT" \
-  --name "$AZ_VELERO_SECRET_NAME" \
-  -f "$AZ_VELERO_SECRET_PAYLOAD_FILE"
-
-
-kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
-  --from-env-file="$AZ_VELERO_SECRET_PAYLOAD_FILE" \
-  --dry-run -o yaml |
-  kubectl apply -f -
-
-rm "$AZ_VELERO_SECRET_PAYLOAD_FILE"
-
-# Create the cluster specific blob container
-AZ_VELERO_STORAGE_ACCOUNT_ID="radixvelero${RADIX_ENVIRONMENT}"
-
-az storage container create -n "$CLUSTER_NAME" \
-  --public-access off \
-  --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
-  2>&1 >/dev/null
-
-# Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: velero-flux-values
-  namespace: velero
-data:
-  values: |
-    configuration:
-      backupStorageLocation:
-        bucket: $CLUSTER_NAME
-        config:
-          storageAccount: $AZ_VELERO_STORAGE_ACCOUNT_ID
-EOF
-
-echo "Done."
-echo ""
 
 #######################################################################################
 ### Notify on slack channel
 ###
 
 if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
+  echo ""
   echo "Notifying on Slack"
   helm upgrade --install radix-boot-notify \
     ../charts/slack-notification \
     --set channel="$SLACK_CHANNEL" \
     --set slackToken="$SLACK_TOKEN" \
-    --set text="Base components have been installed or updated on $CLUSTER_NAME."
+    --set text="Base components have been installed or updated on $CLUSTER_NAME." \
+    2>&1 >/dev/null
 fi
 
 #######################################################################################
@@ -394,5 +350,6 @@ fi
 ### END
 ###
 
+echo ""
 echo "Install of base components is done!"
 echo ""

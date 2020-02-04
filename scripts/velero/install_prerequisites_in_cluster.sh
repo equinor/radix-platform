@@ -24,13 +24,16 @@
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
+# Optional:
+# - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+
 
 #######################################################################################
 ### HOW TO USE
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=power-monkey ./install_cluster_prerequisites.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=power-monkey ./install_prerequisites_in_cluster.sh
 
 
 #######################################################################################
@@ -38,7 +41,7 @@
 ###
 
 echo ""
-echo "Start install of Velere prerequisites in cluster..."
+echo "Start install of Velero prerequisites in cluster..."
 
 
 #######################################################################################
@@ -99,8 +102,6 @@ fi
 
 # Get velero env vars
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
-# DEBUG
-VELERO_NAMESPACE="test-jonas2"
 
 
 #######################################################################################
@@ -127,6 +128,7 @@ echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  KUBECTL CURRENT CONTEXT          : $(kubectl config current-context)"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
@@ -220,8 +222,7 @@ printf "...Done"
 
 # Create the cluster specific blob container
 printf "\nWorking on storage container..."
-CLUSTER_NAME_TEST="test-jonas"
-az storage container create -n "$CLUSTER_NAME_TEST" \
+az storage container create -n "$CLUSTER_NAME" \
   --public-access off \
   --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
   2>&1 >/dev/null
@@ -248,7 +249,6 @@ printf "...Done"
 printf "\nClean up local tmp files..."
 cleanup
 printf "...Done"
-
 
 
 #######################################################################################

@@ -114,10 +114,13 @@ RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster .
 The name of this service principal is declared in var `AZ_SYSTEM_USER_DNS` in `radix_zone_*.env` config files
 
 For updating/refreshing the credentials then 
-1. Decide if you need to update the service principal credentials in AAD  
-   Multiple components make use of this service principa and you only need to update AAD once, and then you can proceed to updating the credentials in the cluster for each component 
-   - If yes in step 1: Refresh service principal credentials in AAD and update keyvault by following the instructions provided in doc ["service-principals-and-aad-apps/README.md"](../service-principals-and-aad-apps/README.md#refresh-component-service-principals-credentials)      
-1. Update the credentials in the cluster by executing the component bootstrap script
+1. Decide if you need to refresh the service principal credentials in AAD  
+   Multiple components may use this service principal and refreshing credentials in AAD will impact all of them 
+   - If yes to refresh credentials in AAD: 
+     Refresh service principal credentials in AAD and update keyvault by following the instructions provided in doc ["service-principals-and-aad-apps/README.md"](../service-principals-and-aad-apps/README.md#refresh-component-service-principals-credentials)      
+1. Update the credentials for `cert-manager` in the cluster by
+   - (Normal usage) Executing the `..\install_base_components.sh` script as described in paragraph ["Deployment"](#deployment)
+   - (Alternative for debugging) Run the [cert-manager bootstrap](./bootstrap) script
 1. Restart the `cert-manager` pods so that the new replicas will read the updated k8s secrets
 1. Done!
 
