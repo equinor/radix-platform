@@ -196,6 +196,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
         --zone-name "$AZ_RESOURCE_DNS" \
         --record-set-name "$RADIX_APP_ALIAS_NAME" \
         --cname "$RADIX_APP_CNAME" \
+        --ttl 300 \
         2>&1 >/dev/null
 
     # # Create ingress object in the cluster
