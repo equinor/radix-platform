@@ -7,7 +7,21 @@ _Credentials_
 All credentials should be stored in radix keyvault as json using the schema provided by the [`template-credentials.json`](template-credentials) file.  
 
 _Bootstrap and teardown_  
-Components that require service principals and/or aad apps should handle this is part of their bootstrap/teardown process.  
+Components that require service principals and/or aad apps should handle this is part of their own bootstrap/teardown process.  
+
+
+## Table of contents
+
+- [Components](#Components)
+- [Prerequisites](#Prerequisites)
+- []()
+- []()
+- []()
+- []()
+- []()
+- []()
+- []()
+- []()
 
 
 ## Components
@@ -80,6 +94,11 @@ We also have separate processes for how to update credentials for a component ve
    - Cluster service principal by using script [`refresh_service_principal_credentials.sh`](./refresh_service_principal_credentials.sh)
    - Cluster AD app for RBAC integration by using script [`refresh_aad_app_credentials.sh`](./refresh_aad_app_credentials.sh)
 1. Update AKS credentials using script [`update_aks_credentials_in_cluster.sh`](./update_aks_credentials_in_cluster.sh)
+
+
+#### Delete a service principal and stored credentials
+
+Use script [`delete_service_principal_and_stored_credentials.sh.sh`](./delete_service_principal_and_stored_credentials.sh.sh)
 
 
 
