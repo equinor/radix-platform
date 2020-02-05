@@ -70,6 +70,15 @@ fi
 # Get velero env vars
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
 
+# Load dependencies
+LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
+if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
+   echo "The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+   exit 1
+else
+   source "$LIB_SERVICE_PRINCIPAL_PATH"
+fi
+
 
 #######################################################################################
 ### Prepare az session
@@ -81,6 +90,8 @@ az account show > /dev/null || az login > /dev/null
 az account set --subscription "$AZ_SUBSCRIPTION" > /dev/null
 printf "Done."
 echo ""
+
+exit_if_user_does_not_have_required_ad_role
 
 
 #######################################################################################
@@ -94,6 +105,7 @@ echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
@@ -142,13 +154,14 @@ echo "Done."
 echo ""
 echo "Deleting service principal..."
 # More az weirdness, az sp name require "http://"...
-[ "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" != "http://"* ] && { AZ_VELERO_SERVICE_PRINCIPAL_NAME="http://${AZ_VELERO_SERVICE_PRINCIPAL_NAME}"; }
-az ad sp delete --id "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" 2>&1 >/dev/null
+AZ_SP_WEIRD_NAME="$AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+[ "$AZ_SP_WEIRD_NAME" != "http://"* ] && { AZ_SP_WEIRD_NAME="http://${AZ_VELERO_SERVICE_PRINCIPAL_NAME}"; }
+az ad sp delete --id "$AZ_SP_WEIRD_NAME" 2>&1 >/dev/null
 echo "Done."
 
 echo ""
 echo "Deleting service principal credentials..."
-az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$AZ_VELERO_SECRET_NAME" 2>&1 >/dev/null
+az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" 2>&1 >/dev/null
 echo "Done."
 
 

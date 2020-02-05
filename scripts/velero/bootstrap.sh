@@ -83,6 +83,15 @@ fi
 # Get velero env vars
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
 
+# Load dependencies
+LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
+if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
+   echo "The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+   exit 1
+else
+   source "$LIB_SERVICE_PRINCIPAL_PATH"
+fi
+
 
 #######################################################################################
 ### Prepare az session
@@ -94,6 +103,8 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
 printf "Done."
 echo ""
+
+exit_if_user_does_not_have_required_ad_role
 
 
 #######################################################################################
@@ -107,6 +118,7 @@ echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
@@ -172,33 +184,19 @@ echo "Done."
 ### Service principal
 ###
 
-echo ""
-echo "Create service principal..."
+
+printf "Working on \"${AZ_VELERO_SERVICE_PRINCIPAL_NAME}\": Creating service principal..."
 AZ_VELERO_SERVICE_PRINCIPAL_SCOPE="$(az group show --name ${AZ_VELERO_RESOURCE_GROUP} | jq -r '.id')"
 AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD="$(az ad sp create-for-rbac --name "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" --scope="${AZ_VELERO_SERVICE_PRINCIPAL_SCOPE}" --role "Contributor" --query 'password' -o tsv)"
 AZ_VELERO_SERVICE_PRINCIPAL_ID="$(az ad sp list --display-name "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" --query '[0].appId' -o tsv)"
-echo "Done."
+AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION="Used by Velero to access Azure resources"
 
-echo ""
-echo "Upload velero credentials to keyvault..."
+printf "Update credentials in keyvault..."
+update_service_principal_credentials_in_az_keyvault "${AZ_VELERO_SERVICE_PRINCIPAL_NAME}" "${AZ_VELERO_SERVICE_PRINCIPAL_ID}" "${AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD}" "${AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION}"
+printf "Done.\n"
 
-AZ_VELERO_SECRET_PAYLOAD="$(cat << END
-AZURE_SUBSCRIPTION_ID=$(az account list --query '[?isDefault].id' -o tsv)
-AZURE_TENANT_ID=$(az account list --query '[?isDefault].tenantId' -o tsv)
-AZURE_CLIENT_ID=${AZ_VELERO_SERVICE_PRINCIPAL_ID}
-AZURE_CLIENT_SECRET=${AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD}
-AZURE_RESOURCE_GROUP=${AZ_VELERO_RESOURCE_GROUP}
-END
-)"
-
-az keyvault secret set \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "$AZ_VELERO_SECRET_NAME" \
-    --value "$AZ_VELERO_SECRET_PAYLOAD" \
-    2>&1 >/dev/null
-
-unset AZ_VELERO_SECRET_PAYLOAD # Clear credentials from memory
-echo "Done."
+# Clean up
+unset AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD # Clear credentials from memory
 
 
 #######################################################################################
