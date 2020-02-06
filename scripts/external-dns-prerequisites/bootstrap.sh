@@ -72,11 +72,62 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-az keyvault secret download \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name external-dns-azure-secret \
-    --file external-dns-azure-secret.yaml
+# Configs and dependencies
+CREDENTIALS_GENERATED_PATH="$(mktemp)"
+CREDENTIALS_TEMPLATE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/template-azure.json"
+if [[ ! -f "$CREDENTIALS_TEMPLATE_PATH" ]]; then
+   echo "The dependency CREDENTIALS_TEMPLATE_PATH=$CREDENTIALS_TEMPLATE_PATH is invalid, the file does not exist." >&2
+   exit 1
+fi
 
-kubectl apply -f external-dns-azure-secret.yaml
 
-rm -f external-dns-azure-secret.yaml
+#######################################################################################
+### MAIN
+###
+
+# 1. Download secret in shell var
+# 2. Create tmp azure.json using template
+# 3. Create k8s secret with azure.json as payload
+# 4. Ensure that generated credentials file is deleted on local machine even if script crash
+
+function cleanup() {
+    rm -f "$CREDENTIALS_GENERATED_PATH"
+}
+
+function generateCredentialsFile() {
+    local DNS_SP="$(az keyvault secret show \
+        --vault-name $AZ_RESOURCE_KEYVAULT \
+        --name $AZ_SYSTEM_USER_DNS \
+        | jq '.value | fromjson')"
+
+    # Set variables used in the manifest templates
+    local SP_DNS_ID="$(echo $DNS_SP | jq -r '.id')"
+    local SP_DNS_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
+    local SP_DNS_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
+    #local SP_DNS_PASSWORD_base64="$(echo $SP_DNS_PASSWORD | base64 -)"
+
+    # Use the credentials template as a heredoc, then run the heredoc to generate the credentials file
+    CREDENTIALS_GENERATED_PATH="$(mktemp)"
+    local tmp_heredoc="$(mktemp)"
+    (echo "#!/bin/sh"; echo "cat <<EOF >>${CREDENTIALS_GENERATED_PATH}"; cat ${CREDENTIALS_TEMPLATE_PATH}; echo ""; echo "EOF";)>${tmp_heredoc} && chmod +x ${tmp_heredoc}
+    source "$tmp_heredoc"
+
+    # Debug
+    # echo -e "\nCREDENTIALS_GENERATED_PATH=$CREDENTIALS_GENERATED_PATH"
+    # echo -e "tmp_heredoc=$tmp_heredoc"
+
+    # Remove even if script crashed
+    #trap "rm -f $CREDENTIALS_GENERATED_PATH" 0 2 3 15
+}
+
+# Run cleanup even if script crashed
+trap cleanup 0 2 3 15
+
+generateCredentialsFile
+kubectl create secret generic "external-dns-azure-secret" \
+   --from-file="azure.json"="$CREDENTIALS_GENERATED_PATH" \
+   --dry-run -o yaml \
+   | kubectl apply -f - \
+   2>&1 >/dev/null
+cleanup
+
