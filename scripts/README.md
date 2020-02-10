@@ -16,7 +16,7 @@ Each environment (`prod`, `dev`) has multiple clusters that use shared infrastru
 
 **NB: You only need to do this once per Azure subscription!** Multiple clusters will share the same base infrastructure.
 
-Handled by script, see file header in [install_infrastructure.sh](./install_infrastructure.sh) for usage.
+Handled by script, see [radix-zone/base-infrastructure/README.md](./radix-zone/base-infrastructure/README.md#bootstrap) for details.
 
 ## 2 Set up cluster
 
