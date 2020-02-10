@@ -29,7 +29,7 @@ The following documentation will use the second option.
 
 > Radix only reads radixconfig.yaml from the master branch. If the file is changed in other branches, those changes will be ignored.
 
-One key distinction of a radixconfig file as compared to a regular Radix application is the the components has no source folder set. Rather it use an image setting, with a separate image tag for each environment, as shown below:
+One key distinction of a radixconfig file as compared to a regular Radix application is the the components has no source folder set, as there is nothing to build on Radix. Rather it use an image field, with a separate image tag for each environment, as shown below:
 
 ```yaml
 apiVersion: radix.equinor.com/v1
@@ -56,7 +56,15 @@ spec:
       imageTagName: master-latest
     - environment: prod
       imageTagName: release-39f1a082
+privateImageHubs:
+  docker.pkg.github.com:
+    username: <some github user name>
+    email: <some email>
 ```
+
+> I the radixconfig above, there are two tagging strategies; one using a latest tag (i.e. master-latest), and one using a dynamic tag (i.e release-39f1a082), where there is a new tag produced for every build referring to the release tag or the commit sha (in the case above) that the image is produced from. The dynamic tag gives you better control over what runs in the environment, and it allows for promoting older deployments to be the latest deployment, in case there is a need for rolling back.
+
+The second part of the radixconfig which distinguish itself from a regular radix application is the privateImageHubs setting. See [this](../../docs/reference-radix-config/#privateImageHubs) to read more about this section. This allows for the image produced outside of Radix to be pulled down to the Radix cluster.
 
 # Use master branch as a config branch
 
