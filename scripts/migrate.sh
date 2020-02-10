@@ -42,6 +42,18 @@ hash envsubst 2>/dev/null || {
     echo -e "\nError: envsubst not found in PATH. Exiting..." >&2
     exit 1
 }
+hash helm 2>/dev/null || {
+    echo -e "\nError: helm not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash velero 2>/dev/null || {
+    echo -e "\nError: velero not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash jq 2> /dev/null  || {
+    echo -e "\nError: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
 printf "Done.\n"
 
 #######################################################################################

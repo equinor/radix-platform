@@ -1,11 +1,13 @@
 #!/bin/bash
 
+
 #######################################################################################
 ### PURPOSE
 ### 
 
-# Remove all infrastructure in a given az subscription that is related to Velero.
-# ...Basically an "undo" for what ever the velero bootstrap script did.
+# Delete radix service principals and stored credentials in
+# - Azure AD
+# - Radix Zone key vault
 
 
 #######################################################################################
@@ -14,6 +16,7 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
+# - SP_NAME             : Name of service principal, example: "radix-something-dev"
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
@@ -23,25 +26,26 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env SP_NAME=demo-sp-dev ./refresh_service_principal_credentials.sh
 
 
 #######################################################################################
 ### START
 ### 
 
-echo "Start Velero teardown..."
+echo ""
+echo "Start deleting radix service principal... "
 
 
 #######################################################################################
 ### Check for prerequisites binaries
 ###
 
-echo ""
-printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
-printf "Done."
-echo ""
+printf "Check for neccesary executables for \"$(basename ${BASH_SOURCE[0]})\"... "
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting... " >&2;  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+printf "Done.\n"
 
 
 #######################################################################################
@@ -61,17 +65,17 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-# Optional inputs
+if [[ -z "$SP_NAME" ]]; then
+    echo "Please provide SP_NAME" >&2
+    exit 1
+fi
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Get velero env vars
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
-
 # Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
+LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
    echo "The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
    exit 1
@@ -84,14 +88,13 @@ fi
 ### Prepare az session
 ###
 
-echo ""
-echo "Logging you in to Azure if not already logged in..."
-az account show > /dev/null || az login > /dev/null
-az account set --subscription "$AZ_SUBSCRIPTION" > /dev/null
-printf "Done."
-echo ""
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
+printf "Done.\n"
 
 exit_if_user_does_not_have_required_ad_role
+
 
 
 #######################################################################################
@@ -99,24 +102,21 @@ exit_if_user_does_not_have_required_ad_role
 ###
 
 echo -e ""
-echo -e "Tear down of Velero will use the following configuration:"
+echo -e "Delete radix service principal will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
-echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
-echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  RADIX_ZONE                               : $RADIX_ZONE"
+echo -e "   -  AZ_RESOURCE_KEYVAULT                     : $AZ_RESOURCE_KEYVAULT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
-echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+echo -e "   -  SP_NAME                                  : $SP_NAME"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
-echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e "   -  AZ_SUBSCRIPTION                          : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_USER                                  : $(az account show --query user.name -o tsv)"
 echo -e ""
 
 echo ""
@@ -135,39 +135,25 @@ echo ""
 
 
 #######################################################################################
-### DESTROY!1
+### MAIN
 ###
 
-# We need to delete the storage account first due to azure weirdness.
-# Normally we would just delete the RG and that would also delete everything inside of it,
-# but it turns out that azure does not handle deletion of storage accounts properly when doing so.
-echo ""
-echo "Deleting storage account..."
-az storage account delete --yes -g "$AZ_VELERO_RESOURCE_GROUP" -n "$AZ_VELERO_STORAGE_ACCOUNT_ID" 2>&1 >/dev/null
-echo "Done."
+printf "Working on \"${SP_NAME}\": Deleting service principal..."
 
-echo ""
-echo "Deleting resource group..."
-az group delete --yes --name "$AZ_VELERO_RESOURCE_GROUP" 2>&1 >/dev/null
-echo "Done."
-
-echo ""
-echo "Deleting service principal..."
 # More az weirdness, az sp name require "http://"...
-AZ_SP_WEIRD_NAME="$AZ_VELERO_SERVICE_PRINCIPAL_NAME"
-[ "$AZ_SP_WEIRD_NAME" != "http://"* ] && { AZ_SP_WEIRD_NAME="http://${AZ_VELERO_SERVICE_PRINCIPAL_NAME}"; }
+AZ_SP_WEIRD_NAME="$SP_NAME"
+[ "$AZ_SP_WEIRD_NAME" != "http://"* ] && { AZ_SP_WEIRD_NAME="http://${SP_NAME}"; }
 az ad sp delete --id "$AZ_SP_WEIRD_NAME" 2>&1 >/dev/null
-echo "Done."
 
-echo ""
-echo "Deleting service principal credentials..."
-az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" 2>&1 >/dev/null
-echo "Done."
+printf "Delete credentials in keyvault..."
+az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$SP_NAME" 2>&1 >/dev/null
+
+printf "Done.\n"
 
 
 #######################################################################################
 ### END
-### 
+###
 
 echo ""
-echo "All done!"
+echo "Delete radix service principal done!"
