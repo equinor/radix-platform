@@ -158,7 +158,7 @@ az keyvault delete -n "${AZ_RESOURCE_KEYVAULT}" --output none
 # az keyvault purge -n "${AZ_RESOURCE_KEYVAULT}" --output none
 printf "...Done.\n"
 
-printf "Working on resource groups: Deleting resource groups..."
+printf "Working on resource groups: \n"
 printf "Deleting ${AZ_RESOURCE_GROUP_CLUSTERS}...\n"
 az group delete --yes --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none 
 printf "Deleting ${AZ_RESOURCE_GROUP_COMMON}...\n"

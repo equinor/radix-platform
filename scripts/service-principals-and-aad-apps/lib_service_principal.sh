@@ -142,11 +142,16 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 function delete_service_principal_and_stored_credentials() {
     local name # Input 1
     name="${1}"
-
-    printf "Working on service principal \"${name}\": deleting credentials in keyvault..."
-    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}"
+    
+    printf "Working on service principal \"${name}\": "
+    
     printf "deleting user in az ad..."
-    az ad sp delete --id "http://${name}"
+    local az_sp_fullname="$name"
+    [ "$az_sp_fullname" != "http://"* ] && { az_sp_fullname="http://${name}"; }
+    az ad sp delete --id "${az_sp_fullname}" --output none
+    
+    printf "deleting credentials in keyvault..."
+    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" --output none
     printf "Done.\n"
 }
 
@@ -154,10 +159,16 @@ function delete_ad_app_and_stored_credentials() {
     local name # Input 1
     name="${1}"
 
-    printf "Working on ad app \"${name}\": deleting credentials in keyvault..."
-    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}"
-    printf "deleting user in az ad..."
-    az ad app delete --id "http://${name}"
+    printf "Working on ad app \"${name}\": "
+
+    # Get id from key vault as trying to use the name is just hopeless for client apps when using cli
+    app_id="$(az keyvault secret show --vault-name ${AZ_RESOURCE_KEYVAULT} --name ${name} | jq -r .value | jq -r .id)"
+    
+    printf "deleting app in az ad..."
+    az ad app delete --id "${app_id}" --output none
+    
+    printf "deleting credentials in keyvault..."
+    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" --output none
     printf "Done.\n"
 }
 

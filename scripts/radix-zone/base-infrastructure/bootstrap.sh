@@ -146,7 +146,7 @@ fi
 function create_resource_groups() {
     local groupName
 
-    printf "\nCreating all resource groups..."
+    printf "Creating all resource groups..."
     az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
     az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
     az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --output none
@@ -159,23 +159,23 @@ function create_resource_groups() {
 ###
 
 function create_common_resources() {    
-    printf "\nCreating keyvault: ${AZ_RESOURCE_KEYVAULT}..."
+    printf "Creating key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
     az keyvault create --name "${AZ_RESOURCE_KEYVAULT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --output none
     printf "...Done\n"
            
-    printf "\nCreating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
+    printf "Creating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
     az acr create --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --sku "Standard" --output none
     printf "...Done\n"
    
-    printf "\nCreating Azure DNS: ${AZ_RESOURCE_DNS}"
+    printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
     az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" --output none
     printf "...Done\n"
     # DNS CAA    
     if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-        printf "\nAdding CAA records..."
-        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org"
-        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "digicert.com"
-        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "godaddy.com"
+        printf "Adding CAA records..."
+        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org" --output none
+        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "digicert.com" --output none
+        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "godaddy.com" --output none
         printf "...Done\n"
     fi
 }
@@ -189,28 +189,29 @@ function set_permissions_on_acr() {
     # Note that to be able to use "az acr build" you have to have the role "Contributor".
 
     local id
-    printf "\nContainer registry: Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..."
+    printf "Working on container registry \"${AZ_RESOURCE_CONTAINER_REGISTRY}\": "
+
+    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
     az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
-    printf "...Done\n"
 
-    printf "\nContainer registry: Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..."
+    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
     az role assignment create --assignee "${id}" --role Contributor --scope "${scope}" --output none
-    printf "...Done\n"
 
-    printf "\nContainer registry: Setting permissions for \"${AZ_SYSTEM_USER_CLUSTER}\"..."
+    printf "Setting permissions for \"${AZ_SYSTEM_USER_CLUSTER}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CLUSTER} --query appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
     az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
+
     printf "...Done\n"
 }
 
@@ -229,7 +230,7 @@ function set_permissions_on_dns() {
 
     # Grant 'DNS Zone Contributor' permissions to a specific zone
     # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
-    printf "\nAzure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
+    printf "Azure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_DNS} --query appId --output tsv)"
     az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
     printf "...Done\n"
@@ -240,7 +241,7 @@ function set_permissions_on_dns() {
 ### System users
 ###
 
-function create_base_system_users_and_store_credentials(){
+function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Service principal that provide read-only access to container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CLUSTER" "The AKS service principal"
@@ -263,19 +264,20 @@ function create_az_ad_server_app() {
     # Create the Azure Active Directory server application
     echo "Creating AAD server application \"${rbac_server_app_name}\"..."
     az ad app create --display-name "${rbac_server_app_name}" \
-    --password "${RBAC_SERVER_APP_SECRET}" \
-    --identifier-uris "${RBAC_SERVER_APP_URL}" \
-    --reply-urls "${RBAC_SERVER_APP_URL}" \
-    --homepage "${RBAC_SERVER_APP_URL}" \
-    --required-resource-accesses @"$AD_APP_MANIFEST_PATH"
+        --password "${RBAC_SERVER_APP_SECRET}" \
+        --identifier-uris "${RBAC_SERVER_APP_URL}" \
+        --reply-urls "${RBAC_SERVER_APP_URL}" \
+        --homepage "${RBAC_SERVER_APP_URL}" \
+        --required-resource-accesses @"$AD_APP_MANIFEST_PATH" \
+        --output none   
 
     # Update the application claims
     local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"    
-    az ad app update --id "${RBAC_SERVER_APP_ID}" --set groupMembershipClaims=All
+    az ad app update --id "${RBAC_SERVER_APP_ID}" --set groupMembershipClaims=All --output none
 
     # Create service principal for the server application
     echo "Creating service principal for server application..."
-    az ad sp create --id "${RBAC_SERVER_APP_ID}"
+    az ad sp create --id "${RBAC_SERVER_APP_ID}" --output none
     # Reset password to something azure will give us
     RBAC_SERVER_APP_SECRET="$(az ad app credential reset --id ${RBAC_SERVER_APP_ID} --query password --output tsv)"
 
@@ -287,15 +289,15 @@ function create_az_ad_server_app() {
     do
         if [ "$RESOURCE_API_ID" == "00000002-0000-0000-c000-000000000000" ]
         then
-            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "User.Read"
+            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "User.Read" --output none
             echo "Granted User.Read"
         elif [ "$RESOURCE_API_ID" == "00000003-0000-0000-c000-000000000000" ]
         then
-            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "Directory.Read.All"
+            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "Directory.Read.All" --output none
             echo "Granted Directory.Read.All"
         else
             # echo "RESOURCE_API_ID=$RESOURCE_API_ID"
-            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "user_impersonation"
+            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "user_impersonation" --output none
             echo "Granted user_impersonation"
         fi
     done
@@ -349,16 +351,17 @@ EOF
         --native-app \
         --reply-urls "${RBAC_CLIENT_APP_URL}" \
         --homepage "${RBAC_CLIENT_APP_URL}" \
-        --required-resource-accesses @manifest-client.json    
+        --required-resource-accesses @"$CLIENT_MANIFEST_PATH" \
+        --output none   
     
     # Finally remove manifest-client.json file as it is no longer needed
-    rm ./manifest-client.json  
+    rm "$CLIENT_MANIFEST_PATH" 
 
     # To be able to use the client app then we need a service principal for it    
     # Create service principal for the client application
     echo "Creating service principal for AAD client application..."
     local RBAC_CLIENT_APP_ID="$(az ad app list --display-name ${rbac_client_app_name} --query [].appId -o tsv)"
-    az ad sp create --id "${RBAC_CLIENT_APP_ID}"    
+    az ad sp create --id "${RBAC_CLIENT_APP_ID}" --output none  
 
     # Grant permissions to server application
     echo "Granting permissions to the AAD client application..."
@@ -366,7 +369,7 @@ EOF
     local RBAC_CLIENT_APP_RESOURCES_API_IDS="$(az ad app permission list --id $RBAC_CLIENT_APP_ID --query [].resourceAppId --out tsv | xargs echo)"
     for RESOURCE_API_ID in $RBAC_CLIENT_APP_RESOURCES_API_IDS;
     do
-        az ad app permission grant --api $RESOURCE_API_ID --id $RBAC_CLIENT_APP_ID
+        az ad app permission grant --api $RESOURCE_API_ID --id $RBAC_CLIENT_APP_ID --output none
     done
 
     # Store the client app credentials in the keyvault
@@ -402,4 +405,4 @@ echo "Azure DNS Zone delegation is a manual step."
 echo "See how to in https://github.com/equinor/radix-private/blob/master/docs/infrastructure/dns.md#how-to-delegate-from-prod-to-dev-or-playground"
 
 echo ""
-echo "Bootstrap done!"
+echo "Bootstrap of base infrastructure done!"

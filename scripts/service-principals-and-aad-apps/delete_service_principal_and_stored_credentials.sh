@@ -138,17 +138,7 @@ echo ""
 ### MAIN
 ###
 
-printf "Working on \"${SP_NAME}\": Deleting service principal..."
-
-# More az weirdness, az sp name require "http://"...
-AZ_SP_WEIRD_NAME="$SP_NAME"
-[ "$AZ_SP_WEIRD_NAME" != "http://"* ] && { AZ_SP_WEIRD_NAME="http://${SP_NAME}"; }
-az ad sp delete --id "$AZ_SP_WEIRD_NAME" 2>&1 >/dev/null
-
-printf "Delete credentials in keyvault..."
-az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$SP_NAME" 2>&1 >/dev/null
-
-printf "Done.\n"
+delete_service_principal_and_stored_credentials "${SP_NAME}"
 
 
 #######################################################################################
