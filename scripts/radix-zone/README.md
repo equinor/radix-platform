@@ -23,6 +23,7 @@ All radix-zones belong to one of these, and can share the same infrastructure in
 There are two special radix-zones:
 - "dev"
 - "prod"  
+
 These two contain the base infrastructure for the corrensponding radix environments. See [base-infrastructure](./base-infrastructure/README.md) for details.
 
 Some radix-zones have additional infrastructure, typically the dns zone.  
