@@ -7,6 +7,7 @@ Depending on use case we can use it to either create certificates according to a
 - [Bootstrap](#bootstrap)
 - [Teardown](#teardown)
 - [Upgrade](#upgrade)
+- [Credentials](#credentials)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -106,6 +107,22 @@ RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster .
 # Step 2: Install v0.11.0
 RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster ./bootstrap.sh
 ```
+
+## Credentials
+
+`cert-manager` use dedicated service principal to work with the DNS.  
+The name of this service principal is declared in var `AZ_SYSTEM_USER_DNS` in `radix_zone_*.env` config files
+
+For updating/refreshing the credentials then 
+1. Decide if you need to refresh the service principal credentials in AAD  
+   Multiple components may use this service principal and refreshing credentials in AAD will impact all of them 
+   - If yes to refresh credentials in AAD: 
+     Refresh service principal credentials in AAD and update keyvault by following the instructions provided in doc ["service-principals-and-aad-apps/README.md"](../service-principals-and-aad-apps/README.md#refresh-component-service-principals-credentials)      
+1. Update the credentials for `cert-manager` in the cluster by
+   - (Normal usage) Executing the `..\install_base_components.sh` script as described in paragraph ["Deployment"](#deployment)
+   - (Alternative for debugging) Run the [cert-manager bootstrap](./bootstrap) script
+1. Restart the `cert-manager` pods so that the new replicas will read the updated k8s secrets
+1. Done!
 
 
 ## Troubleshooting

@@ -32,6 +32,18 @@ Cluster configuration for each environment is set in `env` files. You can edit t
 
 See script header for info on usage.
 
+## Credentials
+
+Each radix cluster require two sets of credentials
+1. Cluster service principal  
+   The name is declared in var `AZ_SYSTEM_USER_CLUSTER` in `radix_zone_*.env` config files
+1. Azure AD app for rbac integration  
+   The name is declared in var `AZ_RESOURCE_AAD_SERVER` in `radix_zone_*.env` config files
+
+For updating/refreshing the credentials then please follow the instructions provided in doc ["service-principals-and-aad-apps/README.md"](../service-principals-and-aad-apps/README.md#refresh-aks-credentials)
+
+
+
 ## Misc
 
 If you need to enable AKS diagnostic logs then you have to set that manually via the Azure portal. For more information on how to do this please see https://github.com/equinor/radix-private/blob/master/docs/infrastructure/logging.md
