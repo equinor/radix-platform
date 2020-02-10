@@ -1,13 +1,62 @@
 ---
-title: Deploy to Radix using github actions and github package registry
+title: Deploy to Radix using other continuous integration (CI) tool
 layout: document
 parent: ["Guides", "../../guides.html"]
 toc: true
 ---
 
-NOTE: This functionality is currently under development. Please use with caution.
+> Disclaimer: Please seek advice elsewhere on wether or not github actions and/or github package repository is the right option for you. Both features are new and we have too little experience as an organization to make any recommendations, both in terms of robustness and in terms of cost. A private Azure container registry (ACR) would for instance allow you to set it up with a service account, rather than using your personal account. This document is meant to be a user guide on how to combine these with Radix, as one of many alternatives for running CI outside of Radix.
 
-Disclaimer: Please seek advice elsewhere on wether or not github actions and/or github package repository is the right option for you. Both features are new and we have too little experience as an organization to make any recommendations, both in terms of robustness and in terms of cost. A private Azure container registry (ACR) would for instance allow you to set it up with a service account, rather than using your personal account. This document is meant to be a user guide on how to combine these with Radix, as one of many alternatives for running CI outside of Radix.
+# Configuring the app
+
+As with a regular application put on Radix, a deploy-only application will need:
+
+- A GitHub repository for our code (only GitHub is supported at the moment)
+- A radixconfig.yaml file that defines the running environments. This must be in the root directory of our repository.
+
+We will go over these points below.
+
+# The repository
+
+Unlike a regular Radix application deploy-only you can choose to have:
+
+- Github repository act as a pure configuration repository. That is, source code for the different components resides in other repositories
+- Source code resides with the radixconfig
+
+The following documentation will use the second option.
+
+# The radixconfig.yaml file
+
+> Radix only reads radixconfig.yaml from the master branch. If the file is changed in other branches, those changes will be ignored.
+
+One key distinction of a radixconfig file as compared to a regular Radix application is the the components has no source folder set. Rather it use an image setting, with a separate image tag for each environment, as shown below:
+
+```yaml
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: radix-example-arm-template
+spec:
+  environments:
+  - name: qa
+    build:
+      from: master
+  - name: prod
+    build:
+      from: release
+  components:
+  - name: api
+    image: docker.pkg.github.com/equinor/radix-example-arm-template/api:{imageTagName}
+    ports:
+    - name: http
+      port: 3000
+    publicPort: http
+    environmentConfig:
+    - environment: qa
+      imageTagName: master-latest
+    - environment: prod
+      imageTagName: release-39f1a082
+```
 
 # Use master branch as a config branch
 
