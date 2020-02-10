@@ -30,7 +30,7 @@
 ### 
 
 echo ""
-echo "Start bootstrap of Radix Zone... "
+echo "Start bootstrap of base infrastructure... "
 
 
 #######################################################################################
@@ -62,6 +62,20 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+# Load dependencies
+LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_service_principal.sh"
+if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
+   echo "The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+   exit 1
+else
+   source "$LIB_SERVICE_PRINCIPAL_PATH"
+fi
+AD_APP_MANIFEST_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/manifest-server.json"
+if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
+   echo "The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
+   exit 1
+fi
+
 
 #######################################################################################
 ### Prepare az session
@@ -72,13 +86,15 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
 printf "Done.\n"
 
+exit_if_user_does_not_have_required_ad_role
+
 
 #######################################################################################
 ### Verify task at hand
 ###
 
 printf "\n"
-printf "\nBootstrap will use the following configuration:"
+printf "\nBootstrap of base infrastructure will use the following configuration:"
 printf "\n"
 printf "\n   > WHERE:"
 printf "\n   ------------------------------------------------------------------"
@@ -106,8 +122,8 @@ printf "\n   -  AZ_SYSTEM_USER_DNS                          : $AZ_SYSTEM_USER_DN
 printf "\n"
 printf "\n   > WHO:"
 printf "\n   -------------------------------------------------------------------"
-printf "\n   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
-printf "\n   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+printf "\n   -  AZ_SUBSCRIPTION                             : $AZ_SUBSCRIPTION"
+printf "\n   -  AZ_USER                                     : $(az account show --query user.name -o tsv)"
 printf "\n"
 
 echo ""
@@ -131,9 +147,9 @@ function create_resource_groups() {
     local groupName
 
     printf "\nCreating all resource groups..."
-    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" 2>&1 >/dev/null
-    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_COMMON}" 2>&1 >/dev/null
-    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" 2>&1 >/dev/null
+    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
+    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
+    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --output none
     printf "...Done\n"
 }
 
@@ -144,15 +160,15 @@ function create_resource_groups() {
 
 function create_common_resources() {    
     printf "\nCreating keyvault: ${AZ_RESOURCE_KEYVAULT}..."
-    az keyvault create --name "${AZ_RESOURCE_KEYVAULT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" 2>&1 >/dev/null
+    az keyvault create --name "${AZ_RESOURCE_KEYVAULT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --output none
     printf "...Done\n"
            
     printf "\nCreating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
-    az acr create --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --sku "Standard" 2>&1 >/dev/null
+    az acr create --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --sku "Standard" --output none
     printf "...Done\n"
    
     printf "\nCreating Azure DNS: ${AZ_RESOURCE_DNS}"
-    az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
+    az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" --output none
     printf "...Done\n"
     # DNS CAA    
     if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
@@ -176,25 +192,25 @@ function set_permissions_on_acr() {
     printf "\nContainer registry: Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query appId --output tsv)"
     # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" 2>&1 >/dev/null
+    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
-    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" 2>&1 >/dev/null
+    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
     printf "...Done\n"
 
     printf "\nContainer registry: Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query appId --output tsv)"
     # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" 2>&1 >/dev/null
+    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
-    az role assignment create --assignee "${id}" --role Contributor --scope "${scope}" 2>&1 >/dev/null
+    az role assignment create --assignee "${id}" --role Contributor --scope "${scope}" --output none
     printf "...Done\n"
 
     printf "\nContainer registry: Setting permissions for \"${AZ_SYSTEM_USER_CLUSTER}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CLUSTER} --query appId --output tsv)"
     # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" 2>&1 >/dev/null
+    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
-    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" 2>&1 >/dev/null
+    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
     printf "...Done\n"
 }
 
@@ -215,7 +231,7 @@ function set_permissions_on_dns() {
     # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
     printf "\nAzure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_DNS} --query appId --output tsv)"
-    az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" 2>&1 >/dev/null
+    az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
     printf "...Done\n"
 }
 
@@ -224,72 +240,11 @@ function set_permissions_on_dns() {
 ### System users
 ###
 
-function update_sp_in_keyvault() {
-    local name              # Input 1
-    local id                # Input 2
-    local password          # Input 3
-    local description       # Input 4, optional
-    local tenantId
-    local subscriptionId
-    local tmp_file_path
-    local template_path
-
-    name="$1"
-    id="$2"
-    password="$3"
-    description="$4"    
-    tenantId="$(az ad sp show --id ${id} --query appOwnerTenantId --output tsv)"
-    template_path="${__bin_dir_path}/service-principal.template.json"
-
-    echo_step "Service principal: update credentials in keyvault for ${name}"
-
-    if [ ! -e "$template_path" ]; then
-        echo "Error: sp json template not found"
-        exit 1
-    fi    
-
-    # Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
-    tmp_file_path="${__bin_dir_path}/${name}.json"
-    cat "$template_path" | jq -r \
-    --arg name "${name}" \
-    --arg id "${id}" \
-    --arg password "${password}" \
-    --arg description "${description}" \
-    --arg tenantId "${tenantId}" \
-    '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId' > "$tmp_file_path"
-    
-    # show result
-    cat "${tmp_file_path}"
-
-    # Upload to keyvault
-    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" -f "${tmp_file_path}"
-
-    # Clean up
-    rm -rf "$tmp_file_path"    
-}
-
-function create_service_principal() {
-    local name          # Input 1
-    local description   # Input 2, optional
-    local password
-    local id
-
-    name="$1"
-    description="$2"
-
-    echo_step "Service principal: creating \"${name}\""
-
-    # Exit gracefully if the sp exist
-    local testSP
-    testSP="$(az ad sp show --id http://${name} --query appDisplayName --output tsv 2> /dev/null)"
-    if [ ! -z "$testSP" ]; then
-        printf "\n${name} exist, skipping."
-        return
-    fi
-
-    password="$(az ad sp create-for-rbac --skip-assignment --name ${name} --query password --output tsv)"
-    id="$(az ad sp show --id http://${name} --query appId --output tsv)"
-    update_sp_in_keyvault "${name}" "${id}" "${password}" "${description}"
+function create_base_system_users_and_store_credentials(){
+    create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Service principal that provide read-only access to container registry"
+    create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
+    create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CLUSTER" "The AKS service principal"
+    create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
 }
 
 
@@ -312,7 +267,7 @@ function create_az_ad_server_app() {
     --identifier-uris "${RBAC_SERVER_APP_URL}" \
     --reply-urls "${RBAC_SERVER_APP_URL}" \
     --homepage "${RBAC_SERVER_APP_URL}" \
-    --required-resource-accesses @manifest-server.json
+    --required-resource-accesses @"$AD_APP_MANIFEST_PATH"
 
     # Update the application claims
     local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"    
@@ -346,7 +301,7 @@ function create_az_ad_server_app() {
     done
     
     # Store app credentials in keyvault
-    update_sp_in_keyvault "${rbac_server_app_name}" "${RBAC_SERVER_APP_ID}" "${RBAC_SERVER_APP_SECRET}" "AZ AD server app to enable AKS rbac. Display name is \"${rbac_server_app_name}\"."
+    update_service_principal_credentials_in_az_keyvault "${rbac_server_app_name}" "${RBAC_SERVER_APP_ID}" "${RBAC_SERVER_APP_SECRET}" "AZ AD server app to enable AKS rbac. Display name is \"${rbac_server_app_name}\"."
     
     # Notify user about manual steps to make permissions usable
     echo -e ""
@@ -363,6 +318,7 @@ function create_az_ad_client_app() {
     local RBAC_SERVER_APP_ID="KEYVAULT"
     local RBAC_SERVER_APP_OAUTH2PERMISSIONS_ID="LOOKUP"
     local RBAC_SERVER_APP_SECRET="KEYVAULT"
+    local CLIENT_MANIFEST_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/manifest-client.json"
 
     echo "Creating AAD client application \"${rbac_client_app_name}\"..."
 
@@ -374,7 +330,7 @@ function create_az_ad_client_app() {
 
     # Create client application
     # First we need a manifest
-    cat > ./manifest-client.json << EOF
+    cat > "$CLIENT_MANIFEST_PATH" << EOF
 [
     {
     "resourceAppId": "${RBAC_SERVER_APP_ID}",
@@ -414,7 +370,7 @@ EOF
     done
 
     # Store the client app credentials in the keyvault
-    update_sp_in_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."    
+    update_service_principal_credentials_in_az_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."    
 
     # Notify user about manual steps to make permissions usable
     echo -e ""
@@ -430,6 +386,7 @@ EOF
 
 create_resource_groups
 create_common_resources
+create_base_system_users_and_store_credentials
 set_permissions_on_acr
 set_permissions_on_dns
 create_az_ad_server_app

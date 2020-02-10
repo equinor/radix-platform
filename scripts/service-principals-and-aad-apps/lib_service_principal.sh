@@ -139,6 +139,27 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
     printf "Done.\n"
 }
 
+function delete_service_principal_and_stored_credentials() {
+    local name # Input 1
+    name="${1}"
+
+    printf "Working on service principal \"${name}\": deleting credentials in keyvault..."
+    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}"
+    printf "deleting user in az ad..."
+    az ad sp delete --id "http://${name}"
+    printf "Done.\n"
+}
+
+function delete_ad_app_and_stored_credentials() {
+    local name # Input 1
+    name="${1}"
+
+    printf "Working on ad app \"${name}\": deleting credentials in keyvault..."
+    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}"
+    printf "deleting user in az ad..."
+    az ad app delete --id "http://${name}"
+    printf "Done.\n"
+}
 
 function exit_if_user_does_not_have_required_ad_role(){
     # Based on https://docs.microsoft.com/en-us/azure/active-directory/users-groups-roles/roles-view-assignments#view-role-assignments-using-microsoft-graph-api
