@@ -72,6 +72,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+if [[ -z "$PROMETHEUS_VALUES" ]]; then
+    PROMETHEUS_VALUES=./prometheus-operator-values.yaml
+fi
+
 if [[ -z "$CLUSTER_NAME" ]]; then
     echo "Please provide CLUSTER_NAME" >&2
     exit 1
@@ -147,7 +151,7 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/re
 
 helm upgrade --install prometheus-operator stable/prometheus-operator \
     --version 8.3.2 \
-    -f ./prometheus-operator-values.yaml \
+    -f $PROMETHEUS_VALUES \
     --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
     --set prometheusOperator.createCustomResource=false
 

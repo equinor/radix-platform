@@ -219,7 +219,7 @@ kubectl apply -f manifests/storageclass-retain-nocache.yaml
 ### Install prometheus-operator
 ###
 
-(./prometheus-operator/bootstrap.sh)
+(PROMETHEUS_VALUES=./prometheus-operator/prometheus-operator-values.yaml ./prometheus-operator/bootstrap.sh)
 wait
 
 #######################################################################################
