@@ -33,7 +33,7 @@ The following documentation will use the second option. The example repository c
 
 > Radix only reads `radixconfig.yaml` from the master branch. If the file is changed in other branches, those changes will be ignored.
 
-One key distinction of a `radixconfig.yaml` file as compared to a regular Radix application is the the components has no source property set, as there is nothing to build on Radix. Rather it uses an image property, alongside a separate image tag for each environment, as shown below:
+One key distinction of a `radixconfig.yaml` file as compared to a regular Radix application is the the components has no `src` property set, as there is nothing to build on Radix. Rather it uses an `image` property, alongside a separate `imageTagName` per environment, as shown below:
 
 ```yaml
 apiVersion: radix.equinor.com/v1
