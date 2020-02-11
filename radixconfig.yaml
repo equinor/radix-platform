@@ -7,7 +7,7 @@ spec:
     - name: prod
       build:
         from: master
-    - name: AddDocumentationForDeployOnly
+    - name: deploy-only
       build:
         from: RA-1201-AddDocumentationForDeployOnly
   components:
