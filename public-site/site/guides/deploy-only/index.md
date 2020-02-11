@@ -66,9 +66,9 @@ privateImageHubs:
     email: <some email>
 ```
 
-I the `radixconfig.yaml` above, there are two tagging strategies; one using a latest tag (i.e. master-latest), and one using a dynamic tag (i.e release-39f1a082), where there is a new tag produced for every build referring to the release tag or the commit sha (in the case above) that the image is produced from. The dynamic tag gives you better control over what runs in the environment, and it allows for promoting older deployments to be the latest deployment, in case there is a need for rolling back.
+I the `radixconfig.yaml` above, there are two tagging strategies; one using a latest tag (i.e. master-latest), and one using a dynamic tag (i.e release-39f1a082), where there is a new tag produced for every build referring to the release tag or the commit sha (in the case above) that the image is produced from. The dynamic tag gives you better control over what runs in the environment, and it also allows for promoting older deployments to be the latest deployment, in case there is a need for a rollback.
 
-The second part of the `radixconfig` which distinguish itself from a regular radix application is the privateImageHubs setting. See [this](../../docs/reference-radix-config/#privateImageHubs) to read more about this configuration. In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
+The second part of the `radixconfig` which distinguish itself from a regular radix application is the `privateImageHubs` property. See [this](../../docs/reference-radix-config/#privateImageHubs) to read more about this configuration. In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
 
 Also what can be said about the configuration above is the branch to environment mapping. Since build of components happens outside of Radix the build -> from configuration looks unnecessary. You could, especially if the repository for the Radix application is a mere configuration repository, have environments unmapped. We will explain later why, in this example, we have opted to have a mapping.
 
