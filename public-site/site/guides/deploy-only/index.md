@@ -91,6 +91,8 @@ The machine user token you can obtain on the `Configuration` page for your appli
 
 By pressing `Regenerate token` button, you invalidates the existing token and you get access to copy a new token into your clipboard.
 
+> Note that the machine-user token is a longed lived token with access to all operations that an application administrator has. Please use with great care
+
 # Making calls to Radix
 
 With the access token you can make calls to our API through either:
