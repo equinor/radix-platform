@@ -102,6 +102,8 @@ Deployments are created by some types of [job](#job). A deployment defines the s
 
 [Environment variables](#environment-variable) (but not [secrets](#secret)) are also stored within a deployment.
 
+> See [this](../../guides/deploy-only/) guide on how to set up your application to only use the continuous deployment (CD) on Radix
+
 # Publishing applications
 
 ## Default alias
