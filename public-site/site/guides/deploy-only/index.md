@@ -7,9 +7,9 @@ toc: true
 
 There might be several reasons why you would opt against using Radix as a CICD platform, and just using the CD part of Radix:
 
-- Your application consists of a set of components, with source code hosted in separated repositories
+- Your application consists of a set of components (i.e. micro services), with source code hosted in separated repositories
 - Your application depends on separate resources, and the deployment to Radix needs to be orchestrated
-- Your team has more advanced needs of the CI than the Radix team is able to deliver
+- Your team has more advanced needs of the CI than the Radix team is able to deliver (i.e. test reports, git lfs)
 
 # Configuring the app
 
@@ -25,7 +25,7 @@ We will go over these points below.
 Unlike a regular Radix application deploy-only you can choose to have:
 
 - Github repository act as a pure configuration repository. That is, source code for the different components resides in other repositories
-- Source code resides with the `radixconfig.yaml`
+- Source code resides alongside the `radixconfig.yaml`
 
 The following documentation will use the second option. The example repository can be found [here](https://github.com/equinor/radix-example-arm-template)
 
@@ -66,17 +66,17 @@ privateImageHubs:
     email: <some email>
 ```
 
-I the `radixconfig.yaml` above, there are two tagging strategies; one using a latest tag (i.e. master-latest), and one using a dynamic tag (i.e release-39f1a082), where there is a new tag produced for every build referring to the release tag or the commit sha (in the case above) that the image is produced from. The dynamic tag gives you better control over what runs in the environment, and it also allows for promoting older deployments to be the latest deployment, in case there is a need for a rollback.
+I the `radixconfig.yaml` above, there are two tagging strategies; one using a latest tag (i.e. master-latest), and one using a dynamic tag (i.e release-39f1a082). A dynamic tag in this context means that there is a new tag produced for every build, either referring to the release tag, or the commit sha (in the case above) or any other unique attributes that uniquely identifies what the image is produced from. The dynamic tag gives you better control over what runs in the environment, and it also allows for promoting older deployments to be the latest deployment, in case there is a need for a rollback.
 
 The second part of the `radixconfig` which distinguish itself from a regular radix application is the `privateImageHubs` property. See [this](../../docs/reference-radix-config/#privateImageHubs) to read more about this configuration. In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
 
-Also what can be said about the configuration above is the branch to environment mapping. Since build of components happens outside of Radix the build -> from configuration looks unnecessary. You could, especially if the repository for the Radix application is a mere configuration repository, have environments unmapped. We will explain later why, in this example, we have opted to have a mapping.
+Also what can be said about the configuration above is the branch to environment mapping. Since build of components happens outside of Radix the build -> from configuration seems unnecessary. You could, especially if the repository for the Radix application is a mere configuration repository, have environments unmapped. We will explain later why we, in this example, have opted to have a branch-environment mapping.
 
 The full syntax of `radixconfig.yaml` is explained in [Radix Config reference](../../docs/reference-radix-config/).
 
 # Registering the application
 
-Registering the Radix application follows the pattern of a regular Radix application, except for that we skip registering a web-hook for the application to avoid it being built on Radix. The mechanism for deploying to Radix will be described in the next section.
+Registering the Radix application follows the pattern of a regular Radix application. The only difference is that we skip adding a web-hook to Radix. We then avoid that the application is built on Radix. The mechanism for deploying to Radix will be described in the next section.
 
 # Machine-user token
 
@@ -89,9 +89,9 @@ The machine user token you can obtain on the `Configuration` page for your appli
 
 ![MachineUserToken](MachineUserToken.png)
 
-By pressing `Regenerate token` button, you invalidates the existing token and you get access to copy a new token into your clipboard.
+By pressing `Regenerate token` button, you invalidate the existing token and get access to copy a new token into your clipboard.
 
-> Note that the machine-user token is a longed lived token with access to all operations that an application administrator has. Please use with great care
+> Note that the machine-user token is a longed lived token with access to all operations that an application administrator has (i.e. deleting the application, setting secrets). Please make efforts not to have this token get into the wrong hands
 
 # Making calls to Radix
 
@@ -103,35 +103,7 @@ With the access token you can make calls to our API through either:
 
 # Building using other CI (i.e. github actions)
 
-Using github actions you create a workflow file under the folder .github/workflows folder. In below workflow we will build new images for master (qa environment) and release (prod environment) branches. There are a couple of github secrets the workflow make use of in the workflow:
-
-- `K8S_CREDENTIALS` - This is the token used for accessing Radix. In this example we are using the machine user token provided with the application. The name of the secret can be any name. However, the environment variable needs to be `APP_SERVICE_ACCOUNT_TOKEN`, as this is what the Radix CLI expect the environment variable to be named
-- `PRIVATE_TOKEN` - The private token is used for publishing a package to github package repository. The name is irrelevant. It is a personal access token that you configure for your github user. In this example we use the same token for producing the package, as we do for giving Radix access to pull the image to the cluster
-
-## Configuring a personal access token
-
-Go to developer settings in Github to generate an access token (Enable SSO in order to have it be able to access Equinor organization):
-
-![PersonalAccessToken](PersonalAccessToken.png)
-
-Set the privileges to allow it to create packages:
-
-![ReadAndWritePackages](ReadAndWritePackages.png)
-
-## The workflow
-
-In the below workflow we have a series of steps. They are:
-
-- `Set default image tag` - In the example we have a fixed tag for qa environment (i.e. master-latest) while we have a dynamic tag for prod environment. This step sets the default tag for qa environment, or any other environment we choose to add with a latest tagging strategy
-- `Override image tag for prod environment` - Gives a dynamic image tag for production
-- `Build API component` - Building is now done outside of Radix
-- `Push the image to GPR` - Pushes a package to Github package repository using the `PRIVATE_TOKEN` (personal access token)
-- `Prepare for committing new tag to radix config on master` - Since we are using the dynamic tagging for prod environment, we have to commit to master a version of the `radixconfig.yaml` holding the newly produced tag. This step checks out master  branch of the repository
-- `Modify radixconfig tag for production on master branch` - This step calls a [custom script](https://github.com/equinor/radix-example-arm-template/blob/master/hack/modifyTag.py) to modify the tag in `radixconfig.yaml` and the commits and push the change on master
-- `Get environment from branch` - This steps calls a utility function in the CLI for obtaining the environment based on the current brach from the branch-environment mapping in the `radixconfig.yaml` of the repository
-- `Deploy API on Radix` - This step calls the CLI function, which calls the deploy pipeline function of the Radix API for running the deploy pipeline. It uses the output of the previous step to tell Radix which environment it should deploy to. Note that is using `development` context to contact the API in the development cluster. Similarly if context is `playground` it will contact API in playground cluster. If you remove this entirely, it will default to `production` context
-
-> Note that the push of the dynamic image tag of the prod environment to master branch creates a side-effect of building the QA environment again, as this is mapped to master. This shows that maybe for deploy-only master branch should not be mapped to any environment (neither in the `radixconfig.yaml`, nor in the github actions workflow)
+Using github actions you create a workflow file under the folder .github/workflows folder. In below workflow we will build new images for master (qa environment) and release (prod environment) branches:
 
 ```yaml
 name: CI
@@ -197,6 +169,37 @@ jobs:
             -f
 ```
 
+## Workflow secrets
+
+There are a couple of github secrets the workflow make use of:
+
+- `K8S_CREDENTIALS` - This is the token used for accessing Radix. In this example we are using the machine user token provided with the application. The name of the secret can be any name. However, the environment variable needs to be `APP_SERVICE_ACCOUNT_TOKEN`, as this is what the Radix CLI expect the environment variable to be named
+- `PRIVATE_TOKEN` - The private token is used for publishing a package to github package repository. The name is irrelevant. It is a personal access token that you configure for your github user. In this example we use the same token for producing the package, as we do for giving Radix access to pull the image to the cluster
+
+## Configuring a personal access token
+
+Go to developer settings in Github to generate an access token (Enable SSO in order to have it be able to access Equinor organization):
+
+![PersonalAccessToken](PersonalAccessToken.png)
+
+Set the privileges to allow it to create packages:
+
+![ReadAndWritePackages](ReadAndWritePackages.png)
+
+## The workflow
+
+In the below workflow we have a series of steps. They are:
+
+- `Set default image tag` - In the example we have a fixed tag for qa environment (i.e. master-latest) while we have a dynamic tag for prod environment. This step sets the default tag for qa environment, or any other environment we choose to add with a latest tagging strategy
+- `Override image tag for prod environment` - Gives a dynamic image tag for production
+- `Build API component` - Building is now done outside of Radix
+- `Push the image to GPR` - Pushes a package to Github package repository using the `PRIVATE_TOKEN` (personal access token)
+- `Prepare for committing new tag to radix config on master` - Since we are using the dynamic tagging for prod environment, we have to commit to master a version of the `radixconfig.yaml` holding the newly produced tag. This step checks out master  branch of the repository
+- `Modify radixconfig tag for production on master branch` - This step calls a [custom script](https://github.com/equinor/radix-example-arm-template/blob/master/hack/modifyTag.py) to modify the tag in `radixconfig.yaml` and the commits and push the change on master
+- `Get environment from branch` - This steps calls a utility function in the CLI for obtaining the environment based on the current brach from the branch-environment mapping in the `radixconfig.yaml` of the repository
+- `Deploy API on Radix` - This step calls the CLI function, which calls the deploy pipeline function of the Radix API for running the deploy pipeline. It uses the output of the previous step to tell Radix which environment it should deploy to. Note that is using `development` context to contact the API in the development cluster. Similarly if context is `playground` it will contact API in playground cluster. If you remove this entirely, it will default to `production` context
+
+> Note that the push of the dynamic image tag of the prod environment to master branch creates a side-effect of building the QA environment again, as this is mapped to master. This shows that maybe for deploy-only master branch should not be mapped to any environment (neither in the `radixconfig.yaml`, nor in the github actions workflow)
 
 # Configure Radix to use github package
 
