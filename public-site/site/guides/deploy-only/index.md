@@ -22,9 +22,9 @@ We will go over these points below.
 
 # The repository
 
-Unlike a regular Radix application deploy-only you can choose to have:
+Unlike a regular Radix application deploy-only you have two options for how to structure your repositories. You can choose to have:
 
-- Github repository act as a pure configuration repository. That is, source code for the different components resides in other repositories
+- The Github repository act as a pure configuration repository. That is, source code for the different components resides in other repositories
 - Source code resides alongside the `radixconfig.yaml`
 
 The following documentation will use the second option. The example repository can be found [here](https://github.com/equinor/radix-example-arm-template)
@@ -70,13 +70,13 @@ I the `radixconfig.yaml` above, there are two tagging strategies; one using a la
 
 The second part of the `radixconfig` which distinguish itself from a regular radix application is the `privateImageHubs` property. See [this](../../docs/reference-radix-config/#privateImageHubs) to read more about this configuration. In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
 
-Also what can be said about the configuration above is the branch to environment mapping. Since build of components happens outside of Radix the build -> from configuration seems unnecessary. You could, especially if the repository for the Radix application is a mere configuration repository, have environments unmapped. We will explain later why we, in this example, have opted to have a branch-environment mapping.
+Also what can be said about the configuration above is the branch to environment mapping. Since build of components happens outside of Radix the build -> from configuration seems unnecessary. You could, especially if the repository for the Radix application is a mere configuration repository, leave environments unmapped. We will explain later why we, in this example, have opted to have a branch-environment mapping.
 
 The full syntax of `radixconfig.yaml` is explained in [Radix Config reference](../../docs/reference-radix-config/).
 
 # Registering the application
 
-Registering the Radix application follows the pattern of a regular Radix application. The only difference is that we skip adding a web-hook to Radix. We then avoid that the application is built on Radix. The mechanism for deploying to Radix will be described in the next section.
+Registering the Radix application follows the pattern of a regular Radix application. The only difference is that we skip adding a web-hook to Radix. We then avoid that the application become built and deployed to Radix, using the Radix CI. The mechanism for deploying to Radix will be described in the next section.
 
 # Machine-user token
 
@@ -91,7 +91,7 @@ The machine user token you can obtain on the `Configuration` page for your appli
 
 By pressing `Regenerate token` button, you invalidate the existing token and get access to copy a new token into your clipboard.
 
-> Note that the machine-user token is a longed lived token with access to all operations that an application administrator has (i.e. deleting the application, setting secrets). Please make efforts not to have this token get into the wrong hands
+> Note that the machine-user token is a longed lived token with access to all operations that an application administrator has (i.e. deleting the application, setting secrets). Please make efforts not to have this token fall into the wrong hands
 
 # Making calls to Radix
 
@@ -188,7 +188,7 @@ Set the privileges to allow it to create packages:
 
 ## The workflow
 
-In the below workflow we have a series of steps. They are:
+In the above workflow we have a series of steps. They are:
 
 - `Set default image tag` - In the example we have a fixed tag for qa environment (i.e. master-latest) while we have a dynamic tag for prod environment. This step sets the default tag for qa environment, or any other environment we choose to add with a latest tagging strategy
 - `Override image tag for prod environment` - Gives a dynamic image tag for production
@@ -199,11 +199,11 @@ In the below workflow we have a series of steps. They are:
 - `Get environment from branch` - This steps calls a utility function in the CLI for obtaining the environment based on the current brach from the branch-environment mapping in the `radixconfig.yaml` of the repository
 - `Deploy API on Radix` - This step calls the CLI function, which calls the deploy pipeline function of the Radix API for running the deploy pipeline. It uses the output of the previous step to tell Radix which environment it should deploy to. Note that is using `development` context to contact the API in the development cluster. Similarly if context is `playground` it will contact API in playground cluster. If you remove this entirely, it will default to `production` context
 
-> Note that the push of the dynamic image tag of the prod environment to master branch creates a side-effect of building the QA environment again, as this is mapped to master. This shows that maybe for deploy-only master branch should not be mapped to any environment (neither in the `radixconfig.yaml`, nor in the github actions workflow)
+> Note that the push of the dynamic image tag of the prod environment to master branch creates a side-effect of building the QA environment again, as this is mapped to master. This shows t, master branch should not be mapped to any environment (neither in the `radixconfig.yaml`, nor in the github actions workflow)
 
 # Configure Radix to use github package
 
-Go to Radix web console to set the secret, which will be the personal access token you have created which have access to read packages in the Equinor organization:
+Go to Radix web console to set the secret, which will be the personal access token you have created which have access to read packages in the Equinor organization. This gives Radix access to pull any package in the Equinor organization referred to in the `radixconfig.yaml`:
 
 ![PrivateImageHubSecret](PrivateImageHubSecret.png)
 
