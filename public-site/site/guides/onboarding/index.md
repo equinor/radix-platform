@@ -46,7 +46,7 @@ Radix is built on top of Kubernetes hosted on Azure as a service (AKS). Knowledg
 
 ## CI / CD 
 
-Radix provide a simple way to automatically build and deploy your application based on the [radixconfig.yaml](https://www.radix.equinor.com/docs/reference-radix-config/) file already mentioned. 
+Radix provide a simple way to automatically build and deploy your application based on the [radixconfig.yaml](https://www.radix.equinor.com/docs/reference-radix-config/) file already mentioned. Alternatively, you can opt for using only the CD part of Radix. See [this](../deploy-only/) guide on how set up your application for deploy-only.
 
 ## Monitoring
 
