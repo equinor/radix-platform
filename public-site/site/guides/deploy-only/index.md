@@ -85,7 +85,11 @@ In a deploy-only scenario you will tell us when to deploy, rather than having th
 - You can authenticate with any user in the application `Administrators` group, and get a token of that user (i.e. az account get-access-token) to communicate with the Radix API
 - You can use the machine user token we provide you, as long as you have enabled the machine user to be created for your application
 
-The machine user token you can obtain on the `Configuration` page for your application.
+To add a machine-user to your application, you will need to enable it on the `Configuration` page for your application.
+
+![EnableMachineUser](EnableMachineUser.png)
+
+Once enabled, you can obtain the machine user token under `App secrets` of the `Configuration` page for your application.
 
 ![MachineUserToken](MachineUserToken.png)
 
