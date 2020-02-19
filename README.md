@@ -33,3 +33,8 @@ All of our source code for the platform is on [GitHub repositories prefixed with
 ## Jira
 
 We have a [Jira board](https://equinor.atlassian.net/secure/RapidBoard.jspa?rapidView=41&projectKey=RA) for tracking progress in the team. Right now this is internal for the team only.
+
+## Visuals
+
+Font: [Raleway](https://www.fontsquirrel.com/fonts/raleway)  
+Logo: See [./logo/radix.svg](./logo/radix.svg)
