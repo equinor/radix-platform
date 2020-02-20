@@ -232,7 +232,7 @@ function please_wait() {
 # a status.condition != <none> they can be considered reconciled
 function please_wait_for_reconciling() {
   local resource="${1}"
-  local allCmd="kubectl get $resource --all-namespaces"
+  local allCmd="kubectl get $resource --all-namespaces | grep -v 'canarycicd'"
   local currentCmd="kubectl get $resource --all-namespaces -o custom-columns=':status.condition'"
   local condition="grep -v '<none>'"
 
