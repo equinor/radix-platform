@@ -219,7 +219,7 @@ kubectl apply -f manifests/storageclass-retain-nocache.yaml
 ### Install prometheus-operator
 ###
 
-(PROMETHEUS_VALUES=./prometheus-operator/prometheus-operator-values.yaml ./prometheus-operator/bootstrap.sh)
+(./prometheus-operator/bootstrap.sh)
 wait
 
 #######################################################################################
@@ -317,7 +317,6 @@ wait
 echo ""
 (USER_PROMPT="$USER_PROMPT" ./velero/install_prerequisites_in_cluster.sh)
 wait
-
 
 #######################################################################################
 ### Notify on slack channel
