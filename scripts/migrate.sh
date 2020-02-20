@@ -232,7 +232,7 @@ done
 # Wait for velero to be deployed from flux
 echo ""
 echo "Waiting for velero to be deployed by flux-operator so that it can handle restore into cluster from backup"
-echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+echo "If this lasts forever, are you migrating to a cluster without base components installed? (Tip: Try 'fluxctl sync' to force syncing flux repo)"
 while [[ "$(kubectl get deploy velero -n velero 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
