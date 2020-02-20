@@ -518,3 +518,5 @@ echo "All restore tasks are done!"
 # Print restore status
 echo "Run \"velero restore get\" to get latest status:"
 velero restore get
+
+echo "Done restoring apps"
