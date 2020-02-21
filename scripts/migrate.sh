@@ -50,7 +50,7 @@ hash velero 2>/dev/null || {
     echo -e "\nError: velero not found in PATH. Exiting..." >&2
     exit 1
 }
-hash jq 2> /dev/null  || {
+hash jq 2>/dev/null || {
     echo -e "\nError: jq not found in PATH. Exiting..." >&2
     exit 1
 }
@@ -223,8 +223,17 @@ az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOUR
 # Wait for operator to be deployed from flux
 echo ""
 echo "Waiting for radix-operator to be deployed by flux-operator so that it can handle migrated apps"
-echo "If this lasts forever are you migrating to a cluster without base components installed?"
+echo "If this lasts forever, are you migrating to a cluster without base components installed?"
 while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+
+# Wait for velero to be deployed from flux
+echo ""
+echo "Waiting for velero to be deployed by flux-operator so that it can handle restore into cluster from backup"
+echo "If this lasts forever, are you migrating to a cluster without base components installed? (Tip: Try 'fluxctl sync' to force syncing flux repo)"
+while [[ "$(kubectl get deploy velero -n velero 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
@@ -294,6 +303,9 @@ if [[ "$REPLY" =~ (N|n) ]]; then
     WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
     wait # wait for subshell to finish
+
+    echo "Restarting web console to use updated secret value."
+    $(kubectl delete pods --all -n radix-web-console-prod 2>&1 >/dev/null)
 
     exit 1
 fi

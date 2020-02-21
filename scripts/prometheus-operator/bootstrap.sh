@@ -37,20 +37,20 @@ echo "Bootstrap prometheus-operator..."
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
-    exit 1
+  echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+  exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..."
-    exit 1
+  echo -e "\nError: kubectl not found in PATH. Exiting..."
+  exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..."
-    exit 1
+  echo -e "\nError: helm not found in PATH. Exiting..."
+  exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..."
-    exit 1
+  echo -e "\nError: jq not found in PATH. Exiting..."
+  exit 1
 }
 printf "All is good."
 echo ""
@@ -62,24 +62,22 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+  echo "Please provide RADIX_ZONE_ENV" >&2
+  exit 1
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
-fi
-
-if [[ -z "$PROMETHEUS_VALUES" ]]; then
-    PROMETHEUS_VALUES=./prometheus-operator-values.yaml
+  if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+    echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+    exit 1
+  fi
+  source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
-    exit 1
+  echo "Please provide CLUSTER_NAME" >&2
+  exit 1
 fi
+
+WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # IKNU : 2020.01.09 : The following is needed becuase prometheus started failing installation
 # In addition prometheusOperator.createCustomResource=false is set when installing chart
@@ -150,10 +148,10 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/re
 ##########
 
 helm upgrade --install prometheus-operator stable/prometheus-operator \
-    --version 8.3.2 \
-    -f $PROMETHEUS_VALUES \
-    --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
-    --set prometheusOperator.createCustomResource=false
+  --version 8.3.2 \
+  -f "$WORKDIR_PATH/prometheus-operator-values.yaml" \
+  --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
+  --set prometheusOperator.createCustomResource=false
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
@@ -162,8 +160,8 @@ helm upgrade --install prometheus-operator stable/prometheus-operator \
 htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name prometheus-token | jq -r .value)"
 
 kubectl create secret generic prometheus-htpasswd \
-    --from-file auth --dry-run -o yaml |
-    kubectl apply -f -
+  --from-file auth --dry-run -o yaml |
+  kubectl apply -f -
 
 rm -f auth
 
@@ -224,4 +222,4 @@ EOF
 # Change kubelet ServiceMonitor from https to http, ref https://github.com/coreos/prometheus-operator/issues/1522
 
 kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
-    --patch "$(cat ./kubelet-service-monitor-patch.yaml)"
+  --patch "$(cat $WORKDIR_PATH/kubelet-service-monitor-patch.yaml)"
