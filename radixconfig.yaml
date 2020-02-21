@@ -7,9 +7,6 @@ spec:
     - name: prod
       build:
         from: master
-    - name: deploy-only
-      build:
-        from: RA-1201-AddDocumentationForDeployOnly
   components:
     - name: public-site
       src: "./public-site"
