@@ -12,15 +12,25 @@
 
 ### THE TRICK: use trap
 #
-# Trap ctrl+c and call a function that said the user did so
-# This behaves nicely if the code you want to skip is run in a subshell
-trap user_skip SIGINT
+# Trap ctrl+c and call a function that ask the user to continue or exit script.
+trap user_skip_subshell SIGINT
 
 
 ### SOME DEMO FUNCS
 
-function user_skip() {
-   echo -e "\nUser told me to skip this..."
+function user_skip_subshell() {
+   echo -e "\n-------------------"
+   echo -e "User told me to skip this step..."
+   read -p "Do you want to continue with the next steps? (Y/n) " -n 1 -r
+   if [[ "$REPLY" =~ (N|n) ]]; then      
+      echo -e "\nQuitting script."
+      # "exit" will break out of the subshell
+      # If you want to break out of a while loop in main/parent script then you would use "break"
+      exit 0
+   else
+      echo -e "\nContinuing with next steps..."
+      echo -e "-------------------"
+   fi
 } 
 
 function everloop() {
@@ -32,19 +42,19 @@ function everloop() {
    done
 }
 
-function do_something_else() {
-   echo "Doing something else...Done"
+function do_step_2() {
+   echo "Step 2: Doing something else...Done"
 }
 
 
 ## MAIN
 
 # Call loop function in subshell
-(everloop "Never ending story")
+(everloop "Step 1: Never ending story")
 # Do some more work after subshell
-do_something_else
+do_step_2
 # Call yet another loop function in a subshell
-(everloop "More loops4tehwin, weeeeeeeeee")
+(everloop "Step 3: More loops4tehwin, weeeeeeeeee")
 
 
 ## END
