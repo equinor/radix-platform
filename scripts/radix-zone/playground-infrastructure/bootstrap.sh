@@ -148,7 +148,7 @@ echo "...Done."
 ###
 
 echo ""
-echo "Azure DNS Zone delegation is a manual step."
+echo "Domain name delegation is a manual step."
 echo "See how to in https://github.com/equinor/radix-private/blob/master/docs/infrastructure/dns.md#how-to-delegate-from-prod-to-dev-or-playground"
 
 echo ""

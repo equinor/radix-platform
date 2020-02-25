@@ -1,15 +1,11 @@
 # Base infrastructure for radix environments
 
-Radix has two environments:
-- "dev"
-- "prod"
+Radix has two _infrastructure_ environments that together hold the base infrastructure components for all other radix-zones:
+- `dev`
+- `prod`
 
-All radix-zones belong to one of these, and can share the same infrastructure in the same environment.  
-
-There are two special radix-zones:
-- "dev"
-- "prod"
-These two contain the base infrastructure for the corrensponding radix environments.  
+The radix-zones `prod` and `dev` is hosted in the corrensponding infrastructure environment.  
+`dev` is the testing/development environment for `prod`, and so they share the same boostrap and teardown scripts. 
 
 
 ## Components
@@ -36,7 +32,8 @@ You need to ask an Azure AD Administrator to go the Azure portal an click the "G
 
 #### DNS Zone
 
-If the dns zone is set to be something else than "radix.equinor.com" then you must [manually add delegation](https://github.com/equinor/radix-private/blob/master/docs/infrastructure/dns.md#how-to-delegate-from-prod-to-dev-or-playground) from "radix.equinor.com" to the new dns zone.
+If the dns zone is set to be something else than `radix.equinor.com` then you must [manually add delegation](https://github.com/equinor/radix-private/blob/master/docs/infrastructure/dns.md#how-to-delegate-from-prod-to-dev-or-playground) from `radix.equinor.com` to the new dns zone.
+
 
 ## Teardown
 
