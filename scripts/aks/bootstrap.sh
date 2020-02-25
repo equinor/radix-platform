@@ -226,6 +226,7 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --node-vm-size "$NODE_VM_SIZE" \
     --max-pods "$POD_PER_NODE" \
     --network-plugin "$NETWORK_PLUGIN" \
+    --network-policy "$NETWORK_POLICY" \
     --vnet-subnet-id "$SUBNET_ID" \
     --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" \
     --dns-service-ip "$VNET_DNS_SERVICE_IP" \

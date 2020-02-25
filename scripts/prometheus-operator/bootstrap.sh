@@ -148,7 +148,7 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/re
 ##########
 
 helm upgrade --install prometheus-operator stable/prometheus-operator \
-  --version 8.3.2 \
+  --version 8.9.2 \
   -f "$WORKDIR_PATH/prometheus-operator-values.yaml" \
   --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
   --set prometheusOperator.createCustomResource=false

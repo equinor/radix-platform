@@ -91,7 +91,9 @@ fi
 
 # Script vars
 
-BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
+if [[ -z "$BACKUP_NAME" ]]; then
+    BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
+fi
 
 #######################################################################################
 ### Resolve dependencies on other scripts
