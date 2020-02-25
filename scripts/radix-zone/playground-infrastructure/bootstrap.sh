@@ -4,7 +4,7 @@
 ### PURPOSE
 ### 
 
-# Bootstrap radix zone infrastructure
+# Bootstrap radix zone infrastructure for "playground.radix.equinor.com"
 
 
 #######################################################################################
@@ -22,7 +22,7 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix_zone_us.env ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix_zone_playground.env ./bootstrap.sh
 
 
 #######################################################################################
@@ -78,7 +78,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap will use the following configuration:"
+echo -e "Bootstrap radix zone will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -88,7 +88,6 @@ echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY   : $AZ_RESOURCE_CONTAINER_REGISTRY"
 echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "   > WHO:"
@@ -126,37 +125,6 @@ function assignRoleForResourceToUser() {
 
 
 #######################################################################################
-### CONTAINER REGISTRY
-###
-
-echo ""
-
-echo "Azure Container Registry: Creating ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
-az acr create --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
-    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-    --sku "Standard" \
-    --location "$AZ_RADIX_ZONE_LOCATION" \
-    2>&1 >/dev/null
-echo "...Done."
-
-# Permissions
-ROLE_SCOPE="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
-
-echo "Azure Container Registry: Update permissions for SP ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}..."
-assignRoleForResourceToUser "AcrPull" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}"
-echo "...Done."
-
-echo "Azure Container Registry: Update permissions for SP ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}..."
-assignRoleForResourceToUser "Contributor" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}"
-echo "...Done."
-
-echo "Azure Container Registry: Update permissions for SP ${AZ_SYSTEM_USER_CLUSTER}..."
-assignRoleForResourceToUser "AcrPull" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_CLUSTER}"
-echo "...Done."
-
-
-
-#######################################################################################
 ### DNS ZONE
 ###
 
@@ -180,7 +148,7 @@ echo "...Done."
 ###
 
 echo ""
-echo "Azure DNS Zone delegation is a manual step."
+echo "Domain name delegation is a manual step."
 echo "See how to in https://github.com/equinor/radix-private/blob/master/docs/infrastructure/dns.md#how-to-delegate-from-prod-to-dev-or-playground"
 
 echo ""
