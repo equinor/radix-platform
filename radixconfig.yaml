@@ -4,6 +4,9 @@ metadata:
   name: radix-platform
 spec:
   environments:
+    - name: deploy-only
+      build:
+        from: RA-1201-AddDocumentationForDeployOnly
     - name: prod
       build:
         from: master
