@@ -166,9 +166,15 @@ spec:
         - websocketfriendly
 ```
 
-The `ingressConfiguration` field of a component will add extra configuration by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario
+The `ingressConfiguration` field of a component will add extra configuration by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario. 
+
+>Note that the settings affect the connections with the public component, not between a public and a private component.
 
 - `websocketfriendly` will change connection timeout to 1 hour for the component.
+- `stickysessions` will change load balancing of the ingress to route to a single replica.
+- `leastconnectedlb` will ensure that connections will be routed to the replica with least amount of load
+
+See [this](https://github.com/equinor/radix-operator/blob/b828195f1b3c718d5a48e31d0bafe0435857f5bf/charts/radix-operator/values.yaml#L58) for more information on what annotations will be put on the ingress, given the configuration.
 
 ### `environmentConfig`
 
