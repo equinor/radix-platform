@@ -257,6 +257,23 @@ The `horizontalScaling` field of a component environment config is used for enab
 
 The `horizontalScaling` field contains two sub-fields: `minReplicas` and `maxReplicas`, that specify the minimum and maximum number of replicas for a component, respectively. The value of `minReplicas` must strictly be smaller or equal to the value of `maxReplicas`.
 
+#### `imageTagName`
+
+The `imageTagName` allows for flexible configuration of fixed images, built outside of Radix, to be configured with separate tag for each environment.
+
+```yaml
+components:
+  - name: backend
+    image: docker.pkg.github.com/equinor/myapp/backend:{imageTagName}
+    environmentConfig:
+      - environment: qa
+        imageTagName: master-latest
+      - environment: prod
+        imageTagName: release-39f1a082
+```
+
+> See [this](../../guides/deploy-only/) guide on how make use of `imageTagName` in a deploy-only scenario.
+
 ### `secrets`
 
 ```yaml
@@ -323,7 +340,7 @@ It is possible to pull images from private image hubs during deployment for an a
 
 To get more information on how to connect to a private Azure container registry (ACR), see the following [guide](https://thorsten-hans.com/how-to-use-private-azure-container-registry-with-kubernetes). The chapter `Provisioning an Azure Container Registry` provide information on how to get service principle `username` and `password`. It is also possible to create a Service Principle in Azure AD, and then manually grant it access to your ACR.
 
-See [this](../../guides/deploy-only/) guide on how make use of `privateImageHubs` in a deploy-only scenario.
+> See [this](../../guides/deploy-only/) guide on how make use of `privateImageHubs` in a deploy-only scenario.
 
 # Example `radixconfig.yaml` file
 
