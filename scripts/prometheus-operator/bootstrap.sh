@@ -168,7 +168,7 @@ rm -f auth
 # Create a custom ingress for prometheus that adds HTTP Basic Auth
 
 cat <<EOF | kubectl apply -f -
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:
@@ -196,7 +196,7 @@ EOF
 # Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in ./manifests/prometheus-operator-values.yaml)
 
 cat <<EOF | kubectl apply -f -
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:
