@@ -16,9 +16,7 @@ Radix does not support any authentication for your application out of the box, b
 
 **The rest of this document assumes you have basic knowledge of OAuth 2.0, OpenId Connect and JWT tokens.**
 
-## Note
-
-It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is the recommended library to use in Equinor. It is developed and maintained by Microsoft, and can be used for many scenarios/languages.
+>It is highly recommended to use common library/components maintained by others for OAuth 2.0 authentication. [MSAL](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview) is the recommended library to use in Equinor. It is developed and maintained by Microsoft, and can be used for many scenarios/languages.
 
 If your web app should access one or more resources, e.g. API, you have to take time to understand OAuth 2.0 and Openid Connect. It is not trivial to setup authentication for these scenarios, either using oauth-proxy or a library as MSAL. 
 
