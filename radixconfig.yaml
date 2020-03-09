@@ -7,6 +7,9 @@ spec:
     - name: deploy-only
       build:
         from: RA-1201-AddDocumentationForDeployOnly
+    - name: ra1160
+      build:
+        from: RA-1160
     - name: prod
       build:
         from: master
