@@ -23,6 +23,22 @@ An in-depth understanding of Docker is not a requirement, but it helps to be fam
 
 It is also expected that you have a [basic understanding of Git](http://rogerdudler.github.io/git-guide/) (branching, merging) and some networking (ports, domain names).
 
+## Repository 
+
+A GitHub repository for our code is required (only GitHub is supported at the moment)  
+
+## Radix config file (radixconfig.yaml)
+
+A `radixconfig.yaml` file that defines the running environments. This must be in the *Master* branch and the root directory of our repository  
+
+See the [radixconfig.yaml documentation](../../docs/reference-radix-config/)  
+
+# Configure your application
+
+The next step is to **[configure your application](../configure-an-app/)** on Radix; follow that guide to set things up in the cluster you chose.
+
+(Or, if you prefer reading rather than coding right now, you can get familiar with the [concepts in Radix](../../docs/topic-concepts/) first.)
+
 # The Radix clusters
 
 Your applications will run in a *Radix cluster*. We currently have three: **Production**, **Production US** and **Playground**. Use Playground for testing Radix and see if it's a good fit for your needs. When your project and team are happy with Radix, you can register your application in one of the Production clusters, which provides [specific guarantees](../../docs/topic-sla/).
@@ -55,11 +71,5 @@ You can configure your app in Playground first, and then in Production; there is
 
 # Onboarding
 
-Radix team offer onboarding for teams or projects, where we walk through your application and togheter try to find out if Radix is a good fit for you. Contact us on [slack](https://equinor.slack.com/archives/C8U7XGGAJ) for more information.
-
-# Configure your application
-
-The next step is to [configure your application](../configure-an-app/) on Radix; follow that guide to set things up in the cluster you chose.
-
-(Or, if you prefer reading rather than coding right now, you can get familiar with the [concepts in Radix](../../docs/topic-concepts/) first.)
+Radix team offer onboard support for teams or projects, where we walk through your application and togheter try to find out if Radix is a good fit for you. Contact us on [slack](https://equinor.slack.com/archives/C8U7XGGAJ) for more information.
 
