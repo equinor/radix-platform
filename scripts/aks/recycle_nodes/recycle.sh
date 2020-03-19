@@ -147,11 +147,17 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     exit 0
 fi
 
-function get_scaleset_instance_number() {
+function get_nodename_elements() {
     local nodeName="${1}"
 
     nodeNameElements=($(echo "$nodeName" | awk '{split($0,a,"-"); print a[1],a[2],a[3],a[4]}'))
+    echo "${nodeNameElements[@]}"
+}
 
+function get_scaleset_instance_number() {
+    local nodeName="${1}"
+
+    nodeNameElements=($(get_nodename_elements "$nodeName"))
     instanceNumberString="${nodeNameElements[3]: -6}"
     instanceNumber=$(expr $instanceNumberString + 0)
     echo "$instanceNumber"
@@ -160,7 +166,7 @@ function get_scaleset_instance_number() {
 function get_scaleset_instance_name() {
     local nodeName="${1}"
 
-    nodeNameElements=($(echo "$nodeName" | awk '{split($0,a,"-"); print a[1],a[2],a[3],a[4]}'))
+    nodeNameElements=($(get_nodename_elements "$nodeName"))
     instanceNumber=$(get_scaleset_instance_number $nodeName)
 
     instanceName="${nodeNameElements[0]}-${nodeNameElements[1]}-${nodeNameElements[2]}-vmss_${instanceNumber}"
@@ -172,7 +178,7 @@ function get_scaleset_instance_name() {
 function get_nodepool_name() {
     local nodeName="${1}"
 
-    nodeNameElements=($(echo "$nodeName" | awk '{split($0,a,"-"); print a[1],a[2],a[3],a[4]}'))
+    nodeNameElements=($(get_nodename_elements "$nodeName"))
     instanceName="${nodeNameElements[0]}-${nodeNameElements[1]}-${nodeNameElements[2]}-vmss_${instanceNumber}"
     echo -e "${nodeNameElements[1]}"
 }
