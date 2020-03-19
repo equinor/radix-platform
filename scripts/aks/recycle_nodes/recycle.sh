@@ -115,6 +115,7 @@ echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_RESOURCE_GROUP_CLUSTERS       : $AZ_RESOURCE_GROUP_CLUSTERS"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e "   -  NODE_NAME                        : $NODE_NAME"
 echo -e ""
@@ -173,51 +174,73 @@ function get_scaleset_instance_name() {
 
 }
 
-function recycle_scalesetinstance() {
-    local nodeName="${1}"
-
+function get_scaleset_resourcegroup() {
     scaleSetResourceGroup="MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}"
+    echo "$scaleSetResourceGroup"
+}
+
+function get_scaleset() {
+    scaleSetResourceGroup=$(get_scaleset_resourcegroup)
     scaleSet=($(az vmss list --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --query [].name -o tsv))
+    echo "${scaleSet[0]}"
+}
+
+function recycle_scalesetinstance() {
+    local scaleSetResourceGroup="${1}"
+    local scaleSet="${2}"
+    local nodeName="${3}"
 
     scaleSetInstance=$(get_scaleset_instance_name $nodeName)
+    scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
 
-    for scaleset in "${scaleSet[@]}"; do
-        scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleset" --query [].name -o tsv))
+    for instance in "${scaleSetInstances[@]}"; do
+        if [[ $scaleSetInstance == $instance ]]; then
+            instanceNumber=$(get_scaleset_instance_number $nodeName)
 
-        for instances in "${scaleSetInstances[@]}"; do
-            if [[ $scaleSetInstance == $instances ]]; then
-                instanceNumber=$(get_scaleset_instance_number $nodeName)
-
-                echo -e "Deleting instance number $instanceNumber"
-                echo -e ""
-                az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleset"
-            fi
-        done
+            echo -e "Deleting instance number $instanceNumber"
+            echo -e ""
+            az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet"
+        fi
     done
 }
 
 function recycle_node() {
-    local node="${1}"
+    local scaleSetResourceGroup="${1}"
+    local scaleSet="${2}"
+    local node="${3}"
 
     echo -e "Draining $node"
-    kubectl drain "$node" --ignore-daemonsets --delete-local-data
-    recycle_scalesetinstance "$node"
+    kubectl cordon "$node"
+    kubectl drain "$node" --force=true --ignore-daemonsets --delete-local-data
+    recycle_scalesetinstance "$scaleSetResourceGroup" "$scaleSet" "$node"
 }
 
-NUM_NODES_IN_CLUSTER="$(kubectl get nodes --no-headers | wc -l | tr -d '[:space:]')"
-ALL_NODES=($(kubectl get nodes -o custom-columns=':metadata.name' --no-headers))
+numNodesInCluster="$(kubectl get nodes --no-headers | wc -l | tr -d '[:space:]')"
+allNodes=($(kubectl get nodes -o custom-columns=':metadata.name' --no-headers))
 
-for node in "${ALL_NODES[@]}"; do
+scaleSetResourceGroup=$(get_scaleset_resourcegroup)
+scaleSet=$(get_scaleset)
+
+for node in "${allNodes[@]}"; do
     if [[ $NODE_NAME == All ]]; then
-        recycle_node $node
+        recycle_node "$scaleSetResourceGroup" "$scaleSet" "$node"
 
         echo -e "Scaling cluster back to original size"
-        az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$NODE_POOL_NAME" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$NUM_NODES_IN_CLUSTER"
+        az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$NODE_POOL_NAME" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$numNodesInCluster" >/dev/null
 
     elif [[ $NODE_NAME == $node ]]; then
-        recycle_node $node
+        recycle_node "$scaleSetResourceGroup" "$scaleSet" "$node"
 
         echo -e "Scaling cluster back to original size"
-        az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$NODE_POOL_NAME" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$NUM_NODES_IN_CLUSTER"
+        az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$NODE_POOL_NAME" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$numNodesInCluster" >/dev/null
     fi
+done
+
+echo -e ""
+echo -e "Cluster is back to original size. New instances are:"
+echo -e ""
+
+scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
+for instances in "${scaleSetInstances[@]}"; do
+    echo -e "  - $instances"
 done
