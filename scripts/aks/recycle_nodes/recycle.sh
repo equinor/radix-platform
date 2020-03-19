@@ -147,6 +147,11 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     exit 0
 fi
 
+
+#######################################################################################
+### Support funcs
+###
+
 function get_nodename_elements() {
     local nodeName="${1}"
 
@@ -225,6 +230,11 @@ function recycle_node() {
     recycle_scalesetinstance "$node"
 }
 
+
+#######################################################################################
+### MAIN
+###
+
 allNodes=($(kubectl get nodes -o custom-columns=':metadata.name' --no-headers))
 
 for node in "${allNodes[@]}"; do
@@ -260,6 +270,11 @@ for node in "${allNodes[@]}"; do
         az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$numNodesInNodepool" >/dev/null
     fi
 done
+
+
+#######################################################################################
+### END
+###
 
 echo -e ""
 echo -e "Cluster is back to original size. New instances are:"
