@@ -16,6 +16,7 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+# - DRY_RUN             : To run without the commands
 # - NODE_NAME           : Name of the node to recycle. If not provided, then all will be recycled
 
 #######################################################################################
@@ -82,6 +83,10 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+if [[ -z "$DRY_RUN" ]]; then
+    DRY_RUN=false
+fi
+
 if [[ -z "$NODE_NAME" ]]; then
     NODE_NAME=All
 fi
@@ -146,7 +151,6 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
     exit 0
 fi
-
 
 #######################################################################################
 ### Support funcs
@@ -215,7 +219,10 @@ function recycle_scalesetinstance() {
                 instanceNumber=$(get_scaleset_instance_number $nodeName)
 
                 echo -e "Deleting instance number $instanceNumber"
-                az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet"
+                if [[ $DRY_RUN == false ]]; then
+                    az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet"
+                fi
+
             fi
         done
     done
@@ -225,11 +232,12 @@ function recycle_node() {
     local node="${1}"
 
     echo -e "Draining $node"
-    kubectl cordon "$node"
-    kubectl drain "$node" --force=true --ignore-daemonsets --delete-local-data
+    if [[ $DRY_RUN == false ]]; then
+        kubectl cordon "$node"
+        kubectl drain "$node" --force=true --ignore-daemonsets --delete-local-data
+    fi
     recycle_scalesetinstance "$node"
 }
-
 
 #######################################################################################
 ### MAIN
@@ -238,8 +246,8 @@ function recycle_node() {
 allNodes=($(kubectl get nodes -o custom-columns=':metadata.name' --no-headers))
 
 for node in "${allNodes[@]}"; do
-    nodePool=$(get_nodepool_name "$node")
-    numNodesInNodepool=$(az aks nodepool show --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --query count)
+    nodePool="$(get_nodepool_name $node)"
+    numNodesInNodepool="$(az aks nodepool show --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --query count)"
 
     if [[ $NODE_NAME == All ]]; then
         echo -e ""
@@ -248,7 +256,9 @@ for node in "${allNodes[@]}"; do
         recycle_node "$node"
 
         echo -e "Scaling $nodePool in cluster back to original size ($numNodesInNodepool)"
-        az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$numNodesInNodepool" >/dev/null
+        if [[ $DRY_RUN == false ]]; then
+            az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$numNodesInNodepool" >/dev/null
+        fi
 
         if [[ $USER_PROMPT == true ]]; then
             read -p "Continue to next node? (Y/n) " -n 1 -r
@@ -267,10 +277,12 @@ for node in "${allNodes[@]}"; do
         recycle_node "$node"
 
         echo -e "Scaling $nodePool in cluster back to original size ($numNodesInNodepool)"
-        az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$numNodesInNodepool" >/dev/null
+
+        if [[ $DRY_RUN == false ]]; then
+            az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count "$numNodesInNodepool" >/dev/null
+        fi
     fi
 done
-
 
 #######################################################################################
 ### END
