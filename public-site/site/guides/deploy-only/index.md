@@ -163,13 +163,13 @@ jobs:
         uses: equinor/radix-github-actions@master
         with:
           args: >
-            get-config branch-environment
+            get config branch-environment
             -b ${GITHUB_REF##*/}
       - name: Deploy API on Radix
         uses: equinor/radix-github-actions@master
         with:
           args: >
-            trigger
+            create job
             deploy
             --context development
             -e ${{ steps.getEnvironment.outputs.result }}
