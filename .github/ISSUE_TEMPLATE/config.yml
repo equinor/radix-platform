@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Radix Support for Equinor
+    url: https://equinor.slack.com/archives/CBKM6N2JY
+    about: 'Please ask and answer questions in Equinor slack channel #omnia_radix_support'
