@@ -270,6 +270,10 @@ echo ""
 (./config-and-secrets/bootstrap-acr.sh)
 wait
 
+printf "\nGetting Slack Webhook URL..."
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
+printf "...Done\n"
+
 cat <<EOF >radix-platform-config.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -284,6 +288,7 @@ data:
     imageRegistry: "$IMAGE_REGISTRY"
     clusterName: "$CLUSTER_NAME"
     clusterType: "$CLUSTER_TYPE"
+    slackWebhookURL: "$SLACK_WEBHOOK_URL"
 EOF
 
 kubectl apply -f radix-platform-config.yaml
