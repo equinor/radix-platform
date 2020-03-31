@@ -9,7 +9,7 @@ spec:
     kind: ClusterIssuer
     name: ${CERT_ISSUER}
   duration: 2160h # 90d
-  renewBefore: 360h # 15d
+  renewBefore: 762h # 32d. Let's Encrypt will email an alert if 30d remain and cert has not been renewed.
   commonName: "*.$AZ_RESOURCE_DNS"
   dnsNames:
   - "*.$AZ_RESOURCE_DNS"
