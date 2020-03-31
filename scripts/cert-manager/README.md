@@ -1,7 +1,8 @@
 # Cert-manager - v0.11.0
 
 We use [cert-manager](https://github.com/jetstack/cert-manager) to provide automatic SSL/TLS certificate generation in the cluster using Let's Encrypt.  
-Depending on use case we can use it to either create certificates according to a crd manifest, or auto-create the certificate based on an ingress notation.
+Depending on use case we can use it to either create certificates according to a crd manifest, or auto-create the certificate based on an ingress notation.  
+For certificate management in general in Radix then please see [radix certificate management](https://github.com/equinor/radix-private/blob/master/docs/radix-platform/cert-management.md)
 
 - [Overview](#overview)
 - [Bootstrap](#bootstrap)
@@ -94,8 +95,9 @@ then we need to handle deployment of cert-manager by scripts that are customized
 Due to the high possibility of breaking changes you will need to 
 1. Verify that the custom resources are still valid (old version vs new version)
 1. Prepare bootstrap and removal script of new version
-1. Remove any trace of old version from the cluster
-1. When previous version is gone, install new version
+1. Remove any trace of old version from the cluster (use the teardown script for the old version)
+1. When previous version is gone, install new version (use the bootstrap script for the new version)
+1. Update this `README.md` title to show the new version number
 
 The k8s tls secrets will be kept intact during this process as it does not belong to cert-manager.
 
