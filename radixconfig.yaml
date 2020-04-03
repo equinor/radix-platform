@@ -6,7 +6,7 @@ spec:
   environments:
     - name: deploy-only
       build:
-        from: RA-1201-AddDocumentationForDeployOnly
+        from: FixProblemsWithDeployOnlyDocumentation
     - name: ra1160
       build:
         from: RA-1160
