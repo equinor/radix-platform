@@ -42,38 +42,38 @@ metadata:
   name: radix-example-arm-template
 spec:
   environments:
-  - name: qa
-    build:
-      from: master
-  - name: prod
-    build:
-      from: release
+    - name: qa
+      build:
+        from: master
+    - name: prod
+      build:
+        from: release
   components:
-  - name: api
-    image: docker.pkg.github.com/equinor/radix-example-arm-template/api:{imageTagName}
-    ports:
-    - name: http
-      port: 3000
-    publicPort: http
-    environmentConfig:
-    - environment: qa
-      imageTagName: master-latest
-    - environment: prod
-      imageTagName: release-39f1a082
+    - name: api
+      image: docker.pkg.github.com/equinor/radix-example-arm-template/api:{imageTagName}
+      ports:
+        - name: http
+          port: 3000
+      publicPort: http
+      environmentConfig:
+        - environment: qa
+          imageTagName: master-latest
+        - environment: prod
+          imageTagName: release-39f1a082
 privateImageHubs:
   docker.pkg.github.com:
     username: <some GitHub user name>
     email: <some email>
 ```
 
-In the `radixconfig.yaml` above, there are two tagging strategies;  
+In the `radixconfig.yaml` above, there are two tagging strategies;
 
 - Using a latest tag (i.e. master-latest)
-- Using a dynamic tag (i.e release-39f1a082)  
+- Using a dynamic tag (i.e release-39f1a082)
 
 A dynamic tag in this context means that there is a new tag produced for every build, either referring to the release tag, or the commit sha (in the case above) or any other attributes that uniquely identifies what the image is produced from. The dynamic tag will give better control over what runs in the environment, and it also allows for promoting older deployments to be the latest deployment, in case there is a need for a rollback.
 
-The second part of the `radixconfig.yaml` which distinguish itself from a regular radix application is the [`privateImageHubs` property] (../../docs/reference-radix-config/#privateImageHubs). In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
+The second part of the `radixconfig.yaml` which distinguish itself from a regular radix application is the [`privateImageHubs` property](../../docs/reference-radix-config/#privateImageHubs). In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
 
 Also what can be said about the configuration above is the branch to environment mapping. Since build of components happens outside of Radix the build -> from configuration seems unnecessary. You could, especially if the repository for the Radix application is a mere configuration repository, leave environments unmapped. We will explain later why we, in this example, have opted to have a branch-environment mapping.
 
@@ -104,7 +104,7 @@ By pressing `Regenerate token` button, you invalidate the existing token and get
 
 With the access token you can make calls to our API through either:
 
-- Calling the API directly ([production API](https://api.radix.equinor.com/swaggerui/) or [playground API](https://api.playground.radix.equinor.com/swaggerui/)), by passing the bearer token (i.e. curl -X GET --header "Authorization: Bearer $token")
+- Calling the API directly ([production API](https://api.radix.equinor.com/swaggerui/) or [playground API](https://api.playground.radix.equinor.com/swaggerui/)), by passing the bearer token (i.e. curl -X GET --header "Authorization: Bearer \$token")
 - Calling the API though functions in the [Radix CLI](https://github.com/equinor/radix-cli), which allows for simpler access to the API
 - Calling the API through [Radix GitHub Actions](https://github.com/equinor/radix-github-actions). If you have opted for GitHub Actions as your CI tool, then calling the Radix API indirectly through the Radix CLI using the Radix GitHub Actions can be done. It allows for simpler access to the CLI in your actions workflow.
 
@@ -126,7 +126,7 @@ jobs:
     name: deploy
     runs-on: ubuntu-latest
     env:
-      APP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.K8S_CREDENTIALS }}
+      APP_SERVICE_ACCOUNT_TOKEN: ${{ "{{ secrets.K8S_CREDENTIALS " }}}}
     steps:
       - uses: actions/checkout@v1
       - name: Set default image tag
@@ -141,7 +141,7 @@ jobs:
           docker build -t docker.pkg.github.com/equinor/radix-example-arm-template/api:$IMAGE_TAG ./todoapi/
       - name: Push the image to GPR
         run: |
-          echo ${{ secrets.PRIVATE_TOKEN }} | docker login docker.pkg.github.com -u <any-github-user-name> --password-stdin
+          echo ${{ "{{ secrets.PRIVATE_TOKEN " }}}} | docker login docker.pkg.github.com -u <any-github-user-name> --password-stdin
           docker push docker.pkg.github.com/equinor/radix-example-arm-template/api:$IMAGE_TAG
       - name: Prepare for committing new tag to radix config on master
         uses: actions/checkout@v2-beta
@@ -155,7 +155,7 @@ jobs:
           python hack/modifyTag.py api ${GITHUB_REF##*/} $IMAGE_TAG
           git config --global user.name 'ingeknudsen'
           git config --global user.email 'ingeknudsen@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.PRIVATE_TOKEN }}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${{ "{{ secrets.PRIVATE_TOKEN  " }}}}@github.com/${{ "{{ github.repository " }}}}
           git commit -am $IMAGE_TAG
           git push origin HEAD:master
       - name: Get environment from branch
@@ -164,6 +164,7 @@ jobs:
         with:
           args: >
             get config branch-environment
+            --from-config
             -b ${GITHUB_REF##*/}
       - name: Deploy API on Radix
         uses: equinor/radix-github-actions@master
@@ -172,7 +173,8 @@ jobs:
             create job
             deploy
             --context development
-            -e ${{ steps.getEnvironment.outputs.result }}
+            --from-config
+            -e ${{ "{{ steps.getEnvironment.outputs.result " }}}}
             -f
 ```
 
@@ -201,7 +203,7 @@ In the above workflow we have a series of steps. They are:
 - `Override image tag for prod environment` - Gives a dynamic image tag for production
 - `Build API component` - Building is now done outside of Radix
 - `Push the image to GPR` - Pushes a package to Github package repository using the `PRIVATE_TOKEN` (personal access token)
-- `Prepare for committing new tag to radix config on master` - Since we are using the dynamic tagging for prod environment, we have to commit to master a version of the `radixconfig.yaml` holding the newly produced tag. This step checks out master  branch of the repository
+- `Prepare for committing new tag to radix config on master` - Since we are using the dynamic tagging for prod environment, we have to commit to master a version of the `radixconfig.yaml` holding the newly produced tag. This step checks out master branch of the repository
 - `Modify radixconfig tag for production on master branch` - This step calls a [custom script](https://github.com/equinor/radix-example-arm-template/blob/master/hack/modifyTag.py) to modify the tag in `radixconfig.yaml` and the commits and push the change on master
 - `Get environment from branch` - This steps calls a utility function in the CLI for obtaining the environment based on the current brach from the branch-environment mapping in the `radixconfig.yaml` of the repository
 - `Deploy API on Radix` - This step calls the CLI function, which calls the deploy pipeline function of the Radix API for running the deploy pipeline. It uses the output of the previous step to tell Radix which environment it should deploy to. Note that is using `development` context to contact the API in the development cluster. Similarly if context is `playground` it will contact API in playground cluster. If you remove this entirely, it will default to `production` context
@@ -210,7 +212,7 @@ In the above workflow we have a series of steps. They are:
 
 # Configure Radix to use GitHub package
 
-Go to  the application `Configuration` page to set the secret, which will be the personal access token you have created with access to read packages in the Equinor organization. This gives Radix access to pull any package in the Equinor organization referred to in the `radixconfig.yaml`:
+Go to the application `Configuration` page to set the secret, which will be the personal access token you have created with access to read packages in the Equinor organization. This gives Radix access to pull any package in the Equinor organization referred to in the `radixconfig.yaml`:
 
 ![PrivateImageHubSecret](PrivateImageHubSecret.png)
 
@@ -224,40 +226,41 @@ The workflow above maybe is not a good case for moving your CI workflow out of R
 - `Set connection string as secret` - Sets the second secret value
 
 ```yaml
-      - uses: Azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Get instrumentation key and connection string
-        id: getSecrets
-        run: |
-          RESOURCE_GROUP=db-api-radix-${{ steps.getEnvironment.outputs.result }}
-          INSTRUMENTATIONKEY=$(az group deployment show -g ${RESOURCE_GROUP} -n azuredeploy --query properties.outputs.appInsightInstrumentationKey.value)
-          CONNECTION_STRING=$(az group deployment show -g ${RESOURCE_GROUP} -n azuredeploy --query properties.outputs.storageConnectionString.value)
-          echo ::set-output name=instrumentationKey::$(echo ${INSTRUMENTATIONKEY})
-          echo ::set-output name=connectionString::$(echo ${CONNECTION_STRING})
-          echo ::add-mask::${INSTRUMENTATIONKEY}
-          echo ::add-mask::${CONNECTION_STRING}
-      - name: Set instrumentation key as secret
-        uses: equinor/radix-github-actions@master
-        with:
-          args: >
-            set environment-secret
-            --context development
-            -e ${{ steps.getEnvironment.outputs.result }}
-            --component api
-            -s APPINSIGHTS_INSTRUMENTATIONKEY
-            -v '${{ steps.getSecrets.outputs.instrumentationKey }}'
-      - name: Set connection string as secret
-        uses: equinor/radix-github-actions@master
-        with:
-          args: >
-            set environment-secret
-            --context development
-            -e ${{ steps.getEnvironment.outputs.result }}
-            --component api
-            -s AZURE_STORAGE_CONNECTION_STRING
-            -v '${{ steps.getSecrets.outputs.connectionString }}'
-
+- uses: Azure/login@v1
+  with:
+    creds: ${{ "{{ secrets.AZURE_CREDENTIALS " }}}}
+- name: Get instrumentation key and connection string
+  id: getSecrets
+  run: |
+    RESOURCE_GROUP=db-api-radix-${{ "{{ steps.getEnvironment.outputs.result " }}}}
+    INSTRUMENTATIONKEY=$(az group deployment show -g ${RESOURCE_GROUP} -n azuredeploy --query properties.outputs.appInsightInstrumentationKey.value)
+    CONNECTION_STRING=$(az group deployment show -g ${RESOURCE_GROUP} -n azuredeploy --query properties.outputs.storageConnectionString.value)
+    echo ::set-output name=instrumentationKey::$(echo ${INSTRUMENTATIONKEY})
+    echo ::set-output name=connectionString::$(echo ${CONNECTION_STRING})
+    echo ::add-mask::${INSTRUMENTATIONKEY}
+    echo ::add-mask::${CONNECTION_STRING}
+- name: Set instrumentation key as secret
+  uses: equinor/radix-github-actions@master
+  with:
+    args: >
+      set environment-secret
+      --context development
+      --from-config
+      -e ${{ "{{ steps.getEnvironment.outputs.result " }}}}
+      --component api
+      -s APPINSIGHTS_INSTRUMENTATIONKEY
+      -v '${{ "{{ steps.getSecrets.outputs.instrumentationKey " }}}}'
+- name: Set connection string as secret
+  uses: equinor/radix-github-actions@master
+  with:
+    args: >
+      set environment-secret
+      --context development
+      --from-config
+      -e ${{ "{{ steps.getEnvironment.outputs.result " }}}}
+      --component api
+      -s AZURE_STORAGE_CONNECTION_STRING
+      -v '${{ "{{ steps.getSecrets.outputs.connectionString " }}}}'
 ```
 
 > Disclaimer: Please seek advice elsewhere on wether or not GitHub Actions and/or GitHub package repository is the right option for you. Both features are new and we have too little experience as an organization to make any recommendations, both in terms of robustness and in terms of cost. A private Azure container registry (ACR) would for instance allow you to set it up with a service account, rather than using your personal account. This document is meant to be a user guide on how to combine these with Radix, as one of many alternatives for running CI outside of Radix.
