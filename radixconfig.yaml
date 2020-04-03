@@ -4,9 +4,6 @@ metadata:
   name: radix-platform
 spec:
   environments:
-    - name: deploy-only
-      build:
-        from: FixProblemsWithDeployOnlyDocumentation
     - name: ra1160
       build:
         from: RA-1160
