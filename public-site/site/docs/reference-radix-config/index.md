@@ -244,7 +244,7 @@ spec:
 
 An array of objects containing the `environment` name and variables to be set in the component.
 
-Environment variables are defined per Radix environment. In addition to what is defined here, running containers will also have some [variables automatically set by Radix](../topic-runtime-env/#environment-variables).
+Environment variables are defined per Radix environment. In addition to what is defined here, running containers will also have some [variables automatically set by Radix](../topic-runtime-env/#environment-variables). For shared environment variables across Radix environments, refer to [common environment variables](./#common-variables).
 
 #### `horizontalScaling`
 
@@ -291,6 +291,18 @@ spec:
 ```
 
 The `secrets` key contains a list of names. Values for these can be set via the Radix Web Console (under each active component within an environment). Each secret must be set on all environments. Secrets are available in the component as environment variables; a component will not be able to start without the secret being set.
+
+### Common `variables`
+
+```yaml
+spec:
+  components:
+    - name: backend
+      variables:
+        DB_NAME: my-db
+```
+
+The `variables` key contains environment variable names and their values, that are shared among all Radix environments in a component. These common environment variables are overriden by environment-specific environment variables that have exactly same names.
 
 ## `dnsAppAlias`
 
