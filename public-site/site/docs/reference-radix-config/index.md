@@ -178,7 +178,7 @@ See [this](https://github.com/equinor/radix-operator/blob/b828195f1b3c718d5a48e3
 
 ### `environmentConfig`
 
-The `environmentConfig` section is to set environment specific settings for each component
+The `environmentConfig` section is to set environment-specific settings for each component.
 
 #### `replicas`
 
@@ -242,9 +242,7 @@ spec:
             DB_PORT: "9876"
 ```
 
-An array of objects containing the `environment` name and variables to be set in the component.
-
-Environment variables are defined per Radix environment. In addition to what is defined here, running containers will also have some [variables automatically set by Radix](../topic-runtime-env/#environment-variables). For shared environment variables across Radix environments, refer to [common environment variables](./#common-variables).
+The `variables` key contains environment variable names and their values, that are defined per Radix environment in a component. In addition to what is defined here, running containers will also have some [environment variables automatically set by Radix](../topic-runtime-env/#environment-variables). For shared environment variables across Radix environments, refer to [common environment variables](./#variables-(common)).
 
 #### `horizontalScaling`
 
@@ -292,7 +290,7 @@ spec:
 
 The `secrets` key contains a list of names. Values for these can be set via the Radix Web Console (under each active component within an environment). Each secret must be set on all environments. Secrets are available in the component as environment variables; a component will not be able to start without the secret being set.
 
-### Common `variables`
+### `variables` (common)
 
 ```yaml
 spec:
