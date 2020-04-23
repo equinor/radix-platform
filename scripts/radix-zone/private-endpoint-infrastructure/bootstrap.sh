@@ -129,8 +129,11 @@ function assignRoleForResourceToUser() {
 
    # Delete any existing roles before creating new roles
    # TODO - fails when running first time - have to rerun the script
+   local CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
+if [[ ! -z "$CURRENT_ROLES" ]]; then
    az role assignment delete --assignee "${USER_ID}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null
    az role assignment create --assignee "${USER_ID}" --role "${ROLE}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null   
+fi 
 }
 
 #######################################################################################
