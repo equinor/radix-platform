@@ -123,17 +123,17 @@ fi
 ###
 
 function assignRoleForResourceToUser() {
-   local ROLE="${1}"
-   local ROLE_SCOPE="${2}"
-   local USER_ID="$(az ad sp show --id http://${3} --query appId --output tsv)"
+    local ROLE="${1}"
+    local ROLE_SCOPE="${2}"
+    local USER_ID="$(az ad sp show --id http://${3} --query appId --output tsv)"
 
-   # Delete any existing roles before creating new roles
-   # TODO - fails when running first time - have to rerun the script
-   local CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
-if [[ ! -z "$CURRENT_ROLES" ]]; then
-   az role assignment delete --assignee "${USER_ID}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null
-   az role assignment create --assignee "${USER_ID}" --role "${ROLE}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null   
-fi 
+    # Delete any existing roles before creating new roles
+    # TODO - fails when running first time - have to rerun the script
+    local CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
+    if [[ ! -z "$CURRENT_ROLES" ]]; then
+        az role assignment delete --assignee "${USER_ID}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null
+        az role assignment create --assignee "${USER_ID}" --role "${ROLE}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null   
+    fi 
 }
 
 #######################################################################################
