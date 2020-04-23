@@ -128,7 +128,6 @@ function assignRoleForResourceToUser() {
     local USER_ID="$(az ad sp show --id http://${3} --query appId --output tsv)"
 
     # Delete any existing roles before creating new roles
-    # TODO - fails when running first time - have to rerun the script
     local CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
     if [[ ! -z "$CURRENT_ROLES" ]]; then
         az role assignment delete --assignee "${USER_ID}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null
@@ -158,6 +157,7 @@ echo "Azure service principle: Create ${AZ_RESOURCE_GROUP_VNET_HUB}..."
 create_service_principal_and_store_credentials "${AZ_SYSTEM_USER_VNET_HUB}" "Service principal managing hub vnet and private endpoints"
 ROLE_SCOPE="$(az group show -n $AZ_RESOURCE_GROUP_VNET_HUB --query "id" --output tsv)"
 
+sleep 5 # Have to wait for required SP change cascades async in Azure
 echo "Azure VNET HUB: Assign role Contributor for scope ${ROLE_SCOPE} to SP ${AZ_SYSTEM_USER_VNET_HUB}..."
 assignRoleForResourceToUser "Contributor" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_VNET_HUB}"
 echo "...Done."
