@@ -178,6 +178,7 @@ function create_common_resources() {
         az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "godaddy.com" --output none
         printf "...Done\n"
     fi
+    ../private-endpoint-infrastructure/bootstrap.sh
 }
 
 function set_permissions_on_acr() {
