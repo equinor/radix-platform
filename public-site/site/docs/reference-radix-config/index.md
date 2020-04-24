@@ -242,7 +242,7 @@ spec:
             DB_PORT: "9876"
 ```
 
-The `variables` key contains environment variable names and their values, that are defined per Radix environment in a component. In addition to what is defined here, running containers will also have some [environment variables automatically set by Radix](../topic-runtime-env/#environment-variables). For shared environment variables across Radix environments, refer to [common environment variables](./#variables-(common)).
+The `variables` key contains environment variable names and their values, that are defined per Radix environment in a component. In addition to what is defined here, running containers will also have some [environment variables automatically set by Radix](../topic-runtime-env/#environment-variables). For shared environment variables across Radix environments, refer to [common environment variables](./#variables-common).
 
 #### `horizontalScaling`
 
