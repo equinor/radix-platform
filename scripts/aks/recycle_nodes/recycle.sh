@@ -97,7 +97,7 @@ fi
 
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
-az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
@@ -121,7 +121,7 @@ echo -e "   -  NODE_NAME                        : $NODE_NAME"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
@@ -199,7 +199,7 @@ function get_scaleset_resourcegroup() {
 
 function get_scalesets() {
     scaleSetResourceGroup=$(get_scaleset_resourcegroup)
-    scaleSets=($(az vmss list --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --query [].name -o tsv))
+    scaleSets=($(az vmss list --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --query [].name -o tsv))
     echo "${scaleSets[@]}"
 }
 
@@ -212,7 +212,7 @@ function recycle_scalesetinstance() {
     scaleSets=($(get_scalesets))
 
     for scaleSet in "${scaleSets[@]}"; do
-        scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
+        scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
 
         for instance in "${scaleSetInstances[@]}"; do
             if [[ $scaleSetInstance == $instance ]]; then
@@ -220,7 +220,7 @@ function recycle_scalesetinstance() {
 
                 echo -e "Deleting instance number $instanceNumber"
                 if [[ $DRY_RUN == false ]]; then
-                    az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet"
+                    az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --name "$scaleSet"
                 fi
 
             fi
@@ -296,7 +296,7 @@ scaleSetResourceGroup=$(get_scaleset_resourcegroup)
 scaleSets=($(get_scalesets))
 
 for scaleSet in "${scaleSets[@]}"; do
-    scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
+    scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
     for instances in "${scaleSetInstances[@]}"; do
         echo -e "  - $instances"
     done

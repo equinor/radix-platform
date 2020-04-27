@@ -87,7 +87,7 @@ fi
 echo ""
 echo "Logging you in to Azure if not already logged in..."
 az account show > /dev/null || az login > /dev/null
-az account set --subscription "$AZ_SUBSCRIPTION" > /dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" > /dev/null
 printf "Done."
 echo ""
 
@@ -115,7 +115,7 @@ echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_N
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 

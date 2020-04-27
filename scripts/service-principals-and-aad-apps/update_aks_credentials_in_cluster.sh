@@ -79,7 +79,7 @@ fi
 
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
-az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 
@@ -106,7 +106,7 @@ echo -e "   -  AZ_RESOURCE_AAD_CLIENT                   : $AZ_RESOURCE_AAD_CLIEN
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                          : $AZ_SUBSCRIPTION"
+echo -e "   -  AZ_SUBSCRIPTION                          : $(az account show --query name -otsv)"
 echo -e "   -  AZ_USER                                  : $(az account show --query user.name -o tsv)"
 echo -e ""
 
