@@ -83,7 +83,7 @@ fi
 
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
-az account set --subscription "$AZ_SUBSCRIPTION" >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 exit_if_user_does_not_have_required_ad_role
@@ -122,7 +122,7 @@ printf "\n   -  AZ_SYSTEM_USER_DNS                          : $AZ_SYSTEM_USER_DN
 printf "\n"
 printf "\n   > WHO:"
 printf "\n   -------------------------------------------------------------------"
-printf "\n   -  AZ_SUBSCRIPTION                             : $AZ_SUBSCRIPTION"
+printf "\n   -  AZ_SUBSCRIPTION                             : $(az account show --query name -otsv)"
 printf "\n   -  AZ_USER                                     : $(az account show --query user.name -o tsv)"
 printf "\n"
 
