@@ -176,8 +176,8 @@ az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n $VNET_NAME 2>&1 >/dev
 echo "Done."
 
 function removeLinkPrivateDnsZoneToVNET() {
-    dns_zone=${1}
-    DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv)"
+    local dns_zone=${1}
+    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv)"
     if [[ $DNS_ZONE_LINK_EXIST == "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
         echo "Removing link from private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
         az network private-dns link vnet delete -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -y
