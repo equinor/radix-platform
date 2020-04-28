@@ -91,6 +91,51 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+if [[ -z "$HUB_PEERING_NAME" ]]; then
+    HUB_PEERING_NAME=hub-to-${CLUSTER_NAME}
+fi
+
+if [[ -z "$VNET_DNS_LINK" ]]; then
+    VNET_DNS_LINK=$CLUSTER_NAME-link
+fi
+
+
+#######################################################################################
+### support functions
+###
+
+function getAddressSpaceForVNET() {
+    
+    local HUB_PEERED_VNET_JSON="$(az network vnet peering list -g $AZ_RESOURCE_GROUP_VNET_HUB --vnet-name $AZ_VNET_HUB_NAME)"
+    local HUB_PEERED_VNET_EXISTING="$(echo $HUB_PEERED_VNET_JSON | jq --arg HUB_PEERING_NAME "${HUB_PEERING_NAME}" '.[] | select(.name==$HUB_PEERING_NAME)' | jq -r '.remoteAddressSpace.addressPrefixes[0]')"
+    if [[ ! -z "$HUB_PEERED_VNET_EXISTING" ]]; then
+        # vnet peering exist from before - use same IP
+        local withoutCIDR=${HUB_PEERED_VNET_EXISTING%"/16"}
+        echo "$withoutCIDR"
+        return
+    fi
+
+    local HUB_PEERED_VNET_IP="$(echo $HUB_PEERED_VNET_JSON | jq '.[].remoteAddressSpace.addressPrefixes')"
+
+    for i in {3..255}; do
+        # 10.0.0.0/16 is reserved by HUB, 10.2.0.0/16 is reserved for AKS owned services (e.g. internal k8s DNS service).  
+        local PROPOSED_VNET_ADDRESS="10.$i.0.0"
+        if [[ $HUB_PEERED_VNET_IP != *$PROPOSED_VNET_ADDRESS* ]]; then
+            echo "$PROPOSED_VNET_ADDRESS"
+            return
+        fi
+    done
+}
+
+#######################################################################################
+### Get unused VNET address prefix
+###
+
+echo "Getting unused VNET address space... "
+AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
+VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
+VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -130,6 +175,8 @@ echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
 echo -e "   -  VNET_DOCKER_BRIDGE_ADDRESS       : $VNET_DOCKER_BRIDGE_ADDRESS"
 echo -e "   -  VNET_DNS_SERVICE_IP              : $VNET_DNS_SERVICE_IP"
 echo -e "   -  VNET_SERVICE_CIDR                : $VNET_SERVICE_CIDR"
+echo -e "   -  HUB_VNET_RESOURCE_GROUP          : $AZ_RESOURCE_GROUP_VNET_HUB"
+echo -e "   -  HUB_VNET_NAME                    : $AZ_VNET_HUB_NAME"
 echo -e ""
 echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf $AZ_RESOURCE_KEYVAULT; else printf $CREDENTIALS_FILE; fi)"
 echo -e ""
@@ -207,6 +254,29 @@ az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" \
     --scope "${VNET_ID}" \
     2>&1 >/dev/null
 printf "Done.\n"
+
+# peering VNET to hub-vnet
+HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $AZ_VNET_HUB_NAME --query "id" --output tsv)"
+echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
+az network vnet peering create -g $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_PEERING_NAME --vnet-name $VNET_NAME --remote-vnet $HUB_VNET_RESOURCE_ID --allow-vnet-access
+az network vnet peering create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $HUB_PEERING_NAME --vnet-name $AZ_VNET_HUB_NAME --remote-vnet $VNET_ID --allow-vnet-access
+
+function linkPrivateDnsZoneToVNET() {
+    local dns_zone=${1}
+    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv)"
+    if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
+        echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
+        # throws error if run twice
+        az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False
+    fi
+}
+
+# linking private dns zones to vnet
+echo "Linking private DNS Zones to vnet $VNET_NAME... "
+for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
+    linkPrivateDnsZoneToVNET $dns_zone &
+done
+wait
 
 echo "Bootstrap of advanced network done."
 
