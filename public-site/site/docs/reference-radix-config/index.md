@@ -223,7 +223,9 @@ spec:
               cpu: "200m"
 ```
 
-The `resources` section of a component can specify how much CPU and memory each component needs. `resources` is used to ensure that each component is allocated enough resources to run as it should. `limits` describes the maximum amount of compute resources allowed. `requests` describes the minimum amount of compute resources required. If `requests` is omitted for a component it defaults to the settings in `limits`. If `limits` is omitted, its value defaults to an implementation-defined value. [More info](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/)
+The `resources` section specifies how much CPU and memory each component needs, that are defined per Radix environment in a component. `resources` is used to ensure that each component is allocated enough resources to run as it should. `limits` describes the maximum amount of compute resources allowed. `requests` describes the minimum amount of compute resources required. If `requests` is omitted for a component it defaults to the settings in `limits`. If `limits` is omitted, its value defaults to an implementation-defined value. [More info](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/)
+
+For shared resources across Radix environments, refer to [common resources](./#resources-common).
 
 #### `variables`
 
@@ -242,7 +244,9 @@ spec:
             DB_PORT: "9876"
 ```
 
-The `variables` key contains environment variable names and their values, that are defined per Radix environment in a component. In addition to what is defined here, running containers will also have some [environment variables automatically set by Radix](../topic-runtime-env/#environment-variables). For shared environment variables across Radix environments, refer to [common environment variables](./#variables-common).
+The `variables` key contains environment variable names and their values, that are defined per Radix environment in a component. In addition to what is defined here, running containers will also have some [environment variables automatically set by Radix](../topic-runtime-env/#environment-variables).
+
+For shared environment variables across Radix environments, refer to [common environment variables](./#variables-common).
 
 #### `horizontalScaling`
 
@@ -289,6 +293,23 @@ spec:
 ```
 
 The `secrets` key contains a list of names. Values for these can be set via the Radix Web Console (under each active component within an environment). Each secret must be set on all environments. Secrets are available in the component as environment variables; a component will not be able to start without the secret being set.
+
+### `resources` (common)
+
+```yaml
+spec:
+  components:
+    - name: backend
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "50m"
+        limits:
+          memory: "64Mi"
+          cpu: "100m"
+```
+
+The `resources` section specifies how much CPU and memory each component needs, that are shared among all Radix environments in a component. These common resources are overriden by environment-specific resources.
 
 ### `variables` (common)
 
