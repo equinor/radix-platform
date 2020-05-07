@@ -36,6 +36,10 @@ A common strategy is to use [promotion](guides/deployment-promotion) to control 
 
 Another functionality available is the ability to [restart, stop and start a component](guides/component-start-stop-restart/), the feature is available on your app component page in the Web Console
 
+## Deploy only - other CI tool
+
+Teams that have a need for more advanced CI feature can use other CI tools and [deploy into Radix](guides/deploy-only). This feature is in progress, utilised by only a few teams. If you have any input or would like to be involved in testing this feature, please contact us for a walkthrough. 
+
 # Authentication
 
 There is no checkbox that automatically provide authentication for your application in Radix. However there is still several way to introduce it to new and existing applications, without to much work. The [Authentication](guides/authentication/) guide goes through the basic to get authentication going for a Client and API. 
