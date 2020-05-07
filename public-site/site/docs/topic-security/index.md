@@ -12,9 +12,7 @@ Membership in the 'Radix Platform User' AD group grants access to
 - Radix Web Console
 - Grafana Dashboard (Monitoring)
 
-Access to manage each application is limited to the members of the AD group provided during application registration. Management of applications can be e.g. deleting the application from the Radix Platform, view jobs and logs.
-
-> Currently all applications are listed (but not accessible) to all Radix users. This is a known problem and will be fixed. Only applications a user has access to can be viewed in detail and managed.
+Only members of the AD group provided during application registration, will be able to see the application listed in the Radix web console. Same AD group also controls who will be able to change the configuration of the application in the Radix web console. 
 
 If no AD group is provided during the registration the application will be available to all Radix users (members of the 'Radix Platform Users' AD group).
 
