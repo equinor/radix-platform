@@ -127,14 +127,6 @@ function getAddressSpaceForVNET() {
     done
 }
 
-#######################################################################################
-### Get unused VNET address prefix
-###
-
-echo "Getting unused VNET address space... "
-AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
-VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
-VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
 
 #######################################################################################
 ### Prepare az session
@@ -144,6 +136,15 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
+
+#######################################################################################
+### Get unused VNET address prefix
+###
+
+echo "Getting unused VNET address space... "
+AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
+VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
+VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
 
 #######################################################################################
 ### Verify task at hand
