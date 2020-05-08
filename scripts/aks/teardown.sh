@@ -175,22 +175,6 @@ az network vnet peering delete -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n $HUB_PEERING_
 az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n $VNET_NAME 2>&1 >/dev/null
 echo "Done."
 
-function removeLinkPrivateDnsZoneToVNET() {
-    local dns_zone=${1}
-    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv)"
-    if [[ $DNS_ZONE_LINK_EXIST == "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
-        echo "Removing link from private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
-        az network private-dns link vnet delete -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -y
-    fi
-}
-
-# linking private dns zones to vnet
-echo "Removing link from private DNS Zones to vnet $VNET_NAME... "
-for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
-    removeLinkPrivateDnsZoneToVNET $dns_zone &
-done
-wait
-
 # TODO: Clean up velero blob dialog (yes/no)
 
 
