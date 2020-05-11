@@ -126,7 +126,7 @@ trap cleanup 0 2 3 15
 generateCredentialsFile
 kubectl create secret generic "external-dns-azure-secret" \
    --from-file="azure.json"="$CREDENTIALS_GENERATED_PATH" \
-   --dry-run -o yaml \
+   --dry-run=client -o yaml \
    | kubectl apply -f - \
    2>&1 >/dev/null
 cleanup

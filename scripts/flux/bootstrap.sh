@@ -212,7 +212,7 @@ az keyvault secret download \
 
 kubectl create secret generic "$FLUX_PRIVATE_KEY_NAME" \
     --from-file=identity="$FLUX_PRIVATE_KEY_NAME" \
-    --dry-run -o yaml |
+    --dry-run=client -o yaml |
     kubectl apply -f - \
         2>&1 >/dev/null
 
