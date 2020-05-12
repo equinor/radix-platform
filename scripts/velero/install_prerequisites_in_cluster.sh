@@ -225,6 +225,7 @@ printf "\nWorking on storage container..."
 az storage container create -n "$CLUSTER_NAME" \
   --public-access off \
   --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
+  --auth-mode login \
   2>&1 >/dev/null
 printf "...Done"
 
