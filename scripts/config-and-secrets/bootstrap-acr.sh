@@ -77,14 +77,14 @@ az keyvault secret download \
     --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
     --file sp_credentials.json
 
-kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run -o yaml | kubectl apply -f -
+kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl create secret docker-registry radix-docker \
     --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
-    --docker-username=$"$(jq -r '.id' sp_credentials.json)" \
+    --docker-username="$(jq -r '.id' sp_credentials.json)" \
     --docker-password="$(jq -r '.password' sp_credentials.json)" \
     --docker-email=radix@statoilsrm.onmicrosoft.com \
-    --dry-run -o yaml |
+    --dry-run=client -o yaml |
     kubectl apply -f -
 
 rm -f sp_credentials.json

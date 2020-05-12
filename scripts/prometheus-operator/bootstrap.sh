@@ -79,14 +79,6 @@ fi
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# IKNU : 2020.01.09 : The following is needed becuase prometheus started failing installation
-# In addition prometheusOperator.createCustomResource=false is set when installing chart
-kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/alertmanager.crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/prometheus.crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/prometheusrule.crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/servicemonitor.crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/coreos/prometheus-operator/release-0.34/example/prometheus-operator-crd/podmonitor.crd.yaml
-
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
 ##########
@@ -151,7 +143,7 @@ helm upgrade --install prometheus-operator stable/prometheus-operator \
   --version 8.9.2 \
   -f "$WORKDIR_PATH/prometheus-operator-values.yaml" \
   --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
-  --set prometheusOperator.createCustomResource=false
+  --set prometheusOperator.createCustomResource=true
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
@@ -160,7 +152,7 @@ helm upgrade --install prometheus-operator stable/prometheus-operator \
 htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name prometheus-token | jq -r .value)"
 
 kubectl create secret generic prometheus-htpasswd \
-  --from-file auth --dry-run -o yaml |
+  --from-file auth --dry-run=client -o yaml |
   kubectl apply -f -
 
 rm -f auth
