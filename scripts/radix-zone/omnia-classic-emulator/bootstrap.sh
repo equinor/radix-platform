@@ -205,7 +205,7 @@ echo ""
 echo "HUB - Other subnets: Creating..."
 AZ_VNET_HUB_HUB_SUBNET_NAME="equinor-hub" # ?
 AZ_VNET_HUB_SHARED_SUBNET_NAME="equinor-shared" # contains shared services as DNS
-AZ_VNET_HUB_GATEWAY_SUBNET_NAME="equinor-gateway" # used for express route, probably not relevant in this setup?
+AZ_VNET_HUB_GATEWAY_SUBNET_NAME="equinor-gateway" # used for express route, probably not relevant in this setup? https://github.com/MicrosoftDocs/azure-docs/blob/master/includes/vpn-gateway-about-gwsubnet-include.md
 
 az network vnet subnet create -g "${AZ_RESOURCE_GROUP_NETWORK_HUB}" --vnet-name "${AZ_VNET_HUB_NAME}" -n "${AZ_VNET_HUB_HUB_SUBNET_NAME}" \
     --address-prefixes 10.0.1.0/24 --network-security-group "${AZ_NSG_HUB_NAME}" --route-table "${AZ_HUB_ROUTE_TABLE_NAME}"
@@ -252,8 +252,6 @@ echo ""
 
 echo "Spoke - VNET: Creating..."
 
-AZ_VNET_SPOKE_NAME="${AZ_SUBSCRIPTION_PREFIX}-NE-vnet"
-AZ_VNET_SPOKE_SUBNET_NAME="${AZ_SUBSCRIPTION_PREFIX}-NE-subnet"
 ## 10.0.8.0/21 = 10.0.8.0 -> 10.0.15.255
 ## 10.0.8.0/22 = 10.0.8.0 -> 10.0.11.255
 az network vnet create -g "${AZ_RESOURCE_GROUP_NETWORK}" -n "${AZ_VNET_SPOKE_NAME}" --address-prefix 10.0.8.0/21
