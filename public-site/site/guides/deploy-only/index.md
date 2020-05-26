@@ -180,6 +180,24 @@ jobs:
             -f
 ```
 
+### Updating releases on static tags
+
+In addition to the steps in the workflow above, when using static tags, deployed components need to be restarted to pull a new image from the image-hub. The following should be added to the job above for each component using static tags. The example here is filtering on builds that are not intended for release, but this should be customized to your deploy strategy.
+
+```yaml
+- name: Restart container with updated image
+  # filtering restart is optional
+  if: github.ref != 'refs/heads/release'
+  uses: equinor/radix-github-actions@master
+  with:
+    args: >
+      restart component
+      --context development
+      --from-config
+      --environment <environment-name>
+      --component <component-name>
+```
+
 ## Workflow secrets
 
 There are a couple of GitHub secrets the workflow make use of:
