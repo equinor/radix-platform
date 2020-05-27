@@ -180,7 +180,7 @@ jobs:
             -f
 ```
 
-### Updating releases on static tags
+### Updating deployments on static tags
 
 In addition to the steps in the workflow above, when using static tags, deployed components need to be restarted to pull a new image from the image-hub. The following should be added to the job above for each component using static tags. The example here is filtering on builds that are not intended for release, but this should be customized to your deploy strategy.
 
