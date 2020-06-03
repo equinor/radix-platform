@@ -16,29 +16,21 @@ If you'd like to discuss the platform, features or improvements, head on to the 
 
 If you think you found a bug, or you have a concrete proposal, [log an issue](https://github.com/equinor/radix-platform/issues) on GitHub. We have multiple repositories, but all issues are tracked in **radix-platform**.
 
-# The team
+# The Radix team
 
-We are based in Stavanger. If you see us on the corridor, say hello!
-
-![Radix Team](images/radix-team.jpg)
-
-- Kjell Erik
-
-  ![Kjell Erik](https://ca.slack-edge.com/T02JL00JU-U046ATQCH-73c57fbcc78a-72)
-
-- Dafferianto
-
-  ![Dafferianto](https://ca.slack-edge.com/T02JL00JU-U927B0PG9-565780daa1ee-72)
-
-- Inge
-
-  ![Inge](https://ca.slack-edge.com/T02JL00JU-U03L84USJ-g762ddbe2175-72)
-
-- Jonas
-
-  ![Jonas](https://ca.slack-edge.com/T02JL00JU-U2BGZF16E-d9cd9ab419e1-72)
+We are based in Vassbotnen in Stavanger. If you see us on the corridor, say hello!
   
-- Elsa
-
-  ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72)
+| | | |
+|---|-----------------------------------------------------|---|---|  
+|   | Kjell Erik Reed Anda    - Product Owner & Developer | |
+|   |![Kjell Erik](https://ca.slack-edge.com/T02JL00JU-U046ATQCH-73c57fbcc78a-72) | |
+||||
+| Dafferianto Trinugroho  - Developer | | Marko Horvat    - Infrastructure |
+| ![Dafferianto](https://ca.slack-edge.com/T02JL00JU-U927B0PG9-565780daa1ee-72) | | ![Marko](https://ca.slack-edge.com/T02JL00JU-U012TB28BTQ-63fc5fc9e869-192) |
+| | | |
+|- Joakim Hagen       - Developer | | Christer Time - Infrastructure |
+|  ![Joakim](https://ca.slack-edge.com/T02JL00JU-USV5M67HA-g6068c7d337e-192) | | ![Christer](https://ca.slack-edge.com/T02JL00JU-UNMK7QZMW-gb4ca0fc5982-192) |
+| | | |
+| | Elsa Mâyrä Irgens     - Team Leader | |
+| | ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72) | |
 
