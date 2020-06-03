@@ -60,10 +60,10 @@ spec:
           imageTagName: master-latest
         - environment: prod
           imageTagName: release-39f1a082
-privateImageHubs:
-  docker.pkg.github.com:
-    username: <some GitHub user name>
-    email: <some email>
+  privateImageHubs:
+    docker.pkg.github.com:
+      username: <some GitHub user name>
+      email: <some email>
 ```
 
 In the `radixconfig.yaml` above, there are two tagging strategies;
