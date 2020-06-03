@@ -33,7 +33,7 @@ The documentation will use the second option and this [example repository](https
 
 > Radix **only** recognise `radixconfig.yaml` from the **master branch**. If the file is changed in other branches, those changes will be ignored.
 
-The major difference between a deploy-only `radixconfig.yaml` and a regular Radix application `radixconfig.yaml`, is the lack of components `src` property, as there is nothing to build on Radix. Rather it uses a `image` property, alongside a separate `imageTagName` property per environment, as shown below:
+The major difference between a deploy-only `radixconfig.yaml` and a regular Radix application `radixconfig.yaml`, is the lack of components' `src` property, as there is nothing to build on Radix. Rather it uses an `image` property, alongside a separate `imageTagName` property per environment, as shown below:
 
 ```yaml
 apiVersion: radix.equinor.com/v1
@@ -60,10 +60,10 @@ spec:
           imageTagName: master-latest
         - environment: prod
           imageTagName: release-39f1a082
-privateImageHubs:
-  docker.pkg.github.com:
-    username: <some GitHub user name>
-    email: <some email>
+  privateImageHubs:
+    docker.pkg.github.com:
+      username: <some GitHub user name>
+      email: <some email>
 ```
 
 In the `radixconfig.yaml` above, there are two tagging strategies;
@@ -71,9 +71,11 @@ In the `radixconfig.yaml` above, there are two tagging strategies;
 - Using a latest tag (i.e. master-latest)
 - Using a dynamic tag (i.e release-39f1a082)
 
-A dynamic tag in this context means that there is a new tag produced for every build, either referring to the release tag, or the commit sha (in the case above) or any other attributes that uniquely identifies what the image is produced from. The dynamic tag will give better control over what runs in the environment, and it also allows for promoting older deployments to be the latest deployment, in case there is a need for a rollback.
+A dynamic tag in this context means that there is a new tag produced for every build, either referring to the release tag, or the commit sha (in the case above) or any other attributes that uniquely identifies what the image is produced from. The dynamic tag will give better control over what runs in the environment, and it also allows for promoting older deployments in case there is a need for a rollback.
 
-The second part of the `radixconfig.yaml` which distinguish itself from a regular radix application is the [`privateImageHubs` property](../../docs/reference-radix-config/#privateImageHubs). In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
+A static tag will not permit radix to update an existing deployment by relying on changes to `imageTagName` to pull a new image. To force radix to pull a new image from the image-hub, the component must be restarted using the component page on the web-console or restart call to the [API](https://api.radix.equinor.com/swaggerui/#/component/restartComponent) or [CLI](https://github.com/equinor/radix-cli). There is currently no log trace of components starting and stopping. If this is necessary, one may call `deploy-only` once on the application before `restart` on each component using static tags.
+
+The second part of the `radixconfig.yaml` which distinguishes itself from a regular radix application is the [`privateImageHubs` property](../../docs/reference-radix-config/#privateImageHubs). In short, it will allow for the image produced outside of Radix to be pulled down to the Radix cluster.
 
 Also what can be said about the configuration above is the branch to environment mapping. Since build of components happens outside of Radix the build -> from configuration seems unnecessary. You could, especially if the repository for the Radix application is a mere configuration repository, leave environments unmapped. We will explain later why we, in this example, have opted to have a branch-environment mapping.
 
@@ -176,6 +178,24 @@ jobs:
             --from-config
             -e ${{ "{{ steps.getEnvironment.outputs.result " }}}}
             -f
+```
+
+### Updating deployments on static tags
+
+In addition to the steps in the workflow above, when using static tags, deployed components need to be restarted to pull a new image from the image-hub. The following should be added to the job above for each component using static tags. The example here is filtering on builds that are not intended for release, but this should be customized to your deploy strategy.
+
+```yaml
+- name: Restart container with updated image
+  # filtering restart is optional
+  if: github.ref != 'refs/heads/release'
+  uses: equinor/radix-github-actions@master
+  with:
+    args: >
+      restart component
+      --context development
+      --from-config
+      --environment <environment-name>
+      --component <component-name>
 ```
 
 ## Workflow secrets
