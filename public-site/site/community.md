@@ -25,17 +25,17 @@ Kjell Erik Reed Anda    - Product Owner & Developer
 ![Kjell Erik](images/kjellerik.jfif)  
   
 Dafferianto Trinugroho - Developer       Marko Horvat - Infrastructure  
-![Dafferianto](images/daff.jfif)        ![Marko](images/marko.png)  
+![Dafferianto](images/daff.jfif)        ![Marko](images/marko.jfif)  
   
 Joakim Hagen - Developer                 Christer Time - Infrastructure  
                                          ![Christer](images/christer.jfif)  
   
 Sergey Smolnikov - Developer  
-![Sergey](images/sergey.jfif)  
+   
   
 Ole Joar Austbø Moi - Developer  
 ![Ole](images/ole.jfif)  
   
 Elsa Mâyrä Irgens     - Team Leader  
-![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72)  
+![Elsa](images/elsa.jpg)  
 
