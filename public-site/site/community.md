@@ -31,6 +31,12 @@ We are based in Vassbotnen in Stavanger. If you see us on the corridor, say hell
 |- Joakim Hagen       - Developer | | Christer Time - Infrastructure |
 |  ![Joakim](https://ca.slack-edge.com/T02JL00JU-USV5M67HA-g6068c7d337e-192) | | ![Christer](https://ca.slack-edge.com/T02JL00JU-UNMK7QZMW-gb4ca0fc5982-192) |
 | | | |
+|- Sergey Smolnikov - Developer | |  |
+|  ![Sergey](https://ca.slack-edge.com/T02JL00JU-UAL4LCY7K-b7cffbad1532-192) | |  |
+| | | |
+|- Ole Joar Austbø Moi - Developer | |  |
+| | | |
+| | | |
 | | Elsa Mâyrä Irgens     - Team Leader | |
 | | ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72) | |
 
