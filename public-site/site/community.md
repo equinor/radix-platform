@@ -22,16 +22,16 @@ We are based in Vassbotnen in Stavanger. If you see us on the corridor, say hell
   
 
 Kjell Erik Reed Anda    - Product Owner & Developer  
-![Kjell Erik](images/kjellerik.jfif)  
+![Kjell Erik](images/kjellerik.jpg)  
   
 Dafferianto Trinugroho - Developer       Marko Horvat - Infrastructure  
-![Dafferianto](images/daff.jfif)        ![Marko](images/marko.jfif)  
+![Dafferianto](images/daff.jpg)        ![Marko](images/marko.jpg)  
   
 Joakim Hagen - Developer                 Christer Time - Infrastructure  
                                          ![Christer](images/christer.jfif)  
   
 Sergey Smolnikov - Developer  
-   
+![Sergey](images/sergey.jpg)     
   
 Ole Joar Austbø Moi - Developer  
 ![Ole](images/ole.jfif)  
