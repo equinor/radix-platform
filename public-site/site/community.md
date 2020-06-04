@@ -20,23 +20,22 @@ If you think you found a bug, or you have a concrete proposal, [log an issue](ht
 
 We are based in Vassbotnen in Stavanger. If you see us on the corridor, say hello!
   
-| | | |
-|---|-----------------------------------------------------|---|---|  
-|   | Kjell Erik Reed Anda    - Product Owner & Developer | |
-|   |![Kjell Erik](https://ca.slack-edge.com/T02JL00JU-U046ATQCH-73c57fbcc78a-72) | |
-||||
-| Dafferianto Trinugroho  - Developer | | Marko Horvat    - Infrastructure |
-| ![Dafferianto](https://ca.slack-edge.com/T02JL00JU-U927B0PG9-565780daa1ee-72) | | ![Marko](https://ca.slack-edge.com/T02JL00JU-U012TB28BTQ-63fc5fc9e869-192) |
-| | | |
-|- Joakim Hagen       - Developer | | Christer Time - Infrastructure |
-|  ![Joakim](https://ca.slack-edge.com/T02JL00JU-USV5M67HA-g6068c7d337e-192) | | ![Christer](https://ca.slack-edge.com/T02JL00JU-UNMK7QZMW-gb4ca0fc5982-192) |
-| | | |
-|- Sergey Smolnikov - Developer | |  |
-|  ![Sergey](https://ca.slack-edge.com/T02JL00JU-UAL4LCY7K-b7cffbad1532-192) | |  |
-| | | |
-|- Ole Joar Austbø Moi - Developer | |  |
-| | | |
-| | | |
-| | Elsa Mâyrä Irgens     - Team Leader | |
-| | ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72) | |
+
+Kjell Erik Reed Anda    - Product Owner & Developer  
+![Kjell Erik](images/kjellerik.jfif)  
+  
+Dafferianto Trinugroho - Developer       Marko Horvat - Infrastructure  
+![Dafferianto](images/daff.jfif)        ![Marko](images/marko.png)  
+  
+Joakim Hagen - Developer                 Christer Time - Infrastructure  
+                                         ![Christer](images/christer.jfif)  
+  
+Sergey Smolnikov - Developer  
+![Sergey](images/sergey.jfif)  
+  
+Ole Joar Austbø Moi - Developer  
+![Ole](images/ole.jfif)  
+  
+Elsa Mâyrä Irgens     - Team Leader  
+![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72)  
 
