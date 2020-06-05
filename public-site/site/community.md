@@ -16,29 +16,31 @@ If you'd like to discuss the platform, features or improvements, head on to the 
 
 If you think you found a bug, or you have a concrete proposal, [log an issue](https://github.com/equinor/radix-platform/issues) on GitHub. We have multiple repositories, but all issues are tracked in **radix-platform**.
 
-# The team
+# The Radix team
 
-We are based in Stavanger. If you see us on the corridor, say hello!
-
-![Radix Team](images/radix-team.jpg)
-
-- Kjell Erik
-
-  ![Kjell Erik](https://ca.slack-edge.com/T02JL00JU-U046ATQCH-73c57fbcc78a-72)
-
-- Dafferianto
-
-  ![Dafferianto](https://ca.slack-edge.com/T02JL00JU-U927B0PG9-565780daa1ee-72)
-
-- Inge
-
-  ![Inge](https://ca.slack-edge.com/T02JL00JU-U03L84USJ-g762ddbe2175-72)
-
-- Jonas
-
-  ![Jonas](https://ca.slack-edge.com/T02JL00JU-U2BGZF16E-d9cd9ab419e1-72)
+We are based in Vassbotnen in Stavanger. If you see us on the corridor, say hello!
   
-- Elsa
 
-  ![Elsa](https://ca.slack-edge.com/T02JL00JU-UDX8GATC6-3a5cd6c5cc28-72)
+Kjell Erik Reed Anda    - Product Owner & Developer  
+![Kjell Erik](images/kjellerik.jpg)  
+  
+Dafferianto Trinugroho - Developer       
+![Dafferianto](images/dafferianto.jpg)    
+  
+Marko Horvat - Infrastructure  
+![Marko](images/marko.jpg)  
+  
+Joakim Hagen - Developer  
+  
+Christer Time - Infrastructure  
+![Christer](images/christer.jfif)  
+  
+Sergey Smolnikov - Developer  
+![Sergey](images/sergey.jpg)     
+  
+Ole Joar Austbø Moi - Developer  
+![Ole](images/ole.jfif)  
+  
+Elsa Mâyrä Irgens     - Team Leader  
+![Elsa](images/elsa.jpg)  
 
