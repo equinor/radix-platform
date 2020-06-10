@@ -176,6 +176,59 @@ The `ingressConfiguration` field of a component will add extra configuration by 
 
 See [this](https://github.com/equinor/radix-operator/blob/b828195f1b3c718d5a48e31d0bafe0435857f5bf/charts/radix-operator/values.yaml#L58) for more information on what annotations will be put on the ingress, given the configuration.
 
+### `alwaysPullImageOnDeploy`
+
+```yaml
+spec:
+  components:
+    - name: api
+      image: docker.pkg.github.com/equinor/my-app/api:latest
+      alwaysPullImageOnDeploy: false
+```
+
+Only relevant for teams that uses another CI tool than Radix and static tags. See [deploy-only](../../guides/deploy-only/#updating-deployments-on-static-tags) for more information.
+
+### `secrets`
+
+```yaml
+spec:
+  components:
+    - name: backend
+      secrets:
+        - DB_PASS
+```
+
+The `secrets` key contains a list of names. Values for these can be set via the Radix Web Console (under each active component within an environment). Each secret must be set on all environments. Secrets are available in the component as environment variables; a component will not be able to start without the secret being set.
+
+### `resources` (common)
+
+```yaml
+spec:
+  components:
+    - name: backend
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "50m"
+        limits:
+          memory: "64Mi"
+          cpu: "100m"
+```
+
+The `resources` section specifies how much CPU and memory each component needs, that are shared among all Radix environments in a component. These common resources are overriden by environment-specific resources.
+
+### `variables` (common)
+
+```yaml
+spec:
+  components:
+    - name: backend
+      variables:
+        DB_NAME: my-db
+```
+
+The `variables` key contains environment variable names and their values, that are shared among all Radix environments in a component. These common environment variables are overriden by environment-specific environment variables that have exactly same names.
+
 ### `environmentConfig`
 
 The `environmentConfig` section is to set environment-specific settings for each component.
@@ -281,47 +334,6 @@ components:
 ```
 
 > See [this](../../guides/deploy-only/) guide on how make use of `imageTagName` in a deploy-only scenario.
-
-### `secrets`
-
-```yaml
-spec:
-  components:
-    - name: backend
-      secrets:
-        - DB_PASS
-```
-
-The `secrets` key contains a list of names. Values for these can be set via the Radix Web Console (under each active component within an environment). Each secret must be set on all environments. Secrets are available in the component as environment variables; a component will not be able to start without the secret being set.
-
-### `resources` (common)
-
-```yaml
-spec:
-  components:
-    - name: backend
-      resources:
-        requests:
-          memory: "32Mi"
-          cpu: "50m"
-        limits:
-          memory: "64Mi"
-          cpu: "100m"
-```
-
-The `resources` section specifies how much CPU and memory each component needs, that are shared among all Radix environments in a component. These common resources are overriden by environment-specific resources.
-
-### `variables` (common)
-
-```yaml
-spec:
-  components:
-    - name: backend
-      variables:
-        DB_NAME: my-db
-```
-
-The `variables` key contains environment variable names and their values, that are shared among all Radix environments in a component. These common environment variables are overriden by environment-specific environment variables that have exactly same names.
 
 ## `dnsAppAlias`
 

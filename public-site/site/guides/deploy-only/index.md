@@ -182,20 +182,19 @@ jobs:
 
 ### Updating deployments on static tags
 
-In addition to the steps in the workflow above, when using static tags, deployed components need to be restarted to pull a new image from the image-hub. The following should be added to the job above for each component using static tags. The example here is filtering on builds that are not intended for release, but this should be customized to your deploy strategy.
+As part of deploying an application to kubernetes, Radix reads the radixconfig.yaml file and based on this creates kubernetes resources. If there are no changes to the radixconfig.yaml file, there will be no changes to the underlying kubernetes resources. As a default kubernetes will then do nothing. 
+
+When utilizing static tags, there will often be no changes to radixconfig.yaml when performing a deployment. Kubernetes will then continue to run its existing containers after deployment. 
+
+This default behavior can be overwritten in radixconfig.yaml by setting flag `alwaysPullImageOnDeploy` on component level. When this flag is set to true, a deployment will always lead to a change in the underlying kubernetes resource, which again lead to kubernetes pulling the newest image from the container registry. 
 
 ```yaml
-- name: Restart container with updated image
-  # filtering restart is optional
-  if: github.ref != 'refs/heads/release'
-  uses: equinor/radix-github-actions@master
-  with:
-    args: >
-      restart component
-      --context development
-      --from-config
-      --environment <environment-name>
-      --component <component-name>
+spec:
+  environments: ...
+  components:
+    - name: api
+      image: docker.pkg.github.com/equinor/my-app/api:latest
+      alwaysPullImageOnDeploy: true
 ```
 
 ## Workflow secrets
