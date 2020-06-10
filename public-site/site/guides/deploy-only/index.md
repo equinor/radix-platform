@@ -186,13 +186,9 @@ As part of deploying an application to kubernetes, Radix reads the radixconfig.y
 
 When utilizing static tags, there will often be no changes to radixconfig.yaml when performing a deployment. Kubernetes will then continue to run its existing containers after deployment. 
 
-This default behavior can be overwritten by setting flag `alwaysPullImageOnDeploy` on component level. When this flag is set to true, a deployment will always lead to a change in the underlying kubernetes resource, which again lead to kubernetes pulling the newest image from the container registry. 
+This default behavior can be overwritten in radixconfig.yaml by setting flag `alwaysPullImageOnDeploy` on component level. When this flag is set to true, a deployment will always lead to a change in the underlying kubernetes resource, which again lead to kubernetes pulling the newest image from the container registry. 
 
 ```yaml
-apiVersion: radix.equinor.com/v1
-kind: RadixApplication
-metadata:
-  name: radix-example-arm-template
 spec:
   environments: ...
   components:
