@@ -41,23 +41,9 @@ The next step is to **[configure your application](../configure-an-app/)** on Ra
 
 # The Radix clusters
 
-Your applications will run in a *Radix cluster*. We currently have three: **Production**, **Production US** and **Playground**. Use Playground for testing Radix and see if it's a good fit for your needs. When your project and team are happy with Radix, you can register your application in one of the Production clusters, which provides [specific guarantees](../../docs/topic-sla/).
+Your applications will run in a *Radix cluster*. We currently have two: **Production** and **Playground**. Use Playground for testing Radix and see if it's a good fit for your needs. When your project and team are happy with Radix, you can register your application in one of the Production clusters, which provides [specific guarantees](../../docs/topic-sla/).
 
-**Production** and **Playground** clusters is hosted on Azure North Europe region.
-
-## Production US - Proof of Concept 
-
-**Production US** cluster is hosted on Azure US South Central region, and provides same [specific guarantees](../../docs/topic-sla/) as **Production**. 
-
-**Warning**: This cluster will run as a Proof of Concept (PoC) from mid November 2019 till early January 2020. 
-
-At the end of the PoC period, the Radix team together with participants of the PoC will decide if Radix should continue to be available on cluster running in US. The decisions will be based on activity in the US cluster, and the amount of extra work it is for Radix team to maintain an extra cluster (cost/benefit). The cluster will run until the decision has been made.
-
-If it is decided to continue to support Radix in US - the cluster will change from a PoC to a prod cluster, all apps will continue to run. 
-
-If it is decided to terminate it, the cluster will be kept alive until you have been able to migrate your apps to other hosting alternatives. 
-
-**Anyone can participate in the PoC by simply registering applications in US cluster.**
+**Production** and **Playground** clusters are hosted on Azure North Europe region.
 
 ## Getting access
 
