@@ -32,7 +32,6 @@ If applicable, add the name of the specific component(s) that fail
 
 **Cluster**
 - [ ] Production EU
-- [ ] Production US
 - [ ] Playground
 
 **Additional context**
