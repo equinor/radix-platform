@@ -107,4 +107,6 @@ Paste the content of the private key file that you generated at the start of the
 
 ## What's next
 
-Once the secrets are saved the custom aliases should start working. (The Web Console doesn't presently report those domains.)
+Once the secrets are saved, re-deploy the applicable enivronment(s), either by a new full build-deploy, deploy only or a promotion. The custom aliases will be available.
+
+
