@@ -10,7 +10,6 @@ Examples:
 | prod |  radix.equinor.com |
 | dev |  dev.radix.equinor.com |
 | playground |  playground.radix.equinor.com |
-| us |  us.radix.equinor.com |
 
 ## Radix-zone infrastructure
 
@@ -27,7 +26,6 @@ Examples:
 | ---------- | -------------------------- | --------------------------------------------- | -------------------------------- |
 | dev        | dev                        | dns zone | ACR, RBAC AAD app, "clusters" resource group, etc |
 | playground | dev                        | dns zone | ACR, RBAC AAD app, "clusters" resource group, etc |
-| us         | prod                       | dns zone, ACR | RBAC AAD app, "clusters" resource group, etc |
 
 
 ## Configuration
@@ -39,11 +37,11 @@ Those radix-zones that require their own infrastructure components also have the
 These scripts should be stored in a directory which name correnspond with the radix-zone, `./{name}-infrastructure/`  
 Note that the scripts should be idempotent. Any change in infrastructure should be managed by updating and rerunning the scripts.
 
-Example radix-zone "us":  
-- Config: [`radix_zone_us.env`](./radix_zone_us.env)
+Example radix-zone "playground":  
+- Config: [`radix_zone_playground.env`](./radix_zone_playground.env)
 - Infrastructure scripts:  
-  - [`./us-infrastructure/bootstrap.sh`](./us-infrastructure/bootstrap.sh)
-  - [`./us-infrastructure/teardown.sh`](./us-infrastructure/teardown.sh)
+  - [`./playground-infrastructure/bootstrap.sh`](./playground-infrastructure/bootstrap.sh)
+  - [`./playground-infrastructure/teardown.sh`](./playground-infrastructure/teardown.sh)
 
 
 ## Starting from scratch

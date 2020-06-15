@@ -22,7 +22,7 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix_zone_us.env ./teardown.sh
+# RADIX_ZONE_ENV=../radix_zone_playground.env ./teardown.sh
 
 
 #######################################################################################
