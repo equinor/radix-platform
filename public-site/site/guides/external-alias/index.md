@@ -107,6 +107,6 @@ Paste the content of the private key file that you generated at the start of the
 
 ## What's next
 
-Once the secrets are saved, re-deploy the applicable enivronment(s), either by a new full build-deploy, deploy only or a promotion. The custom aliases will be available.
+Once the secrets are saved, re-deploy the applicable environment(s), either by a new full build-deploy, deploy only or a promotion. The custom aliases will be available.
 
 
