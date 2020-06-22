@@ -1,7 +1,4 @@
 # AKS cluster deploy pipeline
-- task: TerraformInstaller@0
-  inputs:
-    terraformVersion: '0.12.3'
 
 trigger:
 - master
@@ -17,3 +14,7 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+
+- task: TerraformInstaller@0
+  inputs:
+    terraformVersion: '0.12.3'
