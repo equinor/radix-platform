@@ -37,7 +37,7 @@ steps:
 
 - task: TerraformInstaller@0
   inputs:
-    terraformVersion: '0.12.3'
+    terraformVersion: '0.12.26'
 
 - task: KubectlInstaller@0
   inputs:
