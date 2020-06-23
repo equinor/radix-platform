@@ -14,8 +14,8 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      kubectl
-      az
-      helm
-      python
+      kubectl version
+      az --version
+      helm version
+      python --version
       htpasswd
