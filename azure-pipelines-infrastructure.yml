@@ -10,8 +10,9 @@ steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 
-- task: CmdLine@2
+- task: Bash@3
   inputs:
+    targetType: 'inline'
     script: |
       kubectl
       az
