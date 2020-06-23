@@ -1,6 +1,5 @@
 # AKS cluster deploy pipeline
 
-
 trigger:
 - master
 
@@ -10,6 +9,15 @@ pool:
 steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      kubectl
+      az
+      helm
+      python
+      htpasswd
 
 - task: CmdLine@2
   inputs:
@@ -54,3 +62,11 @@ steps:
       
       echo Hello world
 
+- task: CmdLine@2
+  inputs:
+    script: |
+      kubectl
+      az
+      helm
+      python
+      htpasswd
