@@ -21,6 +21,6 @@ steps:
     script: |
       kubectl version --client=true
       az --version
-      helm version
+      helm version --client=true
       python --version
       htpasswd
