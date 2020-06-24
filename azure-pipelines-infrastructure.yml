@@ -24,3 +24,4 @@ steps:
       hash helm 2>/dev/null || { echo >&2 "I require helm but it's not installed. Aborting."; exit 1; }
       hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
       hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
+      ls /home/vsts/work/1/s
