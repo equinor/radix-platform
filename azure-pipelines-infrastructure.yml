@@ -39,6 +39,7 @@ stages:
           sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
           hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
   - job: CheckPrerequisites
+    dependsOn: InstallPrerequisites
     pool:
       vmImage: 'ubuntu-latest'
     steps:
