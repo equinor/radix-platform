@@ -10,10 +10,10 @@ steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: 'sudo apt install apache2-utils'
+#- task: Bash@3
+#  inputs:
+#    targetType: 'inline'
+#    script: 'sudo apt install apache2-utils'
 
 - task: Bash@3
   inputs:
