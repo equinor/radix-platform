@@ -12,12 +12,13 @@ parameters:
 trigger:
 - master
 
+pool:
+  vmImage: 'ubuntu-latest'
+
 stages:
 - stage: Verify
   jobs:
   - job: InstallPrerequisites
-    pool:
-      vmImage: 'ubuntu-latest'
     steps:
     - task: KubectlInstaller@0
       inputs:
@@ -39,8 +40,6 @@ stages:
           sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
   - job: CheckPrerequisites
     dependsOn: InstallPrerequisites
-    pool:
-      vmImage: 'ubuntu-latest'
     steps:
     - task: Bash@3
       displayName: 'Check prerequisites'
@@ -63,8 +62,6 @@ stages:
         inputs:
           instructions: 'Approval needed. Migrating from "${{ parameters.source_cluster }}" to "echo ${{ parameters.destination_cluster }}".'
   - job: DeployNewCluster
-    pool:
-      vmImage: 'ubuntu-latest'
     steps:
     - task: Bash@3
       displayName: 'Test variables'
