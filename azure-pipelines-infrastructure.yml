@@ -19,8 +19,8 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      kubectl version --client=true
-      az --version
-      helm version --client=true
-      python --version
-      htpasswd
+      hash kubectl 2>/dev/null || { echo >&2 "I require kubectl but it's not installed. Aborting."; exit 1; }
+      hash az 2>/dev/null || { echo >&2 "I require az but it's not installed. Aborting."; exit 1; }
+      hash helm 2>/dev/null || { echo >&2 "I require helm but it's not installed. Aborting."; exit 1; }
+      hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
+      hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
