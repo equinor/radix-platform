@@ -7,9 +7,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
 - task: KubectlInstaller@0
   inputs:
     kubectlVersion: 'latest'
@@ -23,11 +20,13 @@ steps:
     terraformVersion: '0.12.26'
 
 - task: Bash@3
+  displayName: 'Install prerequisites'
   inputs:
     targetType: 'inline'
     script: 'sudo apt install apache2-utils'
 
 - task: Bash@3
+  displayName: 'Check prerequisites'
   inputs:
     targetType: 'inline'
     script: |
