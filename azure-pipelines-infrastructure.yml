@@ -51,6 +51,12 @@ stages:
           ls /home/vsts/work/1/s
 - stage: Deploy
   jobs:
+  - job: Approval
+    pool: server
+    steps:
+      - task: ManualIntervention@8
+        inputs:
+          instructions: 'Approval needed. Migrating from "${{ parameters.source_cluster }}" to "echo ${{ parameters.destination_cluster }}".'
   - job: DeployNewCluster
     pool:
       vmImage: 'ubuntu-latest'
