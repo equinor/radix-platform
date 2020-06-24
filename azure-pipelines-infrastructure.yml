@@ -12,53 +12,57 @@ parameters:
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: KubectlInstaller@0
-  inputs:
-    kubectlVersion: 'latest'
-
-- task: HelmInstaller@1
-  inputs:
-    helmVersionToInstall: 'latest'
-
-- task: TerraformInstaller@0
-  inputs:
-    terraformVersion: '0.12.26'
-
-- task: Bash@3
-  displayName: 'Install prerequisites'
-  inputs:
-    targetType: 'inline'
-    script: 'sudo apt install apache2-utils'
-
-- task: Bash@3
-  displayName: 'Check prerequisites'
-  inputs:
-    targetType: 'inline'
-    script: |
-      hash kubectl 2>/dev/null || { echo >&2 "I require kubectl but it's not installed. Aborting."; exit 1; }
-      hash az 2>/dev/null || { echo >&2 "I require az but it's not installed. Aborting."; exit 1; }
-      hash helm 2>/dev/null || { echo >&2 "I require helm but it's not installed. Aborting."; exit 1; }
-      hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
-      hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
-      hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
-      ls /home/vsts/work/1/s
-
-- task: ManualIntervention@8
-  inputs:
-    instructions: 'Approval required to deploy a new weekly cluster'
-
-- task: Bash@3
-  displayName: 'Test variables'
-  inputs:
-    targetType: 'inline'
-    script: |
-      echo ${{ parameters.source_cluster }}
-      echo ${{ parameters.destination_cluster }}
-      echo $(testSecret)
+stages:
+- stage: Verify
+  jobs:
+  - job: InstallPrerequisites
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: KubectlInstaller@0
+      inputs:
+        kubectlVersion: 'latest'
+    - task: HelmInstaller@1
+      inputs:
+        helmVersionToInstall: 'latest'
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: '0.12.26'
+    - task: Bash@3
+      displayName: 'Install prerequisites'
+      inputs:
+        targetType: 'inline'
+        script: 'sudo apt install apache2-utils'
+  - job: CheckPrerequisites
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Bash@3
+      displayName: 'Check prerequisites'
+      inputs:
+        targetType: 'inline'
+        script: |
+          hash kubectl 2>/dev/null || { echo >&2 "I require kubectl but it's not installed. Aborting."; exit 1; }
+          hash az 2>/dev/null || { echo >&2 "I require az but it's not installed. Aborting."; exit 1; }
+          hash helm 2>/dev/null || { echo >&2 "I require helm but it's not installed. Aborting."; exit 1; }
+          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
+          hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
+          hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
+          ls /home/vsts/work/1/s
+- stage: Deploy
+  jobs:
+  - job: DeployNewCluster
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Bash@3
+      displayName: 'Test variables'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo ${{ parameters.source_cluster }}
+          echo ${{ parameters.destination_cluster }}
+          echo $(testSecret)
 
 
 #- task: Bash@3
