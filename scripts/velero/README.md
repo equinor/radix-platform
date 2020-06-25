@@ -26,7 +26,7 @@ Operations:
 - [Restore](./restore/)
 
 Official docs:
-- [Heptio Velero official docs](https://heptio.github.io/velero)  
+- [Velero official docs](https://velero.io/docs/)  
 - [Velero on GitHub](https://github.com/heptio/velero) 
 
 
