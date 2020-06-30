@@ -10,7 +10,7 @@ parameters:
   type: string
 
 - name: user_prompt
-  displayName: Destination Cluster
+  displayName: User prompt
   type: string
   default: false
   values:
@@ -76,6 +76,8 @@ stages:
                 ls /home/vsts/work/1/s/scripts/aks
                 echo break----------
                 echo $RADIX_ZONE_ENV
+                echo ${{parameters.destination_cluster}}
+                echo ${{parameters.user_prompt}}
         arguments: '$RADIX_ZONE_ENV $(RADIX_ZONE_ENV)'
 
 #- task: Bash@3
