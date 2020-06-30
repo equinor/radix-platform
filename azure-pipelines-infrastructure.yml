@@ -85,6 +85,9 @@ stages:
                 echo $env:servicePrincipalId
                 echo $env:servicePrincipalKey
                 echo $env:tenantId
+                echo $servicePrincipalId
+                echo $servicePrincipalKey
+                echo $tenantId
       env:
         CLUSTER_NAME: ${{ parameters.destination_cluster }}
         USER_PROMPT: ${{ parameters.user_prompt }}
