@@ -61,7 +61,13 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=${{parameters.destination_cluster}} USER_PROMPT=false ./home/vsts/work/1/s/scripts/aks/bootstrap.sh
+                ls /home/vsts/work/1/s
+                echo break----------
+                ls /home/vsts/work/1/s/scripts
+                echo break----------
+                ls /home/vsts/work/1/s/scripts/aks
+                echo break----------
+                
 
 #- task: Bash@3
 #  inputs:
