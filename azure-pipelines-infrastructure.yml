@@ -79,10 +79,11 @@ stages:
                 echo $RADIX_ZONE_ENV
                 echo $CLUSTER_NAME
                 echo $USER_PROMPT
+                echo break----------
+                az account show
       env:
         CLUSTER_NAME: ${{ parameters.destination_cluster }}
         USER_PROMPT: ${{ parameters.user_prompt }}
-
     - task: AzureCLI@2
       inputs:
         azureSubscription: '$(azureSubscription)'
