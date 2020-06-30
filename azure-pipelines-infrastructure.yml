@@ -61,7 +61,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=marko-test-devops USER_PROMPT=false ./home/vsts/work/1/s/scripts/aks/bootstrap.sh
+                RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=${{parameters.destination_cluster}} USER_PROMPT=false ./home/vsts/work/1/s/scripts/aks/bootstrap.sh
 
 #- task: Bash@3
 #  inputs:
