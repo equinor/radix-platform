@@ -9,6 +9,14 @@ parameters:
   displayName: Destination Cluster
   type: string
 
+- name: user_prompt
+  displayName: Destination Cluster
+  type: string
+  default: false
+  values:
+  - true
+  - false
+
 trigger:
 - master
 
@@ -67,13 +75,8 @@ stages:
                 echo break----------
                 ls /home/vsts/work/1/s/scripts/aks
                 echo break----------
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: '$(azureSubscription)'
-        scriptType: 'bash'
-        scriptLocation: 'scriptPath'
-        scriptPath: '/home/vsts/work/1/s/scripts/aks/bootstrap.sh'
-        arguments: 'RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env, CLUSTER_NAME=${{parameters.destination_cluster}}, USER_PROMPT=false'
+                echo $RADIX_ZONE_ENV
+        arguments: '$RADIX_ZONE_ENV $(RADIX_ZONE_ENV)'
 
 #- task: Bash@3
 #  inputs:
