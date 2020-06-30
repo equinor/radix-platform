@@ -78,6 +78,8 @@ stages:
                 echo $RADIX_ZONE_ENV
                 echo ${{parameters.destination_cluster}}
                 echo ${{parameters.user_prompt}}
+                echo $destination_cluster
+                echo $user_prompt
 
 #- task: Bash@3
 #  inputs:
