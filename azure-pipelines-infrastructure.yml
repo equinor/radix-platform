@@ -42,7 +42,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                ls
+                ls /home/vsts/work/1/s
 
 #- task: Bash@3
 #  inputs:
