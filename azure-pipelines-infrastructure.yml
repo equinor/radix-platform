@@ -42,7 +42,7 @@ stages:
 
     - task: AzureCLI@2
       inputs:
-        azureSubscription: S941-Omnia-Radix-Development(16ede44b-1f74-40a5-b428-46cca9a5741b)
+        azureSubscription: 'S941-Omnia-Radix-Development(16ede44b-1f74-40a5-b428-46cca9a5741b)'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
