@@ -91,6 +91,15 @@ stages:
       env:
         CLUSTER_NAME: ${{ parameters.destination_cluster }}
         USER_PROMPT: ${{ parameters.user_prompt }}
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        scriptType: 'bash'
+        scriptLocation: 'scriptPath'
+        scriptPath: '/home/vsts/work/1/s/scripts/aks/bootstrap.sh'
+      env:
+        CLUSTER_NAME: ${{ parameters.destination_cluster }}
+        USER_PROMPT: ${{ parameters.user_prompt }}
 
 #- task: Bash@3
 #  inputs:
