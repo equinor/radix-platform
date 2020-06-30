@@ -63,6 +63,7 @@ stages:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
+        addSpnToEnvironment: true
         arguments: '$CLUSTER_NAME ${{parameters.destination_cluster}} $user_prompt ${{parameters.user_prompt}}'
         inlineScript: |
           - task: AzureCLI@2
@@ -81,15 +82,9 @@ stages:
                 echo $USER_PROMPT
                 echo break----------
                 az account show
-      env:
-        CLUSTER_NAME: ${{ parameters.destination_cluster }}
-        USER_PROMPT: ${{ parameters.user_prompt }}
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: '$(azureSubscription)'
-        scriptType: 'bash'
-        scriptLocation: 'scriptPath'
-        scriptPath: '/home/vsts/work/1/s/scripts/aks/bootstrap.sh'
+                echo $env:servicePrincipalId
+                echo $env:servicePrincipalKey
+                echo $env:tenantId
       env:
         CLUSTER_NAME: ${{ parameters.destination_cluster }}
         USER_PROMPT: ${{ parameters.user_prompt }}
