@@ -17,10 +17,6 @@ parameters:
   - true
   - false
 
-variables:
-  destination_cluster: ${{parameters.destination_cluster}}
-  user_prompt: ${{parameters.user_prompt}}
-
 trigger:
 - master
 
@@ -81,8 +77,11 @@ stages:
                 ls /home/vsts/work/1/s/scripts/aks
                 echo break----------
                 echo $RADIX_ZONE_ENV
-                echo $destination_cluster
-                echo $user_prompt
+                echo $CLUSTER_NAME
+                echo $USER_PROMPT
+      env:
+        CLUSTER_NAME: ${{ parameters.destination_cluster }}
+        USER_PROMPT: ${{ parameters.user_prompt }}
 
 #- task: Bash@3
 #  inputs:
