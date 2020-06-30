@@ -53,6 +53,9 @@ stages:
               inlineScript: |
                 az --version
                 az account show
+                ls
+                ls /s
+                ls s
 
 #- task: Bash@3
 #  inputs:
