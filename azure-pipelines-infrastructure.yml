@@ -28,17 +28,8 @@ stages:
           echo ${{ parameters.source_cluster }}
           echo ${{ parameters.destination_cluster }}
           echo $(testSecret)
-
-    - task: Bash@3
-      displayName: 'Install prerequisites'
-      inputs:
-        targetType: 'inline'
-        script: |
-          sudo apt install apache2-utils
-          wget https://github.com/heptio/velero/releases/download/v1.0.0/velero-v1.0.0-linux-amd64.tar.gz
-          tar zxvf velero-v1.0.0-linux-amd64.tar.gz
-          sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
-          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
+          ls
+          echo TEST
 
     - task: AzureCLI@2
       inputs:
@@ -51,11 +42,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az --version
-                az account show
                 ls
-                ls /s
-                ls s
 
 #- task: Bash@3
 #  inputs:
