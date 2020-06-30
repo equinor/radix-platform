@@ -16,52 +16,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-- stage: Verify
-  jobs:
-  - job: InstallPrerequisites
-    steps:
-    - task: KubectlInstaller@0
-      inputs:
-        kubectlVersion: 'latest'
-    - task: HelmInstaller@1
-      inputs:
-        helmVersionToInstall: 'latest'
-    - task: TerraformInstaller@0
-      inputs:
-        terraformVersion: '0.12.26'
-    - task: Bash@3
-      displayName: 'Install prerequisites'
-      inputs:
-        targetType: 'inline'
-        script: |
-          sudo apt install apache2-utils
-          wget https://github.com/heptio/velero/releases/download/v1.0.0/velero-v1.0.0-linux-amd64.tar.gz
-          tar zxvf velero-v1.0.0-linux-amd64.tar.gz
-          sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
-          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
-  - job: CheckPrerequisites
-    dependsOn: InstallPrerequisites
-    steps:
-    - task: Bash@3
-      displayName: 'Check prerequisites'
-      inputs:
-        targetType: 'inline'
-        script: |
-          hash kubectl 2>/dev/null || { echo >&2 "I require kubectl but it's not installed. Aborting."; exit 1; }
-          hash az 2>/dev/null || { echo >&2 "I require az but it's not installed. Aborting."; exit 1; }
-          hash helm 2>/dev/null || { echo >&2 "I require helm but it's not installed. Aborting."; exit 1; }
-          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
-          hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
-          hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
-          ls /home/vsts/work/1/s
 - stage: Deploy
   jobs:
-  - job: Approval
-    pool: server
-    steps:
-      - task: ManualIntervention@8
-        inputs:
-          instructions: 'Approval needed. Migrating from "${{ parameters.source_cluster }}" to "echo ${{ parameters.destination_cluster }}".'
   - job: DeployNewCluster
     steps:
     - task: Bash@3
@@ -73,6 +29,30 @@ stages:
           echo ${{ parameters.destination_cluster }}
           echo $(testSecret)
 
+    - task: Bash@3
+      displayName: 'Install prerequisites'
+      inputs:
+        targetType: 'inline'
+        script: |
+          sudo apt install apache2-utils
+          wget https://github.com/heptio/velero/releases/download/v1.0.0/velero-v1.0.0-linux-amd64.tar.gz
+          tar zxvf velero-v1.0.0-linux-amd64.tar.gz
+          sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
+          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: S941-Omnia-Radix-Development(16ede44b-1f74-40a5-b428-46cca9a5741b)
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          - task: AzureCLI@2
+            inputs:
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az --version
+                az account show
 
 #- task: Bash@3
 #  inputs:
