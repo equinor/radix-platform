@@ -1,20 +1,107 @@
 # AKS cluster deploy pipeline
 
+parameters:
+- name: source_cluster
+  displayName: Source Cluster
+  type: string
+
+- name: destination_cluster
+  displayName: Destination Cluster
+  type: string
+
+- name: user_prompt
+  displayName: User prompt
+  type: string
+  default: false
+  values:
+  - true
+  - false
+
 trigger:
 - master
 
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+stages:
+- stage: Deploy
+  jobs:
+  - job: InstallAndCheckPrerequisites
+    steps:
+    - task: KubectlInstaller@0
+      inputs:
+        kubectlVersion: 'latest'
+    - task: HelmInstaller@1
+      inputs:
+        helmVersionToInstall: 'latest'
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: '0.12.26'
+    - task: Bash@3
+      displayName: 'Install prerequisites'
+      inputs:
+        targetType: 'inline'
+        script: |
+          sudo apt install apache2-utils
+          wget https://github.com/heptio/velero/releases/download/v1.0.0/velero-v1.0.0-linux-amd64.tar.gz
+          tar zxvf velero-v1.0.0-linux-amd64.tar.gz
+          sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
+          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
+    - task: Bash@3
+      displayName: 'Check prerequisites'
+      inputs:
+        targetType: 'inline'
+        script: |
+          hash kubectl 2>/dev/null || { echo >&2 "I require kubectl but it's not installed. Aborting."; exit 1; }
+          hash az 2>/dev/null || { echo >&2 "I require az but it's not installed. Aborting."; exit 1; }
+          hash helm 2>/dev/null || { echo >&2 "I require helm but it's not installed. Aborting."; exit 1; }
+          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
+          hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
+          hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        addSpnToEnvironment: true
+        arguments: '$CLUSTER_NAME ${{parameters.destination_cluster}} $user_prompt ${{parameters.user_prompt}}'
+        inlineScript: |
+          - task: AzureCLI@2
+            inputs:
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                ls /home/vsts/work/1/s
+                echo break----------
+                ls /home/vsts/work/1/s/scripts
+                echo break----------
+                ls /home/vsts/work/1/s/scripts/aks
+                echo break----------
+                echo $RADIX_ZONE_ENV
+                echo $CLUSTER_NAME
+                echo $USER_PROMPT
+                echo break----------
+                az account show
+                echo $env:servicePrincipalId
+                echo $env:servicePrincipalKey
+                echo $env:tenantId
+                echo $servicePrincipalId
+                echo $servicePrincipalKey
+                echo $tenantId
+      env:
+        CLUSTER_NAME: ${{ parameters.destination_cluster }}
+        USER_PROMPT: ${{ parameters.user_prompt }}
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        scriptType: 'bash'
+        scriptLocation: 'scriptPath'
+        scriptPath: '/home/vsts/work/1/s/scripts/aks/bootstrap.sh'
+      env:
+        CLUSTER_NAME: ${{ parameters.destination_cluster }}
+        USER_PROMPT: ${{ parameters.user_prompt }}
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
-- task: TerraformInstaller@0
-  inputs:
-    terraformVersion: '0.12.3'
+#- task: Bash@3
+#  inputs:
+#    targetType: 'inline'
+#    script: 'RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-26 DEST_CLUSTER=weekly-26- USER_PROMPT=false ./migrate.sh'
