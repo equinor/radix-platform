@@ -67,7 +67,13 @@ stages:
                 echo break----------
                 ls /home/vsts/work/1/s/scripts/aks
                 echo break----------
-                
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        scriptType: 'bash'
+        scriptLocation: 'scriptPath'
+        scriptPath: '/home/vsts/work/1/s/scripts/aks/bootstrap.sh'
+        arguments: 'RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env, CLUSTER_NAME=${{parameters.destination_cluster}}, USER_PROMPT=false'
 
 #- task: Bash@3
 #  inputs:
