@@ -92,6 +92,7 @@ stages:
         CLUSTER_NAME: ${{ parameters.destination_cluster }}
         USER_PROMPT: ${{ parameters.user_prompt }}
     - task: AzureCLI@2
+      displayName: 'AzureCLI - Bootstrap AKS'
       inputs:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
