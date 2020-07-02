@@ -287,6 +287,27 @@ echo "Bootstrap of advanced network done."
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
+echo az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
+    --no-ssh-key \
+    --kubernetes-version "$KUBERNETES_VERSION" \
+    --service-principal "$CLUSTER_SYSTEM_USER_ID" \
+    --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
+    --node-count "$NODE_COUNT" \
+    --node-osdisk-size "$NODE_DISK_SIZE" \
+    --node-vm-size "$NODE_VM_SIZE" \
+    --max-pods "$POD_PER_NODE" \
+    --network-plugin "$NETWORK_PLUGIN" \
+    --network-policy "$NETWORK_POLICY" \
+    --vnet-subnet-id "$SUBNET_ID" \
+    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" \
+    --dns-service-ip "$VNET_DNS_SERVICE_IP" \
+    --service-cidr "$VNET_SERVICE_CIDR" \
+    --aad-server-app-id "$AAD_SERVER_APP_ID" \
+    --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
+    --aad-client-app-id "$AAD_CLIENT_APP_ID" \
+    --aad-tenant-id "$AAD_TENANT_ID" \
+    --location "$AZ_RADIX_ZONE_LOCATION"
+
 az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
     --no-ssh-key \
     --kubernetes-version "$KUBERNETES_VERSION" \
@@ -306,8 +327,8 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
     --aad-tenant-id "$AAD_TENANT_ID" \
-    --location "$AZ_RADIX_ZONE_LOCATION" \
-    2>&1 >/dev/null
+    --location "$AZ_RADIX_ZONE_LOCATION"# \
+#    2>&1 >/dev/null
 
 echo "Done."
 
