@@ -300,7 +300,7 @@ if [[ $USER_PROMPT == true ]]; then
     read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " -n 1 -r
 fi
 
-if [[ "$REPLY" =~ (N|n) ] || [ $MOVE_INGRESSES == false ]]; then
+if [ "$REPLY" = "n" ] || [ "$REPLY" = "N" ] || [ "$MOVE_INGRESSES" == "false" ]; then
     echo ""
     echo "Chicken!"
 
@@ -319,7 +319,7 @@ if [[ "$REPLY" =~ (N|n) ] || [ $MOVE_INGRESSES == false ]]; then
     exit 1
 fi
 
-if [[ $MOVE_INGRESSES == true ] || [ "$REPLY" =~ (Y|y) ]]; then
+if [[ $MOVE_INGRESSES == true ] || [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]]; then
     echo ""
     printf "Point to source cluster... "
     az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
