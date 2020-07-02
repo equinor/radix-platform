@@ -89,12 +89,12 @@ SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" -
 echo "db:                                                                                                                           
   password: ${SQL_DB_PASSWORD}" > radix-cost-allocation-values.yaml
 
-kubectl create ns radix-cost-allocation --dry-run=true --save-config -o yaml |
+kubectl create ns radix-cost-allocation --dry-run=client --save-config -o yaml |
     kubectl apply -f -
     
 kubectl create secret generic cost-db-secret --namespace radix-cost-allocation \
     --from-file=./radix-cost-allocation-values.yaml \
-    --dry-run=true -o yaml |
+    --dry-run=client -o yaml |
     kubectl apply -f -
 
 rm -f radix-cost-allocation-values.yaml

@@ -181,7 +181,7 @@ echo ""
 # Exit if source cluster does not exist
 echo ""
 echo "Verifying source cluster existence..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
     # Send message to stderr
     echo -e "Error: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
     exit 0
@@ -190,7 +190,7 @@ fi
 # Give option to create dest cluster if it does not exist
 echo ""
 echo "Verifying destination cluster existence..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
     if [[ $USER_PROMPT == true ]]; then
         read -p "Destination cluster does not exists. Create cluster? (Y/n) " create_dest_cluster
         if [[ $create_dest_cluster =~ (N|n) ]]; then
