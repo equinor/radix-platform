@@ -327,7 +327,7 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
     --aad-tenant-id "$AAD_TENANT_ID" \
-    --location "$AZ_RADIX_ZONE_LOCATION"# \
+    --location "$AZ_RADIX_ZONE_LOCATION"
 #    2>&1 >/dev/null
 
 echo "Done."
