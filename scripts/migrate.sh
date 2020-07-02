@@ -319,7 +319,7 @@ if [ "$REPLY" = "n" ] || [ "$REPLY" = "N" ] || [ "$MOVE_INGRESSES" == "false" ];
     exit 1
 fi
 
-if [[ $MOVE_INGRESSES == true ] || [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]]; then
+if [ $MOVE_INGRESSES == true ] || [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ]; then
     echo ""
     printf "Point to source cluster... "
     az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
