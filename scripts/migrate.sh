@@ -89,6 +89,10 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+if [[ -z "$MOVE_INGRESSES" ]]; then
+    MOVE_INGRESSES=false
+fi
+
 # Script vars
 
 if [[ -z "$BACKUP_NAME" ]]; then
@@ -292,8 +296,11 @@ wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
 echo ""
-read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " -n 1 -r
-if [[ "$REPLY" =~ (N|n) ]]; then
+if [[ $USER_PROMPT == true ]]; then
+    read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " -n 1 -r
+fi
+
+if [[ "$REPLY" =~ (N|n) ] || [ $MOVE_INGRESSES == false ]]; then
     echo ""
     echo "Chicken!"
 
@@ -312,45 +319,47 @@ if [[ "$REPLY" =~ (N|n) ]]; then
     exit 1
 fi
 
-echo ""
-printf "Point to source cluster... "
-az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
-    --overwrite-existing \
-    --admin \
-    2>&1 >/dev/null
-printf "Done.\n"
+if [[ $MOVE_INGRESSES == true ] || [ "$REPLY" =~ (Y|y) ]]; then
+    echo ""
+    printf "Point to source cluster... "
+    az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
+        --overwrite-existing \
+        --admin \
+        2>&1 >/dev/null
+    printf "Done.\n"
 
-echo ""
-printf "Delete custom ingresses... "
-while read -r line; do
-    if [[ "$line" ]]; then
-        helm delete ${line} --purge
-    fi
-done <<<"$(helm list --short | grep radix-ingress)"
+    echo ""
+    printf "Delete custom ingresses... "
+    while read -r line; do
+        if [[ "$line" ]]; then
+            helm delete ${line} --purge
+        fi
+    done <<<"$(helm list --short | grep radix-ingress)"
 
-# Point granana to cluster specific ingress
-GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
+    # Point granana to cluster specific ingress
+    GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
+    kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
-echo ""
-printf "Point to destination cluster... "
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
+    echo ""
+    printf "Point to destination cluster... "
+    az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
 
-echo ""
-printf "Create aliases in destination cluster... "
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_APP_ALIAS_SCRIPT")
-wait # wait for subshell to finish
-printf "Done creating aliases."
+    echo ""
+    printf "Create aliases in destination cluster... "
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_APP_ALIAS_SCRIPT")
+    wait # wait for subshell to finish
+    printf "Done creating aliases."
 
-# Point granana to cluster type ingress
-GRAFANA_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
+    # Point granana to cluster type ingress
+    GRAFANA_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
+    kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
-echo ""
-echo "###########################################################"
-echo ""
-echo "NOTE: You need to manually activate the cluster"
-echo ""
-echo "You do this in the https://github.com/equinor/radix-flux repo"
-echo ""
-echo "###########################################################"
+    echo ""
+    echo "###########################################################"
+    echo ""
+    echo "NOTE: You need to manually activate the cluster"
+    echo ""
+    echo "You do this in the https://github.com/equinor/radix-flux repo"
+    echo ""
+    echo "###########################################################"
+fi
