@@ -71,6 +71,7 @@ stages:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
+        addSpnToEnvironment: true
         arguments: '$CLUSTER_NAME ${{parameters.destination_cluster}} $user_prompt ${{parameters.user_prompt}}'
         inlineScript: |
           - task: AzureCLI@2
@@ -84,18 +85,9 @@ stages:
                 echo break----------
                 ls /home/vsts/work/1/s/scripts/aks
                 echo break----------
-    - task: AzureCLI@2
-      displayName: 'AzureCLI - Migrate Cluster'
-      inputs:
-        azureSubscription: '$(azureSubscription)'
-        scriptType: 'bash'
-        scriptLocation: 'scriptPath'
-        scriptPath: '/home/vsts/work/1/s/scripts/migrate.sh'
-      env:
-        SOURCE_CLUSTER: ${{ parameters.source_cluster }}
-        DEST_CLUSTER: ${{ parameters.destination_cluster }}
-        USER_PROMPT: ${{ parameters.user_prompt }}
-        MOVE_INGRESSES: ${{ parameters.move_ingresses }}
+                az account show
+                echo $servicePrincipalId
+                echo $tenantId
 
 #- task: Bash@3
 #  inputs:
