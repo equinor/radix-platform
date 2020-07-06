@@ -83,6 +83,15 @@ stages:
           az account show
           echo $servicePrincipalId
           echo $tenantId
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'ServiceConnectionAzureDevOpsRadixDev'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host $env:servicePrincipalId
+          Write-Host $env:tenantId
+
 
 
 #- task: Bash@3
