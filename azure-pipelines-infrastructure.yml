@@ -91,6 +91,7 @@ stages:
         inlineScript: |
           Write-Host $env:servicePrincipalId
           Write-Host $env:tenantId
+        addSpnToEnvironment: true
 
 
 
