@@ -95,7 +95,7 @@ stages:
         USER_PROMPT: ${{ parameters.user_prompt }}
         MOVE_INGRESSES: ${{ parameters.move_ingresses }}
         PIPELINE_RUN: ${{ parameters.pipeline_run }}
-        SPOID: $SPOID
+        SPOID: $(SPOID)
 
 #- task: Bash@3
 #  inputs:
