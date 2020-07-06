@@ -88,7 +88,6 @@ stages:
           echo break----------
           ls /home/vsts/work/1/s/scripts/aks
           echo break----------
-          az role assignment create --assignee-object-id "$SPOID" --role "Network Contributor" --scope "$VNETID"
       env:
         SOURCE_CLUSTER: ${{ parameters.source_cluster }}
         DEST_CLUSTER: ${{ parameters.destination_cluster }}
