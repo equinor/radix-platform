@@ -66,6 +66,7 @@ jobs:
           # Set soft delete protection on Storage Account
           $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
           $storageAcoount | Enable-AzStorageDeleteRetentionPolicy -RetentionDays 30
+        azPSVersion: '3.1.0'
 
     # Azure logout 
     - name: logout
