@@ -2,6 +2,8 @@ name: LogStorageAccounts
 
 on:
   push:
+    branches:
+     - '*'
 
   pull_request:
 
