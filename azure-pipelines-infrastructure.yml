@@ -17,6 +17,14 @@ parameters:
   - true
   - false
 
+- name: move_ingresses
+  displayName: Move Ingresses
+  type: string
+  default: false
+  values:
+  - true
+  - false
+
 trigger:
 - master
 
@@ -66,41 +74,29 @@ stages:
         addSpnToEnvironment: true
         arguments: '$CLUSTER_NAME ${{parameters.destination_cluster}} $user_prompt ${{parameters.user_prompt}}'
         inlineScript: |
-          - task: AzureCLI@2
-            inputs:
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                ls /home/vsts/work/1/s
-                echo break----------
-                ls /home/vsts/work/1/s/scripts
-                echo break----------
-                ls /home/vsts/work/1/s/scripts/aks
-                echo break----------
-                echo $RADIX_ZONE_ENV
-                echo $CLUSTER_NAME
-                echo $USER_PROMPT
-                echo break----------
-                az account show
-                echo $env:servicePrincipalId
-                echo $env:servicePrincipalKey
-                echo $env:tenantId
-                echo $servicePrincipalId
-                echo $servicePrincipalKey
-                echo $tenantId
-      env:
-        CLUSTER_NAME: ${{ parameters.destination_cluster }}
-        USER_PROMPT: ${{ parameters.user_prompt }}
+          ls /home/vsts/work/1/s
+          echo break----------
+          ls /home/vsts/work/1/s/scripts
+          echo break----------
+          ls /home/vsts/work/1/s/scripts/aks
+          echo break----------
+          az account show
+          echo $servicePrincipalId
+          echo $tenantId
     - task: AzureCLI@2
-      displayName: 'AzureCLI - Bootstrap AKS'
       inputs:
-        azureSubscription: '$(azureSubscription)'
-        scriptType: 'bash'
-        scriptLocation: 'scriptPath'
-        scriptPath: '/home/vsts/work/1/s/scripts/aks/bootstrap.sh'
-      env:
-        CLUSTER_NAME: ${{ parameters.destination_cluster }}
-        USER_PROMPT: ${{ parameters.user_prompt }}
+        azureSubscription: 'ServiceConnectionAzureDevOpsRadixDev'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host $env:servicePrincipalId
+          Write-Host $env:tenantId
+          $servicePrincipals = az ad sp list --spn $env:servicePrincipalId | ConvertFrom-Json
+          $spid = $servicePrincipals[0].objectId
+          Write-Host $spid
+        addSpnToEnvironment: true
+
+
 
 #- task: Bash@3
 #  inputs:
