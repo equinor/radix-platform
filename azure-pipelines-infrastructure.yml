@@ -91,6 +91,10 @@ stages:
         inlineScript: |
           Write-Host $env:servicePrincipalId
           Write-Host $env:tenantId
+          $Context = Get-AzureRmContext
+          $AzureDevOpsServicePrincipal = Get-AzureRmADServicePrincipal -ApplicationId $Context.Account.Id
+          $ObjectId = $AzureDevOpsServicePrincipal.Id
+          Write-Host $ObjectId
         addSpnToEnvironment: true
 
 
