@@ -49,9 +49,9 @@ jobs:
       run: |
 
         # Set task variables
-        $rg = ${{ env.devRgName }}
+        $rg = "${{ env.devRgName }}"
         $templateFile = "$GITHUB_WORKSPACE/arm-templates/storageAccount.json"
-        $storeAccountName = "${{ env.storageName }}$envName "
+        $storeAccountName = "${{ env.storageName }}$envName"
 
         # Deploy shared Storage Account for SQL Logging in dev
         New-AzResourceGroupDeployment -Name "sql-log-${{ env.timestamp }}" `
