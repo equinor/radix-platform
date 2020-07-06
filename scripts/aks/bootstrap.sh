@@ -91,6 +91,10 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+if [[ -z "$PIPELINE_RUN" ]]; then
+    PIPELINE_RUN=false
+fi
+
 if [[ -z "$HUB_PEERING_NAME" ]]; then
     HUB_PEERING_NAME=hub-to-${CLUSTER_NAME}
 fi
@@ -250,10 +254,18 @@ printf "Done.\n"
 
 # Configure new roles
 printf "   Creating new roles... "
-az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" \
-    --role "Network Contributor" \
-    --scope "${VNET_ID}" \
-    2>&1 >/dev/null
+if [ "$PIPELINE_RUN" == "true" ]; then
+    SPOID=az ad sp show --id "${CLUSTER_SYSTEM_USER_ID}" | jq -r .objectId
+    az role assignment create --assignee-object-id "$SPOID" \
+        --role "Network Contributor" \
+        --scope "${VNET_ID}" \
+        2>&1 >/dev/null
+else
+    az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" \
+        --role "Network Contributor" \
+        --scope "${VNET_ID}" \
+        2>&1 >/dev/null
+fi
 printf "Done.\n"
 
 # peering VNET to hub-vnet
