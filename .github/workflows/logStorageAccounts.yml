@@ -1,0 +1,72 @@
+name: LogStorageAccounts
+
+on:
+  push:
+    branches:
+      - RA-1592-sqlLogStorageAccount
+  pull_request:
+    branches:
+      - Master
+
+env:
+  # Prod
+  prodRgName: rg-radix-shared-prod
+
+  # Dev
+  devRgName: rg-radix-shared-dev
+
+  # Shared
+  storageName: radixsqllogs
+
+jobs:
+  dev:
+    runs-on: ubuntu-latest
+    env:
+        envName: dev
+    steps:
+
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Set dynamic variables for the job
+    - name: Set job variables
+      shell: pwsh
+      run: |
+
+        # Set timestamp variable for jobs
+        $currentTime = (get-date).ToString("dd-MM-yyyyThhMMZ")
+        Write-Output "::set-env name=timestamp::$currentTime"
+
+    # Azure Login to production environment
+    - uses: azure/login@v1.1
+      with:
+        creds: ${{ secrets.DEV_AZURE_CREDENTIALS }}
+        enable-AzPSSession: true
+
+    # Create storage account and container
+    - name: Storage Account for SQL logs
+      shell: pwsh
+      run: |
+
+        # Set task variables
+        $rg = ${{ env.devRgName }}
+        $templateFile = "$GITHUB_WORKSPACE/arm-templates/storageAccount.json"
+        $storeAccountName = "${{ env.storageName }}$envName "
+
+        # Deploy shared Storage Account for SQL Logging in dev
+        New-AzResourceGroupDeployment -Name "sql-log-${{ env.timestamp }}" `
+            -ResourceGroupName $rg `
+            -TemplateFile $templateFile `
+            -storageAccountName $storeAccountName `
+            -accountType Standard_LRS `
+            -kind StorageV2 `
+            -accessTier hot
+
+        # Set soft delete protection on Storage Account
+        $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
+        $storageAcoount | Enable-AzStorageDeleteRetentionPolicy -RetentionDays 30
+
+    # Azure logout 
+    - name: logout
+      run: |
+        az logout
