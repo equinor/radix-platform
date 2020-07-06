@@ -2,8 +2,6 @@ name: LogStorageAccounts
 
 on:
   push:
-    branches: 
-      - RA-1592-sqlLogStorageAccount
 
   pull_request:
 
