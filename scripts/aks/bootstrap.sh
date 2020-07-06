@@ -255,7 +255,6 @@ printf "Done.\n"
 # Configure new roles
 printf "   Creating new roles... "
 if [ "$PIPELINE_RUN" == "true" ]; then
-    SPOID=$(az ad sp show --id "${CLUSTER_SYSTEM_USER_ID}" | jq -r .objectId)
     az role assignment create --assignee-object-id "$SPOID" \
         --role "Network Contributor" \
         --scope "${VNET_ID}" \
