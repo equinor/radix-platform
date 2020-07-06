@@ -17,6 +17,14 @@ parameters:
   - true
   - false
 
+- name: move_ingresses
+  displayName: Move Ingresses
+  type: string
+  default: false
+  values:
+  - true
+  - false
+
 trigger:
 - master
 
@@ -63,7 +71,6 @@ stages:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
-        addSpnToEnvironment: true
         arguments: '$CLUSTER_NAME ${{parameters.destination_cluster}} $user_prompt ${{parameters.user_prompt}}'
         inlineScript: |
           - task: AzureCLI@2
@@ -77,30 +84,18 @@ stages:
                 echo break----------
                 ls /home/vsts/work/1/s/scripts/aks
                 echo break----------
-                echo $RADIX_ZONE_ENV
-                echo $CLUSTER_NAME
-                echo $USER_PROMPT
-                echo break----------
-                az account show
-                echo $env:servicePrincipalId
-                echo $env:servicePrincipalKey
-                echo $env:tenantId
-                echo $servicePrincipalId
-                echo $servicePrincipalKey
-                echo $tenantId
-      env:
-        CLUSTER_NAME: ${{ parameters.destination_cluster }}
-        USER_PROMPT: ${{ parameters.user_prompt }}
     - task: AzureCLI@2
-      displayName: 'AzureCLI - Bootstrap AKS'
+      displayName: 'AzureCLI - Migrate Cluster'
       inputs:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
         scriptLocation: 'scriptPath'
-        scriptPath: '/home/vsts/work/1/s/scripts/aks/bootstrap.sh'
+        scriptPath: '/home/vsts/work/1/s/scripts/migrate.sh'
       env:
-        CLUSTER_NAME: ${{ parameters.destination_cluster }}
+        SOURCE_CLUSTER: ${{ parameters.source_cluster }}
+        DEST_CLUSTER: ${{ parameters.destination_cluster }}
         USER_PROMPT: ${{ parameters.user_prompt }}
+        MOVE_INGRESSES: ${{ parameters.move_ingresses }}
 
 #- task: Bash@3
 #  inputs:
