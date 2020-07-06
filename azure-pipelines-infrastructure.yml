@@ -74,20 +74,16 @@ stages:
         addSpnToEnvironment: true
         arguments: '$CLUSTER_NAME ${{parameters.destination_cluster}} $user_prompt ${{parameters.user_prompt}}'
         inlineScript: |
-          - task: AzureCLI@2
-            inputs:
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                ls /home/vsts/work/1/s
-                echo break----------
-                ls /home/vsts/work/1/s/scripts
-                echo break----------
-                ls /home/vsts/work/1/s/scripts/aks
-                echo break----------
-                az account show
-                echo $servicePrincipalId
-                echo $tenantId
+          ls /home/vsts/work/1/s
+          echo break----------
+          ls /home/vsts/work/1/s/scripts
+          echo break----------
+          ls /home/vsts/work/1/s/scripts/aks
+          echo break----------
+          az account show
+          echo $servicePrincipalId
+          echo $tenantId
+
 
 #- task: Bash@3
 #  inputs:
