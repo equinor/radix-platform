@@ -112,6 +112,12 @@ jobs:
 
 ############## PROD STAGE ##############
 
+  prod:
+    runs-on: ubuntu-latest
+    env:
+        envName: prod
+    steps:
+
     # Azure login for powershell
     - name: Azure login
       shell: pwsh
