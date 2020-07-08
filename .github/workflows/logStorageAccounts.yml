@@ -118,6 +118,26 @@ jobs:
         envName: prod
     steps:
 
+    # Checks-out your repository under $GITHUB_WORKSPACE
+    - uses: actions/checkout@v2
+
+    # Set dynamic variables for the job
+    - name: Set job variables
+      shell: pwsh
+      run: |
+
+        # Set timestamp variable for jobs
+        $currentTime = (get-date).ToString("dd-MM-yyyyThhMMZ")
+        Write-Output "::set-env name=timestamp::$currentTime"
+
+    # Install powershell modules
+    - name: Install powershell modules
+      shell: pwsh
+      run: |
+        
+        Install-Module az.resources -force
+        Install-Module az.storage -force
+
     # Azure login for powershell
     - name: Azure login
       shell: pwsh
