@@ -11,6 +11,7 @@ on:
 env:
   # Prod
   prodRgName: rg-radix-shared-prod
+  prodSubscriptionId: 'ded7ca41-37c8-4085-862f-b11d21ab341a'
 
   # Dev
   devRgName: rg-radix-shared-dev
@@ -18,9 +19,10 @@ env:
 
   # Shared
   storageName: radixsqllogs #Also suffix with environment
-  SOURCE_DIR2: $GITHUB_WORKSPACE
 
 jobs:
+############## DEV STAGE ##############
+
   dev:
     runs-on: ubuntu-latest
     env:
@@ -47,6 +49,7 @@ jobs:
         Install-Module az.resources -force
         Install-Module az.storage -force
 
+    # Azure login for powershell
     - name: Azure login
       shell: pwsh
       run: |
@@ -56,6 +59,8 @@ jobs:
         $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
         Add-azAccount -Credential $psCred -TenantId $azureTenantId -ServicePrincipal
 
+
+    # Set subsctiption to develop and verify
     - name: Set Azure subscription
       shell: pwsh
       run: |
@@ -69,15 +74,9 @@ jobs:
           
         }
         else {
-          Write-Output "Subscription does match. Terminating script"
+          Write-Output "Subscription does not match. Terminating script"
           exit 1
         }
-
-    # # Azure Login to dev environment
-    # - uses: azure/login@v1.1
-    #   with:
-    #     creds: ${{ secrets.DEV_AZURE_CREDENTIALS }}
-    #     enable-AzPSSession: true
 
 
     # Create storage account and container
@@ -91,6 +90,69 @@ jobs:
         $storeAccountName = "${{ env.storageName }}${{ env.envName }}"
 
         # Deploy shared Storage Account for SQL Logging in dev
+        New-AzResourceGroupDeployment `
+          -Name "sql-log-${{ env.timestamp }}" `
+          -ResourceGroupName $rg `
+          -TemplateFile $templateFile `
+          -storageAccountName $storeAccountName `
+          -accountType Standard_LRS `
+          -kind StorageV2 `
+          -accessTier hot
+
+          # Set soft delete protection on Storage Account
+          $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
+          $storageAcoount | Enable-AzStorageDeleteRetentionPolicy -RetentionDays 30
+
+    # Azure logout 
+    - name: logout
+      shell: pwsh
+      run: |
+        Logout-azAccount
+
+
+############## PROD STAGE ##############
+
+    # Azure login for powershell
+    - name: Azure login
+      shell: pwsh
+      run: |
+        $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
+        $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
+        $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
+        $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
+        Add-azAccount -Credential $psCred -TenantId $azureTenantId -ServicePrincipal
+
+
+    # Set subsctiption to prouction and verify
+    - name: Set Azure subscription
+      shell: pwsh
+      run: |
+
+        Set-AzContext -SubscriptionId "${{ env.prodSubscriptionId }}"
+        
+        $subscription = (Get-AzContext)
+        if ($subscription.Subscription.Id -eq "${{ env.prodSubscriptionId }}") {
+          Write-Output "Using subscription $($subscription.subscription.Name)"
+          exit 0
+          
+        }
+        else {
+          Write-Output "Subscription does not match. Terminating script"
+          exit 1
+        }
+
+
+    # Create storage account and container
+    - name: Storage Account for SQL logs
+      shell: pwsh
+      run: |
+
+        # Set task variables
+        $rg = "${{ env.prodRgName }}"
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/storageAccount.json"
+        $storeAccountName = "${{ env.storageName }}${{ env.envName }}"
+
+        # Deploy shared Storage Account for SQL Logging in prod
         New-AzResourceGroupDeployment `
           -Name "sql-log-${{ env.timestamp }}" `
           -ResourceGroupName $rg `
