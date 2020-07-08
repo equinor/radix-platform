@@ -82,13 +82,11 @@ jobs:
     # Create storage account and container
     - name: Storage Account for SQL logs
       shell: pwsh
-      env:
-        SOURCE_DIR: $GITHUB_WORKSPACE
-        TESTVAR: var1 test
       run: |
 
 
         gci env:* | sort-object name
+        $GITHUB_WORKSPACE
 
         # # Set task variables
         # $rg = "${{ env.devRgName }}"
