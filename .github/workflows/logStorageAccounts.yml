@@ -1,13 +1,12 @@
 name: LogStorageAccounts
 
 on:
-  workflow_dispatch:
   push:
     branches:
-      - RA-1592-sqlLogStorageAccount
+      - master
   pull_request:
     branches:
-      - Master
+      - master
 
 env:
   # Prod
@@ -30,12 +29,6 @@ jobs:
     env:
         envName: dev
     steps:
-
-    - name: Repo Name
-      shell: bash
-      run: |
-        echo $GITHUB.REF
-        echo ${{ env.GITHUB.REF }}
 
     # Checks-out your repository under $GITHUB_WORKSPACE
     - uses: actions/checkout@v2
@@ -72,7 +65,7 @@ jobs:
     - name: Set Azure subscription
       shell: pwsh
       run: |
-        gci env:* | sort-object name
+      
         Set-AzContext -SubscriptionId "${{ env.devSubscriptionId }}"
         
         $subscription = (Get-AzContext)
@@ -122,7 +115,7 @@ jobs:
 
   prod:
     needs: dev
-    if: github.ref == 'refs/heads/Master'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     env:
         envName: prod
