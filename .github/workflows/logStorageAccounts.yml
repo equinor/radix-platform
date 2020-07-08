@@ -47,7 +47,7 @@ jobs:
 
     - name: Azure login
       shell: pwsh
-      run |
+      run: |
         $azureAplicationId = "${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_ID }}"
         $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
         $azurePassword = ConvertTo-SecureString "${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
@@ -56,7 +56,7 @@ jobs:
 
     - name: Set Azure subscription
       shell: pwsh
-      run | 
+      run: |
 
         Set-AzContext -SubscriptionId "${{ env.devSubscriptionId }}"
         
