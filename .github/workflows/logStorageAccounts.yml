@@ -72,7 +72,7 @@ jobs:
     - name: Set Azure subscription
       shell: pwsh
       run: |
-
+        gci env:* | sort-object name
         Set-AzContext -SubscriptionId "${{ env.devSubscriptionId }}"
         
         $subscription = (Get-AzContext)
