@@ -84,27 +84,24 @@ jobs:
       shell: pwsh
       run: |
 
-        $env:GITHUB_WORKSPACE
-        Get-ChildItem $env:GITHUB_WORKSPACE
+        # Set task variables
+        $rg = "${{ env.devRgName }}"
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/storageAccount.json"
+        $storeAccountName = "${{ env.storageName }}${{ env.envName }}"
 
-        # # Set task variables
-        # $rg = "${{ env.devRgName }}"
-        # $templateFile = "${{ env.GITHUB_WORKSPACE }}/arm-templates/storageAccount.json"
-        # $storeAccountName = "${{ env.storageName }}${{ env.envName }}"
+        # Deploy shared Storage Account for SQL Logging in dev
+        New-AzResourceGroupDeployment `
+          -Name "sql-log-${{ env.timestamp }}" `
+          -ResourceGroupName $rg `
+          -TemplateFile $templateFile `
+          -storageAccountName $storeAccountName `
+          -accountType Standard_LRS `
+          -kind StorageV2 `
+          -accessTier hot
 
-        # # Deploy shared Storage Account for SQL Logging in dev
-        # New-AzResourceGroupDeployment `
-        #   -Name "sql-log-${{ env.timestamp }}" `
-        #   -ResourceGroupName $rg `
-        #   -TemplateFile $templateFile `
-        #   -storageAccountName $storeAccountName `
-        #   -accountType Standard_LRS `
-        #   -kind StorageV2 `
-        #   -accessTier hot
-
-        #   # Set soft delete protection on Storage Account
-        #   $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
-        #   $storageAcoount | Enable-AzStorageDeleteRetentionPolicy -RetentionDays 30
+          # Set soft delete protection on Storage Account
+          $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
+          $storageAcoount | Enable-AzStorageDeleteRetentionPolicy -RetentionDays 30
 
     # Azure logout 
     - name: logout
