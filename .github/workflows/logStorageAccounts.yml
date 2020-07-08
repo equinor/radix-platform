@@ -83,7 +83,7 @@ jobs:
       shell: pwsh
       run: |
 
-        Get-ChildItem "$GITHUB_WORKSPACE"
+        gci env:* | sort-object name
 
         # # Set task variables
         # $rg = "${{ env.devRgName }}"
