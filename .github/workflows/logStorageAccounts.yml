@@ -18,6 +18,7 @@ env:
 
   # Shared
   storageName: radixsqllogs #Also suffix with environment
+  SOURCE_DIR2: ${{ env.GITHUB_WORKSPACE }}
 
 jobs:
   dev:
@@ -83,6 +84,7 @@ jobs:
       shell: pwsh
       env:
         SOURCE_DIR: ${{ env.GITHUB_WORKSPACE }}
+        TESTVAR: var1 test
       run: |
 
 
@@ -109,5 +111,6 @@ jobs:
 
     # Azure logout 
     - name: logout
+      shell: pwsh
       run: |
-        az logout
+        Logout-azAccount
