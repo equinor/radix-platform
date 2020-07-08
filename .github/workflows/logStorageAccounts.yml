@@ -34,8 +34,8 @@ jobs:
     - name: Repo Name
       shell: bash
       run: |
-        echo $github.ref
-        echo ${{ env.github.ref }}
+        echo $GITHUB.REF
+        echo ${{ env.GITHUB.REF }}
 
     # Checks-out your repository under $GITHUB_WORKSPACE
     - uses: actions/checkout@v2
