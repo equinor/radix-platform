@@ -45,6 +45,7 @@ jobs:
       run: |
         
         Install-Module az.resources -force
+        Install-Module az.storage -force
 
     - name: Azure login
       shell: pwsh
