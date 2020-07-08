@@ -83,7 +83,7 @@ jobs:
       shell: pwsh
       run: |
 
-      Get-ChildItem "${{ env.GITHUB_WORKSPACE }}"
+        Get-ChildItem "${{ env.GITHUB_WORKSPACE }}"
         # Set task variables
         $rg = "${{ env.devRgName }}"
         $templateFile = "${{ env.GITHUB_WORKSPACE }}/arm-templates/storageAccount.json"
