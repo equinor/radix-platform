@@ -14,6 +14,7 @@ env:
 
   # Dev
   devRgName: rg-radix-shared-dev
+  devSubscriptionId: '16ede44b-1f74-40a5-b428-46cca9a5741b'
 
   # Shared
   storageName: radixsqllogs #Also suffix with environment
@@ -43,12 +44,39 @@ jobs:
       run: |
         
         Install-Module az.resources -force
+
+    - name: Azure login
+      shell: pwsh
+      run |
+        $azureAplicationId = "${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_ID }}"
+        $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
+        $azurePassword = ConvertTo-SecureString "${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
+        $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
+        Add-azAccount -Credential $psCred -TenantId $azureTenantId -ServicePrincipal
+
+    - name: Set Azure subscription
+      shell: pwsh
+      run | 
+
+        $subscriptionId = 
+        Set-AzContext -SubscriptionId "${{ env.devSubscriptionId }}"
         
-    # Azure Login to dev environment
-    - uses: azure/login@v1.1
-      with:
-        creds: ${{ secrets.DEV_AZURE_CREDENTIALS }}
-        enable-AzPSSession: true
+        $subscription = (Get-AzContext)
+        if ($subscription.Subscription.Id -eq "${{ env.devSubscriptionId }}") {
+          Write-Output "Using subscription $($subscription.subscription.Name)"
+          exit 0
+          
+        }
+        else {
+          Write-Output "Subscription does match. Terminating script"
+          exit 1
+        }
+
+    # # Azure Login to dev environment
+    # - uses: azure/login@v1.1
+    #   with:
+    #     creds: ${{ secrets.DEV_AZURE_CREDENTIALS }}
+    #     enable-AzPSSession: true
 
 
     # Create storage account and container
@@ -56,6 +84,7 @@ jobs:
       shell: pwsh
       run: |
 
+      Get-ChildItem "${{ env.GITHUB_WORKSPACE }}"
         # Set task variables
         $rg = "${{ env.devRgName }}"
         $templateFile = "${{ env.GITHUB_WORKSPACE }}/arm-templates/storageAccount.json"
