@@ -18,7 +18,7 @@ env:
 
   # Shared
   storageName: radixsqllogs #Also suffix with environment
-  SOURCE_DIR2: ${{ env.GITHUB_WORKSPACE }}
+  SOURCE_DIR2: $GITHUB_WORKSPACE
 
 jobs:
   dev:
@@ -83,7 +83,7 @@ jobs:
     - name: Storage Account for SQL logs
       shell: pwsh
       env:
-        SOURCE_DIR: ${{ env.GITHUB_WORKSPACE }}
+        SOURCE_DIR: $GITHUB_WORKSPACE
         TESTVAR: var1 test
       run: |
 
