@@ -58,7 +58,6 @@ jobs:
       shell: pwsh
       run | 
 
-        $subscriptionId = 
         Set-AzContext -SubscriptionId "${{ env.devSubscriptionId }}"
         
         $subscription = (Get-AzContext)
