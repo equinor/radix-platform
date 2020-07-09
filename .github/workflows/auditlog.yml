@@ -84,6 +84,15 @@ jobs:
       shell: pwsh
       run: |
 
+        # Set variables
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/auditLog.json"
+        $storageAccount = "${{ env.devStorageAccountId }}"
+
+        # Deploy the ARM template
+        New-AzDeployment -Name "auditlog-${{ env.timestamp }}" -Location "norwayeast" `
+          -TemplateFile $templateFile `
+          -settingName auditlogradix `
+          -storageAccountId = $storageAccount
 
     # Azure logout 
     - name: logout
