@@ -112,7 +112,7 @@ jobs:
         # Set task variables
         $rg = "${{ env.devRgName }}"
         $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/storageAccount.json"
-        $storeAccountName = "${{ env.auditLogStorageName }}"
+        $storeAccountName = "${{ env.auditLogStorageName }}${{ env.envName }}"
 
         # Deploy Storage Account for Audit logs
         New-AzResourceGroupDeployment `
@@ -230,7 +230,7 @@ jobs:
         # Set task variables
         $rg = "${{ env.prodRgName }}"
         $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/storageAccount.json"
-        $storeAccountName = "${{ env.auditLogStorageName }}"
+        $storeAccountName = "${{ env.auditLogStorageName }}${{ env.envName }}""
 
         # Deploy Storage Account for Audit logs
         New-AzResourceGroupDeployment `
