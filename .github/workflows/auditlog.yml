@@ -1,0 +1,165 @@
+name: LogStorageAccounts
+
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
+#     branches:
+#       - master
+
+env:
+  # Prod
+  prodStorageAccountId:
+  prodSubscriptionId: 'ded7ca41-37c8-4085-862f-b11d21ab341a'
+
+  # Dev
+  devStorageAccountId: 
+  devSubscriptionId: '16ede44b-1f74-40a5-b428-46cca9a5741b'
+
+  # Shared
+  settingName: azureauditlog
+
+jobs:
+############## DEV STAGE ##############
+
+  dev:
+    runs-on: ubuntu-latest
+    env:
+        envName: dev
+    steps:
+
+    # Checks-out your repository under $GITHUB_WORKSPACE
+    - uses: actions/checkout@v2
+
+    # Set dynamic variables for the job
+    - name: Set job variables
+      shell: pwsh
+      run: |
+
+        # Set timestamp variable for jobs
+        $currentTime = (get-date).ToString("dd-MM-yyyyThhMMZ")
+        Write-Output "::set-env name=timestamp::$currentTime"
+
+    # Install powershell modules
+    - name: Install powershell modules
+      shell: pwsh
+      run: |
+        
+        Install-Module az.resources -force
+        Install-Module az.storage -force
+
+    # Azure login for powershell
+    - name: Azure login
+      shell: pwsh
+      run: |
+        $azureAplicationId = "${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_ID }}"
+        $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
+        $azurePassword = ConvertTo-SecureString "${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
+        $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
+        Add-azAccount -Credential $psCred -TenantId $azureTenantId -ServicePrincipal
+
+
+    # Set subsctiption to develop and verify
+    - name: Set Azure subscription
+      shell: pwsh
+      run: |
+      
+        Set-AzContext -SubscriptionId "${{ env.devSubscriptionId }}"
+        
+        $subscription = (Get-AzContext)
+        if ($subscription.Subscription.Id -eq "${{ env.devSubscriptionId }}") {
+          Write-Output "Using subscription $($subscription.subscription.Name)"
+          exit 0
+          
+        }
+        else {
+          Write-Output "Subscription does not match. Terminating script"
+          exit 1
+        }
+
+
+    # Enable auditlog for dev subsciption
+    - name: Enable auditlog for dev subsciption
+      shell: pwsh
+      run: |
+
+
+    # Azure logout 
+    - name: logout
+      shell: pwsh
+      run: |
+        Logout-azAccount
+
+
+############## PROD STAGE ##############
+
+  prod:
+    needs: dev
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    env:
+        envName: prod
+    steps:
+
+    # Checks-out your repository under $GITHUB_WORKSPACE
+    - uses: actions/checkout@v2
+
+    # Set dynamic variables for the job
+    - name: Set job variables
+      shell: pwsh
+      run: |
+
+        # Set timestamp variable for jobs
+        $currentTime = (get-date).ToString("dd-MM-yyyyThhMMZ")
+        Write-Output "::set-env name=timestamp::$currentTime"
+
+    # Install powershell modules
+    - name: Install powershell modules
+      shell: pwsh
+      run: |
+        
+        Install-Module az.resources -force
+        Install-Module az.storage -force
+
+    # Azure login for powershell
+    - name: Azure login
+      shell: pwsh
+      run: |
+        $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
+        $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
+        $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
+        $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
+        Add-azAccount -Credential $psCred -TenantId $azureTenantId -ServicePrincipal
+
+
+    # Enable auditlog for prod subsciption
+    - name: Enable auditlog for prod subsciption
+      shell: pwsh
+      run: |
+
+        Set-AzContext -SubscriptionId "${{ env.prodSubscriptionId }}"
+        
+        $subscription = (Get-AzContext)
+        if ($subscription.Subscription.Id -eq "${{ env.prodSubscriptionId }}") {
+          Write-Output "Using subscription $($subscription.subscription.Name)"
+          exit 0
+          
+        }
+        else {
+          Write-Output "Subscription does not match. Terminating script"
+          exit 1
+        }
+
+
+    # Create storage account and SQL logs
+    - name: Storage Account for SQL logs
+      shell: pwsh
+      run: |
+
+
+    # Azure logout 
+    - name: logout
+      shell: pwsh
+      run: |
+        Logout-azAccount
