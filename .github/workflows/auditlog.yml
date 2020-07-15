@@ -1,4 +1,4 @@
-name: LogStorageAccounts
+name: AuditLogs
 
 on:
   push:
@@ -93,7 +93,7 @@ jobs:
         New-AzDeployment -Name "auditlog-${{ env.timestamp }}" -Location "norwayeast" `
           -TemplateFile $templateFile `
           -settingName auditlogradix `
-          -storageAccountId = $storageAccount
+          -storageAccountId = "$storageAccount"
 
     # Azure logout 
     - name: logout
