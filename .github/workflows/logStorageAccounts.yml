@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - RA-1256auditLog
   pull_request:
     branches:
       - master
@@ -122,7 +123,7 @@ jobs:
           -storageAccountName $storeAccountName `
           -accountType Standard_LRS `
           -kind StorageV2 `
-          -accessTier hot
+          -accessTier cold
 
           # Set soft delete protection on Storage Account
           $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
@@ -240,7 +241,7 @@ jobs:
           -storageAccountName $storeAccountName `
           -accountType Standard_LRS `
           -kind StorageV2 `
-          -accessTier hot
+          -accessTier cold
 
           # Set soft delete protection on Storage Account
           $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
