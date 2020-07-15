@@ -86,14 +86,14 @@ jobs:
       run: |
 
         # Set variables
-        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/auditLog.json"
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/auditlog.json"
         $storageAccount = "${{ env.devStorageAccountId }}"
 
         # Deploy the ARM template
         New-AzDeployment -Name "auditlog-${{ env.timestamp }}" -Location "norwayeast" `
           -TemplateFile $templateFile `
-          -settingName auditlogradix `
-          -storageAccountId = "$storageAccount"
+          -settingName ${{ env.settingName }} `
+          -storageAccountId "$storageAccount"
 
     # Azure logout 
     - name: logout
