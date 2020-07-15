@@ -86,7 +86,7 @@ jobs:
       run: |
 
         # Set variables
-        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/auditlog.json"
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/auditlogs.json"
         $storageAccount = "${{ env.devStorageAccountId }}"
 
         # Deploy the ARM template
