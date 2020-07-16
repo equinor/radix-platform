@@ -103,7 +103,7 @@ stages:
         workingDirectory: '/home/vsts/work/1/s/scripts'
         scriptType: 'bash'
         scriptLocation: 'scriptPath'
-        scriptPath: './migrate.sh'
+        scriptPath: 'migrate.sh'
       env:
         SOURCE_CLUSTER: ${{ parameters.source_cluster }}
         DEST_CLUSTER: ${{ parameters.destination_cluster }}
