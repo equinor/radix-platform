@@ -32,7 +32,7 @@ metadata:
 spec:
 ```
 
-`name` needs to match the name given in when registering an application.
+`name` needs to match the name given in when registering an application. Only lowercase characters are allowed. If the name supplied in the configuration contains uppercase characters, a warning will be logged and the name will be automatically converted to lowercase.
 
 ## `build`
 
