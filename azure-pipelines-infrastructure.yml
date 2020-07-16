@@ -100,7 +100,7 @@ stages:
       displayName: 'AzureCLI - Migrate Cluster'
       inputs:
         azureSubscription: '$(azureSubscription)'
-        workingDirectory: '/home/vsts/work/1/s/scripts/'
+        workingDirectory: './scripts/'
         scriptType: 'bash'
         scriptLocation: 'scriptPath'
         scriptPath: 'migrate.sh'
