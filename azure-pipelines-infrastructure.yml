@@ -74,27 +74,6 @@ stages:
           hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
           hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
           hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: '$(azureSubscription)'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        addSpnToEnvironment: true
-        arguments: '$CLUSTER_NAME ${{parameters.destination_cluster}} $user_prompt ${{parameters.user_prompt}}'
-        inlineScript: |
-          ls /home/vsts/work/1/s
-          echo break----------
-          cd /home/vsts/work/1/s/scripts
-          echo break----------
-          ls
-          echo break----------
-      env:
-        SOURCE_CLUSTER: ${{ parameters.source_cluster }}
-        DEST_CLUSTER: ${{ parameters.destination_cluster }}
-        USER_PROMPT: ${{ parameters.user_prompt }}
-        MOVE_INGRESSES: ${{ parameters.move_ingresses }}
-        PIPELINE_RUN: ${{ parameters.pipeline_run }}
-        SPOID: $(SPOID)
 
     - task: AzureCLI@2
       displayName: 'AzureCLI - Migrate Cluster'
