@@ -42,7 +42,7 @@ pool:
 stages:
 - stage: Deploy
   jobs:
-  - job: InstallAndCheckPrerequisites
+  - job: DeployNewCluster
     steps:
     - task: KubectlInstaller@0
       inputs:
