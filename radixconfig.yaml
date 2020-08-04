@@ -4,9 +4,6 @@ metadata:
   name: radix-platform
 spec:
   environments:
-    - name: ra1160
-      build:
-        from: RA-1160
     - name: prod
       build:
         from: master
