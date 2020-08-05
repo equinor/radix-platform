@@ -33,6 +33,24 @@ parameters:
   - true
   - false
 
+- name: enable_cluster_logs
+  displayName: Enable cluster logs
+  type: string
+  default: false
+  values:
+  - true
+  - false
+
+- name: radix_container_logs
+  displayName: Radix container logs
+  type: string
+  default: Don't connect
+  values:
+  - radix-container-logs-dev
+  - radix-container-logs-playground
+  - radix-container-logs-prod
+  - Don't connect
+
 trigger:
 - master
 
