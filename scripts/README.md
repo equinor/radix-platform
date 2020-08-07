@@ -75,6 +75,7 @@ The base components include `radix-operator`, and for this component to be succe
 * `radix-pipeline` (from `master` and `release` branches in `radix-operator` project)
 * `radix-image-builder` (from `master` and `release` branches in `radix-operator` project)
 * `gitclone` (from `master` branch in `radix-api` project)
+* `gitclone` (from `master` branch in `radix-cost-allocation-api` project)
 
 #### Step 4 Deploy Radix applications
 
@@ -89,6 +90,7 @@ Scripted, see file header in [deploy_radix_apps.sh](./deploy_radix_apps.sh) for 
 This script requires several secret files that contain `RadixRegistration` object configurations to be available in the `keyvault` of the corresponding subscription (ex: `radix-vault-dev`), as follows.
 
 * `radix-api-radixregistration-values`
+* `radix-cost-allocation-api-radixregistration-values`
 * `radix-canary-radixregistration-values`
 * `radix-github-webhook-radixregistration-values`
 * `radix-public-site-values`
