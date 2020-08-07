@@ -99,6 +99,26 @@ if [[ -z "$VNET_DNS_LINK" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
 
+if [[ -z "$RADIX_CONTAINER_LOGS" ]]; then
+    RADIX_CONTAINER_LOGS="false"
+fi
+
+if [[ $USER_PROMPT == true ]]; then
+    ENV_REPLY=""
+    while [[ ! $ENV_REPLY =~ ^(dev|playground|prod|other)$ ]]; do 
+        read -p "Which LIVE environment are you deploying? (dev/playground/prod/other) " -r ENV_REPLY
+        if [[ "$ENV_REPLY" == "dev" ]]; then
+            RADIX_CONTAINER_LOGS="radix-container-logs-dev"
+        elif [[ "$ENV_REPLY" == "playground" ]]; then
+            RADIX_CONTAINER_LOGS="radix-container-logs-playground"
+        elif [[ "$ENV_REPLY" == "prod" ]]; then
+            RADIX_CONTAINER_LOGS="radix-container-logs-prod"
+        elif [[ "$ENV_REPLY" == "other" ]]; then
+            RADIX_CONTAINER_LOGS="false"
+        fi
+    done
+    echo ""
+fi
 
 #######################################################################################
 ### support functions
@@ -166,6 +186,7 @@ echo -e "   -  KUBERNETES_VERSION               : $KUBERNETES_VERSION"
 echo -e "   -  NODE_COUNT                       : $NODE_COUNT"
 echo -e "   -  NODE_DISK_SIZE                   : $NODE_DISK_SIZE"
 echo -e "   -  NODE_VM_SIZE                     : $NODE_VM_SIZE"
+echo -e "   -  RADIX_CONTAINER_LOGS             : $RADIX_CONTAINER_LOGS"
 echo -e ""
 echo -e "   -  VNET_NAME                        : $VNET_NAME"
 echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
@@ -215,6 +236,9 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
+    if [[ "$RADIX_CONTAINER_LOGS" != "false" ]]; then
+        RADIX_CONTAINER_LOGS_WORKSPACE_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $RADIX_CONTAINER_LOGS | jq -r .value)"
+    fi
 else
     # Credentials are provided from input.
     # Source the file to make the key/value pairs readable as script vars
@@ -287,6 +311,11 @@ echo "Bootstrap of advanced network done."
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
+if [[ $RADIX_CONTAINER_LOGS =~ (radix-container-logs-dev|radix-container-logs-playground|radix-container-logs-prod)$ ]]; then
+    AZ_AKS_CREATE_OPTION_WORKSPACE_RESOURCE_ID="--enable-addons monitoring --workspace-resource-id \"$RADIX_CONTAINER_LOGS_WORKSPACE_ID\""
+else AZ_AKS_CREATE_OPTION_WORKSPACE_RESOURCE_ID="";
+fi
+
 az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
     --no-ssh-key \
     --kubernetes-version "$KUBERNETES_VERSION" \
@@ -306,7 +335,7 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
     --aad-client-app-id "$AAD_CLIENT_APP_ID" \
     --aad-tenant-id "$AAD_TENANT_ID" \
-    --location "$AZ_RADIX_ZONE_LOCATION" \
+    --location "$AZ_RADIX_ZONE_LOCATION" $AZ_AKS_CREATE_OPTION_WORKSPACE_RESOURCE_ID \
     2>&1 >/dev/null
 
 echo "Done."

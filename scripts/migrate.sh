@@ -89,6 +89,10 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+if [[ -z "$RADIX_CONTAINER_LOGS" ]]; then
+    RADIX_CONTAINER_LOGS=false
+fi
+
 # Script vars
 
 if [[ -z "$BACKUP_NAME" ]]; then
@@ -205,7 +209,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 
     echo ""
     echo "Creating destination cluster..."
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_AKS_SCRIPT")
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" RADIX_CONTAINER_LOGS="$RADIX_CONTAINER_LOGS" source "$BOOTSTRAP_AKS_SCRIPT")
     wait # wait for subshell to finish
     printf "Done creating cluster."
 
