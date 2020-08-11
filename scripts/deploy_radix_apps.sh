@@ -249,7 +249,7 @@ rm radix-cost-allocation-api-radixregistration-values.yaml
 # Wait a few seconds until radix-operator can process the RadixRegistration
 wait_for_app_namespace "radix-cost-allocation-api"
 
-helm upgrade --install radix-pipeline-api-master \
+helm upgrade --install radix-cost-allocation-api-master \
     ../charts/radix-pipeline-invocation \
     --version 1.0.12 \
     --set name="radix-cost-allocation-api" \
@@ -262,7 +262,7 @@ helm upgrade --install radix-pipeline-api-master \
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
 sleep 4s
 
-helm upgrade --install radix-pipeline-api-release \
+helm upgrade --install radix-cost-allocation-api-release \
     ../charts/radix-pipeline-invocation \
     --version 1.0.12 \
     --set name="radix-cost-allocation-api" \
