@@ -234,6 +234,64 @@ helm upgrade --install radix-pipeline-api-release \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
+# Radix Cost Allocation API
+az keyvault secret download \
+    -f radix-cost-allocation-api-radixregistration-values.yaml \
+    -n radix-cost-allocation-api-radixregistration-values \
+    --vault-name "$AZ_RESOURCE_KEYVAULT"
+
+helm upgrade --install radix-cost-allocation-api \
+    -f radix-cost-allocation-api-radixregistration-values.yaml \
+    ../charts/radix-registration
+
+rm radix-cost-allocation-api-radixregistration-values.yaml
+
+# Wait a few seconds until radix-operator can process the RadixRegistration
+wait_for_app_namespace "radix-cost-allocation-api"
+
+helm upgrade --install radix-cost-allocation-api-master \
+    ../charts/radix-pipeline-invocation \
+    --version 1.0.12 \
+    --set name="radix-cost-allocation-api" \
+    --set cloneURL="git@github.com:equinor/radix-cost-allocation-api.git" \
+    --set cloneBranch="master" \
+    --set pipelineImageTag="release-latest" \
+    --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
+
+# Wait a few seconds so that there is no conflicts between jobs. I.e trying to create the RA object at the same time
+sleep 4s
+
+helm upgrade --install radix-cost-allocation-api-release \
+    ../charts/radix-pipeline-invocation \
+    --version 1.0.12 \
+    --set name="radix-cost-allocation-api" \
+    --set cloneURL="git@github.com:equinor/radix-cost-allocation-api.git" \
+    --set cloneBranch="release" \
+    --set pipelineImageTag="release-latest" \
+    --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
+
+echo "SQL_SERVER=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.server')
+SQL_DATABASE=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.database')
+SQL_USER=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.user')
+SQL_PASSWORD=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.password')
+SUBSCRIPTION_COST_VALUE=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.value')
+SUBSCRIPTION_COST_CURRENCY=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.currency')
+" > radix-cost-allocation-api-secrets.yaml
+
+kubectl create secret generic cost-secret --namespace radix-cost-allocation-api-prod \
+    --from-env-file=./radix-cost-allocation-api-secrets.yaml \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+
+kubectl create secret generic cost-secret --namespace radix-cost-allocation-api-qa \
+    --from-env-file=./radix-cost-allocation-api-secrets.yaml \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+
+rm radix-web-console-client-secret.yaml
+
 # Radix Canary app
 az keyvault secret download \
     -f radix-canary-radixregistration-values.yaml \
@@ -373,7 +431,14 @@ while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
 done
 
 echo ""
-echo "Radix API ingress is ready, restarting web console... "
+echo "Waiting for radix-cost-allocation-api ingress to be ready so that the web console can work properly..."
+while [[ "$(kubectl get ing server -n radix-cost-allocation-api-prod 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+
+echo ""
+echo "Radix API-s ingress is ready, restarting web console... "
 kubectl delete pods $(kubectl get pods -n "$WEB_CONSOLE_NAMESPACE" -o custom-columns=':metadata.name' --no-headers | grep web) -n "$WEB_CONSOLE_NAMESPACE"
 
 echo ""
