@@ -241,7 +241,7 @@ az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT"
 
 helm upgrade --install radix-cost-allocation-api \
-    -f radix-acost-allocation-pi-radixregistration-values.yaml \
+    -f radix-cost-allocation-api-radixregistration-values.yaml \
     ../charts/radix-registration
 
 rm radix-cost-allocation-api-radixregistration-values.yaml
@@ -259,7 +259,7 @@ helm upgrade --install radix-cost-allocation-api-master \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
-# Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
+# Wait a few seconds so that there is no conflicts between jobs. I.e trying to create the RA object at the same time
 sleep 4s
 
 helm upgrade --install radix-cost-allocation-api-release \
@@ -271,6 +271,26 @@ helm upgrade --install radix-cost-allocation-api-release \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
+
+echo "SQL_SERVER=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.server')
+SQL_DATABASE=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.database')
+SQL_USER=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.user')
+SQL_PASSWORD=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.password')
+SUBSCRIPTION_COST_VALUE=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.value')
+SUBSCRIPTION_COST_CURRENCY=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.currency')
+" > radix-cost-allocation-api-secrets.yaml
+
+kubectl create secret generic cost-secret --namespace radix-cost-allocation-api-prod \
+    --from-env-file=./radix-cost-allocation-api-secrets.yaml \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+
+kubectl create secret generic cost-secret --namespace radix-cost-allocation-api-qa \
+    --from-env-file=./radix-cost-allocation-api-secrets.yaml \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+
+rm radix-web-console-client-secret.yaml
 
 # Radix Canary app
 az keyvault secret download \
