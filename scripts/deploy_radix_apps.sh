@@ -290,7 +290,7 @@ kubectl create secret generic cost-secret --namespace radix-cost-allocation-api-
     --dry-run=client -o yaml |
     kubectl apply -f -
 
-rm radix-web-console-client-secret.yaml
+rm radix-cost-allocation-api-secrets.yaml
 
 # Radix Canary app
 az keyvault secret download \
