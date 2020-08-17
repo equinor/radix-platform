@@ -74,4 +74,11 @@ Ensuring that `400MB` is always allocated to `radix-api`.
 
 # Autoscaling
 
+For modern application development in Kubernetes and in Radix it is preferred to create applications that [scales horizontally rather than vertically](https://www.missioncloud.com/blog/horizontal-vs-vertical-scaling-which-is-right-for-your-app). In horizontal scaling, when there is need for more compute an extra container (pod) is added, but memory and CPU stays fixed. 
+
+![horizontal-pod-autoscaling](horizontal-pod-autoscaling.png)
+
+For Radix this can easily be done through horizontal pod autoscaling in the [radixconfig.yaml](https://www.radix.equinor.com/docs/reference-radix-config/#horizontalscaling). It will scale based on CPU load over time for replicas of a component (higher than 80%). More information can be found at [kubernetes docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+
+
 # Cost
