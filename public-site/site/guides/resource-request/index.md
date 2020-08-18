@@ -7,11 +7,17 @@ toc: true
 
 `resources` is used to ensure that each container is allocated enough resources to run as it should. `limits` describes the maximum amount of compute resources allowed. `requests` describes the minimum amount of compute resources requires.
 
+Radix is built on top of managed Kubernetes in Azure (AKS). Kubernetes is a container orchestration platform - orchestrating containers over a set of nodes (VMs). E.g. cluster consisting of 3 nodes, hosting a set of containers:
+
+![cluster](cluster.png)
+
+
 # Why should resources request and limit be set
 
 Settings resources request and limit is important because of several reasons:
 
 - Kubernetes scheduler use the `resources.requests` to decide which node to run a container. It guarantees that each container is allocated `resources.requests`. Without these values, a container is not guaranteed any resources, and will be the first to get stopped if a node is overcommited. 
+- If a node starts hitting CPU limits, it will priority CPU to containers based on `resource.requests.cpu`
 - Radix use `resources.requests` to distribute infrastructure cost between teams. 
 - Radix use `resources.requests` to scale clusters. 
 - Horizontal pod autoscaling uses `resources.requests.cpu` as a target for when to scale out to more containers. If a container over time run above 80% of `resources.requests.cpu` it will scale out.
@@ -31,17 +37,19 @@ CPU and memory are typically impacted by load on an application. If the applicat
 
 Monitoring memory and CPU over time is important, as it can change based on a numerous factors (e.g. new runtime environment, changes to code, increased load, etc). The `resources` set can therefore change during it lifecycle.
 
-Select a single environment and time interval, that represent normal usage for that application. For the `radix-api` examples, production environment and a period of 7 working days has been selected.
+Select a single environment and time interval, that represent normal usage for that application. Further examples are based on `radix-api`, where production environment and a period of 7 working days has been selected.
 
 ## CPU
+
+CPU is a compressible resource, meaning that if a container hits CPU limit, Kubernetes starts throttling. For most application throttling means it will be slower, but it will still be able to server requests. 
+
+If an underlying node hits CPU limit, it will start throttling containers. Distribution/priority of CPU for containers running on the node will be based on `resources.requests.cpu`.
 
 By clicking a graph, "Container CPU usage", a more detailed view appears. 
 
 ![container-cpu](container-cpu.png)
 
 The graph shows how many replicas are running in production and how the CPU usage has been the last 7 days for each replica. Tests are run continuously towards `radix-api`, so there will always be a base CPU usage. This does not need to be the case with other api. 
-
-REWRITE!! CPU is a xxxx resource, meaning that if there are load taking up all CPU it will start throttling applications. It is therefore not crucial to set request CPU for the peeks, but rather have something that will manage for the average load (in business hours). Limit can cope with for the peeks. 
 
 For `radix-api` normal load gives between 100-200ms of CPU time, peaking at around 400ms. Given us the following setup:
 
@@ -50,7 +58,9 @@ resources.requests.cpu: 200ms
 resources.limits.cpu: 500ms
 ```
 
-Because of a [limit](https://www.youtube.com/watch?v=eBChCFD9hfs) in how kubernetes / linux and docker throttling is done, it is recommended to set `resources.requests.limits` to a multitude of `1000ms`. Setup for `radix-api` would then be:
+This will allocate `200ms` CPU to each replica.  
+
+Because of a [limit](https://www.youtube.com/watch?v=eBChCFD9hfs) in how kubernetes / linux and docker throttling is done, it is recommended to keep `resources.requests.limits` empty or set it to a multitude of `1000ms`. Setup for `radix-api` would then be:
 
 ```
 resources.requests.cpu: 200ms
@@ -59,18 +69,18 @@ resources.limits.cpu: 1000ms
 
 ## Memory
 
-Next go back to the `Default dashboard` and select graph `Container memory usage`. 
+Go back to the `Default dashboard` and select graph `Container memory usage`. 
 
 ![container-memory](container-memory.png)
 
-Memory is a xxx resource. Meaning that if a container requires more memory to run than is available on node, it will be killed. Therefore the `resources.requests.memory` is set to the same as `resources.limits.memory`. The value should be set to above max memory in period of different load (not opening up for memory leakage)
+Memory is a non-compressible resource. Meaning that if a container requires more memory to run than is available, it will be killed. Therefore to guarantee that a container gets enough memory, `resources.requests.memory` is set to the same as `resources.limits.memory`.
 
-For `radix-api` max memory is around 300MB+, setup will therefore be set to:
+The value should be set to above max memory in period of different load (not opening up for memory leakage) For `radix-api` max memory is around 300MB+, setup will therefore be set to:
 ```
 resources.requests.memory: 400MB
 resources.limits.memory: 400MB
 ```
-Ensuring that `400MB` is always allocated to `radix-api`.
+Ensuring that `400MB` is always allocated to each replica of `radix-api`.
 
 # Autoscaling
 
@@ -79,6 +89,3 @@ For modern application development in Kubernetes and in Radix it is preferred to
 ![horizontal-pod-autoscaling](horizontal-pod-autoscaling.png)
 
 For Radix this can easily be done through horizontal pod autoscaling in the [radixconfig.yaml](https://www.radix.equinor.com/docs/reference-radix-config/#horizontalscaling). It will scale based on CPU load over time for replicas of a component (higher than 80%). More information can be found at [kubernetes docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
-
-
-# Cost
