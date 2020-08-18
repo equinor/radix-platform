@@ -60,7 +60,7 @@ resources.limits.cpu: 500ms
 
 This will allocate `200ms` CPU to each replica.  
 
-Because of a [limit](https://www.youtube.com/watch?v=eBChCFD9hfs) in how kubernetes / linux and docker throttling is done, it is recommended to keep `resources.requests.limits` empty or set it to a multitude of `1000ms`. Setup for `radix-api` would then be:
+Because of a limit ([1](https://www.youtube.com/watch?v=eBChCFD9hfs), [2](https://engineering.indeedblog.com/blog/2019/12/unthrottled-fixing-cpu-limits-in-the-cloud/)) in kubernetes and cgroups on how throttling is done, it is recommended to keep `resources.requests.limits` empty or set it to a multitude of `1000ms`. Setup for `radix-api` could then be:
 
 ```
 resources.requests.cpu: 200ms
