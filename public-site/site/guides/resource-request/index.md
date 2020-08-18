@@ -82,6 +82,8 @@ resources.limits.memory: 400MB
 ```
 Ensuring that `400MB` is always allocated to each replica of `radix-api`.
 
+More information can be found on google - e.g. ["Kubernetes best practices: Resource requests and limits"](https://cloud.google.com/blog/products/gcp/kubernetes-best-practices-resource-requests-and-limits)
+
 # Autoscaling
 
 For modern application development in Kubernetes and in Radix it is preferred to create applications that [scales horizontally rather than vertically](https://www.missioncloud.com/blog/horizontal-vs-vertical-scaling-which-is-right-for-your-app). In horizontal scaling, when there is need for more compute an extra container (pod) is added, but memory and CPU stays fixed. 
