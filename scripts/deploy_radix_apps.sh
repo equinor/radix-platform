@@ -58,6 +58,18 @@ function wait_for_app_namespace() {
     done
 }
 
+function wait_for_app_namespace_component_secret() {
+    local namespace
+    local component
+    namespace="${1}"
+    component="${2}"
+    echo "Waiting for app $namespace $component secret..."
+    while [[ $(kubectl get secrets -n "$namespace" | grep "$component"-) == "" ]]; do
+        printf "."
+        sleep 2s
+    done
+}
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
@@ -272,26 +284,6 @@ helm upgrade --install radix-cost-allocation-api-release \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
-echo "SQL_SERVER=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.server')
-SQL_DATABASE=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.database')
-SQL_USER=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.user')
-SQL_PASSWORD=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.password')
-SUBSCRIPTION_COST_VALUE=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.value')
-SUBSCRIPTION_COST_CURRENCY=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.currency')
-" > radix-cost-allocation-api-secrets.yaml
-
-kubectl create secret generic cost-secret --namespace radix-cost-allocation-api-prod \
-    --from-env-file=./radix-cost-allocation-api-secrets.yaml \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
-
-kubectl create secret generic cost-secret --namespace radix-cost-allocation-api-qa \
-    --from-env-file=./radix-cost-allocation-api-secrets.yaml \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
-
-rm radix-web-console-client-secret.yaml
-
 # Radix Canary app
 az keyvault secret download \
     -f radix-canary-radixregistration-values.yaml \
@@ -355,7 +347,7 @@ helm upgrade --install radix-pipeline-web-console-master \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
-# Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
+# Wait a few seconds so that there is no conflicts between jobs. I.e trying to create the RA object at the same time
 sleep 4s
 
 helm upgrade --install radix-pipeline-web-console-release \
@@ -431,11 +423,18 @@ while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
 done
 
 echo ""
-echo "Waiting for radix-cost-allocation-api ingress to be ready so that the web console can work properly..."
+echo "Waiting for radix-cost-allocation-api ingress to be ready so that the API can work properly..."
 while [[ "$(kubectl get ing server -n radix-cost-allocation-api-prod 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
+
+echo ""
+echo "For the cost allocation api to work we need to apply secrets"
+wait_for_app_namespace_component_secret "radix-cost-allocation-api-qa" "server"
+wait_for_app_namespace_component_secret "radix-cost-allocation-api-prod" "server"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" ./update_secret_for_cost_allocation_api.sh)
+wait # wait for subshell to finish
 
 echo ""
 echo "Radix API-s ingress is ready, restarting web console... "
