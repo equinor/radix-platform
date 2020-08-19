@@ -423,7 +423,7 @@ while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
 done
 
 echo ""
-echo "Waiting for radix-cost-allocation-api ingress to be ready so that the api can work properly..."
+echo "Waiting for radix-cost-allocation-api ingress to be ready so that the API can work properly..."
 while [[ "$(kubectl get ing server -n radix-cost-allocation-api-prod 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # PURPOSE
-# Configures the secrets for radix cost allocation api on the cluster given the context.
+# Configures the secrets for radix cost allocation API on the cluster given the context.
 
 # Example 1:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env ./update_secret_for_cost_allocation_api.sh
@@ -14,7 +14,7 @@
 #   RADIX_ZONE_ENV          (Mandatory)
 
 echo ""
-echo "Updating auth-proxy secret for the radix web console"
+echo "Updating secret for the radix cost allocation API"
 
 # Validate mandatory input
 
