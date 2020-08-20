@@ -17,13 +17,13 @@ Radix is built on top of managed Kubernetes in Azure (AKS). Kubernetes is a cont
 Settings resources request and limit is important because of several reasons:
 
 - Kubernetes scheduler use the `resources.requests` to decide which node to run a container. It guarantees that each container is allocated `resources.requests`. Without these values, a container is not guaranteed any resources, and will be the first to get stopped if a node is overcommited. 
-- If a node starts hitting CPU limits, it will priority CPU to containers based on `resource.requests.cpu`
+- If a node starts hitting CPU limits, it will prioritize CPU to containers based on `resource.requests.cpu`
 - Radix use `resources.requests` to distribute infrastructure cost between teams. 
 - Radix use `resources.requests` to scale clusters. 
-- Horizontal pod autoscaling uses `resources.requests.cpu` as a target for when to scale out to more containers. If a container over time run above 80% of `resources.requests.cpu` it will scale out.
+- Horizontal pod autoscaling uses `resources.requests.cpu` as a target for when to scale out to more containers. If a container over time runs above 80% of `resources.requests.cpu` it will scale out.
 - `resources.limits.memory` will ensure that the container is stopped if there is any memory leakage
 
-If `resources.requests` and `resources.limit` are not provided, Radix will give a container default [values](https://github.com/equinor/radix-operator/blob/master/charts/radix-operator/values.yaml#L24). This will be used for scheduling and cost. In many cases the default `resources` will not fit an application, so adjusted values has to be found.
+If `resources.requests` and `resources.limits` are not provided, Radix will give a container default [values](https://github.com/equinor/radix-operator/blob/master/charts/radix-operator/values.yaml#L24). This will be used for scheduling and cost. In many cases the default `resources` will not fit an application, so adjusted values has to be found.
 
 # How to find resource requests and limits
 
@@ -35,13 +35,13 @@ The default dashboard contains a number of graphs, monitoring different part of 
 
 CPU and memory are typically impacted by load on an application. If the application is in production, there will already be data that can be used for deciding `resources`. If not, next step involves either running an automated or manual simulation of production environment. It does not need to be very advanced, but it should be possible to see how it behaves under different load. 
 
-Monitoring memory and CPU over time is important, as it can change based on a numerous factors (e.g. new runtime environment, changes to code, increased load, etc). The `resources` set can therefore change during it lifecycle.
+Monitoring memory and CPU over time is important, as it can change based on a numerous factors (e.g. new runtime environment, changes to code, increased load, etc). The `resources` set can therefore change during its lifecycle.
 
 Select a single environment and time interval, that represent normal usage for that application. Further examples are based on `radix-api`, where production environment and a period of 7 working days has been selected.
 
 ## CPU
 
-CPU is a compressible resource, meaning that if a container hits CPU limit, Kubernetes starts throttling. For most application throttling means it will be slower, but it will still be able to server requests. 
+CPU is a compressible resource, meaning that if a container hits CPU limit, Kubernetes starts throttling. For most application throttling means it will be slower, but it will still be able to serve requests. 
 
 If an underlying node hits CPU limit, it will start throttling containers. Distribution/priority of CPU for containers running on the node will be based on `resources.requests.cpu`.
 
@@ -49,7 +49,7 @@ By clicking a graph, "Container CPU usage", a more detailed view appears.
 
 ![container-cpu](container-cpu.png)
 
-The graph shows how many replicas are running in production and how the CPU usage has been the last 7 days for each replica. Tests are run continuously towards `radix-api`, so there will always be a base CPU usage. This does not need to be the case with other api. 
+The graph shows how many replicas are running in production and how the CPU usage has been the last 7 days for each replica. Tests are run continuously towards `radix-api`, so there will always be a base CPU usage. This does not need to be the case with other API. 
 
 For `radix-api` normal load gives between 100-200ms of CPU time, peaking at around 400ms. Given us the following setup:
 
