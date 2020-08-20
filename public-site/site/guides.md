@@ -40,6 +40,10 @@ Another functionality available is the ability to [restart, stop and start a com
 
 Teams that have a need for more advanced CI feature can use other CI tools and [deploy into Radix](guides/deploy-only). This feature is in progress, utilised by only a few teams. If you have any input or would like to be involved in testing this feature, please contact us for a walkthrough. 
 
+## Resource allocation - cost
+
+To ensure that an application is allocated enough resources to run as it should, it is important to set resource requirements for containers. This resource allocation is also used to distribute cost to an application. An app without resource requirements specified will be allocated default [values](https://github.com/equinor/radix-operator/blob/master/charts/radix-operator/values.yaml#L24). A guide on how to find resource requests and limits for an app can be found [here](guides/resource-request)
+
 # Authentication
 
 There is no checkbox that automatically provide authentication for your application in Radix. However there is still several way to introduce it to new and existing applications, without to much work. The [Authentication](guides/authentication/) guide goes through the basic to get authentication going for a Client and API. 
