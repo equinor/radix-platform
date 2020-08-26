@@ -188,7 +188,7 @@ printf "...Done.\n"
 ###
 
 echo ""
-(./priority-classes/bootstrap.sh)
+kubectl apply -f ./priority-classes/radixComponentPriorityClass.yaml
 wait
 
 #######################################################################################
