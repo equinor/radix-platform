@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - RA-1592-sqlLogStorageAccount
     paths:
       - '.github/workflows/logStorageAccounts.yml'
   pull_request:
