@@ -184,6 +184,14 @@ fi
 printf "...Done.\n"
 
 #######################################################################################
+### Add priority classes
+###
+
+echo ""
+kubectl apply -f ./priority-classes/radixComponentPriorityClass.yaml
+wait
+
+#######################################################################################
 ### Read secrets from keyvault
 ###
 
