@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - master
+    paths:
+      - '.github/workflows/logStorageAccounts.yml'
   pull_request:
     branches:
       - master
+    paths:
+      - '.github/workflows/logStorageAccounts.yml'
 
 env:
   # Prod
