@@ -4,12 +4,12 @@
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    interval: 10s
+    interval: 15s
     port: http-metrics
     scheme: http
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     honorLabels: true
-    interval: 10s
+    interval: 15s
     path: /metrics/cadvisor
     port: http-metrics
     scheme: http
