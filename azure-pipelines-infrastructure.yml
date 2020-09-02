@@ -60,7 +60,7 @@ stages:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
         scriptLocation: 'scriptPath'
-        workingDirectory: '/home/vsts/work/1/s/scripts/'
+        workingDirectory: 'scripts/'
         scriptPath: 'migrate.sh'
       env:
         SOURCE_CLUSTER: ${{ parameters.source_cluster }}
