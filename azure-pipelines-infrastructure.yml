@@ -60,9 +60,13 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-              ls
-              cd scripts
-              ls
+          echo --------------1----------------
+          ls
+          echo --------------2----------------
+          cd scripts
+          echo --------------3----------------
+          ls
+          echo --------------4----------------
       env:
         SOURCE_CLUSTER: ${{ parameters.source_cluster }}
         DEST_CLUSTER: ${{ parameters.destination_cluster }}
