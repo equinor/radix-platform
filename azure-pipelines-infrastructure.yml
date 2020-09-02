@@ -91,7 +91,7 @@ stages:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
         scriptLocation: 'scriptPath'
-        workingDirectory: 'scripts/'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/scripts/'
         scriptPath: './migrate.sh'
       env:
         SOURCE_CLUSTER: ${{ parameters.source_cluster }}
