@@ -205,10 +205,6 @@ fi
 ### Install Helm and related rbac
 ###
 
-####### REMOVE ########
-ls
-#######################
-
 (USER_PROMPT="false" ./helm/bootstrap.sh)
 wait
 
