@@ -54,14 +54,44 @@ stages:
   jobs:
   - job: DeployNewCluster
     steps:
+    - task: KubectlInstaller@0
+      inputs:
+        kubectlVersion: 'latest'
+    - task: HelmInstaller@1
+      inputs:
+        helmVersionToInstall: 'latest'
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: '0.12.26'
+    - task: Bash@3
+      displayName: 'Install prerequisites'
+      inputs:
+        targetType: 'inline'
+        script: |
+          sudo apt install apache2-utils
+          wget https://github.com/heptio/velero/releases/download/v1.0.0/velero-v1.0.0-linux-amd64.tar.gz
+          tar zxvf velero-v1.0.0-linux-amd64.tar.gz
+          sudo mv velero-v1.0.0-linux-amd64/velero /usr/bin/
+          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
+    - task: Bash@3
+      displayName: 'Check prerequisites'
+      inputs:
+        targetType: 'inline'
+        script: |
+          hash kubectl 2>/dev/null || { echo >&2 "I require kubectl but it's not installed. Aborting."; exit 1; }
+          hash az 2>/dev/null || { echo >&2 "I require az but it's not installed. Aborting."; exit 1; }
+          hash helm 2>/dev/null || { echo >&2 "I require helm but it's not installed. Aborting."; exit 1; }
+          hash velero 2>/dev/null || { echo >&2 "I require velero but it's not installed. Aborting."; exit 1; }
+          hash python 2>/dev/null || { echo >&2 "I require python but it's not installed. Aborting."; exit 1; }
+          hash htpasswd 2>/dev/null || { echo >&2 "I require htpasswd but it's not installed. Aborting."; exit 1; }
+
     - task: AzureCLI@2
       displayName: 'AzureCLI - Migrate Cluster'
       inputs:
         azureSubscription: '$(azureSubscription)'
         scriptType: 'bash'
         scriptLocation: 'scriptPath'
-        workingDirectory: 'scripts/'
-        scriptPath: 'migrate.sh'
+        scriptPath: 'scripts/migrate.sh'
       env:
         SOURCE_CLUSTER: ${{ parameters.source_cluster }}
         DEST_CLUSTER: ${{ parameters.destination_cluster }}
