@@ -59,7 +59,7 @@ stages:
         kubectlVersion: 'latest'
     - task: HelmInstaller@1
       inputs:
-        helmVersionToInstall: 'latest'
+        helmVersionToInstall: '2.16.10'
     - task: TerraformInstaller@0
       inputs:
         terraformVersion: '0.12.26'
