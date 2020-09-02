@@ -56,20 +56,21 @@ For `radix-api` normal load gives between 100-200ms of CPU time, peaking at arou
 ``` yaml
 resources:
     requests:
-        cpu: "50m"
+        cpu: "200m"
     limits:
-        cpu: "100m"
-resources.requests.cpu: 200ms
-resources.limits.cpu: 500ms
+        cpu: "500m"
 ```
 
 This will allocate `200ms` CPU to each container.  
 
 Because of a limit ([1](https://www.youtube.com/watch?v=eBChCFD9hfs), [2](https://engineering.indeedblog.com/blog/2019/12/unthrottled-fixing-cpu-limits-in-the-cloud/)) in kubernetes and cgroups on how throttling is done, it is recommended to keep `resources.requests.limits` empty or set it to a multitude of `1000ms`. Setup for `radix-api` could then be:
 
-```
-resources.requests.cpu: 200ms
-resources.limits.cpu: 1000ms
+``` yaml
+resources:
+    requests:
+        cpu: "200m"
+    limits:
+        cpu: "2000m"
 ```
 
 ## Memory
