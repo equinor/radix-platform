@@ -51,6 +51,14 @@ echo ""
 echo "Start install of base components... "
 
 #######################################################################################
+### Check the working directory for devops
+###
+
+if [[ ! $(basename "$PWD") == 'scripts' ]]; then
+  cd scripts
+fi
+
+#######################################################################################
 ### Check for prerequisites binaries
 ###
 
