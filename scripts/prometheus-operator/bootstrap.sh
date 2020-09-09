@@ -110,7 +110,7 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # #
 # # To generate a new file:
 # # 1) Generate a client secret (app password) in the Azure app registration
-# # 2) Generate a cookie secret using `python -c 'import os,base64; print base64.urlsafe_b64encode(os.urandom(16))'`
+# # 2) Generate a cookie secret using `python3 -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(16)).decode())'`
 # # 3) Run `echo -n '<client-secret-from-step-1>' | base64`
 # # 4) Run `echo -n '<client-secret-from-step-2>' | base64`
 # # 5) Fill this template, save it as e.g. secrets.yaml, and save it to the keyvault in Azure:

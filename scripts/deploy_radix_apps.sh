@@ -74,7 +74,7 @@ function wait_for_app_namespace_component_secret() {
 ### Check for prerequisites binaries
 ###
 
-assert_dep az helm jq sha256sum python
+assert_dep az helm jq sha256sum python3
 
 #######################################################################################
 ### Read inputs and configs
