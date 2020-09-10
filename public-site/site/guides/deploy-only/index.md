@@ -153,8 +153,8 @@ jobs:
         if: github.ref == 'refs/heads/release'
         run: |
           # Install pre-requisite
-          python -m pip install --user ruamel.yaml
-          python hack/modifyTag.py api ${GITHUB_REF##*/} $IMAGE_TAG
+          python3 -m pip install --user ruamel.yaml
+          python3 hack/modifyTag.py api ${GITHUB_REF##*/} $IMAGE_TAG
           git config --global user.name 'ingeknudsen'
           git config --global user.email 'ingeknudsen@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ "{{ secrets.PRIVATE_TOKEN  " }}}}@github.com/${{ "{{ github.repository " }}}}
