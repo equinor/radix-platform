@@ -134,7 +134,7 @@ printf "Done.\n"
 #######################################################################################
 ### Verify task at hand
 ###
-echo "https://grafana.$CLUSTER_NAME.$AZ_RESOURCE_DNS"
+
 echo -e ""
 echo -e "Install base components will use the following configuration:"
 echo -e ""
