@@ -134,7 +134,7 @@ printf "Done.\n"
 #######################################################################################
 ### Verify task at hand
 ###
-
+echo "https://grafana.$CLUSTER_NAME.$AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "Install base components will use the following configuration:"
 echo -e ""
@@ -249,7 +249,7 @@ helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
   --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
   --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
   --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-  --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS"
+  --set env.GF_SERVER_ROOT_URL=https://grafana."$AZ_RESOURCE_DNS"
 
 # Add grafana replyUrl to AAD app
 (AAD_APP_NAME="radix-cluster-aad-server-${RADIX_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
