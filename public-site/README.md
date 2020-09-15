@@ -42,6 +42,24 @@ of the project run `bundle install` to set up dependencies, and then
 environment are on the [Jekyll
 website](https://jekyllrb.com/docs/installation/).
 
+### Update gem version
+
+Run re-built site
+
+    docker-compose up --build
+
+Connect to a shell in the container:
+
+    docker exec -ti radix-public-site_container sh
+
+Change the version of a gem in `Gemfile` (files in the container `site` folder are mapped to current folder `.` in the project)
+Update `Gemfile.lock`
+
+    bundle lock --update
+
+Verify if `Gemfile.lock` has gem version updated
+Verify that site is operating - open/refresh in the browser a link [http//:localhost:4000](http//:localhost:4000)     
+
 ## Folder structure
 
 The site content is organised within `/site/`. In here you find:
