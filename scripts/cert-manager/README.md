@@ -144,5 +144,11 @@ For updating/refreshing the credentials then
 - https://letsdebug.net
 - http://dnsviz.net/
 
+5. Some URLs have a fake certificate
+- Error creating new order :: too many certificates already issued for exact set of domains
+- this error will show in the logs under: k logs --namespace cert-manager cert-manager-X-X
+- https://letsencrypt.org/docs/rate-limits/
+- check number of issued certs here: https://crt.sh/?q=dev.radix.equinor.com
+
 Analysis of previous bugs/errors:
 - [2019-08-13 No certificate for console.dev.radix.equinor.com.](https://github.com/equinor/radix-private/blob/master/docs/radix-platform/cert-manager-failure-2019-08-13-console-dev-radix-equinor-com.md)
