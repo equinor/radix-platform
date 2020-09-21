@@ -1,0 +1,121 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string"
+        },
+        "accountType": {
+            "type": "string"
+        },
+        "kind": {
+            "type": "string"
+        },
+        "accessTier": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "storageAccountName": "[parameters('storageAccountName')]",
+        "accountType": "[parameters('accountType')]",
+        "kind": "[parameters('kind')]",
+        "accessTier": "[parameters('accessTier')]",
+        "apiVersion": "2019-04-01"
+    },
+    "resources": [
+        {
+            "name": "[variables('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[variables('apiVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "accessTier": "[variables('accessTier')]",
+                "supportsHttpsTrafficOnly": true,
+                "networkAcls": {
+            "defaultAction": "Deny",
+            "bypass": "AzureServices",
+            "ipRules": []
+        }
+            },
+            "resources": [
+                {
+                    "name": "[concat(variables('storageAccountName'), '/default')]",
+                    "type": "Microsoft.Storage/storageAccounts/blobServices",
+                    "apiVersion": "2018-07-01",
+                    "properties": {
+                        "deleteRetentionPolicy": {
+                            "enabled": true,
+                            "days": 30
+                        }
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+                    ]
+                },
+                {
+                    "type": "blobServices/containers",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', 'insights-activity-logs')]",
+                    "dependsOn": [
+                        "[variables('storageAccountName')]"
+                    ]
+                }
+            ],
+            "dependsOn": [],
+            "sku": {
+                "name": "[variables('accountType')]"
+            },
+            "kind": "[variables('kind')]"
+        },
+        {
+            "name": "[concat(parameters('storageAccountName'), '/default')]",
+            "dependsOn": [
+              "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+            ],
+            "type": "Microsoft.Storage/storageAccounts/managementPolicies",
+            "apiVersion": "2019-06-01",
+            "properties": {
+              "policy": {
+                "rules": [
+                  {
+                    "enabled": true,
+                    "name": "activity-log-18m",
+                    "type": "Lifecycle",
+                    "definition": {
+                      "filters": {
+                        "blobTypes": [ 
+                            "blockBlob",
+                            "appendBlob"
+                            ],
+                        "prefixMatch": [
+                            "insights-activity-logs"
+                            ]
+                      },
+                      "actions": {
+                        "baseBlob": {
+                          "delete": {
+                            "daysAfterModificationGreaterThan": 548
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+        },
+        {
+        "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/criticalStorageLock')]",
+        "dependsOn": [
+              "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+            ],
+        "type": "Microsoft.Storage/storageAccounts/providers/locks",
+        "apiVersion": "2015-01-01",
+        "properties": {
+            "level": "CannotDelete"
+        }
+    }
+    ],
+    "outputs": {}
+}

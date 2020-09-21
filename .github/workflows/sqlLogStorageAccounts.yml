@@ -1,16 +1,16 @@
-name: LogStorageAccounts
+name: AzureSqlLogStorageAccounts
 
 on:
   push:
     branches:
       - master
     paths:
-      - '.github/workflows/logStorageAccounts.yml'
+      - '.github/workflows/sqlLogStorageAccounts.yml'
   pull_request:
     branches:
       - master
     paths:
-      - '.github/workflows/logStorageAccounts.yml'
+      - '.github/workflows/sqlLogStorageAccounts.yml'
 
 env:
   # Prod
@@ -107,32 +107,6 @@ jobs:
           # Set soft delete protection on Storage Account
           $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
           $storageAcoount | Enable-AzStorageDeleteRetentionPolicy -RetentionDays 30
-
-    # Create storage account for Azure audit logs
-    - name: Storage Account for Audit logs
-      shell: pwsh
-      run: |
-
-        # Set task variables
-        $rg = "${{ env.devRgName }}"
-        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/storageAccount.json"
-        $storeAccountName = "${{ env.auditLogStorageName }}${{ env.envName }}"
-
-        # Deploy Storage Account for Audit logs
-        New-AzResourceGroupDeployment `
-          -Name "sql-log-${{ env.timestamp }}" `
-          -ResourceGroupName $rg `
-          -TemplateFile $templateFile `
-          -storageAccountName $storeAccountName `
-          -accountType Standard_LRS `
-          -kind StorageV2 `
-          -accessTier cool
-
-          # Set soft delete protection on Storage Account
-          $storageAcoount = Get-AzStorageAccount | where-object{$_.StorageAccountName -match "$storeAccountName"}
-          $storageAcoount | Enable-AzStorageDeleteRetentionPolicy -RetentionDays 30
-
-
 
     # Azure logout 
     - name: logout

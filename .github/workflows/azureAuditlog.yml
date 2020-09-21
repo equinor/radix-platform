@@ -1,4 +1,4 @@
-name: AuditLogs
+name: AzureAuditLogs
 
 on:
   push:
@@ -11,15 +11,14 @@ on:
 
 env:
   # Prod
-  prodStorageAccountId: "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/rg-radix-shared-dev/providers/Microsoft.Storage/storageAccounts/radixauditlogsprod"
   prodSubscriptionId: 'ded7ca41-37c8-4085-862f-b11d21ab341a'
 
   # Dev
-  devStorageAccountId: "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/rg-radix-shared-dev/providers/Microsoft.Storage/storageAccounts/radixauditlogsdev"
   devSubscriptionId: '16ede44b-1f74-40a5-b428-46cca9a5741b'
 
   # Shared
   settingName: azureauditlog
+  auditLogStorageName: radixazauditlogs
 
 jobs:
 ############## DEV STAGE ##############
@@ -28,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
         envName: dev
+        devRgName: rg-radix-shared-dev
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE
@@ -79,6 +79,26 @@ jobs:
           exit 1
         }
 
+    # Create storage account for Azure audit logs
+    - name: Storage Account for Azure Subscription Audit logs
+      shell: pwsh
+      run: |
+
+        # Set task variables
+        $rg = "${{ env.devRgName }}"
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/azureAuditLogStorageAccount.json"
+        $storeAccountName = "${{ env.auditLogStorageName }}${{ env.envName }}"
+
+        # Deploy Storage Account for Audit logs
+        New-AzResourceGroupDeployment `
+          -Name "sql-log-${{ env.timestamp }}" `
+          -ResourceGroupName $rg `
+          -TemplateFile $templateFile `
+          -storageAccountName $storeAccountName `
+          -accountType Standard_LRS `
+          -kind StorageV2 `
+          -accessTier cool
+
 
     # Enable auditlog for dev subsciption
     - name: Enable auditlog for dev subsciption
@@ -86,14 +106,18 @@ jobs:
       run: |
 
         # Set variables
+        $rg = "${{ env.devRgName }}"
         $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/auditlogs.json"
-        $storageAccount = "${{ env.devStorageAccountId }}"
+        $storeAccountName = "${{ env.auditLogStorageName }}${{ env.envName }}"
+        $storageAccountId = (Get-AzStorageAccount -ResourceGroupName $rg -StorageAccountName $storeAccountName).Id
 
         # Deploy the ARM template
-        New-AzDeployment -Name "auditlog-${{ env.timestamp }}" -Location "norwayeast" `
+        New-AzDeployment `
+          -Name "auditlog-${{ env.timestamp }}" `
+          -Location "norwayeast" `
           -TemplateFile $templateFile `
           -settingName ${{ env.settingName }} `
-          -storageAccountId "$storageAccount"
+          -storageAccountId "$storageAccountId"
 
     # Azure logout 
     - name: logout
@@ -110,6 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
         envName: prod
+        devRgName: rg-radix-prod-dev
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE
@@ -141,6 +166,45 @@ jobs:
         $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
         $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
         Add-azAccount -Credential $psCred -TenantId $azureTenantId -ServicePrincipal
+
+    # Set subsctiption to develop and verify
+    - name: Set Azure subscription
+      shell: pwsh
+      run: |
+      
+        Set-AzContext -SubscriptionId "${{ env.prodSubscriptionId }}"
+        
+        $subscription = (Get-AzContext)
+        if ($subscription.Subscription.Id -eq "${{ env.prodSubscriptionId }}") {
+          Write-Output "Using subscription $($subscription.subscription.Name)"
+          exit 0
+          
+        }
+        else {
+          Write-Output "Subscription does not match. Terminating script"
+          exit 1
+        }
+
+
+    # Create storage account for Azure audit logs
+    - name: Storage Account for Azure Subscription Audit logs
+      shell: pwsh
+      run: |
+
+        # Set task variables
+        $rg = "${{ env.prodRgName }}"
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/azureAuditLogStorageAccount.json"
+        $storeAccountName = "${{ env.auditLogStorageName }}${{ env.envName }}"
+
+        # Deploy Storage Account for Audit logs
+        New-AzResourceGroupDeployment `
+          -Name "sql-log-${{ env.timestamp }}" `
+          -ResourceGroupName $rg `
+          -TemplateFile $templateFile `
+          -storageAccountName $storeAccountName `
+          -accountType Standard_LRS `
+          -kind StorageV2 `
+          -accessTier cool
 
 
     # Enable auditlog for prod subsciption
