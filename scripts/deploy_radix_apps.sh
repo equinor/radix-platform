@@ -58,11 +58,23 @@ function wait_for_app_namespace() {
     done
 }
 
+function wait_for_app_namespace_component_secret() {
+    local namespace
+    local component
+    namespace="${1}"
+    component="${2}"
+    echo "Waiting for app $namespace $component secret..."
+    while [[ $(kubectl get secrets -n "$namespace" | grep "$component"-) == "" ]]; do
+        printf "."
+        sleep 2s
+    done
+}
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
 
-assert_dep az helm jq sha256sum python
+assert_dep az helm jq sha256sum python3
 
 #######################################################################################
 ### Read inputs and configs
@@ -234,6 +246,44 @@ helm upgrade --install radix-pipeline-api-release \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
+# Radix Cost Allocation API
+az keyvault secret download \
+    -f radix-cost-allocation-api-radixregistration-values.yaml \
+    -n radix-cost-allocation-api-radixregistration-values \
+    --vault-name "$AZ_RESOURCE_KEYVAULT"
+
+helm upgrade --install radix-cost-allocation-api \
+    -f radix-cost-allocation-api-radixregistration-values.yaml \
+    ../charts/radix-registration
+
+rm radix-cost-allocation-api-radixregistration-values.yaml
+
+# Wait a few seconds until radix-operator can process the RadixRegistration
+wait_for_app_namespace "radix-cost-allocation-api"
+
+helm upgrade --install radix-cost-allocation-api-master \
+    ../charts/radix-pipeline-invocation \
+    --version 1.0.12 \
+    --set name="radix-cost-allocation-api" \
+    --set cloneURL="git@github.com:equinor/radix-cost-allocation-api.git" \
+    --set cloneBranch="master" \
+    --set pipelineImageTag="release-latest" \
+    --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
+
+# Wait a few seconds so that there is no conflicts between jobs. I.e trying to create the RA object at the same time
+sleep 4s
+
+helm upgrade --install radix-cost-allocation-api-release \
+    ../charts/radix-pipeline-invocation \
+    --version 1.0.12 \
+    --set name="radix-cost-allocation-api" \
+    --set cloneURL="git@github.com:equinor/radix-cost-allocation-api.git" \
+    --set cloneBranch="release" \
+    --set pipelineImageTag="release-latest" \
+    --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
+    --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
+
 # Radix Canary app
 az keyvault secret download \
     -f radix-canary-radixregistration-values.yaml \
@@ -297,7 +347,7 @@ helm upgrade --install radix-pipeline-web-console-master \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
-# Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
+# Wait a few seconds so that there is no conflicts between jobs. I.e trying to create the RA object at the same time
 sleep 4s
 
 helm upgrade --install radix-pipeline-web-console-release \
@@ -373,7 +423,21 @@ while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
 done
 
 echo ""
-echo "Radix API ingress is ready, restarting web console... "
+echo "Waiting for radix-cost-allocation-api ingress to be ready so that the API can work properly..."
+while [[ "$(kubectl get ing server -n radix-cost-allocation-api-prod 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+
+echo ""
+echo "For the cost allocation api to work we need to apply secrets"
+wait_for_app_namespace_component_secret "radix-cost-allocation-api-qa" "server"
+wait_for_app_namespace_component_secret "radix-cost-allocation-api-prod" "server"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" ./update_secret_for_cost_allocation_api.sh)
+wait # wait for subshell to finish
+
+echo ""
+echo "Radix API-s ingress is ready, restarting web console... "
 kubectl delete pods $(kubectl get pods -n "$WEB_CONSOLE_NAMESPACE" -o custom-columns=':metadata.name' --no-headers | grep web) -n "$WEB_CONSOLE_NAMESPACE"
 
 echo ""

@@ -101,6 +101,7 @@ function refers_to_existing_cluster() {
     REFERS_TO_CLUSTER=0
 }
 
+echo "Deleting TXT records with no matching TXT record"
 while read -r line; do
     if [[ "$line" ]]; then
         stringarray=($line)

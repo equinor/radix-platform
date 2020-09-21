@@ -32,7 +32,7 @@ metadata:
 spec:
 ```
 
-`name` needs to match the name given in when registering an application.
+`name` needs to match the name given in when registering an application. Only lowercase characters are allowed. If the name supplied in the configuration contains uppercase characters, a warning will be logged and the name will be automatically converted to lowercase.
 
 ## `build`
 
@@ -208,11 +208,11 @@ spec:
     - name: backend
       resources:
         requests:
-          memory: "32Mi"
+          memory: "64Mi"
           cpu: "50m"
         limits:
           memory: "64Mi"
-          cpu: "100m"
+          cpu: "1000m"
 ```
 
 The `resources` section specifies how much CPU and memory each component needs, that are shared among all Radix environments in a component. These common resources are overriden by environment-specific resources.
@@ -269,11 +269,11 @@ spec:
         - environment: prod
           resources:
             requests:
-              memory: "64Mi"
+              memory: "128Mi"
               cpu: "100m"
             limits:
               memory: "128Mi"
-              cpu: "200m"
+              cpu: "2000m"
 ```
 
 The `resources` section specifies how much CPU and memory each component needs, that are defined per Radix environment in a component. `resources` is used to ensure that each component is allocated enough resources to run as it should. `limits` describes the maximum amount of compute resources allowed. `requests` describes the minimum amount of compute resources required. If `requests` is omitted for a component it defaults to the settings in `limits`. If `limits` is omitted, its value defaults to an implementation-defined value. [More info](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/)

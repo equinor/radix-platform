@@ -12,25 +12,20 @@ Of course, Radix is developed and maintained by Equinor developers as well. That
 
 If you'd like to discuss the platform, features or improvements, head on to the main [Omnia Radix channel](https://equinor.slack.com/messages/C8U7XGGAJ). Stuck? App not building? Don't understand the docs? the place to ask is in [the support channel](https://equinor.slack.com/messages/CBKM6N2JY).
 
+Let us together build the Radix community!..
+
 # On GitHub
 
 If you think you found a bug, or you have a concrete proposal, [log an issue](https://github.com/equinor/radix-platform/issues) on GitHub. We have multiple repositories, but all issues are tracked in **radix-platform**.
 
 # The Radix team
 
-We are based in Vassbotnen in Stavanger. If you see us on the corridor, say hello!
+We are based in Vassbotnen - S4 in Stavanger. If you see us on the corridor, say hello!
   
 
-Kjell Erik Reed Anda    - Product Owner & Developer  
-![Kjell Erik](images/kjellerik.jpg)  
-  
-Dafferianto Trinugroho - Developer       
-![Dafferianto](images/dafferianto.jpg)    
   
 Marko Horvat - Infrastructure  
 ![Marko](images/marko.jpg)  
-  
-Joakim Hagen - Developer  
   
 Christer Time - Infrastructure  
 ![Christer](images/christer.jfif)  
