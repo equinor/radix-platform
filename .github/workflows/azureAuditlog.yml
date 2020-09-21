@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
         envName: prod
-        devRgName: rg-radix-prod-dev
+        prodRgName: rg-radix-prod-dev
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE
@@ -214,29 +214,24 @@ jobs:
           -accessTier cool
 
 
-    # Enable auditlog for prod subsciption
-    - name: Enable auditlog for prod subsciption
+    # Enable auditlog for dev subsciption
+    - name: Enable auditlog for dev subsciption
       shell: pwsh
       run: |
 
-        Set-AzContext -SubscriptionId "${{ env.prodSubscriptionId }}"
-        
-        $subscription = (Get-AzContext)
-        if ($subscription.Subscription.Id -eq "${{ env.prodSubscriptionId }}") {
-          Write-Output "Using subscription $($subscription.subscription.Name)"
-          exit 0
-          
-        }
-        else {
-          Write-Output "Subscription does not match. Terminating script"
-          exit 1
-        }
+        # Set variables
+        $rg = "${{ env.prodRgName }}"
+        $templateFile = "$env:GITHUB_WORKSPACE/arm-templates/auditlogs.json"
+        $storeAccountName = "${{ env.auditLogStorageName }}${{ env.envName }}"
+        $storageAccountId = (Get-AzStorageAccount -ResourceGroupName $rg -StorageAccountName $storeAccountName).Id
 
-
-    # Create storage account and SQL logs
-    - name: Storage Account for SQL logs
-      shell: pwsh
-      run: |
+        # Deploy the ARM template
+        New-AzDeployment `
+          -Name "auditlog-${{ env.timestamp }}" `
+          -Location "norwayeast" `
+          -TemplateFile $templateFile `
+          -settingName ${{ env.settingName }} `
+          -storageAccountId "$storageAccountId"
 
 
     # Azure logout 
