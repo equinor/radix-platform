@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - RA-1256auditLog
     paths:
       - '.github/workflows/azureAuditlog.yml'
       - 'arm-templates/azureAuditLogStorageAccount.json'
@@ -141,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
         envName: prod
-        devRgName: rg-radix-prod-dev
+        prodRgName: rg-radix-prod-dev
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE
