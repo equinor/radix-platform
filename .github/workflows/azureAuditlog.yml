@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
         envName: prod
-        prodRgName: rg-radix-prod-dev
+        prodRgName: rg-radix-shared-prod
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE
