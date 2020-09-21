@@ -1,0 +1,63 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"settingName": {
+			"type": "string",
+			"metadata": {
+				"description": "The name of the diagnostic setting"
+			}
+		},
+		"storageAccountId": {
+			"type": "string",
+			"metadata": {
+			  "description": "ResourceID of the Storage Account in which resource logs should be saved."
+			}
+		}
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Insights/diagnosticSettings",
+			"apiVersion": "2017-05-01-preview",
+			"name": "[parameters('settingName')]",
+			"location": "global",
+			"properties": {
+				"storageAccountId": "[parameters('storageAccountId')]",
+				"logs": [
+					{
+						"category": "Administrative",
+						"enabled": true
+					},
+					{
+						"category": "Security",
+						"enabled": true
+					},
+					{
+						"category": "ServiceHealth",
+						"enabled": true
+					},
+					{
+						"category": "Alert",
+						"enabled": true
+					},
+					{
+						"category": "Recommendation",
+						"enabled": true
+					},
+					{
+						"category": "Policy",
+						"enabled": true
+					},
+					{
+						"category": "Autoscale",
+						"enabled": true
+					},
+					{
+						"category": "ResourceHealth",
+						"enabled": true
+					}
+				]
+			}
+		}
+	]
+}
