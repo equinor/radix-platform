@@ -5,9 +5,13 @@ on:
     branches:
       - master
       - RA-1256auditLog
+  paths:
+    - '.github/workflows/sqlLogStorageAccounts.yml'
   pull_request:
     branches:
       - master
+    paths:
+      - '.github/workflows/sqlLogStorageAccounts.yml'
 
 env:
   # Prod
