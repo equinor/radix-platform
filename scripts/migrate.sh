@@ -313,6 +313,17 @@ if [[ "$REPLY" =~ (N|n) ]]; then
 fi
 
 echo ""
+printf "Enabling monitoring addon in the destination cluster... "
+WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name radix-container-logs-$RADIX_ZONE | jq -r .[0].id)
+az aks enable-addons -a monitoring -n $DEST_CLUSTER -g clusters --workspace-resource-id "$WORKSPACE_ID"
+printf "Done.\n"
+
+echo ""
+printf "Disabling monitoring addon in the source cluster... "
+az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters
+printf "Done.\n"
+
+echo ""
 printf "Point to source cluster... "
 az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
     --overwrite-existing \
