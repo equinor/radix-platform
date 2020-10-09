@@ -9,7 +9,7 @@ Currently we support only one type of volume mount. The supported type is to mou
 
 In order to make use of this functionality you have to:
 
-1. Retrieve necessary values from Azure Blob Storage
+- Retrieve necessary values from Azure Blob Storage
 
 Account name and key
 ![SecretValues](SecretValues.png)
@@ -17,11 +17,11 @@ Account name and key
 Name of container
 ![ContainerName](ContainerName.png)
 
-2. Define the volume mount for the environment in the RadixConfig. Account name and container should match the one found in step 1
+- Define the volume mount for the environment in the RadixConfig. Account name and container should match the one found in step 1
 
 ![RadixConfig](RadixConfig.png)
 
-3. After environment has been built, set the generated secret to key found in step 1. This should ensure that key value is Consistent status. It is recommended to restart a component after a key has been set in the console
+- After environment has been built, set the generated secret to key found in step 1. This should ensure that key value is Consistent status. It is recommended to restart a component after a key has been set in the console
 
 ![SetSecrets](SetSecrets.png)
 
