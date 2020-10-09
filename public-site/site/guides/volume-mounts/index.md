@@ -42,3 +42,7 @@ This results in the Kubernetes deployment holding the volume mount in its spec:
             name: name-of-secret-holding-accountname-and-key
         name: blobfuse-main
 ```
+
+and the files appear inside the container
+
+![MountedFiles](MountedFiles.gif)
