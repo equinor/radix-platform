@@ -7,20 +7,23 @@ spec:
     - name: prod
       build:
         from: master
+    - name: blobfuse-flexvolume
+      build:
+        from: blobfuse_flexvolume
   components:
     - name: public-site
       src: "./public-site"
       ports:
-       - name: http
-         port: 80
+        - name: http
+          port: 80
       public: true
       environmentConfig:
-      - environment: prod
-        replicas: 2
-        resources:
-          requests:
-            memory: "10Mi"
-            cpu: "5m"
-          limits:
-            memory: "20Mi"
-            cpu: "10m"
+        - environment: prod
+          replicas: 2
+          resources:
+            requests:
+              memory: "10Mi"
+              cpu: "5m"
+            limits:
+              memory: "20Mi"
+              cpu: "10m"
