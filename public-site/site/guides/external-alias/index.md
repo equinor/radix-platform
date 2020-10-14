@@ -35,7 +35,7 @@ Side note: [What is an intermediate certificate?](https://support.ssl.com/Knowle
 These certs can be bundled into one file using the PEM container format, and quite often this file is what we end up calling "the cert we serve the client".  
 
 _Example:_  
-A PEM container holding both the SSL and the intermediate certificate in the same file
+A PEM container holding both the SSL and the intermediate certificate in the same file, in this particular order:
 ```
 -----BEGIN CERTIFICATE-----
 {ssl certificate content}
@@ -85,7 +85,7 @@ These must be entered as [secrets](../../docs/topic-concepts#secret) in the page
 
 ### Add `<domain-name>-cert` secret
 
-Combine the SSL certificate and the intermediate certificate into a single certificate using a PEM container format:
+Combine the SSL certificate and the intermediate certificate into a single certificate using a PEM container format. Certificates should be put [in particular order](https://www.digicert.com/kb/ssl-support/pem-ssl-creation.htm): first - SSL certificate, second - Intermediate certificate:
 
 ```
 -----BEGIN CERTIFICATE-----
