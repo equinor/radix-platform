@@ -292,7 +292,9 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --kubernetes-version "$KUBERNETES_VERSION" \
     --service-principal "$CLUSTER_SYSTEM_USER_ID" \
     --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
-    --node-count "$NODE_COUNT" \
+    --enable-cluster-autoscaler \
+    --min-count "$MIN_COUNT" \
+    --max-count "$MAX_COUNT" \
     --node-osdisk-size "$NODE_DISK_SIZE" \
     --node-vm-size "$NODE_VM_SIZE" \
     --max-pods "$POD_PER_NODE" \
