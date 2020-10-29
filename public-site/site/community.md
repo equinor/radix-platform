@@ -33,6 +33,9 @@ Christer Time - Infrastructure
 Sergey Smolnikov - Developer  
 ![Sergey](images/sergey.jpg)     
   
+Nils Gustav Stråbø - Developer  
+![Nils](images/nilsgustav.png)   
+
 Ole Joar Austbø Moi - Developer  
 ![Ole](images/ole.jfif)  
   
