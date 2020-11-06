@@ -27,7 +27,7 @@ The way we use branches and tags in our repository depends on what type of workf
 
 In the root of our repository we need a `radixconfig.yaml` file: this is the Radix configuration, which specifies how our application is built and deployed.
 
-> Radix only reads `radixconfig.yaml` from the branch we set as the `Config Branch` in the application registration form. If the file is changed in other branches, those changes will be ignored.
+> Radix only reads `radixconfig.yaml` from the branch we set as the `Config Branch` in the application registration form. If the file is changed in other branches, those changes will be ignored. The `Config Branch` must be mapped to an environment in `radixconfig.yaml`
 
 If you are unfamiliar with YAML, it is fine to write the configuration as JSON instead — just keep the same filename.
 

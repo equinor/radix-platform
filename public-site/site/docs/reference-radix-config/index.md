@@ -9,7 +9,7 @@ toc: true
 
 In order for Radix to configure your application it needs a configuration file. This must be placed in the root of your app repository and be named `radixconfig.yaml`. The file is expected in YAML or JSON format (in either case, it must have the `.yaml` extension).
 
-> Radix only reads `radixconfig.yaml` from the branch we set as the `Config Branch` in the application registration form. If the file is changed in other branches, those changes will be ignored.
+> Radix only reads `radixconfig.yaml` from the branch we set as the `Config Branch` in the application registration form. If the file is changed in other branches, those changes will be ignored. The `Config Branch` must be mapped to an environment in `radixconfig.yaml`
 
 The basic format of the file is this; the configuration keys are explained in the Reference section below:
 
@@ -76,13 +76,15 @@ spec:
         from: release
 ```
 
-The `environments` section of the spec lists the environments for the application and the branch each environment will build from. If you omit the `build.from` key for the environment, no automatic builds or deployments will be created. This configuration is useful for a promotion-based [workflow](../../guides/workflows/).
+The `environments` section of the spec lists the environments for the application and the branch each environment will build from. If you omit the `build.from` key for the environment, no automatic builds or deployments will be created. This configuration is useful for a promotion-based [workflow](../../guides/workflows/). 
 
 We also support wildcard branch mapping using `*` and `?`. Examples of this are:
 
 - `feature/*`
 - `feature-?`
 - `hotfix/**/*`
+
+> The `Config Branch` set in the application registration form **must** be mapped to one of the `environments`
 
 ## `components`
 
