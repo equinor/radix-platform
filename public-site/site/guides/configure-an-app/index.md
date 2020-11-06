@@ -27,7 +27,7 @@ The way we use branches and tags in our repository depends on what type of workf
 
 In the root of our repository we need a `radixconfig.yaml` file: this is the Radix configuration, which specifies how our application is built and deployed.
 
-> Radix only reads `radixconfig.yaml` from the `master` branch. If the file is changed in other branches, those changes will be ignored.
+> Radix only reads `radixconfig.yaml` from the branch we set as the `Config Branch` in the application registration form. If the file is changed in other branches, those changes will be ignored.
 
 If you are unfamiliar with YAML, it is fine to write the configuration as JSON instead — just keep the same filename.
 
@@ -142,4 +142,7 @@ Note how the first section uses a large image (`node`) which has the dependencie
 
 We are now ready to register our application using the Radix Web Console. Load the console for the [Radix cluster](../getting-started/#the-radix-clusters) that you want to use: [Playground](https://console.playground.radix.equinor.com/applications/new) or [Production](https://console.radix.equinor.com/applications/new). Follow the instructions there to integrate the GitHub repository with Radix.
 
-Remember that we can always change the `radixconfig.yaml` file and the `Dockerfile`s after registration to change how the application builds and deploys.
+Remember that we can always change the `radixconfig.yaml` file and the `Dockerfile`s after registration to change how the application builds and deploys. We can also change all registration information except the GitHub repository.
+
+Here is an example of how a new application registration could look like
+![CreateApplication](CreateApplication.png)
