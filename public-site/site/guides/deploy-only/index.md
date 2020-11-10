@@ -31,7 +31,7 @@ The documentation will use the second option and this [example repository](https
 
 # The `radixconfig.yaml` file
 
-> Radix **only** recognise `radixconfig.yaml` from the **master branch**. If the file is changed in other branches, those changes will be ignored.
+> Radix only reads `radixconfig.yaml` from the branch we set as the `Config Branch` in the application registration form. If the file is changed in other branches, those changes will be ignored. The `Config Branch` must be mapped to an environment in `radixconfig.yaml`
 
 The major difference between a deploy-only `radixconfig.yaml` and a regular Radix application `radixconfig.yaml`, is the lack of components' `src` property, as there is nothing to build on Radix. Rather it uses an `image` property, alongside a separate `imageTagName` property per environment, as shown below:
 
