@@ -5,7 +5,7 @@ parent: ["Guides", "../../guides.html"]
 toc: true
 ---
 
-Currently we support only one type of volume mount. The supported type is to mount Azure Blob Container using blobfuse FlexVolume driver for Kubernetes. See [this](https://github.com/Azure/kubernetes-volume-drivers/tree/master/flexvolume/blobfuse) for more information.
+Currently, we support only one type of volume mount. The supported type is to mount Azure Blob Container using blobfuse FlexVolume driver for Kubernetes. See [this](https://github.com/Azure/kubernetes-volume-drivers/tree/master/flexvolume/blobfuse) for more information.
 
 In order to make use of this functionality you have to:
 
@@ -28,21 +28,26 @@ Name of container
 This results in the Kubernetes deployment holding the volume mount in its spec:
 
 ```yaml
-        volumeMounts:
-        - mountPath: /home/appuser/dash_app/webviz_storage/
-          name: blobfuse-main
-      volumes:
-      - flexVolume:
-          driver: azure/blobfuse
-          options:
-            container: webviz-data
-            mountoptions: --file-cache-timeout-in-seconds=120
-            tmppath: /tmp/webwiz-subsurface-on-radix-blobfuse-main
-          secretRef:
-            name: name-of-secret-holding-accountname-and-key
-        name: blobfuse-main
+      volumeMounts:
+      - mountPath: /home/userapp/image-storage
+        name: blobfuse-web
+    dnsPolicy: ClusterFirst
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - flexVolume:
+        driver: azure/blobfuse
+        options:
+          container: blobfusevolumetestdata
+          mountoptions: --file-cache-timeout-in-seconds=120
+          tmppath: /tmp/radix-blob-fuse-test-dev/web/dev
+        secretRef:
+          name: web-blobfusecreds
+      name: blobfuse-web
 ```
 
 and the files appear inside the container
 
-![MountedFiles](MountedFiles.gif)
+![MountedFiles](MountedFiles.png)
