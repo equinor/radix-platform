@@ -168,9 +168,9 @@ spec:
         - websocketfriendly
 ```
 
-The `ingressConfiguration` field of a component will add extra configuration by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario. 
+The `ingressConfiguration` field of a component will add extra configuration by [annotations](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/) to the Nginx ingress, useful for a particular scenario.
 
->Note that the settings affect the connections with the public component, not between a public and a private component.
+> Note that the settings affect the connections with the public component, not between a public and a private component.
 
 - `websocketfriendly` will change connection timeout to 1 hour for the component.
 - `stickysessions` will change load balancing of the ingress to route to a single replica.
@@ -336,6 +336,27 @@ components:
 ```
 
 > See [this](../../guides/deploy-only/) guide on how make use of `imageTagName` in a deploy-only scenario.
+
+#### `volumeMounts`
+
+```yaml
+spec:
+  components:
+    - name: backend
+      environmentConfig:
+        - environment: prod
+          volumeMounts:
+            - type: blob
+              accountName: storage-account-name
+              container: container-name
+              path: /path/in/container/to/mount/to
+```
+
+The `volumeMounts` field of a component environment config is used to be able to mount a blob container into the running container.
+
+The `volumeMounts` field contains the following sub-fields; `type` field can currently only be set to `blob`, `accountName` is the name of the Azure Storage Account, `container` is the name of the blob container, and `path` is the folder to mount to inside the running component.
+
+> See [this](../../guides/volume-mounts/) guide on how make use of `volumeMounts`.
 
 ## `dnsAppAlias`
 
