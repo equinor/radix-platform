@@ -36,6 +36,9 @@ function updateSecret() {
     SQL_PASSWORD=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.db.password')
     SUBSCRIPTION_COST_VALUE=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.value')
     SUBSCRIPTION_COST_CURRENCY=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.currency')
+    WHITELIST=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.subscriptionCost.whiteList')
+    AD_REPORT_READERS=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.auth.reportReaders')
+    TOKEN_ISSUER=$(az keyvault secret show -n radix-cost-allocation-api-secrets --vault-name "$AZ_RESOURCE_KEYVAULT"|jq -r '.value'| jq -r '.auth.tokenIssuer')
     " > radix-cost-allocation-api-secrets.yaml
     
     COST_ALLOCATION_API_SECRET_NAME_QA=$(kubectl get secret -l radix-component="server" -n "radix-cost-allocation-api-qa" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
