@@ -347,14 +347,13 @@ spec:
         - environment: prod
           volumeMounts:
             - type: blob
-              accountName: storage-account-name
               container: container-name
               path: /path/in/container/to/mount/to
 ```
 
 The `volumeMounts` field of a component environment config is used to be able to mount a blob container into the running container.
 
-The `volumeMounts` field contains the following sub-fields; `type` field can currently only be set to `blob`, `accountName` is the name of the Azure Storage Account, `container` is the name of the blob container, and `path` is the folder to mount to inside the running component.
+The `volumeMounts` field contains the following sub-fields: `type` field can currently only be set to `blob`, `container` is the name of the blob container, and `path` is the folder to mount to inside the running component.
 
 > See [this](../../guides/volume-mounts/) guide on how make use of `volumeMounts`.
 
