@@ -21,6 +21,7 @@ The process for setting up the alias depends on the service used to register and
     New alias: myapp.equinor.com
     Point to: frontend-myapp-prod.radix.equinor.com
     ```
+3. Specify in the request if you need only "internal entry" (used within internal Equinor network) or "both - internal and external entries" (used both - within internal Equinor and public networks).
 
 ## Acquire an Equinor certificate
 
@@ -68,8 +69,8 @@ A PEM container holding both the SSL and the intermediate certificate in the sam
 ## Edit `radixconfig.yaml`
 
 1. You must add a new `dnsExternalAlias` section to the `radixconfig.yaml` file; check the [reference documentation](../../docs/reference-radix-config/#dnsexternalalias) for the details.
-
 1. The application must be built and deployed for the configuration to be applied.
+1. If authentication proxy is used - its redirect URL can be changed to use external alias (to avoid showing long proxy URL, when redirected).  
 
 ## Apply custom certificate
 
