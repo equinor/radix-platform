@@ -383,7 +383,9 @@ spec:
       component: frontend
 ```
 
-It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domains) for the application. The `dnsExternalAlias` needs to point to a component marked as public. It can be any domain name, which can in turn be used for public URLs to access the application — as long as the application developer provides a valid certificate for the alias.
+It is possible to have multiple custom DNS aliases (i.e. to choose your own custom domains) for the application. The `dnsExternalAlias` needs to point to a component marked as public. It can be any domain name, which can in turn be used for public URLs to access the application — as long as the application developer provides a valid certificate for the alias. 
+
+If public component is a `proxy` (like `oauth-proxy` in [this example](https://github.com/equinor/radix-example-oauth-proxy)), which is used as a public component, routing requests to `frontend` component - `dnsExternAlias.component` should point to this `proxy` component.   
 
 In the example above, the component **frontend** hosted in environment **prod** will be accessible from both `some.alias.com` and `another.alias.com`, as long as the correct certificate has been set.
 
