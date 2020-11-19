@@ -54,6 +54,10 @@ hash jq 2>/dev/null || {
     echo -e "\nError: jq not found in PATH. Exiting..." >&2
     exit 1
 }
+hash htpasswd 2>/dev/null || {
+  echo -e "\nError: htpasswd not found in PATH. Exiting..."
+  exit 1
+}
 printf "Done.\n"
 
 #######################################################################################
