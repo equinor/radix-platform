@@ -101,7 +101,7 @@ spec:
       src: frontend
       ports:
         - name: http
-          port: 80
+          port: 8080
     - name: backend
       src: backend
       ports:
@@ -120,7 +120,7 @@ spec:
       dockerfileName: frontend.Dockerfile
       ports:
         - name: http
-          port: 80
+          port: 8080
     - name: backend
       dockerfileName: backend.Dockerfile
       ports:

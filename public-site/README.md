@@ -102,7 +102,7 @@ The production build is containerised in the project's `Dockerfile`. To run the
 build image locally:
 
     docker build -t radix-public-site-prod .
-    docker run --name radix-public-site-prod_container --rm -p 8080:80 radix-public-site-prod
+    docker run --name radix-public-site-prod_container --rm -p 8080:8080 radix-public-site-prod
 
 The web server will be available on http://localhost:8080
 
