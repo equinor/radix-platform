@@ -22,6 +22,7 @@ toc: true
 
 - Service, support and availability [SLA](docs/topic-sla/)
 - [Rolling updates](docs/topic-rollingupdate/) in Radix
+- [Cost](docs/topic-cost/) calculation principles
 
 # Reference
 
