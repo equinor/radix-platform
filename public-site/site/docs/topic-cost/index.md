@@ -26,7 +26,7 @@ Total - CPU: 10000m - Memory: 1000Mi
 
 **Calculation**  
 Application A - CPU: 66% - Memory: 50% = (66% + 50%)/2 = 58%  
-Application B - CPU: 34% - Memory: 50% = (33% + 50%)/2 = 43%  
+Application B - CPU: 34% - Memory: 50% = (34% + 50%)/2 = 42%  
 
 Hour 14:00  
 Application A - CPU: 500m - Memory: 64Mi  
