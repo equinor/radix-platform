@@ -223,30 +223,41 @@ printf "...Done\n"
 ### INSTALLATION
 
 printf "\nAdding Weaveworks repository to Helm..."
-helm repo add fluxcd https://fluxcd.github.io/flux 2>&1 >/dev/null
+helm repo add fluxcd https://charts.fluxcd.io --force-update 2>&1 >/dev/null
 printf "...Done\n"
 
 printf "\nAdding Flux CRDs, no longer included in the helm chart"
 kubectl apply -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
 printf "...Done\n"
 
-printf "\nInstalling Flux with Helm operator"
+printf "\nInstalling Flux "
 helm upgrade --install flux \
-    --version 0.16.0 \
+    --version 1.6.0 \
     --set rbac.create=true \
-    --set helmOperator.create=true \
-    --set helmOperator.pullSecret=radix-docker \
     --set git.url="$GIT_REPO" \
     --set git.branch="$GIT_BRANCH" \
     --set git.path="$GIT_DIR" \
     --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
     --set registry.acr.enabled=true \
     --set prometheus.enabled=true \
+    --set prometheus.serviceMonitor.create=true \
     --set manifestGeneration=true \
     --set registry.excludeImage="k8s.gcr.io/*\,aksrepos.azurecr.io/*\,quay.io/*" \
     fluxcd/flux \
     2>&1 >/dev/null
 printf "...Done\n"
+
+printf "\nInstalling Flux Helm Operator "
+helm upgrade --install helm-operator \
+    --version 1.2.0 \
+    --set git.ssh.secretName="$FLUX_PRIVATE_KEY_NAME" \
+    --set prometheus.enabled=true \
+    --set prometheus.serviceMonitor.create=true \
+    --set helm.versions=v3 \
+    fluxcd/helm-operator \
+    2>&1 >/dev/null
+printf "...Done\n"
+
 
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
