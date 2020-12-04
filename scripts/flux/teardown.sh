@@ -164,9 +164,14 @@ printf "\nDelete and purge the helm release..."
 helm delete flux --purge 2>&1 >/dev/null
 printf "...Done.\n"
 
-# Step 1.5: Making sure the webhook is really gone
-printf "\nMaking sure the webhook is really gone..."
-kubectl delete apiservice v1beta1.flux.weave.works 2>&1 >/dev/null
+# Step 1.1: Remove the helm release
+printf "\nDelete and purge the helm operator..."
+helm delete helm-operator --purge 2>&1 >/dev/null
+printf "...Done.\n"
+
+# Step 1.6: Making sure the v1 webhook is really gone
+printf "\nMaking sure the v1 webhook is really gone..."
+kubectl delete apiservice v1.helm.fluxcd.io 2>&1 >/dev/null
 printf "...Done.\n"
 
 # Step 2: Delete the repo credentials
