@@ -139,11 +139,14 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # End OAUTH2_PROXY code
 ##########
 
-helm upgrade --install prometheus-operator stable/prometheus-operator \
-  --version 8.9.2 \
-  -f "$WORKDIR_PATH/prometheus-operator-values.yaml" \
-  --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
-  --set prometheusOperator.createCustomResource=true
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack `
+  --version 12.1.0 `
+  -f "prometheus-operator/prometheus-operator-values.yaml" -n prometheus`
+ # --set prometheus.prometheusSpec.serviceMonitorSelector.any=true `
+ # --set prometheusOperator.createCustomResource=true
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
