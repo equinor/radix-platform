@@ -1,6 +1,8 @@
 grafana:
   enabled: false
 
+nameOverride: prometheus-operator
+
 alertmanager:
   alertmanagerSpec:
     resources:
@@ -68,8 +70,8 @@ prometheus:
         cpu: "2" # Added to a default of 200m
         memory: "16Gi" # Added to a default of 50m
     retention: 30d
-    serviceMonitorNamespaceSelector:
-      any: true
+    serviceMonitorSelectorNilUsesHelmValues: false
+    #serviceMonitorNamespaceSelector: {}
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -78,7 +80,7 @@ prometheus:
           resources:
             requests:
               storage: 1024Gi
-        selector: {}
+        #selector: {}
     additionalScrapeConfigs:
       # * `prometheus.io/scrape`: Only scrape pods that have a value of `true`
       # * `prometheus.io/port`: Scrape the pod on the indicated port instead of the default of `9102`.
