@@ -146,8 +146,8 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
-helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack `
-  --version 12.17.0 `
+helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+  --version 12.7.0 \
   -f "prometheus-operator/prometheus-operator-values.yaml"
  # --set prometheus.prometheusSpec.serviceMonitorSelector.any=true `
  # --set prometheusOperator.createCustomResource=true
