@@ -71,7 +71,7 @@ The same, but as JSON:
             "src": ".",
             "publicPort": "http",
             "ports": [
-               { "name": "http", "port": 80 }
+               { "name": "http", "port": 8080 }
             ]
          }
       ]
@@ -86,6 +86,8 @@ A breakdown of the configuration above:
 - Commits to the `master` branch will trigger a build and deployment of the application to the `dev` environment. We can use this behavior to build a [workflow](../workflows/)
 - Radix will look for the `Dockerfile` for the `main` component in the root directory of the repository
 - Once `main` is built, it will be exposed on the internet on port 80 on each environment it is deployed to (in `dev`, for instance, it will have a domain name like `main-myapp-dev.CLUSTER_NAME.radix.equinor.com`)
+
+> The application is exposed to the internet on port 80 even if the port specified in the configuration is 8080. Applications can not be run on any port below 1025 as they're privileged, and can only be bound to by a privileged user. All pods in the Radix Cluster are forced to be run as an unprivileged user (non-root).
 
 The full syntax of `radixconfig.yaml` is explained in [Radix Config reference](../../docs/reference-radix-config/).
 

@@ -111,6 +111,8 @@ spec:
 
 Specify `src` for a folder (relative to the repository root) where the `Dockerfile` of the component can be found and used for building on the platform. It needs a list of `ports` exposed by the component, which map with the ports exposed in the `Dockerfile`. An alternative to this is to use the `dockerfileName` setting of the component.
 
+Due to security concerns, all pods are forced to run as non-root. Since all ports including and below 1024 are privileged, they can not be used by your application running on Radix. The `port` variable under `ports` can therefore only be above 1024. Any attempt to run applications on privileged ports will result in the application not starting.
+
 ### `dockerfileName`
 
 ```yaml
@@ -146,6 +148,8 @@ spec:
           port: 8080
       publicPort: http
 ```
+
+For applications using the default nginx image, this will attempt to bind to port 80. As previously described, this is a privileged port and will be blocked by Radix. An alternative is the [unprivileged image](https://hub.docker.com/r/nginxinc/nginx-unprivileged) which binds to port 8080.
 
 ### `publicPort`
 
