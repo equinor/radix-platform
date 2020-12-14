@@ -148,7 +148,7 @@ helm repo update
 
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
   --version 12.7.0 \
-  -f "prometheus-operator/prometheus-operator-values.yaml"
+  -f "prometheus-operator-values.yaml"
  # --set prometheus.prometheusSpec.serviceMonitorSelector.any=true `
  # --set prometheusOperator.createCustomResource=true
 
