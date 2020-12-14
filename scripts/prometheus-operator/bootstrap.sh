@@ -214,7 +214,8 @@ spec:
     secretName: cluster-wildcard-tls-cert
 EOF
 
+# Depricated!!! But will have to be tested in playground deploy first
 # Change kubelet ServiceMonitor from https to http, ref https://github.com/coreos/prometheus-operator/issues/1522
 
-kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
-  --patch "$(cat $WORKDIR_PATH/kubelet-service-monitor-patch.yaml)"
+#kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
+#  --patch "$(cat $WORKDIR_PATH/kubelet-service-monitor-patch.yaml)"
