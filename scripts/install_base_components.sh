@@ -205,8 +205,8 @@ fi
 ### Install Helm and related rbac
 ###
 
-(USER_PROMPT="false" ./helm/bootstrap.sh)
-wait
+#(USER_PROMPT="false" ./helm/bootstrap.sh)
+#wait
 
 #######################################################################################
 ### Install cert-manager
