@@ -32,12 +32,13 @@ Schedule for Radix DevOps/Support team - 08:00 - 16:00 CET/CEST on Norwegian wor
 - **Platform monthly uptime: 99.5%** - expected uptime for Radix as a hosting platform
 - **Radix services monthly uptime: 98%** - expected uptime for Radix services, like CI/CD and monitoring
 - **Planned maintenance:** We will announce planned maintenance at least 2 business days in advance. Downtime during planned maintenance does not affect uptime goals
+- **Disaster Recovery:** Procedure is in place and the procedure is executed on a weekly basis. Estimated time to recover a cluster is 15 minutes, estimated time to rebuild and recover a complete cluster is 1 hour. 
 
 ### Associated operational risks
 
 - No incident management beyond schedule "Norway - default" - i.e. no support after 16:00 CET/CEST on Norwegian working days
 - Infrastructure downtime despite robust, high-availability infrastructure
-- Disaster recovery is in experimental state for Radix platform and hosted applications
+
 
 ## SLA — Playground
 

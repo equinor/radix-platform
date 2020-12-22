@@ -50,7 +50,7 @@ spec:
       publicPort: http
       ports:
        - name: http
-         port: 80
+         port: 8080
 ```
 
 The same, but as JSON:

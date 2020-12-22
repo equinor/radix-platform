@@ -40,7 +40,7 @@ RADIX_APP_ALIAS_NAME="console"                                              # Th
 RADIX_APP_NAME="radix-web-console"                                          # The name of the app in the cluster
 RADIX_APP_ENVIRONMENT="prod"                                                # The app environment in the cluster (ex: "prod", "qa", "test")
 RADIX_APP_COMPONENT="web"                                                   # The component which should receive the traffic
-RADIX_APP_COMPONENT_PORT="80"
+RADIX_APP_COMPONENT_PORT="8080"
 RADIX_HELM_REPO="radixprod"                                                 # The name of the helm repo which host the ingress chart. In ACR this is the name of the acr instance.
 ```
 

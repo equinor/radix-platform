@@ -143,11 +143,12 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # End OAUTH2_PROXY code
 ##########
 
-helm upgrade --install prometheus-operator bitnami/prometheus-operator \
-  --version 0.12.7 \
-  -f "$WORKDIR_PATH/prometheus-operator-values.yaml" \
-  --set prometheus.prometheusSpec.serviceMonitorSelector.any=true \
-  --set prometheusOperator.createCustomResource=true
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+  --version 12.7.0 \
+  -f "prometheus-operator-values.yaml"
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
@@ -214,8 +215,3 @@ spec:
     - prometheus-oauth2.$CLUSTER_NAME.$AZ_RESOURCE_DNS
     secretName: cluster-wildcard-tls-cert
 EOF
-
-# Change kubelet ServiceMonitor from https to http, ref https://github.com/coreos/prometheus-operator/issues/1522
-
-kubectl patch servicemonitor prometheus-operator-kubelet --type=merge \
-  --patch "$(cat $WORKDIR_PATH/kubelet-service-monitor-patch.yaml)"
