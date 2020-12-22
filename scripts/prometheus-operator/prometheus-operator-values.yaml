@@ -23,7 +23,7 @@ prometheus:
     # listenLocal: true
     # containers:
     #   - name: prometheus-oauth2-proxy
-    #     image: quay.io/pusher/oauth2_proxy:v4.0.0
+    #     image: quay.io/pusher/oauth2_proxy:v6.1.1
     #     imagePullPolicy: Always
     #     env:
     #     - name: OAUTH2_PROXY_EMAIL_DOMAINS
