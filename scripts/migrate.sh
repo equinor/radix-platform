@@ -213,6 +213,8 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     wait # wait for subshell to finish
     printf "Done creating cluster."
 
+    [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+
     echo ""
     echo "Installing base components..."
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASECOMPONENTS_SCRIPT")
@@ -225,6 +227,7 @@ fi
 echo ""
 printf "Point to destination cluster... "
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
 
 # Wait for operator to be deployed from flux
 echo ""
@@ -250,6 +253,7 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$S
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
 printf "Done.\n"
 
 echo ""
@@ -333,6 +337,7 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$S
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
 printf "Done.\n"
 
 echo ""
@@ -350,6 +355,7 @@ kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 echo ""
 printf "Point to destination cluster... "
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
 
 echo ""
 printf "Create aliases in destination cluster... "

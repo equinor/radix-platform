@@ -295,6 +295,7 @@ az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NA
     --enable-cluster-autoscaler \
     --min-count "$MIN_COUNT" \
     --max-count "$MAX_COUNT" \
+    --node-count 10 \
     --node-osdisk-size "$NODE_DISK_SIZE" \
     --node-vm-size "$NODE_VM_SIZE" \
     --max-pods "$POD_PER_NODE" \
@@ -322,6 +323,9 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$C
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+
+[[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
+
 printf "Done.\n"
 
 #######################################################################################
