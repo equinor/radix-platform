@@ -5,7 +5,7 @@
 ### PURPOSE
 ### 
 
-# Tear down cert-manager in a radix cluster, v0.11.0
+# Tear down cert-manager in a radix cluster, v1.1
 
 
 #######################################################################################
@@ -124,7 +124,7 @@ echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CERT-MANAGER                     : v0.11.0"
+echo -e "   -  CERT-MANAGER                     : v1.1"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
