@@ -203,15 +203,15 @@ function installCertManager(){
 
     # Install the cert-manager Helm chart 
     #
-    # Regarding ingress shims, see https://docs.cert-manager.io/en/release-0.11/tasks/issuing-certificates/ingress-shim.html#configuration
-    helm upgrade --install cert-manager \
-    --namespace cert-manager \
-    --version v1.1 \
-    --set global.rbac.create=true \
-    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-    --set ingressShim.defaultIssuerKind=ClusterIssuer \
-    jetstack/cert-manager \
-    2>&1 >/dev/null
+    # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
+#    helm upgrade --install cert-manager \
+#    --namespace cert-manager \
+#    --version v1.1 \
+#    --set global.rbac.create=true \
+#    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
+#    --set ingressShim.defaultIssuerKind=ClusterIssuer \
+#    jetstack/cert-manager \
+#    2>&1 >/dev/null
     printf "...Done.\n"
 }
 
