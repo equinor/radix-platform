@@ -177,6 +177,10 @@ echo "Done."
 
 # TODO: Clean up velero blob dialog (yes/no)
 
+echo ""
+echo "Delete DNS records"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" CLUSTER_NAME="$CLUSTER_NAME" ../dns/delete_dns_entries_for_cluster.sh)
+wait # wait for subshell to finish
 
 #######################################################################################
 ### END
