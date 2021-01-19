@@ -165,7 +165,7 @@ printf "...Done.\n"
 
 # Install Helm
 printf "Initializing and/or upgrading helm in cluster..."
-helm init --service-account tiller --upgrade --wait 2>&1 >/dev/null
+# helm init --service-account tiller --upgrade --wait 2>&1 >/dev/null
 helm repo update 2>&1 >/dev/null
 printf "...Done.\n"
 

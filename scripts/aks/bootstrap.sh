@@ -287,6 +287,7 @@ echo "Bootstrap of advanced network done."
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
+### It might be required to add "--node-count 10 \" below "--max-count "$MAX_COUNT" \" if deploying certain VM sizes
 az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
     --no-ssh-key \
     --kubernetes-version "$KUBERNETES_VERSION" \
@@ -322,6 +323,9 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$C
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+
+[[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
+
 printf "Done.\n"
 
 #######################################################################################
