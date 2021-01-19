@@ -58,7 +58,7 @@ fi
 
 # Print inputs
 echo -e ""
-echo -e "Start deploy of base components using the following settings:"
+echo -e "Start deleting of DNS records of the cluster using the following settings:"
 echo -e "RADIX_ENVIRONMENT: $RADIX_ENVIRONMENT"
 echo -e "CLUSTER_TYPE            : $CLUSTER_TYPE"
 echo -e "DNS_ZONE                : $DNS_ZONE"
@@ -99,3 +99,5 @@ while read -r line; do
         fi
     fi
 done <<< "${CLUSTERS}"
+
+echo "Deleted DNSs for cluster"

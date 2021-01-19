@@ -57,7 +57,7 @@ fi
 
 # Print inputs
 echo -e ""
-echo -e "Start deploy of base components using the following settings:"
+echo -e "Start deleting of orphaned DNS records using the following settings:"
 echo -e "RADIX_ENVIRONMENT: $RADIX_ENVIRONMENT"
 echo -e "CLUSTER_TYPE            : $CLUSTER_TYPE"
 echo -e "DNS_ZONE                : $DNS_ZONE"
@@ -127,3 +127,5 @@ while read -r line; do
         fi
     fi
 done <<< "$(az network dns record-set list --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --query "[?type=='Microsoft.Network/dnszones/A']" | jq --raw-output -r '.[] | .id + " " + .name')"
+
+echo "Deleted orphaned DNSs"
