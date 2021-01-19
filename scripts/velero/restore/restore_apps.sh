@@ -364,7 +364,7 @@ PATCH_JSON="$(
 }
 END
 )"
-kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation azure -n velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
 echo "Wait for backup \"$BACKUP_NAME\" to be available in destination cluster \"$DEST_CLUSTER\" before we can restore..."
@@ -504,7 +504,7 @@ PATCH_JSON="$(
 }
 END
 )"
-kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation azure -n velero --type merge --patch "$(echo $PATCH_JSON)"
 # Set velero in read/write mode
 kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 

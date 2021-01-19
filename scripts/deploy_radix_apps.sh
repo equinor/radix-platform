@@ -159,6 +159,7 @@ helm repo update
 
 # Connect kubectl so we have the correct context
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
+[[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
 
 # Wait for operator to be deployed from flux
 echo ""
