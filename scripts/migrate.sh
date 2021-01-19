@@ -264,7 +264,7 @@ apiVersion: velero.io/v1
 kind: Backup
 metadata:
   labels:
-    velero.io/storage-location: default
+    velero.io/storage-location: azure
   name: $BACKUP_NAME
   namespace: velero
 spec:
@@ -287,10 +287,10 @@ spec:
       operator: NotIn
       values:
       - prometheus-operator
-  storageLocation: default
+  storageLocation: azure
   ttl: 168h0m0s
   volumeSnapshotLocations:
-  - default
+  - azure
 EOF
 
 echo ""
@@ -344,7 +344,7 @@ echo ""
 printf "Delete custom ingresses... "
 while read -r line; do
     if [[ "$line" ]]; then
-        helm delete ${line} --purge
+        helm delete ${line}
     fi
 done <<<"$(helm list --short | grep radix-ingress)"
 
