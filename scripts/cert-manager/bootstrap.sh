@@ -5,7 +5,7 @@
 ### PURPOSE
 ### 
 
-# Bootstrap cert-manager in a radix cluster, v0.11.0
+# Bootstrap cert-manager in a radix cluster, v1.1
 
 
 #######################################################################################
@@ -62,7 +62,7 @@ echo "Start bootstrap of cert-manager... "
 ###
 
 echo ""
-printf "Check for neccesary executables... "
+printf "Check for necessary executables... "
 hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
 hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
@@ -140,7 +140,7 @@ echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CERT-MANAGER                     : v0.11.0"
+echo -e "   -  CERT-MANAGER                     : v1.1"
 echo -e "   -  CERT_ISSUER                      : $CERT_ISSUER"
 echo -e "   -  ACME_URL                         : $ACME_URL"
 echo -e ""
@@ -203,15 +203,15 @@ function installCertManager(){
 
     # Install the cert-manager Helm chart 
     #
-    # Regarding ingress shims, see https://docs.cert-manager.io/en/release-0.11/tasks/issuing-certificates/ingress-shim.html#configuration
-    helm upgrade --install cert-manager \
-    --namespace cert-manager \
-    --version v0.11.0 \
-    --set global.rbac.create=true \
-    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-    --set ingressShim.defaultIssuerKind=ClusterIssuer \
-    jetstack/cert-manager \
-    2>&1 >/dev/null
+    # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
+#    helm upgrade --install cert-manager \
+#    --namespace cert-manager \
+#    --version v1.1 \
+#    --set global.rbac.create=true \
+#    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
+#    --set ingressShim.defaultIssuerKind=ClusterIssuer \
+#    jetstack/cert-manager \
+#    2>&1 >/dev/null
     printf "...Done.\n"
 }
 

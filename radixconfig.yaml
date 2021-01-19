@@ -6,10 +6,13 @@ spec:
   environments:
     - name: prod
       build:
-        from: master
-    - name: blobfuse-flexvolume
+        from: release
+    - name: qa
       build:
-        from: blobfuse_flexvolume
+        from: master
+    - name: test
+      build:
+        from: main
   components:
     - name: public-site
       src: "./public-site"

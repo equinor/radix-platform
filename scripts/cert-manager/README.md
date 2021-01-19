@@ -1,4 +1,4 @@
-# Cert-manager - v0.11.0
+# Cert-manager - v1.1
 
 We use [cert-manager](https://github.com/jetstack/cert-manager) to provide automatic SSL/TLS certificate generation in the cluster using Let's Encrypt.  
 Depending on use case we can use it to either create certificates according to a crd manifest, or auto-create the certificate based on an ingress notation.  

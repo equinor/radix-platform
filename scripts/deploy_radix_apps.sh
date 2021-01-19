@@ -376,12 +376,12 @@ rm radix-public-site-values.yaml
 # Wait a few seconds until radix-operator can process the RadixRegistration
 wait_for_app_namespace "radix-platform"
 
-helm upgrade --install radix-pipeline-public-site-master \
+helm upgrade --install radix-pipeline-public-site-release \
     ../charts/radix-pipeline-invocation \
     --version 1.0.12 \
     --set name="radix-platform" \
-    --set cloneURL="git@github.com:equinor/radix-platform.git" \
-    --set cloneBranch="master" \
+    --set cloneURL="git@github.com:equinor/radix-public-site.git" \
+    --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
