@@ -84,18 +84,18 @@ if [[ $correct_az_login =~ (N|n) ]]; then
     exit 1
 fi
 
-done <<< "$(az network dns record-set list --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --query "[?type=='Microsoft.Network/dnszones/TXT']" | jq --raw-output -r '.[]|select(.txtRecords[].value[]|contains("external-dns/owner="' + $CLUSTER_NAME + '))|.name')"
+CLUSTERS="$(az network dns record-set list --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --query "[?type=='Microsoft.Network/dnszones/TXT']" | jq --raw-output -r '.[]|select(.txtRecords[].value[]|contains("external-dns/owner='$CLUSTER_NAME'"))|.name')"
 
 echo "Deleting A and TXT records"
 while read -r line; do
     if [[ "$line" ]]; then
-        stringarray=($line)
-        TXT_RECORD_EXISTS=$(az network dns record-set txt show -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n ${stringarray[1]} 2>&1)
+        TXT_RECORD_EXISTS=$(az network dns record-set txt show -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n $line 2>&1)
 
-        if [[ ""${TXT_RECORD_EXISTS}"" == *"Not Found"* ]] && [[ ""${stringarray[1]}"" != "*.ext-mon" ]]; then
-#TODO:restore            $(az network dns record-set txt delete -y -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n ${stringarray[1]})
-#TODO:restore            $(az network dns record-set a delete -y -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n ${stringarray[1]})
-            echo "Deleted ${stringarray[1]}"
+        if [[ ""${TXT_RECORD_EXISTS}"" != *"Not Found"* ]] && [[ ""$line"" != "*.ext-mon" ]]; then
+            echo "Delete for $line"
+            $(az network dns record-set txt delete -y -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n $line)
+            $(az network dns record-set a delete -y -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n $line)
+            echo "Deleted."
         fi
     fi
-done <<< "$(az network dns record-set list --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --query "[?type=='Microsoft.Network/dnszones/TXT']" | jq --raw-output -r '.[]|select(.txtRecords[].value[]|contains("external-dns/owner="' + $CLUSTER_NAME + '))|.name')"
+done <<< "${CLUSTERS}"
