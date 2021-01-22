@@ -310,7 +310,13 @@ if [[ "$REPLY" =~ (N|n) ]]; then
 
     AUTH_PROXY_COMPONENT="auth"
     AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-    WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+    RADIX_WEB_CONSOLE_ENV="prod"
+    if [[ $CLUSTER_TYPE  == "development" ]]; then
+      echo "Development cluster uses QA web-console"
+      RADIX_WEB_CONSOLE_ENV="qa"
+    fi
+    WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
     wait # wait for subshell to finish
 
