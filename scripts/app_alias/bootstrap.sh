@@ -85,6 +85,10 @@ fi
 if [[ -z "$RADIX_APP_ENVIRONMENT" ]]; then
     RADIX_APP_ENVIRONMENT="prod"
 fi
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+  echo "Development cluster uses QA environment"
+  RADIX_APP_ENVIRONMENT="qa"
+fi
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true

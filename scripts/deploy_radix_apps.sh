@@ -389,7 +389,12 @@ helm upgrade --install radix-pipeline-public-site-release \
 # Update replyUrl for web-console
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+  echo "Development cluster uses QA web-console"
+  RADIX_WEB_CONSOLE_ENV="qa"
+fi
+WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 
 echo ""
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."

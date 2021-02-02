@@ -38,6 +38,9 @@
 ### START
 ###
 
+# Script vars
+WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 echo ""
 echo "Start bootstrap of Grafana... "
 
@@ -179,7 +182,7 @@ kubectl create secret generic grafana-secrets \
 ###
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
-helm upgrade --install grafana grafana/grafana -f ./grafana-values.yaml \
+helm upgrade --install grafana grafana/grafana -f "${WORK_DIR}/grafana-values.yaml" \
   --version v6.2.0 \
   --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
   --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
