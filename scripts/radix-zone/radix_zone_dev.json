@@ -1,0 +1,38 @@
+{
+    "radix": {    
+        "zone": {
+                "env": "dev"
+        },
+        "azure": {
+            "location": "northeurope",
+            "subscription_name": "S941-Omnia-Radix-Development",
+            "subscription_id": "16ede44b-1f74-40a5-b428-46cca9a5741b",
+            "devops": {
+                "serviceconnection": "Azure - Dev"
+                }
+            },
+        "cluster":{
+            "type": "development",
+            "resourcegroup": "clusters",
+            "monitoringresourcegroup": "monitoring"
+        },
+        "dns": {
+            "zone": { 
+                "name": "dev.radix.equinor.com",
+                "resourcegroup": "common"
+            }
+        },
+        "api_prefix": "server-radix-api-qa",
+        "webhook_prefix": "webhook-radix-github-webhook-qa",
+        "flux": {
+            "gitops_repo": "git@github.com:equinor/radix-flux.git",
+            "gitops_dir": "development-configs",
+            "gitops_branch":"master"
+        }
+    },
+    "oauth": {
+        "OAUTH2_PROXY_CLIENT_ID": "5687b237-eda3-4ec3-a2a1-023e85a2bd84",
+        "OAUTH2_PROXY_SCOPE": "openid profile offline_access 1025aa65-09e1-41a8-8c59-68ede2e41340/user_impersonation email",
+        "VAULT_CLIENT_SECRET_NAME": "radix-web-console-client-secret"
+    }
+}
