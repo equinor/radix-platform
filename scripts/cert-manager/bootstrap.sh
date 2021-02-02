@@ -220,32 +220,6 @@ function installCertManager(){
 ### Transform and apply all custom resources
 ###
 
-function waitUntilWebHookIsReady() {
-    local iteration=0
-    printf "\nWaiting for cert-manager webhook to spin up. This can take a while.."
-    while [[ ! "$(kubectl get apiservice v1beta1.webhook.cert-manager.io -o=jsonpath='{.status.conditions[?(@.type=="Available")].status}')" == "True" ]]; do
-        sleep 3s
-        case "$iteration" in
-            "6" )
-                printf "dumdidum..."
-                ;;
-            "12" )
-                printf "soon..."
-                ;;
-            "18" )
-                printf "any time now..."
-                ;;
-            "24" )
-                printf "nice weather today, aint it?..."
-                ;;
-            *)
-                printf "."
-        esac
-        iteration="$((iteration + 1))"
-    done
-    printf "...Done.\n"
-}
-
 function transformManifests() {
     printf "\nStart transforming manifests..."
     # Fetch dns system user credentials
@@ -322,7 +296,6 @@ function annotateSecretsForKubedSync() {
 ###
 
 installCertManager
-waitUntilWebHookIsReady
 transformManifests
 applyManifests
 annotateSecretsForKubedSync

@@ -81,7 +81,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
   exit 1
 fi
 
-WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
@@ -148,7 +148,7 @@ helm repo update
 
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
   --version 12.7.0 \
-  -f "prometheus-operator-values.yaml"
+  -f "${WORK_DIR}/prometheus-operator-values.yaml"
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
