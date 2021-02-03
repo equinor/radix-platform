@@ -4,7 +4,7 @@ trigger:
       - devops-workitem-automation
 
 stages:
-  - stage: create-workitem
+  - stage: create_workitem
     jobs:
       - job: workitem_poc
         pool:
