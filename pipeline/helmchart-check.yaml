@@ -39,5 +39,5 @@ stages:
           displayName: 'Set default Azure DevOps organization and project'
 
         - script: |
-            az boards work-item create --title CT-TEST-Pipeline-task --type Task -d "testing pipeline for work items"
+            az boards work-item create --title CT-TEST-Pipeline-task --type "User Story" -d "testing pipeline for work items"
           displayName: 'Show build list and PRs'
