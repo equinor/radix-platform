@@ -9,38 +9,37 @@ stages:
       - job: workitem_poc
         pool:
           VmImage: ubuntu-latest
+        steps:
+        # Updating the python version available on the linux agent
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.x'
+            architecture: 'x64'
 
-          steps:
-          # Updating the python version available on the linux agent
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.x'
-              architecture: 'x64'
+        # Updating pip to latest
+        - script: python -m pip install --upgrade pip
+          displayName: 'Upgrade pip'
 
-          # Updating pip to latest
-          - script: python -m pip install --upgrade pip
-            displayName: 'Upgrade pip'
+        # Updating to latest Azure CLI version.
+        - script: pip install --pre azure-cli --extra-index-url https://azurecliprod.blob.core.windows.net/edge
+          displayName: 'upgrade azure cli'
 
-          # Updating to latest Azure CLI version.
-          - script: pip install --pre azure-cli --extra-index-url https://azurecliprod.blob.core.windows.net/edge
-            displayName: 'upgrade azure cli'
+        - script: az --version
+          displayName: 'Show Azure CLI version'
 
-          - script: az --version
-            displayName: 'Show Azure CLI version'
+        - script: az extension add -n azure-devops
+          displayName: 'Install Azure DevOps Extension'
 
-          - script: az extension add -n azure-devops
-            displayName: 'Install Azure DevOps Extension'
+        - script: echo ${AZURE_DEVOPS_CLI_PAT} | az devops login
+          env:
+            AZURE_DEVOPS_CLI_PAT: $(System.AccessToken)
+          displayName: 'Login Azure DevOps Extension'
 
-          - script: echo ${AZURE_DEVOPS_CLI_PAT} | az devops login
-            env:
-              AZURE_DEVOPS_CLI_PAT: $(System.AccessToken)
-            displayName: 'Login Azure DevOps Extension'
+        - script: az devops configure --defaults organization=https://dev.azure.com/Equinor project=Radix --use-git-aliases true
+          displayName: 'Set default Azure DevOps organization and project'
 
-          - script: az devops configure --defaults organization=https://dev.azure.com/Equinor project=Radix --use-git-aliases true
-            displayName: 'Set default Azure DevOps organization and project'
-
-          - script: |
-              az pipelines build list
-              az boards area project list
-              git pr list
-            displayName: 'Show build list and PRs'
+        - script: |
+            az pipelines build list
+            az boards area project list
+            git pr list
+          displayName: 'Show build list and PRs'
