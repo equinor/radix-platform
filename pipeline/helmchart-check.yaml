@@ -41,5 +41,6 @@ stages:
 
           - script: |
               az pipelines build list
+              az boards area project list
               git pr list
             displayName: 'Show build list and PRs'
