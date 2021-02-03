@@ -39,7 +39,5 @@ stages:
           displayName: 'Set default Azure DevOps organization and project'
 
         - script: |
-            az pipelines build list
-            az boards area project list
-            git pr list
+            az boards work-item show --id 69825
           displayName: 'Show build list and PRs'
