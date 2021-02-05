@@ -56,13 +56,17 @@ function CheckRelease {
         $ReleaseName,
         [Parameter()]
         [string]
-        $ChartName
+        $ChartName,
+        [Parameter()]
+        [string]
+        $Cluster
     )
     try {
         $releaseVersion = GetReleaseVersion -Release $ReleaseName
         $chartVersion = GetChartVersion -Chart $ChartName
         if ([System.Version]"$chartVersion" -gt [System.Version]"$releaseVersion") {
             Write-Host "Found new version for $ReleaseName" -ForegroundColor DarkYellow
+            NewWorkItem -ReleaseName $ReleaseName -RealseVersion $releaseVersion -ChartVersion $chartVersion -Cluster $Cluster
         }
         else {
             Write-Host "No new version for $ReleaseName found" -ForegroundColor Green
@@ -83,8 +87,6 @@ function UpdateRepos {
     Write-Host "list of repos to be added: $RepoList"
     try {
         foreach ($repo in $RepoList) {
-            
-            
             $n = $repo.Split(" ")
             helm repo add $n.GetValue(0) $n.GetValue(1)
         }
@@ -93,6 +95,44 @@ function UpdateRepos {
     }
     try {
         helm repo update
+    }
+    catch {
+    }
+}
+
+# Create a new work item if it does not already exist
+function NewWorkItem {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [String]
+        $ReleaseName,
+        [Parameter(Mandatory=$true)]
+        [String]
+        $RealseVersion,
+        [Parameter(Mandatory=$true)]
+        [String]
+        $ChartVersion,
+        [Parameter(Mandatory=$true)]
+        [String]
+        $Cluster
+    )
+    $WiTitle = "Upgrade component version for $ReleaseName in $Cluster"
+    $qstring = [System.String]::Concat( `
+                    "SELECT [system.Id], [System.WorkItemType], [System.Title], [System.State] FROM workitems ", `
+                    "WHERE [System.WorkItemType] = 'User Story' AND [System.State] = 'New' AND [System.Title] = ", "'", "$WiTitle", "' ", `
+                    "OR [System.WorkItemType] = 'User Story' AND [System.State] = 'On Hold' AND [System.Title] = ", "'", "$WiTitle", "' " , `
+                    "OR [System.WorkItemType] = 'User Story' AND [System.State] = 'Active' AND [System.Title] = ", "'", "$WiTitle", "' ")
+    try {
+        # Check if work item exist
+        $wi = (az boards query --wiql $qstring --output json | ConvertFrom-Json).fields.'System.Title'
+        if (!$wi) {
+            Write-Host "Creating new work item"
+            az boards work-item create --title "$WiTitle" --type "User Story" --description "Old version $ReleaseVersion, new version $ChartVersion" --assigned-to "Elsa Mäyrä Irgens"
+        }
+        else {
+            Write-Host "Work item already exist"
+        }
     }
     catch {
     }
