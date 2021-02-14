@@ -42,9 +42,8 @@ stages:
         #   displayName: 'Show build list and PRs'
         - task: AzurePowerShell@5
           env:
-            clientId: ${env:CLIENTID}
-            clientSecret: ${env:CLIENTSECRET}
-            tenant: ${env:TENANT}
+            clientId: $(CLIENTID)
+            clientSecret: $(CLIENTSECRET)
           inputs:
             ScriptType: InlineScript
             azureSubscription: 'Azure - Dev'
