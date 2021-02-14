@@ -51,7 +51,7 @@ stages:
             azurePowerShellVersion: LatestVersion
             pwsh: true
             Inline: |
-              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret" --tenant "$Env:tenant"
+              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret" --tenant $Env:tenant
               get-azcontext
               az devops configure -l
               # Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
