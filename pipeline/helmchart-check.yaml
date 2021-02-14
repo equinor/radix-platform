@@ -49,7 +49,7 @@ stages:
             Inline: |
               Write-Host "Testing"
               dir
-              # az account show
-              # get-azcontext
+              az account show
+              get-azcontext
               # Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
               # .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
