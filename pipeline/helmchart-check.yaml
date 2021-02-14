@@ -44,13 +44,14 @@ stages:
           env:
             clientId: ${env:CLIENTID}
             clientSecret: ${env:CLIENTSECRET}
+            tenant: ${env:TENANT}
           inputs:
             ScriptType: InlineScript
             azureSubscription: 'Azure - Dev'
             azurePowerShellVersion: LatestVersion
             pwsh: true
             Inline: |
-              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret"
+              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret" --tenant "$Env:tenant"
               get-azcontext
               az devops configure -l
               # Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
