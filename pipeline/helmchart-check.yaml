@@ -47,4 +47,4 @@ stages:
               az account show
               get-azcontext
               Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
-              .\powershell-modules\Check-Helm\Check-Helm.psm1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
+              .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
