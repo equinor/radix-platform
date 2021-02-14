@@ -41,15 +41,17 @@ stages:
         #     az boards work-item create --title CT-TEST-Pipeline-task --type "User Story" -d "testing pipeline for work items"
         #   displayName: 'Show build list and PRs'
         - task: AzurePowerShell@5
+          env:
+            clientId: ${env:CLIENTID}
+            clientSecret: ${env:CLIENTSECRET}
           inputs:
             ScriptType: InlineScript
             azureSubscription: 'Azure - Dev'
             azurePowerShellVersion: LatestVersion
             pwsh: true
             Inline: |
-              Write-Host "Testing"
-              dir
-              az account show
+              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret"
               get-azcontext
+              az devops configure -l
               # Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
               # .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
