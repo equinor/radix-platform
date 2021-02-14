@@ -2,6 +2,8 @@ trigger:
   branches:
     include:
       - devops-workitem-automation
+variables:
+  System.Debug: true
 
 stages:
   - stage: dev
@@ -44,8 +46,8 @@ stages:
             azurePowerShellVersion: LatestVersion
             pwsh: true
             Inline: |
-              az account show
-              get-azcontext
               dir
+              #az account show
+              #get-azcontext
               # Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
               # .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
