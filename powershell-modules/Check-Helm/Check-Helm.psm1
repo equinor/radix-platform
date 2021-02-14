@@ -31,7 +31,6 @@ function GetChartVersion {
     )
     try {
         $n = helm search repo -r ('\v' + $Chart + '\v') -o json | ConvertFrom-Json
-        #$n = helm search repo $Chart -o json | ConvertFrom-Json
         if ($n.name -eq $Chart) {
             Write-Host "Found chart for $($n.name) with version $($n.version)"
             $n.version = $n.version -replace '[a-z-]'

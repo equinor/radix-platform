@@ -4,9 +4,9 @@ trigger:
       - devops-workitem-automation
 
 stages:
-  - stage: create_workitem
+  - stage: dev
     jobs:
-      - job: workitem_poc
+      - job: checkversion
         pool:
           VmImage: ubuntu-latest
         steps:
@@ -24,9 +24,6 @@ stages:
         - script: pip install --pre azure-cli --extra-index-url https://azurecliprod.blob.core.windows.net/edge
           displayName: 'upgrade azure cli'
 
-        - script: az --version
-          displayName: 'Show Azure CLI version'
-
         - script: az extension add -n azure-devops
           displayName: 'Install Azure DevOps Extension'
 
@@ -38,6 +35,16 @@ stages:
         - script: az devops configure --defaults organization=https://dev.azure.com/Equinor project=Radix --use-git-aliases true
           displayName: 'Set default Azure DevOps organization and project'
 
-        - script: |
-            az boards work-item create --title CT-TEST-Pipeline-task --type "User Story" -d "testing pipeline for work items"
-          displayName: 'Show build list and PRs'
+        # - script: |
+        #     az boards work-item create --title CT-TEST-Pipeline-task --type "User Story" -d "testing pipeline for work items"
+        #   displayName: 'Show build list and PRs'
+        - task: AzurePowerShell@5
+          inputs:
+            azureSubscription: 'Azure - Dev'
+            azurePowerShellVersion: LatestVersion
+            pwsh: true
+            Inline: |
+              az account show
+              get-azcontext
+              Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
+              .\powershell-modules\Check-Helm\Check-Helm.psm1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
