@@ -296,7 +296,7 @@ function annotateSecretsForKubedSync() {
 ### MAIN
 ###
 
-#installCertManager
+installCertManager
 transformManifests
 applyManifests
 annotateSecretsForKubedSync
