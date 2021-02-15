@@ -186,8 +186,8 @@ printf "...Done.\n"
 function installCertManager(){
     printf "\nInstalling cert-manager..."
     # Install the CustomResourceDefinition resources separately
-    kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml \
-    2>&1 >/dev/null
+    #kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml \
+    #2>&1 >/dev/null
 
     # Create the namespace for cert-manager
     kubectl create namespace cert-manager \
@@ -204,14 +204,15 @@ function installCertManager(){
     # Install the cert-manager Helm chart 
     #
     # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
-#    helm upgrade --install cert-manager \
-#    --namespace cert-manager \
-#    --version v1.1 \
-#    --set global.rbac.create=true \
-#    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-#    --set ingressShim.defaultIssuerKind=ClusterIssuer \
-#    jetstack/cert-manager \
-#    2>&1 >/dev/null
+    helm upgrade --install cert-manager \
+    --namespace cert-manager \
+    --version v1.1.0 \
+    --set installCRDs=true \
+    --set global.rbac.create=true \
+    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
+    --set ingressShim.defaultIssuerKind=ClusterIssuer \
+    jetstack/cert-manager \
+    2>&1 >/dev/null
     printf "...Done.\n"
 }
 
