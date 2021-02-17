@@ -147,7 +147,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
-  --version 12.7.0 \
+  --version 13.7.2 \
   -f "${WORK_DIR}/prometheus-operator-values.yaml"
 
 # Install Prometheus Ingress with HTTP Basic Authentication
