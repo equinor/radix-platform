@@ -112,7 +112,7 @@ jobs:
     - name: logout
       shell: pwsh
       run: |
-        Logout-azAccount
+        Logout-azAccount | Out-Null
 
 
 ############## PROD STAGE ##############
@@ -230,4 +230,4 @@ jobs:
     - name: logout
       shell: pwsh
       run: |
-        Logout-azAccount
+        Logout-azAccount | Out-Null
