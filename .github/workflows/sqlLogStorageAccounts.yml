@@ -44,7 +44,7 @@ jobs:
 
         # Set timestamp variable for jobs
         $currentTime = (get-date).ToString("dd-MM-yyyyThhMMZ")
-        Write-Output "::set-env name=timestamp::$currentTime"
+        echo "timestamp=$currentTime" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     # Install powershell modules
     - name: Install powershell modules
