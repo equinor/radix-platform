@@ -10,6 +10,7 @@ function GetReleaseVersion {
         $namespace
 
     )
+    Write-Host "Checking release version.."
     $n = helm ls -A -f ('(?i)^' + $Release) -o json | ConvertFrom-Json
     try {
         $v = $n.chart -replace '[a-z-]'
@@ -30,6 +31,7 @@ function GetChartVersion {
         $Chart
     )
     try {
+        Write-Host "Checking chart version.."
         $n = helm search repo -r ('\v' + $Chart + '\v') -o json | ConvertFrom-Json
         if ($n.name -eq $Chart) {
             Write-Host "Found chart for $($n.name) with version $($n.version)"
