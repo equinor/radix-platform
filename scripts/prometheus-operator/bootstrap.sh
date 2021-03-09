@@ -146,8 +146,11 @@ WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
+kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.45.0/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
+kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.45.0/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
+
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
-  --version 12.7.0 \
+  --version 13.13.0 \
   -f "${WORK_DIR}/prometheus-operator-values.yaml"
 
 # Install Prometheus Ingress with HTTP Basic Authentication
