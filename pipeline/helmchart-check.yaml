@@ -2,6 +2,8 @@ trigger:
   branches:
     include:
       - devops-workitem-automation
+
+pr: none
 variables:
   System.Debug: true
 
@@ -10,7 +12,7 @@ stages:
     jobs:
       - job: checkversion
         pool:
-          VmImage: ubuntu-latest
+          VmImage: windows-latest
         steps:
         # Updating the python version available on the linux agent
         - task: UsePythonVersion@0
