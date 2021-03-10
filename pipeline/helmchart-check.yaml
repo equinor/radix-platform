@@ -44,4 +44,7 @@ stages:
               kubectl
               helm version
               Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
+              Write-Host "Starting version check in dev cluster..."
               .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
+              Write-Host "Starting version check in playground cluster..."
+              .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_playground.json"
