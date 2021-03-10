@@ -12,7 +12,7 @@ stages:
     jobs:
       - job: checkversion
         pool:
-          VmImage: windows-latest
+          VmImage: ubuntu-latest
         steps:
         # Updating the python version available on the linux agent
         # - task: UsePythonVersion@0
