@@ -42,20 +42,20 @@ stages:
         - script: az boards work-item show --id 48996
           displayName: 'testing az devops'
 
-        # - task: AzurePowerShell@5
-        #   env:
-        #     clientId: $(CLIENTID)
-        #     clientSecret: $(CLIENTSECRET)
-        #   inputs:
-        #     ScriptType: InlineScript
-        #     azureSubscription: 'Azure - Dev'
-        #     azurePowerShellVersion: LatestVersion
-        #     pwsh: true
-        #     Inline: |
-        #       az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret" --tenant ${env:TENANT}
-        #       get-azcontext
-        #       az devops configure -l
-        #       kubectl
-        #       helm version
-        #       Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
-        #       .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
+        - task: AzurePowerShell@5
+          env:
+            clientId: $(CLIENTID)
+            clientSecret: $(CLIENTSECRET)
+          inputs:
+            ScriptType: InlineScript
+            azureSubscription: 'Azure - Dev'
+            azurePowerShellVersion: LatestVersion
+            pwsh: true
+            Inline: |
+              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret" --tenant ${env:TENANT}
+              get-azcontext
+              az devops configure -l
+              kubectl
+              helm version
+              Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
+              .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
