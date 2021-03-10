@@ -39,6 +39,9 @@ stages:
         - script: az devops configure --defaults organization=https://dev.azure.com/Equinor project=Radix --use-git-aliases true --debug
           displayName: 'Set default Azure DevOps organization and project'
 
+        - script: az boards work-item show --id 48996
+          displayName: 'testing az devops'
+
         # - task: AzurePowerShell@5
         #   env:
         #     clientId: $(CLIENTID)
