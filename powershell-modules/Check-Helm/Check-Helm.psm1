@@ -35,8 +35,8 @@ function GetChartVersion {
         $n = helm search repo -r ('\v' + $Chart + '\v') -o json | ConvertFrom-Json
         if ($n.name -eq $Chart) {
             Write-Host "Found chart for $($n.name) with version $($n.version)"
-            $n.version = $n.version -replace '[a-z-]'
-            return $n.version
+            $r = $n.version -replace '[a-z-]'
+            return $r
         }
         else {
         Write-Error "Cant find chart $Chart"
@@ -129,7 +129,7 @@ function NewWorkItem {
         $wi = (az boards query --wiql $qstring --output json | ConvertFrom-Json).fields.'System.Title'
         if (!$wi) {
             Write-Host "Creating new work item"
-            az boards work-item create --title "$WiTitle" --type "User Story" --description "Old version $ReleaseVersion, new version $ChartVersion" --assigned-to "Elsa Mäyrä Irgens"
+            az boards work-item create --title "$WiTitle" --type "User Story" --description "Old version $ReleaseVersion, new version $ChartVersion" --assigned-to "elirg@equinor.com"
         }
         else {
             Write-Host "Work item already exist"

@@ -5,7 +5,14 @@ param (
     $RadixEnvironment
 )
 # Installs powerhsell-yaml for easy conversion to objects
-Install-Module powershell-yaml -Force
+try {
+    Install-Module powershell-yaml -Force
+}
+catch {
+    $_
+    exit
+}
+
 
 # Imports the modules needed for checking chart versions
 Import-Module ".\powershell-modules\Check-Helm\Check-Helm.psm1" -Force
@@ -19,7 +26,7 @@ az devops configure --defaults organization=https://dev.azure.com/Equinor projec
 
 #Get current active cluster name
 $activeRadixCluster = (Invoke-WebRequest -Method Get `
-    -Uri $zoneVariables.radix.cluster.activeclustercheckurl | ConvertFrom-Yaml).spec.Values.activeClusterName
+    -Uri $zoneVariables.radix.cluster.activeclustercheckurl -UseBasicParsing | ConvertFrom-Yaml).spec.Values.activeClusterName
 
 # Get aks credentials and set it as active context for kubectl and helm
 az aks get-credentials -n $activeRadixCluster -g $zoneVariables.radix.cluster.resourcegroup --admin
@@ -33,7 +40,8 @@ $repos = @('jetstack https://charts.jetstack.io',
             'ingress-nginx https://kubernetes.github.io/ingress-nginx',
             'appscode https://charts.appscode.com/stable/',
             'kured https://weaveworks.github.io/kured',
-            'vmware-tanzu https://vmware-tanzu.github.io/helm-charts')
+            'vmware-tanzu https://vmware-tanzu.github.io/helm-charts',
+            'prometheus-community https://prometheus-community.github.io/helm-charts')
 
 UpdateRepos -RepoList $repos
 
