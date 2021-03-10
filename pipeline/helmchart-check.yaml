@@ -1,7 +1,9 @@
-trigger:
+schedules:
+- cron: "10 0 * * sun"
+  displayName: Daily midnight build
   branches:
     include:
-      - devops-workitem-automation
+    - master
 
 pr: none
 variables:
