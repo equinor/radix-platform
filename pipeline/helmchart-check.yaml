@@ -25,10 +25,8 @@ stages:
         - script: az devops configure --defaults organization=https://dev.azure.com/Equinor project=Radix --use-git-aliases true
           displayName: 'Set default Azure DevOps organization and project'
 
-        - script: az boards work-item show --id 48996
-          displayName: 'testing az devops'
-
         - task: AzurePowerShell@5
+          displayName: 'Checking release in dev'
           env:
             clientId: $(CLIENTID)
             clientSecret: $(CLIENTSECRET)
@@ -46,5 +44,60 @@ stages:
               Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
               Write-Host "Starting version check in dev cluster..."
               .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_dev.json"
+
+        - task: AzurePowerShell@5
+          displayName: 'Checking release in playground'
+          env:
+            clientId: $(CLIENTID)
+            clientSecret: $(CLIENTSECRET)
+          inputs:
+            ScriptType: InlineScript
+            azureSubscription: 'Azure - Dev'
+            azurePowerShellVersion: LatestVersion
+            pwsh: true
+            Inline: |
+              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret" --tenant ${env:TENANT}
+              get-azcontext
+              az devops configure -l
+              kubectl
+              helm version
+              Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
               Write-Host "Starting version check in playground cluster..."
               .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_playground.json"
+
+  - stage: prod
+    jobs:
+      - job: checkversion
+        pool:
+          VmImage: ubuntu-latest
+        steps:
+        - script: az extension add -n azure-devops
+          displayName: 'Install Azure DevOps Extension'
+
+        - script: echo ${AZURE_DEVOPS_CLI_PAT} | az devops login
+          env:
+            AZURE_DEVOPS_CLI_PAT: $(System.AccessToken)
+          displayName: 'Login Azure DevOps Extension'
+
+        - script: az devops configure --defaults organization=https://dev.azure.com/Equinor project=Radix --use-git-aliases true
+          displayName: 'Set default Azure DevOps organization and project'
+
+        - task: AzurePowerShell@5
+          displayName: 'Checking release in prod'
+          env:
+            clientId: $(PROD_CLIENTID)
+            clientSecret: $(PROD_CLIENTSECRET)
+          inputs:
+            ScriptType: InlineScript
+            azureSubscription: 'Azure - Prod'
+            azurePowerShellVersion: LatestVersion
+            pwsh: true
+            Inline: |
+              az login --service-principal --username "$Env:clientId" --password "$Env:clientSecret" --tenant ${env:TENANT}
+              get-azcontext
+              az devops configure -l
+              kubectl
+              helm version
+              Import-Module .\powershell-modules\Check-Helm\Check-Helm.psm1
+              Write-Host "Starting version check in production cluster..."
+              .\scripts\devops\check-component-version.ps1 -RadixEnvironment ".\scripts\radix-zone\radix_zone_prod.json"
