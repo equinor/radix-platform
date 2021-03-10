@@ -1,3 +1,5 @@
+trigger: none
+
 schedules:
 - cron: "10 0 * * sun"
   displayName: Daily midnight run on sunday
