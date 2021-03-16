@@ -307,4 +307,4 @@ annotateSecretsForKubedSync
 ###
 
 echo ""
-echo "Boostrapping of Cert-Manager done!"
+echo "Bootstrapping of Cert-Manager done!"
