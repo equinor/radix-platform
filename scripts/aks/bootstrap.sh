@@ -349,4 +349,4 @@ if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
 fi
 
 echo ""
-echo "Boostrap of \"${CLUSTER_NAME}\" done!"
+echo "Bootstrap of \"${CLUSTER_NAME}\" done!"

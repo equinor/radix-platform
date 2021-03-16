@@ -50,7 +50,7 @@ Example radix-zone "playground":
 
 - You must have the role `owner` for all the omnia radix azure subscriptions to be able to create the required azure resources
 
-### Boostrap base infrastructure
+### Bootstrap base infrastructure
 
 See [base-infrastructure/README](./base-infrastructure/README.md) for instructions on how to perform each step.
 
@@ -75,12 +75,12 @@ You can now continue bootstrapping additional radix-zones, or bootstrap radix cl
 1. Create the radix-zone config file, `radix_zone_{name}.env`
    - Use the infrastructure environment `dev` while developing and testing the radix-zone scripts
 1. Create a directory that will hold the infrastructure scripts, `./{name}-infrastructure/`
-1. Create the boostrap script for radix-zone specific infrastructure components, `./{name}-infrastructure/bootstrap.sh`  
+1. Create the bootstrap script for radix-zone specific infrastructure components, `./{name}-infrastructure/bootstrap.sh`  
    The minimum is to bootstrap the dns zone and permissions to use it.  
    Pay attention to prefixing any other azure resource names as they must be unique and easy to identify that they belong to the radix-zone.
 1. Create the teardown script for radix-zone specific infrastructure components, `./{name}-infrastructure/teardown.sh`  
    This script should remove everything that was created or configured by the bootstrap script
-1. QA the boostrap script
+1. QA the bootstrap script
    - Verify that the script is idempotent by running it multiple times, you should end up with the exact same configuration
    - Verify that bootstrapping the radix-zone does not impact any other radix-zone
    - Verify that radix cluster(s) can run inside the radix-zone
