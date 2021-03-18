@@ -310,7 +310,13 @@ if [[ "$REPLY" =~ (N|n) ]]; then
 
     AUTH_PROXY_COMPONENT="auth"
     AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-    WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+    RADIX_WEB_CONSOLE_ENV="prod"
+    if [[ $CLUSTER_TYPE  == "development" ]]; then
+      echo "Development cluster uses QA web-console"
+      RADIX_WEB_CONSOLE_ENV="qa"
+    fi
+    WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
     wait # wait for subshell to finish
 
@@ -323,12 +329,12 @@ fi
 echo ""
 printf "Enabling monitoring addon in the destination cluster... "
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name radix-container-logs-$RADIX_ZONE | jq -r .[0].id)
-az aks enable-addons -a monitoring -n $DEST_CLUSTER -g clusters --workspace-resource-id "$WORKSPACE_ID"
+az aks enable-addons -a monitoring -n $DEST_CLUSTER -g clusters --workspace-resource-id "$WORKSPACE_ID" --no-wait
 printf "Done.\n"
 
 echo ""
 printf "Disabling monitoring addon in the source cluster... "
-az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters
+az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters --no-wait
 printf "Done.\n"
 
 echo ""

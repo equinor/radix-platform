@@ -6,6 +6,7 @@ ingress:
   - secretName: "xx"
     hosts:
       - xx
+nodeSelector: {"kubernetes.io/os": "linux"}
 
 resources:
 #  limits:
