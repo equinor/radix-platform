@@ -341,10 +341,12 @@ az aks nodepool add \
     --node-count 0 \
     --max-pods 110 \
     --node-vm-size Standard_NC6s_v3 \
-    --labels sku=gpu gpu=nvidia-v100 gpu-count=1 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=1 radix-node-gpu=nvidia-v100 radix-node-gpu-count=1 \
     --node-taints sku=gpu:NoSchedule \
     --node-taints gpu=nvidia-v100:NoSchedule \
     --node-taints gpu-count=1:NoSchedule \
+    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
+    --node-taints radix-node-gpu-count=1:NoSchedule \
     --no-wait \
     2>&1 >/dev/null
 
@@ -355,10 +357,12 @@ az aks nodepool add \
     --node-count 0 \
     --max-pods 110 \
     --node-vm-size Standard_NC12s_v3 \
-    --labels sku=gpu gpu=nvidia-v100 gpu-count=2 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=2 radix-node-gpu=nvidia-v100 radix-node-gpu-count=2 \
     --node-taints sku=gpu:NoSchedule \
     --node-taints gpu=nvidia-v100:NoSchedule \
     --node-taints gpu-count=2:NoSchedule \
+    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
+    --node-taints radix-node-gpu-count=2:NoSchedule \
     --no-wait \
     2>&1 >/dev/null
 
@@ -369,10 +373,12 @@ az aks nodepool add \
     --node-count 0 \
     --max-pods 110 \
     --node-vm-size Standard_NC24s_v3 \
-    --labels sku=gpu gpu=nvidia-v100 gpu-count=4 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=4 radix-node-gpu=nvidia-v100 radix-node-gpu-count=4 \
     --node-taints sku=gpu:NoSchedule \
     --node-taints gpu=nvidia-v100:NoSchedule \
     --node-taints gpu-count=4:NoSchedule \
+    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
+    --node-taints radix-node-gpu-count=4:NoSchedule \
     --no-wait \
     2>&1 >/dev/null
 
