@@ -328,6 +328,56 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$C
 
 printf "Done.\n"
 
+
+#######################################################################################
+### Add GPU node pools
+###
+echo "Adding GPU node pools to the cluster... "
+
+az aks nodepool add \
+    --resource-group clusters \
+    --cluster-name "$CLUSTER_NAME" \
+    --name nc6sv3 \
+    --node-count 0 \
+    --max-pods 110 \
+    --node-vm-size Standard_NC6s_v3 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=1 \
+    --node-taints sku=gpu:NoSchedule \
+    --node-taints gpu=nvidia-v100:NoSchedule \
+    --node-taints gpu-count=1:NoSchedule \
+    --no-wait \
+    2>&1 >/dev/null
+
+az aks nodepool add \
+    --resource-group clusters \
+    --cluster-name "$CLUSTER_NAME" \
+    --name nc12sv3 \
+    --node-count 0 \
+    --max-pods 110 \
+    --node-vm-size Standard_NC12s_v3 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=2 \
+    --node-taints sku=gpu:NoSchedule \
+    --node-taints gpu=nvidia-v100:NoSchedule \
+    --node-taints gpu-count=2:NoSchedule \
+    --no-wait \
+    2>&1 >/dev/null
+
+az aks nodepool add \
+    --resource-group clusters \
+    --cluster-name "$CLUSTER_NAME" \
+    --name nc24sv3 \
+    --node-count 0 \
+    --max-pods 110 \
+    --node-vm-size Standard_NC24s_v3 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=4 \
+    --node-taints sku=gpu:NoSchedule \
+    --node-taints gpu=nvidia-v100:NoSchedule \
+    --node-taints gpu-count=4:NoSchedule \
+    --no-wait \
+    2>&1 >/dev/null
+
+echo "Done."
+
 #######################################################################################
 ### END
 ###
