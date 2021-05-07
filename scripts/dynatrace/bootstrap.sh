@@ -89,6 +89,8 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 echo "Install Dynatrace"
+
+# Store the secrets in a temporary .yaml file.
 DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-token | jq -r .value)
 DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
@@ -96,13 +98,16 @@ echo "apiUrl: ${DYNATRACE_API_URL}
 apiToken: ${DYNATRACE_API_TOKEN}
 paasToken: ${DYNATRACE_PAAS_TOKEN}" > dynatrace-values.yaml
 
+# Create the dynatrace namespace.
 kubectl create ns dynatrace --dry-run=client --save-config -o yaml |
     kubectl apply -f -
-    
+# Create the secret to be used in the helm chart for deploying Dynatrace.
 kubectl create secret generic dynatrace-secret --namespace dynatrace \
     --from-file=./dynatrace-values.yaml \
     --dry-run=client -o yaml |
     kubectl apply -f -
 
+# Delete the temporary .yaml file.
 rm -f dynatrace-values.yaml
+
 echo "Done."
