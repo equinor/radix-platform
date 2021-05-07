@@ -117,6 +117,12 @@ if ! [[ -x "$INSTALL_BASECOMPONENTS_SCRIPT" ]]; then
     echo "The install base components script is not found or it is not executable in path $INSTALL_BASECOMPONENTS_SCRIPT" >&2
 fi
 
+DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
+if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
+    # Print to stderror
+    echo "The dynatrace integration script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
+fi
+
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
@@ -237,6 +243,20 @@ while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
+
+# Wait for dynatrace to be deployed from flux
+echo ""
+echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
+echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo ""
+printf "Update Dynatrace integration... "
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" source "$DYNATRACE_INTEGRATION_SCRIPT")
+wait # wait for subshell to finish
+printf "Done updating Dynatrace integration."
 
 # Wait for velero to be deployed from flux
 echo ""
