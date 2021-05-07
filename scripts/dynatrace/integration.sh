@@ -110,7 +110,8 @@ if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
     --header 'Content-Type: application/json' \
     --data '{
         "label": "Radix Dev-test",
-        "endpointUrl": "'$CLUSTER_API_URL'"
+        "endpointUrl": "'$CLUSTER_API_URL'",
+        "authToken": "'$AUTH_TOKEN'"
     }' \
     --write-out '%{http_code}' | jq --raw-output)"
 
@@ -123,7 +124,8 @@ if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
         --header 'Content-Type: application/json' \
         --data '{
             "label": "Radix Dev",
-            "endpointUrl": "'$CLUSTER_API_URL'"
+            "endpointUrl": "'$CLUSTER_API_URL'",
+            "authToken": "'$AUTH_TOKEN'"
         }' \
         --write-out '%{http_code}' | jq --raw-output)"
 
