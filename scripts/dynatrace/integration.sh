@@ -83,7 +83,42 @@ CREDENTIAL_ID="$(curl --request GET \
     --silent | jq -r '.values[] | select(.name=="Radix-'$RADIX_ZONE'").id')"
 
 if [[ -z "$CREDENTIAL_ID" ]]; then
-    echo "Credential does not exist." >&2
+    echo "Credential does not exist."
+    # Create credential
+    # Validate request
+    VALIDATE_CREATE="$(curl --request POST \
+        --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/validator \
+        --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "label": "Radix-test",
+            "endpointUrl": "'$CLUSTER_API_URL'",
+            "authToken": "'$AUTH_TOKEN'"
+        }' \
+        --silent \
+        --write-out '%{http_code}' | jq --raw-output)"
+    if [[ $VALIDATE_CREATE == 204 ]]; then
+        "Creating new credential..."
+        CREDENTIAL_ID="$(curl --request POST \
+            --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
+            --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
+            --header 'Content-Type: application/json' \
+            --data '{
+                "label": "Radix-test",
+                "endpointUrl": "'$CLUSTER_API_URL'",
+                "authToken": "'$AUTH_TOKEN'"
+            }' \
+            --silent | jq --raw-output '.id')"
+        
+        echo "Credential successfully created."
+    else
+        # Validation failed.
+    fi
+fi
+
+if [[ -z "$CREDENTIAL_ID" ]]; then
+    # Still no Credential ID?
+    echo "Something went wrong." >&2
     exit 1
 fi
 
