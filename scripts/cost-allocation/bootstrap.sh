@@ -85,7 +85,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 echo "Install Radix cost allocator"
-SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name radix-cost-allocation-db-writer | jq -r .value)
+SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name radix-cost-allocation-db-writer-$RADIX_ZONE | jq -r .value)
 echo "db:                                                                                                                           
   password: ${SQL_DB_PASSWORD}" > radix-cost-allocation-values.yaml
 
