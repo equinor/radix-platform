@@ -91,7 +91,7 @@ if [[ -z "$CREDENTIAL_ID" ]]; then
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
         --data '{
-            "label": "Radix-test",
+            "label": "Radix-'$RADIX_ZONE'",
             "endpointUrl": "'$CLUSTER_API_URL'",
             "authToken": "'$AUTH_TOKEN'"
         }' \
@@ -99,19 +99,20 @@ if [[ -z "$CREDENTIAL_ID" ]]; then
         --write-out '%{http_code}' | jq --raw-output)"
     if [[ $VALIDATE_CREATE == 204 ]]; then
         "Creating new credential..."
+        
         CREDENTIAL_ID="$(curl --request POST \
             --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
             --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
             --header 'Content-Type: application/json' \
             --data '{
-                "label": "Radix-test",
+                "label": "Radix-'$RADIX_ZONE'",
                 "endpointUrl": "'$CLUSTER_API_URL'",
                 "authToken": "'$AUTH_TOKEN'"
             }' \
             --silent | jq --raw-output '.id')"
         
         if [[ $VALIDATE_CREATE == 201 ]]; then
-        echo "Credential successfully created."
+            echo "Credential successfully created."
             exit 0
         fi
     else
@@ -141,7 +142,7 @@ if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --header 'Content-Type: application/json' \
     --data '{
-        "label": "Radix Dev-test",
+        "label": "Radix-'$RADIX_ZONE'",
         "endpointUrl": "'$CLUSTER_API_URL'",
         "authToken": "'$AUTH_TOKEN'"
     }' \
@@ -155,7 +156,7 @@ if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
         --data '{
-            "label": "Radix Dev",
+            "label": "Radix-'$RADIX_ZONE'",
             "endpointUrl": "'$CLUSTER_API_URL'",
             "authToken": "'$AUTH_TOKEN'"
         }' \
