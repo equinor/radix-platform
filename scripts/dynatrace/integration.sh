@@ -82,9 +82,9 @@ CREDENTIAL_ID="$(curl --request GET \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --silent | jq -r '.values[] | select(.name=="Radix-'$RADIX_ZONE'").id')"
 
+# Check for existing credential and create credential if not
 if [[ -z "$CREDENTIAL_ID" ]]; then
     echo "Credential does not exist."
-    # Create credential
     # Validate request
     VALIDATE_CREATE="$(curl --request POST \
         --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/validator \
@@ -110,16 +110,13 @@ if [[ -z "$CREDENTIAL_ID" ]]; then
             }' \
             --silent | jq --raw-output '.id')"
         
+        if [[ $VALIDATE_CREATE == 201 ]]; then
         echo "Credential successfully created."
+            exit 0
+        fi
     else
         # Validation failed.
     fi
-fi
-
-if [[ -z "$CREDENTIAL_ID" ]]; then
-    # Still no Credential ID?
-    echo "Something went wrong." >&2
-    exit 1
 fi
 
 # Use the credential ID to get the current api-url from the Kubernetes Credential. This is what we will be changing from.
