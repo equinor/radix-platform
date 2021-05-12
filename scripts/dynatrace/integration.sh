@@ -99,8 +99,8 @@ if [[ "$CREDENTIAL_ID" ]]; then
         DELETE_CREDENTIAL="$(curl --request DELETE \
             --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID \
             --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-        --silent \
-        --write-out '%{http_code}' | jq --raw-output)"
+            --silent \
+            --write-out '%{http_code}' | jq --raw-output)"
         
         if [[ $DELETE_CREDENTIAL == 204 ]]; then
             echo "Credential deleted."
@@ -115,8 +115,8 @@ if [[ "$CREDENTIAL_ID" ]]; then
     fi
 fi
 
-    # Get the auth token stored in a secret in the dynatrace service agent for kubernetes monitoring. 
-    AUTH_TOKEN="$(kubectl get secret $(kubectl get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[0].name}' -n dynatrace) -o jsonpath='{.data.token}' -n dynatrace | base64 --decode)"
+# Get the auth token stored in a secret in the dynatrace service agent for kubernetes monitoring. 
+AUTH_TOKEN="$(kubectl get secret $(kubectl get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[0].name}' -n dynatrace) -o jsonpath='{.data.token}' -n dynatrace | base64 --decode)"
 
 # Validate request
 echo "Validating request for credential creation..."
@@ -147,8 +147,8 @@ if [[ $VALIDATE_CREATE == 204 ]]; then
 
     if [[ $VALIDATE_CREATE == 201 ]]; then
         echo "Credential successfully created."
-        fi
-    else
+    fi
+else
     # Validation failed.
     echo "Validation of create request failed."
     echo $VALIDATE_CREATE | jq .
