@@ -21,6 +21,7 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
+# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 #######################################################################################
 ### START
@@ -65,6 +66,11 @@ else
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
+fi
+
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "Please provide CLUSTER_NAME" >&2
+    exit 1
 fi
 
 # Get secrets: api-url and tenant-token from keyvault
@@ -119,7 +125,7 @@ VALIDATE_CREATE="$(curl --request POST \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --header 'Content-Type: application/json' \
     --data '{
-        "label": "Radix-'$RADIX_ZONE'",
+        "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
         "endpointUrl": "'$CLUSTER_API_URL'",
         "authToken": "'$AUTH_TOKEN'"
     }' \
@@ -133,7 +139,7 @@ if [[ $VALIDATE_CREATE == 204 ]]; then
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
         --data '{
-            "label": "Radix-'$RADIX_ZONE'",
+            "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
             "endpointUrl": "'$CLUSTER_API_URL'",
             "authToken": "'$AUTH_TOKEN'"
         }' \
