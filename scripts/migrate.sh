@@ -120,7 +120,7 @@ fi
 DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
 if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
     # Print to stderror
-    echo "The dynatrace integration script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
+    echo "The dynatrace integration script is not found or it is not executable in path $DYNATRACE_INTEGRATION_SCRIPT" >&2
 fi
 
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"

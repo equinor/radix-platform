@@ -82,16 +82,16 @@ CREDENTIAL_ID="$(curl --request GET \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --silent | jq -r '.values[] | select(.name=="Radix-'$RADIX_ZONE'").id')"
 
+# Check for existing credential and create credential if not
 if [[ -z "$CREDENTIAL_ID" ]]; then
     echo "Credential does not exist."
-    # Create credential
     # Validate request
     VALIDATE_CREATE="$(curl --request POST \
         --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/validator \
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
         --data '{
-            "label": "Radix-test",
+            "label": "Radix-'$RADIX_ZONE'",
             "endpointUrl": "'$CLUSTER_API_URL'",
             "authToken": "'$AUTH_TOKEN'"
         }' \
@@ -99,27 +99,25 @@ if [[ -z "$CREDENTIAL_ID" ]]; then
         --write-out '%{http_code}' | jq --raw-output)"
     if [[ $VALIDATE_CREATE == 204 ]]; then
         "Creating new credential..."
+        
         CREDENTIAL_ID="$(curl --request POST \
             --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
             --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
             --header 'Content-Type: application/json' \
             --data '{
-                "label": "Radix-test",
+                "label": "Radix-'$RADIX_ZONE'",
                 "endpointUrl": "'$CLUSTER_API_URL'",
                 "authToken": "'$AUTH_TOKEN'"
             }' \
             --silent | jq --raw-output '.id')"
         
-        echo "Credential successfully created."
+        if [[ $VALIDATE_CREATE == 201 ]]; then
+            echo "Credential successfully created."
+            exit 0
+        fi
     else
         # Validation failed.
     fi
-fi
-
-if [[ -z "$CREDENTIAL_ID" ]]; then
-    # Still no Credential ID?
-    echo "Something went wrong." >&2
-    exit 1
 fi
 
 # Use the credential ID to get the current api-url from the Kubernetes Credential. This is what we will be changing from.
@@ -144,7 +142,7 @@ if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --header 'Content-Type: application/json' \
     --data '{
-        "label": "Radix Dev-test",
+        "label": "Radix-'$RADIX_ZONE'",
         "endpointUrl": "'$CLUSTER_API_URL'",
         "authToken": "'$AUTH_TOKEN'"
     }' \
@@ -158,7 +156,7 @@ if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
         --data '{
-            "label": "Radix Dev",
+            "label": "Radix-'$RADIX_ZONE'",
             "endpointUrl": "'$CLUSTER_API_URL'",
             "authToken": "'$AUTH_TOKEN'"
         }' \
