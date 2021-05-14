@@ -127,25 +127,28 @@ VALIDATE_CREATE="$(curl --request POST \
     --data '{
         "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
         "endpointUrl": "'$CLUSTER_API_URL'",
-        "authToken": "'$AUTH_TOKEN'"
+        "authToken": "'$AUTH_TOKEN'",
+        "certificateCheckEnabled": false
     }' \
     --silent \
     --write-out '%{http_code}' | jq --raw-output)"
 if [[ $VALIDATE_CREATE == 204 ]]; then
     echo "Validation successful, creating new credential..."
 
-    CREDENTIAL_ID="$(curl --request POST \
+    CREATE_CREDENTIAL="$(curl --request POST \
         --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
         --data '{
             "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
             "endpointUrl": "'$CLUSTER_API_URL'",
-            "authToken": "'$AUTH_TOKEN'"
+            "authToken": "'$AUTH_TOKEN'",
+            "certificateCheckEnabled": false
         }' \
-        --silent | jq --raw-output '.id')"
+        --silent \
+        --write-out '%{http_code}' | jq --raw-output)"
 
-    if [[ $VALIDATE_CREATE == 201 ]]; then
+    if [[ $CREATE_CREDENTIAL == 201 ]]; then
         echo "Credential successfully created."
     fi
 else
