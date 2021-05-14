@@ -21,6 +21,7 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
+# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 #######################################################################################
 ### START
@@ -76,102 +77,83 @@ fi
 DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
 
+# Get the cluster api-url from Azure. This is what we will be changing to.
+CLUSTER_API_URL="$(kubectl config view --minify -o json | jq --raw-output '.clusters[0].cluster.server' | sed "s :443 / ")"
+
 # Get the credential ID from Dynatrace API (Radix-dev, Radix-playground or Radix-prod)
 CREDENTIAL_ID="$(curl --request GET \
     --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --silent | jq -r '.values[] | select(.name=="Radix-'$RADIX_ZONE'").id')"
 
-# Check for existing credential and create credential if not
-if [[ -z "$CREDENTIAL_ID" ]]; then
-    echo "Credential does not exist."
-    # Validate request
-    VALIDATE_CREATE="$(curl --request POST \
-        --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/validator \
+# Check for existing credential
+if [[ "$CREDENTIAL_ID" ]]; then
+    # Check if existing credential is outdated
+    CREDENTIAL_URL="$(curl --request GET \
+        --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID \
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "label": "Radix-'$RADIX_ZONE'",
-            "endpointUrl": "'$CLUSTER_API_URL'",
-            "authToken": "'$AUTH_TOKEN'"
-        }' \
-        --silent \
-        --write-out '%{http_code}' | jq --raw-output)"
-    if [[ $VALIDATE_CREATE == 204 ]]; then
-        "Creating new credential..."
-        
-        CREDENTIAL_ID="$(curl --request POST \
-            --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
+        --silent | jq --raw-output '.endpointUrl')"
+
+    if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
+        echo "Existing credential outdated, deleting it..." $CREDENTIAL_ID
+        DELETE_CREDENTIAL="$(curl --request DELETE \
+            --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID \
             --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-            --header 'Content-Type: application/json' \
-            --data '{
-                "label": "Radix-'$RADIX_ZONE'",
-                "endpointUrl": "'$CLUSTER_API_URL'",
-                "authToken": "'$AUTH_TOKEN'"
-            }' \
-            --silent | jq --raw-output '.id')"
+            --silent \
+            --write-out '%{http_code}' | jq --raw-output)"
         
-        if [[ $VALIDATE_CREATE == 201 ]]; then
-            echo "Credential successfully created."
-            exit 0
+        if [[ $DELETE_CREDENTIAL == 204 ]]; then
+            echo "Credential deleted."
+        else
+            echo "Error deleting credential"
+            echo $DELETE_CREDENTIAL | jq .
         fi
     else
-        # Validation failed.
+        # Existing credenital is valid
+        echo "Credential already exists."
+        exit 0
     fi
 fi
 
-# Use the credential ID to get the current api-url from the Kubernetes Credential. This is what we will be changing from.
-CREDENTIAL_URL="$(curl --request GET \
-    --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID \
-    --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-    --silent | jq --raw-output '.endpointUrl')"
+# Get the auth token stored in a secret in the dynatrace service agent for kubernetes monitoring. 
+AUTH_TOKEN="$(kubectl get secret $(kubectl get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[0].name}' -n dynatrace) -o jsonpath='{.data.token}' -n dynatrace | base64 --decode)"
 
-# Get the cluster api-url from Azure. This is what we will be changing to.
-CLUSTER_API_URL="$(kubectl config view --minify -o json | jq --raw-output '.clusters[0].cluster.server' | sed "s :443 / ")" ###### this should be available if AKS cluster is available.
-
-# Check if the current Kubernetes Credential api-url matches the api-url from Azure
-if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
-
-    echo "Credentials outdated. Validating PUT-request.."
-
-    # Get the auth token stored in a secret in the dynatrace service agent for kubernetes monitoring. 
-    AUTH_TOKEN="$(kubectl get secret $(kubectl get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[0].name}' -n dynatrace) -o jsonpath='{.data.token}' -n dynatrace | base64 --decode)"
-
-    VALIDATE_REQUEST="$(curl --request POST \
-    --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID/validator \
+# Validate request
+echo "Validating request for credential creation..."
+VALIDATE_CREATE="$(curl --request POST \
+    --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/validator \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --header 'Content-Type: application/json' \
     --data '{
-        "label": "Radix-'$RADIX_ZONE'",
+        "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
         "endpointUrl": "'$CLUSTER_API_URL'",
-        "authToken": "'$AUTH_TOKEN'"
+        "authToken": "'$AUTH_TOKEN'",
+        "certificateCheckEnabled": false
     }' \
+    --silent \
     --write-out '%{http_code}' | jq --raw-output)"
+if [[ $VALIDATE_CREATE == 204 ]]; then
+    echo "Validation successful, creating new credential..."
 
-    if [[ $VALIDATE_REQUEST == 204 ]]; then
-        echo "Validation successful. Updating credentials.."
-
-        UPDATE_CREDENTIALS="$(curl --request PUT \
-        --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID \
+    CREATE_CREDENTIAL="$(curl --request POST \
+        --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
         --data '{
-            "label": "Radix-'$RADIX_ZONE'",
+            "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
             "endpointUrl": "'$CLUSTER_API_URL'",
-            "authToken": "'$AUTH_TOKEN'"
+            "authToken": "'$AUTH_TOKEN'",
+            "certificateCheckEnabled": false
         }' \
+        --silent \
         --write-out '%{http_code}' | jq --raw-output)"
 
-        if [[ $UPDATE_CREDENTIALS =~ (201|204) ]]; then
-            echo "Credentials updated."
-        else
-            echo "Error while updating credentials."
-            echo $UPDATE_CREDENTIALS | jq .
-        fi
-    else
-        echo "Error while validating request."
-        echo $VALIDATE_REQUEST | jq .
+    if [[ $CREATE_CREDENTIAL == 201 ]]; then
+        echo "Credential successfully created."
     fi
-    
+else
+    # Validation failed.
+    echo "Validation of create request failed."
+    echo $VALIDATE_CREATE | jq .
 fi
 echo "Done."
