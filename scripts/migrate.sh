@@ -254,7 +254,7 @@ while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error
 done
 echo ""
 printf "Update Dynatrace integration... "
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" source "$DYNATRACE_INTEGRATION_SCRIPT")
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
 wait # wait for subshell to finish
 printf "Done updating Dynatrace integration."
 
