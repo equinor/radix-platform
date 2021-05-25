@@ -297,6 +297,7 @@ function annotateSecretsForKubedSync() {
 ###
 
 installCertManager
+sleep 60
 transformManifests
 applyManifests
 annotateSecretsForKubedSync
