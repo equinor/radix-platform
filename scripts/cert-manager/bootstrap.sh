@@ -302,7 +302,10 @@ sleep 60
 transformManifests
 applyManifests
 annotateSecretsForKubedSync
-
+sleep 20
+transformManifests
+applyManifests
+annotateSecretsForKubedSync
 
 #######################################################################################
 ### END
