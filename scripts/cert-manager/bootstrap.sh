@@ -306,6 +306,7 @@ sleep 20
 transformManifests
 applyManifests
 annotateSecretsForKubedSync
+kubectl rollout restart deployment -n cert-manager cert-manager cert-manager-cainjector cert-manager-webhook
 
 #######################################################################################
 ### END
