@@ -232,7 +232,7 @@ printf "...Done\n"
 
 printf "\nInstalling Flux "
 helm upgrade --install flux \
-    --version 1.6.0 \
+    --version 1.9.0 \
     --set rbac.create=true \
     --set git.url="$GIT_REPO" \
     --set git.branch="$GIT_BRANCH" \
