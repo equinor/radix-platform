@@ -206,7 +206,7 @@ function installCertManager(){
     # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
     helm upgrade --install cert-manager \
     --namespace cert-manager \
-    --version v1.2.0 \
+    --version v1.3.1 \
     --set installCRDs=true \
     --set global.rbac.create=true \
     --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
