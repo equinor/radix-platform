@@ -24,6 +24,13 @@
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 #######################################################################################
+### HOW TO USE
+### 
+
+# NORMAL
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./integration.sh
+
+#######################################################################################
 ### START
 ###
 
