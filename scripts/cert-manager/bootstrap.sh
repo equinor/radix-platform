@@ -297,6 +297,7 @@ function annotateSecretsForKubedSync() {
 ###
 
 installCertManager
+kubectl wait --for=condition=Available --timeout=300s apiservice v1.cert-manager.io
 sleep 60
 transformManifests
 applyManifests
