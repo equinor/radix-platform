@@ -150,7 +150,7 @@ kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheu
 kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.45.0/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
 
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
-  --version 13.13.0 \
+  --version 16.0.1 \
   -f "${WORK_DIR}/prometheus-operator-values.yaml"
 
 # Install Prometheus Ingress with HTTP Basic Authentication
