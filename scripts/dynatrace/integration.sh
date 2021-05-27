@@ -35,6 +35,16 @@
 ###
 
 echo ""
+while true; do
+    read -p "Should this cluster be integrated with Dynatrace? (y/n) " -r -en 1 yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) echo "Exiting.";exit 0;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+echo ""
 echo "Start update of Kubernetes credentials in Dynatrace..."
 
 #######################################################################################
