@@ -170,12 +170,6 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     # Import variables
     source "$alias_config"
 
-    ############## delete ##############
-    #if [[ "$RADIX_APP_ALIAS_NAME" != "@" ]]; then
-    #    continue
-    #fi
-    ############## delete #############
-
     if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
         RADIX_APP_ALIAS_URL="$AZ_RESOURCE_DNS"
     else
