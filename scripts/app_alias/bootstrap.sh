@@ -170,6 +170,12 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     # Import variables
     source "$alias_config"
 
+    ############## delete ##############
+    #if [[ "$RADIX_APP_ALIAS_NAME" != "@" ]]; then
+    #    continue
+    #fi
+    ############## delete #############
+
     if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
         RADIX_APP_ALIAS_URL="$AZ_RESOURCE_DNS"
     else
@@ -211,6 +217,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
             --if-none-match \
             --ttl 300 \
             2>&1 >/dev/null
+        echo "ERROR OK - Marko"
     else
         az network dns record-set cname set-record \
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
@@ -232,6 +239,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     helm upgrade --install "$HELM_NAME" \
         "$chartPath" \
         --set aliasUrl="$RADIX_APP_ALIAS_URL" \
+        --set appAliasName="$RADIX_APP_ALIAS_NAME" \
         --set application="$RADIX_APP_NAME" \
         --set namespace="$RADIX_NAMESPACE" \
         --set component="$RADIX_APP_COMPONENT" \
@@ -243,7 +251,6 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     printf "Done."
     echo ""
 done
-
 
 #######################################################################################
 ### END

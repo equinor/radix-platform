@@ -21,7 +21,11 @@ metadata:
     chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+  {{ if eq .Values.appAliasName "@" }}
+  name: {{ .Values.component }}-at.custom-domain
+  {{ else }}
   name: {{ .Values.component }}.custom-domain
+  {{ end }}
   namespace: {{ .Values.namespace }}
 spec:
   rules:
