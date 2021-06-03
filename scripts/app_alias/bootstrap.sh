@@ -170,7 +170,11 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     # Import variables
     source "$alias_config"
 
-    RADIX_APP_ALIAS_URL="$RADIX_APP_ALIAS_NAME.$AZ_RESOURCE_DNS"
+    if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
+        RADIX_APP_ALIAS_URL="$AZ_RESOURCE_DNS"
+    else
+        RADIX_APP_ALIAS_URL="$RADIX_APP_ALIAS_NAME.$AZ_RESOURCE_DNS"
+    fi
 
     if [[ -z "$RADIX_NAMESPACE" ]]; then
         RADIX_NAMESPACE="$RADIX_APP_NAME-$RADIX_APP_ENVIRONMENT"
@@ -194,20 +198,42 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     echo -e ""
     printf "     Working..."
 
+    # Get cluster IP
+    CLUSTER_IP=$(dig +short public-site-radix-platform-prod.$CLUSTER_NAME.$AZ_RESOURCE_DNS)
+
     # Create alias in the dns zone
-    az network dns record-set cname set-record \
-        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-        --zone-name "$AZ_RESOURCE_DNS" \
-        --record-set-name "$RADIX_APP_ALIAS_NAME" \
-        --cname "$RADIX_APP_CNAME" \
-        --ttl 300 \
-        2>&1 >/dev/null
+    if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
+        az network dns record-set a add-record \
+            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+            --zone-name "$AZ_RESOURCE_DNS" \
+            --record-set-name "$RADIX_APP_ALIAS_NAME" \
+            --ipv4-address "$CLUSTER_IP" \
+            --if-none-match \
+            --ttl 300 \
+            2>&1 >/dev/null
+        echo "ERROR OK - Marko"
+    else
+        az network dns record-set cname set-record \
+            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+            --zone-name "$AZ_RESOURCE_DNS" \
+            --record-set-name "$RADIX_APP_ALIAS_NAME" \
+            --cname "$RADIX_APP_CNAME" \
+            --ttl 300 \
+            2>&1 >/dev/null
+    fi
 
     # # Create ingress object in the cluster
+    if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
+        HELM_NAME="radix-ingress-at"
+    else
+        HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
+    fi
+
     chartPath="$WORK_DIR/../../charts/ingress/"
-    helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" \
+    helm upgrade --install "$HELM_NAME" \
         "$chartPath" \
         --set aliasUrl="$RADIX_APP_ALIAS_URL" \
+        --set appAliasName="$RADIX_APP_ALIAS_NAME" \
         --set application="$RADIX_APP_NAME" \
         --set namespace="$RADIX_NAMESPACE" \
         --set component="$RADIX_APP_COMPONENT" \
@@ -219,7 +245,6 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     printf "Done."
     echo ""
 done
-
 
 #######################################################################################
 ### END
