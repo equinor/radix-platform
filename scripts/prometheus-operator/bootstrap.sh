@@ -146,8 +146,9 @@ WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
-kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.47.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
-kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.47.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
+# Prometheus CRDs: https://github.com/prometheus-operator/prometheus-operator/releases
+kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.48.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
+kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.48.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
 
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
   --version 16.1.2 \
