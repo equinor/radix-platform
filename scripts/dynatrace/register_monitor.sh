@@ -23,7 +23,6 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
-# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 # - APP_URL             : Ex: "console.dev.radix.equinor.com"
 
 # Optional:
@@ -102,7 +101,7 @@ if [[ -z "$DETECTION_RULE_MATCH_TARGET" ]]; then
 fi
 
 echo -e ""
-echo -e "Web app monitor registration details:"
+echo -e "Web app monitor creation details:"
 echo -e ""
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  APP_URL                       : $APP_URL"
@@ -133,44 +132,47 @@ CHECK_APP="$(curl --request GET \
     --silent | jq -r '.values[] | select(.name=="'$APP_URL'").id')"
 
 if [[ "$CHECK_APP" == "" ]]; then
-    echo "Not registered"
+    echo ""
 else
-    echo "Registered"
-    # exit 0
+    echo "Web application monitor already exists. Quitting..."
+    exit 1
 fi
 
 # Validate create monitor
-JSON=`cat template_web_app_body.json | jq '. += {"name":"'$APP_URL'"}' | jq '.'`
+
+echo "Validating creation of new web application monitor..."
+
+APP_JSON=`cat template_web_app_body.json | jq '. += {"name":"'$APP_URL'"}' | jq '.'`
 VALIDATE_APP="$(curl --request POST \
     --url $DYNATRACE_API_URL/config/v1/applications/web/validator \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
     --header 'Content-Type: application/json' \
-    --data "$JSON" \
+    --data "$APP_JSON" \
     --silent \
     --write-out '%{http_code}' | jq -r)"
 
 if [[ $VALIDATE_APP == 204 ]]; then
-    echo "Validation successful."
+    echo "Validation successful. Proceeding..."
     # Create monitor
     CREATE_APP="$(curl --request POST \
         --url $DYNATRACE_API_URL/config/v1/applications/web \
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
-        --data "$JSON" \
+        --data "$APP_JSON" \
         --silent \
         --output /dev/null \
         --write-out '%{http_code}' | jq -r)"
-    # echo "CREATE APP: $CREATE_APP"
+    
     if [[ $CREATE_APP == 201 ]]; then
-        echo "Successfully registered the monitor."
+        echo "Successfully created the monitor."
     else
         echo "Could not create monitor."
     fi
 else
-    echo "Validation for application failed: $VALIDATE_APP"
+    echo "Validation for application monitor failed: $VALIDATE_APP"
     echo "PAYLOAD:"
     echo "----------------"
-    echo $JSON
+    echo $APP_JSON
     echo "----------------"
     exit 1
 fi
@@ -182,13 +184,13 @@ CHECK_DETECTION_RULE="$(curl --request GET \
     --silent | jq -r '.values[] | select(.name=="'$APP_URL'").id')"
 
 if [[ "$CHECK_DETECTION_RULE" == "" ]]; then
-    echo "Rule not registered: $APP_URL"
+    echo ""
 else
-    echo "Registered"
+    echo "Detection rule for $APP_URL already registered. Quitting..."
     exit 0
 fi
 
-# Get application identifier for the detection rule.
+# Get application monitor identifier for the detection rule.
 APPLICATION_IDENTIFIER="$(curl --request GET \
     --url $DYNATRACE_API_URL/config/v1/applications/web \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
@@ -199,7 +201,7 @@ if [[ "$APPLICATION_IDENTIFIER" == "" ]]; then
     exit 1
 else
     # Validate create detection rule
-    JSON=`cat template_detection_rule_body.json |
+    RULE_JSON=`cat template_detection_rule_body.json |
         jq '. += {"applicationIdentifier":"'$APPLICATION_IDENTIFIER'"}' |
         jq '.filterConfig += {"pattern":"'$DETECTION_RULE_PATTERN'"}' |
         jq '.filterConfig += {"applicationMatchType":"'$DETECTION_RULE_MATCH_TYPE'"}' |
@@ -209,7 +211,7 @@ else
         --url $DYNATRACE_API_URL/config/v1/applicationDetectionRules/validator \
         --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
         --header 'Content-Type: application/json' \
-        --data "$JSON" \
+        --data "$RULE_JSON" \
         --silent \
         --write-out '%{http_code}' | jq -r)"
 
@@ -220,7 +222,7 @@ else
             --url $DYNATRACE_API_URL/config/v1/applicationDetectionRules \
             --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
             --header 'Content-Type: application/json' \
-            --data "$JSON" \
+            --data "$RULE_JSON" \
             --output /dev/null \
             --silent \
             --write-out '%{http_code}' | jq -r)"
@@ -233,7 +235,7 @@ else
         echo "Validation for detection rule failed: $VALIDATE_RULE"
         echo "PAYLOAD:"
         echo "----------------"
-        echo $JSON
+        echo $RULE_JSON
         echo "----------------"
     fi
 fi
