@@ -140,7 +140,7 @@ else
 fi
 
 # Validate create monitor
-JSON=`cat default_web_app_body.json | jq '. += {"name":"'$APP_URL'"}' | jq '.'`
+JSON=`cat template_web_app_body.json | jq '. += {"name":"'$APP_URL'"}' | jq '.'`
 VALIDATE_APP="$(curl --request POST \
     --url $DYNATRACE_API_URL/config/v1/applications/web/validator \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
@@ -195,7 +195,7 @@ if [[ "$APPLICATION_IDENTIFIER" == "" ]]; then
     exit 1
 else
     # Validate create detection rule
-    JSON=`cat default_detection_rule_body.json |
+    JSON=`cat template_detection_rule_body.json |
         jq '. += {"applicationIdentifier":"'$APPLICATION_IDENTIFIER'"}' |
         jq '.filterConfig += {"pattern":"'$DETECTION_RULE_PATTERN'"}' |
         jq '.filterConfig += {"applicationMatchType":"'$DETECTION_RULE_MATCH_TYPE'"}' |
