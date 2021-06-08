@@ -168,6 +168,10 @@ if [[ $VALIDATE_APP == 204 ]]; then
     fi
 else
     echo "Validation for application failed: $VALIDATE_APP"
+    echo "PAYLOAD:"
+    echo "----------------"
+    echo $JSON
+    echo "----------------"
     exit 1
 fi
 
@@ -227,5 +231,9 @@ else
         fi
     else
         echo "Validation for detection rule failed: $VALIDATE_RULE"
+        echo "PAYLOAD:"
+        echo "----------------"
+        echo $JSON
+        echo "----------------"
     fi
 fi
