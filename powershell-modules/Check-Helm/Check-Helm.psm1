@@ -63,11 +63,11 @@ function CheckRelease {
         $Cluster
     )
     try {
-        $releaseVersion = GetReleaseVersion -Release $ReleaseName
+        $ReleaseVersion = GetReleaseVersion -Release $ReleaseName
         $chartVersion = GetChartVersion -Chart $ChartName
-        if ([System.Version]"$chartVersion" -gt [System.Version]"$releaseVersion") {
+        if ([System.Version]"$chartVersion" -gt [System.Version]"$ReleaseVersion") {
             Write-Host "Found new version for $ReleaseName" -ForegroundColor DarkYellow
-            NewWorkItem -ReleaseName $ReleaseName -RealseVersion $releaseVersion -ChartVersion $chartVersion -Cluster $Cluster
+            NewWorkItem -ReleaseName $ReleaseName -ReleaseVersion $ReleaseVersion -ChartVersion $chartVersion -Cluster $Cluster
         }
         else {
             Write-Host "No new version for $ReleaseName found" -ForegroundColor Green
@@ -110,7 +110,7 @@ function NewWorkItem {
         $ReleaseName,
         [Parameter(Mandatory=$true)]
         [String]
-        $RealseVersion,
+        $ReleaseVersion,
         [Parameter(Mandatory=$true)]
         [String]
         $ChartVersion,
@@ -118,7 +118,7 @@ function NewWorkItem {
         [String]
         $Cluster
     )
-    $WiTitle = "Upgrade component version for $ReleaseName in $Cluster"
+    $WiTitle = "Upgrade component version for $ReleaseName in $Cluster to $ReleaseVersion"
     $qstring = [System.String]::Concat( `
                     "SELECT [system.Id], [System.WorkItemType], [System.Title], [System.State] FROM workitems ", `
                     "WHERE [System.WorkItemType] = 'User Story' AND [System.State] = 'New' AND [System.Title] = ", "'", "$WiTitle", "' ", `
