@@ -1,10 +1,5 @@
 {
-    "metadata": {
-        "configurationVersions": [
-            26
-        ],
-        "clusterVersion": "1.216.120.20210517-133639"
-    },
+    "name":"",
     "type": "AUTO_INJECTED",
     "realUserMonitoringEnabled": true,
     "costControlUserSessionPercentage": 100.000,
