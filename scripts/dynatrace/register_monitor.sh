@@ -172,7 +172,7 @@ else
     echo "Validation for application monitor failed: $VALIDATE_APP"
     echo "PAYLOAD:"
     echo "----------------"
-    echo $APP_JSON
+    echo $APP_JSON | jq .
     echo "----------------"
     exit 1
 fi
@@ -235,7 +235,7 @@ else
         echo "Validation for detection rule failed: $VALIDATE_RULE"
         echo "PAYLOAD:"
         echo "----------------"
-        echo $RULE_JSON
+        echo $RULE_JSON | jq .
         echo "----------------"
     fi
 fi
