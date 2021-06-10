@@ -23,10 +23,10 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
-# - APP_URL             : Ex: "console.dev.radix.equinor.com"
+# - APP_NAME             : Ex: "console.dev.radix.equinor.com"
 
 # Optional:
-# - DETECTION_RULE_PATTERN         : Ex: "console.dev.radix.equinor.com"                        default: APP_URL
+# - DETECTION_RULE_PATTERN         : Ex: "console.dev.radix.equinor.com"                        default: APP_NAME
 # - DETECTION_RULE_MATCH_TARGET    : "URL" "DOMAIN"                                             default: "DOMAIN"
 # - DETECTION_RULE_MATCH_TYPE      : "MATCHES" "CONTAINS" "BEGINS_WITH" "ENDS_WITH" "EQUALS"    default: "MATCHES"
 
@@ -35,7 +35,7 @@
 ### 
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env APP_URL="console.dev.radix.equinor.com" ./register_monitor.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env APP_NAME="console.dev.radix.equinor.com" ./register_monitor.sh
 
 #######################################################################################
 ### START
@@ -82,14 +82,20 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$APP_URL" ]]; then
-    echo "Please provide APP_URL" >&2
+if [[ -z "$APP_NAME" ]]; then
+    echo "Please provide APP_NAME" >&2
     exit 1
+else
+    APP_NAME="radix-${APP_NAME}"
+    if [[ ${#APP_NAME} > 50 ]];then
+        echo "APP_NAME can not be longer than 44 characters."
+        exit 1
+    fi
 fi
 
 # Optional inputs
 if [[ -z "$DETECTION_RULE_PATTERN" ]]; then
-    DETECTION_RULE_PATTERN=$APP_URL
+    DETECTION_RULE_PATTERN=$APP_NAME
 fi
 
 if [[ -z "$DETECTION_RULE_MATCH_TYPE" ]]; then
@@ -100,11 +106,15 @@ if [[ -z "$DETECTION_RULE_MATCH_TARGET" ]]; then
     DETECTION_RULE_MATCH_TARGET="DOMAIN"
 fi
 
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
 echo -e ""
 echo -e "Web app monitor creation details:"
 echo -e ""
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  APP_URL                       : $APP_URL"
+echo -e "   -  APP_NAME                      : $APP_NAME"
 echo -e "   -  DETECTION_RULE_MATCH_TARGET   : $DETECTION_RULE_MATCH_TARGET"
 echo -e "   -  DETECTION_RULE_MATCH_TYPE     : $DETECTION_RULE_MATCH_TYPE"
 echo -e "   -  DETECTION_RULE_PATTERN        : $DETECTION_RULE_PATTERN"
@@ -129,7 +139,7 @@ DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAUL
 CHECK_APP="$(curl --request GET \
     --url $DYNATRACE_API_URL/config/v1/applications/web \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-    --silent | jq -r '.values[] | select(.name=="'$APP_URL'").id')"
+    --silent | jq -r '.values[] | select(.name=="'$APP_NAME'").id')"
 
 if [[ "$CHECK_APP" == "" ]]; then
     echo ""
@@ -142,7 +152,7 @@ fi
 
 echo "Validating creation of new web application monitor..."
 
-APP_JSON=`cat template_web_app_body.json | jq '. += {"name":"'$APP_URL'"}' | jq '.'`
+APP_JSON=`cat template_web_app_body.json | jq '. += {"name":"'$APP_NAME'"}' | jq '.'`
 VALIDATE_APP="$(curl --request POST \
     --url $DYNATRACE_API_URL/config/v1/applications/web/validator \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
@@ -181,23 +191,21 @@ fi
 CHECK_DETECTION_RULE="$(curl --request GET \
     --url $DYNATRACE_API_URL/config/v1/applicationDetectionRules \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-    --silent | jq -r '.values[] | select(.name=="'$APP_URL'").id')"
+    --silent | jq -r '.values[] | select(.name=="'$APP_NAME'").id')"
 
-if [[ "$CHECK_DETECTION_RULE" == "" ]]; then
-    echo ""
-else
-    echo "Detection rule for $APP_URL already registered. Quitting..."
-    exit 0
+if [[ "$CHECK_DETECTION_RULE" != "" ]]; then
+    echo "Detection rule for $APP_NAME already registered. Quitting..."
+    exit 1
 fi
 
 # Get application monitor identifier for the detection rule.
 APPLICATION_IDENTIFIER="$(curl --request GET \
     --url $DYNATRACE_API_URL/config/v1/applications/web \
     --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-    --silent | jq -r '.values[] | select(.name=="'$APP_URL'").id')"
+    --silent | jq -r '.values[] | select(.name=="'$APP_NAME'").id')"
 
 if [[ "$APPLICATION_IDENTIFIER" == "" ]]; then
-    echo "Web app not registered: $APP_URL"
+    echo "Web app not registered: $APP_NAME"
     exit 1
 else
     # Validate create detection rule
