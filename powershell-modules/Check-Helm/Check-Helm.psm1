@@ -129,7 +129,7 @@ function NewWorkItem {
         $wi = (az boards query --wiql $qstring --output json | ConvertFrom-Json).fields.'System.Title'
         if (!$wi) {
             Write-Host "Creating new work item"
-            az boards work-item create --title "$WiTitle" --type "User Story" --description "Old version $R, new version $ChartVersion" --assigned-to "elirg@equinor.com"
+            az boards work-item create --title "$WiTitle" --type "User Story" --description "Old version $ReleaseVersion, new version $ChartVersion" --assigned-to "elirg@equinor.com"
         }
         else {
             Write-Host "Work item already exist"
