@@ -118,7 +118,7 @@ function NewWorkItem {
         [String]
         $Cluster
     )
-    $WiTitle = "Upgrade component version for $ReleaseName in $Cluster to $ReleaseVersion"
+    $WiTitle = "Upgrade component version for $ReleaseName in $Cluster to $ChartVersion"
     $qstring = [System.String]::Concat( `
                     "SELECT [system.Id], [System.WorkItemType], [System.Title], [System.State] FROM workitems ", `
                     "WHERE [System.WorkItemType] = 'User Story' AND [System.State] = 'New' AND [System.Title] = ", "'", "$WiTitle", "' ", `
