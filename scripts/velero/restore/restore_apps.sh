@@ -364,7 +364,7 @@ PATCH_JSON="$(
 }
 END
 )"
-kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation azure -n velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
 echo "Wait for backup \"$BACKUP_NAME\" to be available in destination cluster \"$DEST_CLUSTER\" before we can restore..."
@@ -448,7 +448,12 @@ printf "Done."
 # Update replyUrl for web-console
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+  echo "Development cluster uses QA web-console"
+  RADIX_WEB_CONSOLE_ENV="qa"
+fi
+WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 
 echo ""
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
@@ -504,7 +509,7 @@ PATCH_JSON="$(
 }
 END
 )"
-kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation azure -n velero --type merge --patch "$(echo $PATCH_JSON)"
 # Set velero in read/write mode
 kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 

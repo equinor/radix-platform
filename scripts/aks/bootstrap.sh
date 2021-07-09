@@ -287,6 +287,7 @@ echo "Bootstrap of advanced network done."
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
+### It might be required to add "--node-count 10 \" below "--max-count "$MAX_COUNT" \" if deploying certain VM sizes
 az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
     --no-ssh-key \
     --kubernetes-version "$KUBERNETES_VERSION" \
@@ -322,7 +323,66 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$C
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+
+[[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
+
 printf "Done.\n"
+
+
+#######################################################################################
+### Add GPU node pools
+###
+echo "Adding GPU node pools to the cluster... "
+
+az aks nodepool add \
+    --resource-group clusters \
+    --cluster-name "$CLUSTER_NAME" \
+    --name nc6sv3 \
+    --node-count 0 \
+    --max-pods 110 \
+    --node-vm-size Standard_NC6s_v3 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=1 radix-node-gpu=nvidia-v100 radix-node-gpu-count=1 \
+    --node-taints sku=gpu:NoSchedule \
+    --node-taints gpu=nvidia-v100:NoSchedule \
+    --node-taints gpu-count=1:NoSchedule \
+    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
+    --node-taints radix-node-gpu-count=1:NoSchedule \
+    --no-wait \
+    2>&1 >/dev/null
+
+az aks nodepool add \
+    --resource-group clusters \
+    --cluster-name "$CLUSTER_NAME" \
+    --name nc12sv3 \
+    --node-count 0 \
+    --max-pods 110 \
+    --node-vm-size Standard_NC12s_v3 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=2 radix-node-gpu=nvidia-v100 radix-node-gpu-count=2 \
+    --node-taints sku=gpu:NoSchedule \
+    --node-taints gpu=nvidia-v100:NoSchedule \
+    --node-taints gpu-count=2:NoSchedule \
+    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
+    --node-taints radix-node-gpu-count=2:NoSchedule \
+    --no-wait \
+    2>&1 >/dev/null
+
+az aks nodepool add \
+    --resource-group clusters \
+    --cluster-name "$CLUSTER_NAME" \
+    --name nc24sv3 \
+    --node-count 0 \
+    --max-pods 110 \
+    --node-vm-size Standard_NC24s_v3 \
+    --labels sku=gpu gpu=nvidia-v100 gpu-count=4 radix-node-gpu=nvidia-v100 radix-node-gpu-count=4 \
+    --node-taints sku=gpu:NoSchedule \
+    --node-taints gpu=nvidia-v100:NoSchedule \
+    --node-taints gpu-count=4:NoSchedule \
+    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
+    --node-taints radix-node-gpu-count=4:NoSchedule \
+    --no-wait \
+    2>&1 >/dev/null
+
+echo "Done."
 
 #######################################################################################
 ### END
@@ -345,4 +405,4 @@ if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
 fi
 
 echo ""
-echo "Boostrap of \"${CLUSTER_NAME}\" done!"
+echo "Bootstrap of \"${CLUSTER_NAME}\" done!"

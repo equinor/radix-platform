@@ -25,10 +25,10 @@
 ###
 
 # Normal usage
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 # Configure a dev cluster to use custom configs
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./bootstrap.sh
 
 #######################################################################################
 ### DOCS
@@ -232,7 +232,7 @@ printf "...Done\n"
 
 printf "\nInstalling Flux "
 helm upgrade --install flux \
-    --version 1.6.0 \
+    --version 1.9.0 \
     --set rbac.create=true \
     --set git.url="$GIT_REPO" \
     --set git.branch="$GIT_BRANCH" \

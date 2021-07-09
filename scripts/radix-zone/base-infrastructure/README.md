@@ -5,7 +5,7 @@ Radix has two _infrastructure_ environments that together hold the base infrastr
 - `prod`
 
 The radix-zones `prod` and `dev` is hosted in the corrensponding infrastructure environment.  
-`dev` is the testing/development environment for `prod`, and so they share the same boostrap and teardown scripts. 
+`dev` is the testing/development environment for `prod`, and so they share the same bootstrap and teardown scripts. 
 
 
 ## Components

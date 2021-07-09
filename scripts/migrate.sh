@@ -117,6 +117,12 @@ if ! [[ -x "$INSTALL_BASECOMPONENTS_SCRIPT" ]]; then
     echo "The install base components script is not found or it is not executable in path $INSTALL_BASECOMPONENTS_SCRIPT" >&2
 fi
 
+DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
+if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
+    # Print to stderror
+    echo "The dynatrace integration script is not found or it is not executable in path $DYNATRACE_INTEGRATION_SCRIPT" >&2
+fi
+
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
@@ -213,6 +219,8 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     wait # wait for subshell to finish
     printf "Done creating cluster."
 
+    [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+
     echo ""
     echo "Installing base components..."
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASECOMPONENTS_SCRIPT")
@@ -225,6 +233,7 @@ fi
 echo ""
 printf "Point to destination cluster... "
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
 
 # Wait for operator to be deployed from flux
 echo ""
@@ -234,6 +243,20 @@ while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
+
+# Wait for dynatrace to be deployed from flux
+echo ""
+echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
+echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo ""
+printf "Update Dynatrace integration... "
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
+wait # wait for subshell to finish
+printf "Done updating Dynatrace integration."
 
 # Wait for velero to be deployed from flux
 echo ""
@@ -250,6 +273,7 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$S
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
 printf "Done.\n"
 
 echo ""
@@ -260,7 +284,7 @@ apiVersion: velero.io/v1
 kind: Backup
 metadata:
   labels:
-    velero.io/storage-location: default
+    velero.io/storage-location: azure
   name: $BACKUP_NAME
   namespace: velero
 spec:
@@ -283,10 +307,10 @@ spec:
       operator: NotIn
       values:
       - prometheus-operator
-  storageLocation: default
+  storageLocation: azure
   ttl: 168h0m0s
   volumeSnapshotLocations:
-  - default
+  - azure
 EOF
 
 echo ""
@@ -306,7 +330,13 @@ if [[ "$REPLY" =~ (N|n) ]]; then
 
     AUTH_PROXY_COMPONENT="auth"
     AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-    WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+    RADIX_WEB_CONSOLE_ENV="prod"
+    if [[ $CLUSTER_TYPE  == "development" ]]; then
+      echo "Development cluster uses QA web-console"
+      RADIX_WEB_CONSOLE_ENV="qa"
+    fi
+    WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
     wait # wait for subshell to finish
 
@@ -319,12 +349,12 @@ fi
 echo ""
 printf "Enabling monitoring addon in the destination cluster... "
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name radix-container-logs-$RADIX_ZONE | jq -r .[0].id)
-az aks enable-addons -a monitoring -n $DEST_CLUSTER -g clusters --workspace-resource-id "$WORKSPACE_ID"
+az aks enable-addons -a monitoring -n $DEST_CLUSTER -g clusters --workspace-resource-id "$WORKSPACE_ID" --no-wait
 printf "Done.\n"
 
 echo ""
 printf "Disabling monitoring addon in the source cluster... "
-az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters
+az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters --no-wait
 printf "Done.\n"
 
 echo ""
@@ -333,13 +363,14 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$S
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
 printf "Done.\n"
 
 echo ""
 printf "Delete custom ingresses... "
 while read -r line; do
     if [[ "$line" ]]; then
-        helm delete ${line} --purge
+        helm delete ${line}
     fi
 done <<<"$(helm list --short | grep radix-ingress)"
 
@@ -350,6 +381,7 @@ kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 echo ""
 printf "Point to destination cluster... "
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
 
 echo ""
 printf "Create aliases in destination cluster... "

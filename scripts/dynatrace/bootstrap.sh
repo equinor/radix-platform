@@ -4,7 +4,11 @@
 ### PURPOSE
 ###
 
-# Bootstrap radix-cost-allocation in a radix cluster
+# Bootstrap dynatrace in a radix cluster
+# This script will: 
+# - create the dynatrace namespace
+# - retrieve the dynatrace secrets from the keyvault
+# - store the secrets in a kubernetes secret
 
 #######################################################################################
 ### PRECONDITIONS
@@ -35,7 +39,7 @@
 ###
 
 echo ""
-echo "Start bootstrap of radix-cost-allocation... "
+echo "Start bootstrap of dynatrace... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -84,18 +88,26 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-echo "Install Radix cost allocator"
-SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name radix-cost-allocation-db-writer-$RADIX_ZONE | jq -r .value)
-echo "db:                                                                                                                           
-  password: ${SQL_DB_PASSWORD}" > radix-cost-allocation-values.yaml
+echo "Install Dynatrace"
 
-kubectl create ns radix-cost-allocation --dry-run=client --save-config -o yaml |
+# Store the secrets in a temporary .yaml file.
+DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
+DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-token | jq -r .value)
+DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
+echo "apiUrl: ${DYNATRACE_API_URL}
+apiToken: ${DYNATRACE_API_TOKEN}
+paasToken: ${DYNATRACE_PAAS_TOKEN}" > dynatrace-values.yaml
+
+# Create the dynatrace namespace.
+kubectl create ns dynatrace --dry-run=client --save-config -o yaml |
     kubectl apply -f -
-    
-kubectl create secret generic cost-db-secret --namespace radix-cost-allocation \
-    --from-file=./radix-cost-allocation-values.yaml \
+# Create the secret to be used in the helm chart for deploying Dynatrace.
+kubectl create secret generic dynatrace-secret --namespace dynatrace \
+    --from-file=./dynatrace-values.yaml \
     --dry-run=client -o yaml |
     kubectl apply -f -
 
-rm -f radix-cost-allocation-values.yaml
+# Delete the temporary .yaml file.
+rm -f dynatrace-values.yaml
+
 echo "Done."

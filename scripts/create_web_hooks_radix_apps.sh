@@ -53,8 +53,13 @@ https://api.github.com/repos/equinor/radix-canary-golang/hooks \
 -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
 echo $RESPONSE | jq
 
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+  echo "Development cluster uses QA web-console"
+  RADIX_WEB_CONSOLE_ENV="qa"
+fi
 # Webhook for the radix-web-console project
-WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
+WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-$RADIX_WEB_CONSOLE_ENV webhook -o json| jq --raw-output .spec.rules[0].host)
 SHARED_SECRET=$(kubectl get rr radix-web-console -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 

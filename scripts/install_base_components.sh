@@ -238,22 +238,9 @@ wait
 ### Install grafana
 ###
 
-echo "Installing grafana"
-az keyvault secret download \
-  --vault-name $AZ_RESOURCE_KEYVAULT \
-  --name grafana-secrets \
-  --file grafana-secrets.yaml
-
-kubectl apply -f grafana-secrets.yaml
-
-rm -f grafana-secrets.yaml
-
-helm upgrade --install grafana stable/grafana -f manifests/grafana-values.yaml \
-  --version v5.5.5 \
-  --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
-  --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
-  --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-  --set env.GF_SERVER_ROOT_URL=https://grafana."$AZ_RESOURCE_DNS"
+echo ""
+(USER_PROMPT="false" ./grafana/bootstrap.sh)
+wait
 
 # Add grafana replyUrl to AAD app
 (AAD_APP_NAME="radix-cluster-aad-server-${RADIX_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
@@ -333,6 +320,14 @@ wait
 
 echo ""
 (./cost-allocation/bootstrap.sh)
+wait
+
+#######################################################################################
+### Deploy dynatrace
+###
+
+echo ""
+(./dynatrace/bootstrap.sh)
 wait
 
 #######################################################################################

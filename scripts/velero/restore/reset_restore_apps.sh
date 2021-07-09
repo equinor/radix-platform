@@ -67,7 +67,7 @@ PATCH_JSON="$(cat << END
 }
 END
 )"
-kubectl patch BackupStorageLocation default -n velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation azure -n velero --type merge --patch "$(echo $PATCH_JSON)"
 # Set velero in read/write mode
 kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 

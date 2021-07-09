@@ -147,4 +147,4 @@ create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make c
 
 
 echo ""
-echo "Boostrap of radix service principals done!"
+echo "Bootstrap of radix service principals done!"

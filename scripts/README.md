@@ -62,7 +62,7 @@ This script requires secret files to be available in the `keyvault` of the corre
 * `slack-token`
 * `prometheus-operator-values` # prometheus-operator values file
 * `prometheus-basic-auth` # htpasswd file used to authenticate towards Prometheus
-* `grafana-secrets` # grafana secret envs file
+* `grafana-database-password` # grafana database password
 * `external-dns-azure-secret` # external-dns credentials file
 
 **NB: The `keyvault` is created by the "install infrastructure" step**

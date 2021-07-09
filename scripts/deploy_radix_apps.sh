@@ -159,6 +159,7 @@ helm repo update
 
 # Connect kubectl so we have the correct context
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
+[[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
 
 # Wait for operator to be deployed from flux
 echo ""
@@ -375,12 +376,12 @@ rm radix-public-site-values.yaml
 # Wait a few seconds until radix-operator can process the RadixRegistration
 wait_for_app_namespace "radix-platform"
 
-helm upgrade --install radix-pipeline-public-site-master \
+helm upgrade --install radix-pipeline-public-site-release \
     ../charts/radix-pipeline-invocation \
     --version 1.0.12 \
     --set name="radix-platform" \
-    --set cloneURL="git@github.com:equinor/radix-platform.git" \
-    --set cloneBranch="master" \
+    --set cloneURL="git@github.com:equinor/radix-public-site.git" \
+    --set cloneBranch="release" \
     --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
@@ -388,7 +389,12 @@ helm upgrade --install radix-pipeline-public-site-master \
 # Update replyUrl for web-console
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-WEB_CONSOLE_NAMESPACE="radix-web-console-prod"
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+  echo "Development cluster uses QA web-console"
+  RADIX_WEB_CONSOLE_ENV="qa"
+fi
+WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 
 echo ""
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."

@@ -2,7 +2,7 @@
 
 ![Logo](logo/Banner%20energy%20red@2x.png)
 
-[www.radix.equinor.com (public site)](https://www.radix.equinor.com)
+![](https://api.radix.equinor.com/api/v1/applications/radix-platform/environments/prod/buildstatus)
 
 This repository is the umbrella for Omnia Radix with issue tracking and feature requests and pointers to other resources.
 
@@ -30,9 +30,9 @@ We are moving fast and making changes, so portions of the documentation will be 
 
 All of our source code for the platform is on [GitHub repositories prefixed with _radix-_](https://github.com/equinor?utf8=%E2%9C%93&q=radix-). You need to be a member of the _Omnia Radix Readers_ group to have access to some private repositories (we are still working on open-sourcing all parts of Radix). Contact us to get access.
 
-## Jira
+## DevOps
 
-We have a [Jira board](https://equinor.atlassian.net/secure/RapidBoard.jspa?rapidView=41&projectKey=RA) for tracking progress in the team. Right now this is internal for the team only.
+We have a [Azure DevOps board](https://dev.azure.com/Equinor/Radix) for tracking progress in the team. Right now this is internal for the team only.
 
 ## Visuals
 

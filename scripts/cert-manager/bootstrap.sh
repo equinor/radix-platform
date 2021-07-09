@@ -186,8 +186,8 @@ printf "...Done.\n"
 function installCertManager(){
     printf "\nInstalling cert-manager..."
     # Install the CustomResourceDefinition resources separately
-    kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml \
-    2>&1 >/dev/null
+    #kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml \
+    #2>&1 >/dev/null
 
     # Create the namespace for cert-manager
     kubectl create namespace cert-manager \
@@ -204,14 +204,15 @@ function installCertManager(){
     # Install the cert-manager Helm chart 
     #
     # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
-#    helm upgrade --install cert-manager \
-#    --namespace cert-manager \
-#    --version v1.1 \
-#    --set global.rbac.create=true \
-#    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-#    --set ingressShim.defaultIssuerKind=ClusterIssuer \
-#    jetstack/cert-manager \
-#    2>&1 >/dev/null
+    helm upgrade --install cert-manager \
+    --namespace cert-manager \
+    --version v1.3.1 \
+    --set installCRDs=true \
+    --set global.rbac.create=true \
+    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
+    --set ingressShim.defaultIssuerKind=ClusterIssuer \
+    jetstack/cert-manager \
+    2>&1 >/dev/null
     printf "...Done.\n"
 }
 
@@ -219,32 +220,6 @@ function installCertManager(){
 #######################################################################################
 ### Transform and apply all custom resources
 ###
-
-function waitUntilWebHookIsReady() {
-    local iteration=0
-    printf "\nWaiting for cert-manager webhook to spin up. This can take a while.."
-    while [[ ! "$(kubectl get apiservice v1beta1.webhook.cert-manager.io -o=jsonpath='{.status.conditions[?(@.type=="Available")].status}')" == "True" ]]; do
-        sleep 3s
-        case "$iteration" in
-            "6" )
-                printf "dumdidum..."
-                ;;
-            "12" )
-                printf "soon..."
-                ;;
-            "18" )
-                printf "any time now..."
-                ;;
-            "24" )
-                printf "nice weather today, aint it?..."
-                ;;
-            *)
-                printf "."
-        esac
-        iteration="$((iteration + 1))"
-    done
-    printf "...Done.\n"
-}
 
 function transformManifests() {
     printf "\nStart transforming manifests..."
@@ -322,15 +297,21 @@ function annotateSecretsForKubedSync() {
 ###
 
 installCertManager
-waitUntilWebHookIsReady
+kubectl wait --for=condition=Available --timeout=300s apiservice v1.cert-manager.io
+sleep 60
 transformManifests
 applyManifests
 annotateSecretsForKubedSync
-
+sleep 20
+transformManifests
+applyManifests
+annotateSecretsForKubedSync
+sleep 5
+kubectl rollout restart deployment -n cert-manager cert-manager cert-manager-cainjector cert-manager-webhook
 
 #######################################################################################
 ### END
 ###
 
 echo ""
-echo "Boostrapping of Cert-Manager done!"
+echo "Bootstrapping of Cert-Manager done!"

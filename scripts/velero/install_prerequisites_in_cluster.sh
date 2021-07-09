@@ -214,7 +214,7 @@ printf "...Done"
 printf "\nWorking on credentials..."
 generateCredentialsFile
 kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
-   --from-env-file="$CREDENTIALS_GENERATED_PATH" \
+   --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
    --dry-run=client -o yaml \
    | kubectl apply -f - \
    2>&1 >/dev/null
