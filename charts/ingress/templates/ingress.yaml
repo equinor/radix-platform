@@ -33,8 +33,9 @@ spec:
       http:
         paths:
         - backend:
-            serviceName: {{ .Values.component }}
-            servicePort: {{ .Values.componentPort }}
+            name: {{ .Values.component }}
+            port:
+              number: {{ .Values.componentPort }}
           path: /
   tls:
     - hosts:
