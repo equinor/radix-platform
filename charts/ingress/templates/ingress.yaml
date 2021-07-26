@@ -32,11 +32,13 @@ spec:
     - host: {{ .Values.aliasUrl }}
       http:
         paths:
-        - backend:
-            name: {{ .Values.component }}
-            port:
-              number: {{ .Values.componentPort }}
-          path: /
+        - path: "/"
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Values.component }}
+              port:
+                number: {{ .Values.componentPort }}
   tls:
     - hosts:
       - {{ .Values.aliasUrl }}
