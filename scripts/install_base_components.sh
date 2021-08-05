@@ -260,13 +260,14 @@ kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
 # Create radix platform shared configs and secrets
-# Create 2 secrets for Radix platform radix-sp-acr-azure and radix-docker
+# Create 3 secrets for Radix platform radix-sp-acr-azure, radix-docker and radix-snyk-service-account
 
 echo ""
 echo "Start on radix platform shared configs and secrets..."
 
 echo ""
 (./config-and-secrets/bootstrap-acr.sh)
+(./config-and-secrets/bootstrap-snyk.sh)
 wait
 
 printf "\nGetting Slack Webhook URL..."
