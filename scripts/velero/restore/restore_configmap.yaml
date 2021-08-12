@@ -8,7 +8,7 @@ spec:
   includedNamespaces:
   - '*'
   includedResources:
-  - 'secrets'
+  - 'configmaps'
   labelSelector:
     matchExpressions:
     - {key: radix-app, operator: Exists}
