@@ -1,7 +1,7 @@
 apiVersion: velero.io/v1
 kind: Restore
 metadata:
-  name: ${BACKUP_NAME}-secret
+  name: ${BACKUP_NAME}-configmaps
   namespace: velero
 spec:
   backupName: ${BACKUP_NAME}
