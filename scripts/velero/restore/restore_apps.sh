@@ -301,7 +301,7 @@ function please_wait_for_all_resources() {
   sleep 5s
   second=($($command 2>/dev/null | wc -l | xargs))
 
-  # The the resources stop growing, we
+  # The resources stop growing, we
   # can assume all are visible
   while [[ $((second - first)) != 0 ]]; do
     first=($($command 2>/dev/null | wc -l | xargs))
@@ -398,8 +398,21 @@ RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PA
 echo "$RESTORE_YAML" | kubectl apply -f -
 
 echo ""
-echo "Wait for secrets to be picked up by radix-operator..."
+echo "Wait for secrets to be restored..."
 please_wait_for_all_resources "secret"
+
+#######################################################################################
+### Restore configmaps
+###
+
+echo ""
+echo "Restore app specific configmaps..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_configmap.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+echo ""
+echo "Wait for configmaps to be restored..."
+please_wait_for_all_resources "configmap"
 
 #######################################################################################
 ### Restore apps
