@@ -105,7 +105,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap of cert-manager will use the following configuration:"
+echo -e "Bootstrap of radix-snyk-service-account secret will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
