@@ -87,10 +87,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-if [[ -z "$STAGING" ]]; then
-    STAGING=false
-fi
-
 #######################################################################################
 ### Prepare az session
 ###
