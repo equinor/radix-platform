@@ -117,9 +117,22 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 # Script vars
-
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+  echo "Please provide RADIX_ZONE_ENV" >&2
+  exit 1
+else
+  if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+    echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+    exit 1
+  fi
+  source "$RADIX_ZONE_ENV"
+fi
 WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$WORK_DIR"/flux.env
+
+GIT_REPO="$FLUX_GITOPS_REPO"
+GIT_BRANCH="$FLUX_GITOPS_BRANCH"
+GIT_DIR="$FLUX_GITOPS_DIR"
 
 #######################################################################################
 ### Prepare az session

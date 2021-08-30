@@ -168,6 +168,10 @@ rm -f auth
 
 # Create a custom ingress for prometheus that adds HTTP Basic Auth
 
+$CLUSTER_NAME 
+echo "$CLUSTER_NAME " | tr '[:upper:]' '[:lower:]'
+
+
 cat <<EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -181,7 +185,7 @@ metadata:
   name: prometheus-basic-auth
 spec:
   rules:
-  - host: prometheus.$CLUSTER_NAME.$AZ_RESOURCE_DNS
+  - host: prometheus.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
     http:
       paths:
       - backend:
@@ -190,7 +194,7 @@ spec:
         path: /
   tls:
   - hosts:
-    - prometheus.$CLUSTER_NAME.$AZ_RESOURCE_DNS
+    - prometheus.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
     secretName: cluster-wildcard-tls-cert
 EOF
 
@@ -207,7 +211,7 @@ metadata:
   name: prometheus-oauth2-auth
 spec:
   rules:
-  - host: prometheus-oauth2.$CLUSTER_NAME.$AZ_RESOURCE_DNS
+  - host: prometheus-oauth2.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
     http:
       paths:
       - backend:
@@ -216,6 +220,6 @@ spec:
         path: /
   tls:
   - hosts:
-    - prometheus-oauth2.$CLUSTER_NAME.$AZ_RESOURCE_DNS
+    - prometheus-oauth2.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
     secretName: cluster-wildcard-tls-cert
 EOF
