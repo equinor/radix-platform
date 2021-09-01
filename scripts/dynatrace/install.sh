@@ -12,6 +12,7 @@ CLUSTER_NAME=""
 CLUSTER_NAME_REGEX="^[-_a-zA-Z0-9][-_\.a-zA-Z0-9]*$"
 CLUSTER_NAME_LENGTH=256
 RELEASE_VERSION=""
+PROMETHEUS_INTEGRATION_ENABLED="true"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -46,6 +47,10 @@ while [ $# -gt 0 ]; do
   --release-version)
     RELEASE_VERSION="$2"
     shift 2
+    ;;
+  --enable-prometheus-integration)
+    PROMETHEUS_INTEGRATION_ENABLED="$2"
+    shift
     ;;
   *)
     echo "Warning: skipping unsupported option: $1"
@@ -220,7 +225,8 @@ addK8sConfiguration() {
   "eventsIntegrationEnabled": false,
   "authToken": "${K8S_BEARER}",
   "active": true,
-  "certificateCheckEnabled": "${CERT_CHECK_API}"
+  "certificateCheckEnabled": "${CERT_CHECK_API}",
+  "prometheusExportersIntegrationEnabled": "${PROMETHEUS_INTEGRATION_ENABLED}"
 }
 EOF
     )"
@@ -242,7 +248,8 @@ EOF
   "activeGateGroup": "${CLUSTER_NAME}",
   "authToken": "${K8S_BEARER}",
   "active": true,
-  "certificateCheckEnabled": "${CERT_CHECK_API}"
+  "certificateCheckEnabled": "${CERT_CHECK_API}",
+  "prometheusExportersIntegrationEnabled": "${PROMETHEUS_INTEGRATION_ENABLED}"
 }
 EOF
     )"

@@ -121,6 +121,7 @@ sh ./install.sh \
     --paas-token "${DYNATRACE_PAAS_TOKEN}" \
     --cluster-name "${CLUSTER_NAME}" \
     --skip-ssl-verification \
+    --enable-prometheus-integration "true" \
     --release-version "${RELEASE_VERSION}"
 
 echo "Done."
