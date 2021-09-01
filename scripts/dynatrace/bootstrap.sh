@@ -17,7 +17,10 @@
 # - AKS cluster is available
 # - User has role cluster-admin
 # - Helm RBAC is configured in cluster
-# - Tiller is installed in cluster (if using Helm version < 2)
+# - Following secrets in keyvault:
+#       - dynatrace-api-url
+#       - dynatrace-tenant-token (an API-token with config write permission)
+#       - dynatrace-paas-token
 
 #######################################################################################
 ### INPUTS
@@ -32,7 +35,7 @@
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 #######################################################################################
 ### START
@@ -88,26 +91,36 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+echo "Get secrets from keyvault"
+
+DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
+DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
+DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
+
+if [[ -z "$DYNATRACE_API_URL" ]]; then
+    echo "Please provide DYNATRACE_API_URL" >&2
+    exit 1
+fi
+if [[ -z "$DYNATRACE_API_TOKEN" ]]; then
+    echo "Please provide DYNATRACE_API_TOKEN" >&2
+    exit 1
+fi
+if [[ -z "$DYNATRACE_PAAS_TOKEN" ]]; then
+    echo "Please provide DYNATRACE_PAAS_TOKEN" >&2
+    exit 1
+fi
+
+# Use the following release version of dynatrace-operator https://github.com/Dynatrace/dynatrace-operator/releases
+RELEASE_VERSION="v0.2.2"
+
 echo "Install Dynatrace"
 
-# Store the secrets in a temporary .yaml file.
-DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
-DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-token | jq -r .value)
-DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
-echo "apiUrl: ${DYNATRACE_API_URL}
-apiToken: ${DYNATRACE_API_TOKEN}
-paasToken: ${DYNATRACE_PAAS_TOKEN}" > dynatrace-values.yaml
-
-# Create the dynatrace namespace.
-kubectl create ns dynatrace --dry-run=client --save-config -o yaml |
-    kubectl apply -f -
-# Create the secret to be used in the helm chart for deploying Dynatrace.
-kubectl create secret generic dynatrace-secret --namespace dynatrace \
-    --from-file=./dynatrace-values.yaml \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
-
-# Delete the temporary .yaml file.
-rm -f dynatrace-values.yaml
+sh ./install.sh \
+    --api-url "${DYNATRACE_API_URL}" \
+    --api-token "${DYNATRACE_API_TOKEN}" \
+    --paas-token "${DYNATRACE_PAAS_TOKEN}" \
+    --cluster-name "${CLUSTER_NAME}" \
+    --skip-ssl-verification \
+    --release-version "${RELEASE_VERSION}"
 
 echo "Done."

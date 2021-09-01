@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# This file has been edited to be used by radix deployment scripts.
+
 set -e
 
 CLI="kubectl"
@@ -9,6 +11,7 @@ CONNECTION_NAME=""
 CLUSTER_NAME=""
 CLUSTER_NAME_REGEX="^[-_a-zA-Z0-9][-_\.a-zA-Z0-9]*$"
 CLUSTER_NAME_LENGTH=256
+RELEASE_VERSION=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -40,6 +43,10 @@ while [ $# -gt 0 ]; do
     CLI="oc"
     shift
     ;;
+  --release-version)
+    RELEASE_VERSION="$2"
+    shift 2
+    ;;
   *)
     echo "Warning: skipping unsupported option: $1"
     shift
@@ -59,6 +66,11 @@ fi
 
 if [ -z "$PAAS_TOKEN" ]; then
   echo "Error: paas-token not set!"
+  exit 1
+fi
+
+if [ -z "$RELEASE_VERSION" ]; then
+  echo "Error: release-version not set!"
   exit 1
 fi
 
@@ -102,12 +114,12 @@ isOCP311() {
 
 applyDynatraceOperator() {
   if [ "${CLI}" = "kubectl" ]; then
-    "${CLI}" apply -f https://github.com/Dynatrace/dynatrace-operator/releases/latest/download/kubernetes.yaml
+    "${CLI}" apply -f https://github.com/Dynatrace/dynatrace-operator/releases/download/$RELEASE_VERSION/kubernetes.yaml
   else
     if isOCP311; then
-      "${CLI}" apply -f https://github.com/Dynatrace/dynatrace-operator/releases/latest/download/openshift3.11.yaml
+      "${CLI}" apply -f https://github.com/Dynatrace/dynatrace-operator/releases/download/$RELEASE_VERSION/openshift3.11.yaml
     else
-      "${CLI}" apply -f https://github.com/Dynatrace/dynatrace-operator/releases/latest/download/openshift.yaml
+      "${CLI}" apply -f https://github.com/Dynatrace/dynatrace-operator/releases/download/$RELEASE_VERSION/openshift.yaml
     fi
   fi
 
