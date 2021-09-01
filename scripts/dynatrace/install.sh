@@ -178,7 +178,7 @@ spec:
     - name: ONEAGENT_ENABLE_VOLUME_STORAGE
       value: "${ENABLE_VOLUME_STORAGE}"
     args:
-    - --set-host-group="${CLUSTER_NAME}"
+    - --set-host-group=${CLUSTER_NAME}
 EOF
   fi
 }
