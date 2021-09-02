@@ -211,6 +211,7 @@ function installCertManager(){
     --set global.rbac.create=true \
     --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
     --set ingressShim.defaultIssuerKind=ClusterIssuer \
+    --set podLabels={aadpodidbinding: certman-label} \
     jetstack/cert-manager \
     2>&1 >/dev/null
     printf "...Done.\n"
@@ -223,28 +224,41 @@ function installCertManager(){
 
 function transformManifests() {
     printf "\nStart transforming manifests..."
-    # Fetch dns system user credentials
-    # Read secret, extract stringified json from property "value" and convert it into json
-    local DNS_SP="$(az keyvault secret show \
-        --vault-name $AZ_RESOURCE_KEYVAULT \
-        --name $AZ_SYSTEM_USER_DNS \
-        | jq '.value | fromjson')"
+    if [ "$RADIX_ENVIRONMENT" = "classic" ]; then
+        # Use Managed Identity.
 
-    # Set variables used in the manifest templates
-    local DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
-    local DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
-    local DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
-    local DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
+        IDENTITY="$(az identity show --name $AZ_MANAGED_IDENTITY_NAME --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json)"
+        # Used for identity binding
+        CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')
+        RESOURCE_ID=$(echo $IDENTITY | jq -r '.id')
 
-    # Combine and use the templated manifests as a heredocs.
-    # First we combine them all into one heredoc script file.
-    # Then we will then run the heredoc script in context of caller using the "source" command so that it share scope with caller and have access the same vars.
-    # The final output will be a yaml file that contains all the translated manifests.
-    local TMP_DIR="${WORK_DIR}/tmp"
-    test -d "$TMP_DIR" && rm -rf "$TMP_DIR"
-    mkdir "$TMP_DIR"
-    (echo "#!/bin/sh"; echo "cat <<EOF >>${TMP_DIR}/translated-manifests.yaml"; (for templateFile in "$WORK_DIR"/manifests/*.yaml; do cat $templateFile; done;) | cat; echo ""; echo "EOF";)>${TMP_DIR}/heredoc.sh && chmod +x ${TMP_DIR}/heredoc.sh
-    source ${TMP_DIR}/heredoc.sh
+        kubectl apply -f ${WORK_DIR}/smi-azure-identity-and-issuer.yaml
+    else
+        # Use Service Principle.
+
+        # Fetch dns system user credentials
+        # Read secret, extract stringified json from property "value" and convert it into json
+        local DNS_SP="$(az keyvault secret show \
+            --vault-name $AZ_RESOURCE_KEYVAULT \
+            --name $AZ_SYSTEM_USER_DNS \
+            | jq '.value | fromjson')"
+
+        # Set variables used in the manifest templates
+        local DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
+        local DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
+        local DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
+        local DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
+
+        # Combine and use the templated manifests as a heredocs.
+        # First we combine them all into one heredoc script file.
+        # Then we will then run the heredoc script in context of caller using the "source" command so that it share scope with caller and have access the same vars.
+        # The final output will be a yaml file that contains all the translated manifests.
+        local TMP_DIR="${WORK_DIR}/tmp"
+        test -d "$TMP_DIR" && rm -rf "$TMP_DIR"
+        mkdir "$TMP_DIR"
+        (echo "#!/bin/sh"; echo "cat <<EOF >>${TMP_DIR}/translated-manifests.yaml"; (for templateFile in "$WORK_DIR"/manifests/*.yaml; do cat $templateFile; done;) | cat; echo ""; echo "EOF";)>${TMP_DIR}/heredoc.sh && chmod +x ${TMP_DIR}/heredoc.sh
+        source ${TMP_DIR}/heredoc.sh
+    fi
     printf "...Done.\n"
 }
 
