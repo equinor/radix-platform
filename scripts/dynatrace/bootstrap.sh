@@ -113,15 +113,53 @@ fi
 # Use the following release version of dynatrace-operator https://github.com/Dynatrace/dynatrace-operator/releases
 RELEASE_VERSION="v0.2.2"
 
-echo "Install Dynatrace"
+# echo "Install Dynatrace"
 
-sh ./install.sh \
-    --api-url "${DYNATRACE_API_URL}" \
-    --api-token "${DYNATRACE_API_TOKEN}" \
-    --paas-token "${DYNATRACE_PAAS_TOKEN}" \
-    --cluster-name "${CLUSTER_NAME}" \
-    --skip-ssl-verification \
-    --enable-prometheus-integration "true" \
-    --release-version "${RELEASE_VERSION}"
+# sh ./install.sh \
+#     --api-url "${DYNATRACE_API_URL}" \
+#     --api-token "${DYNATRACE_API_TOKEN}" \
+#     --paas-token "${DYNATRACE_PAAS_TOKEN}" \
+#     --cluster-name "${CLUSTER_NAME}" \
+#     --skip-ssl-verification \
+#     --enable-prometheus-integration "true" \
+#     --release-version "${RELEASE_VERSION}"
+
+echo "Create the dynatrace namespace."
+kubectl create namespace dynatrace 
+
+echo "Create the secret to be used in the helm chart for deploying Dynatrace."
+
+echo "apiUrl: ${DYNATRACE_API_URL}
+apiToken: ${DYNATRACE_API_TOKEN}
+paasToken: ${DYNATRACE_PAAS_TOKEN}
+skipCertCheck: true
+networkZone: ${CLUSTER_NAME}
+classicFullStack:
+  enabled: true
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists
+  env:
+  - name: ONEAGENT_ENABLE_VOLUME_STORAGE
+    value: \"false\"
+  args:
+  - --set-host-group=${CLUSTER_NAME}
+kubernetesMonitoring:
+  enabled: true
+  replicas: 1
+  group: ${CLUSTER_NAME}
+routing:
+  enabled: true
+  replicas: 1
+  group: ${CLUSTER_NAME}" > dynatrace-values.yaml
+
+kubectl create secret generic dynatrace-secret --namespace dynatrace \
+    --from-file=./dynatrace-values.yaml \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+
+# Delete the temporary .yaml file.
+rm -f dynatrace-values.yaml
 
 echo "Done."
