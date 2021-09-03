@@ -287,6 +287,79 @@ echo "Bootstrap of advanced network done."
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
+if [[ "$RADIX_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
+    DNS_ZONE="playground.$DNS_ZONE"
+elif [[ "$RADIX_ENVIRONMENT" != "prod" ]]; then
+    DNS_ZONE="${RADIX_ENVIRONMENT}.${DNS_ZONE}"
+else
+    HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
+fi
+
+AKS_BASE_OPTIONS=(
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --name "$CLUSTER_NAME"
+    --no-ssh-key
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --service-principal "$CLUSTER_SYSTEM_USER_ID"
+    --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD"
+    --enable-cluster-autoscaler
+    --min-count "$MIN_COUNT"
+    --max-count "$MAX_COUNT"
+    --node-osdisk-size "$NODE_DISK_SIZE"
+    --node-vm-size "$NODE_VM_SIZE"
+    --max-pods "$POD_PER_NODE"
+    --network-plugin "$NETWORK_PLUGIN"
+    --network-policy "$NETWORK_POLICY"
+    --vnet-subnet-id "$SUBNET_ID"
+    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS"
+    --dns-service-ip "$VNET_DNS_SERVICE_IP"
+    --service-cidr "$VNET_SERVICE_CIDR"
+    --aad-server-app-id "$AAD_SERVER_APP_ID"
+    --aad-server-app-secret "$AAD_SERVER_APP_SECRET"
+    --aad-client-app-id "$AAD_CLIENT_APP_ID"
+    --aad-tenant-id "$AAD_TENANT_ID"
+    --location "$AZ_RADIX_ZONE_LOCATION"
+)
+
+if [ "$OMNIA_ZONE" = "standalone" ]; then
+    AKS_OMNIA_OPTIONS=()
+elif [[ "$OMNIA_ZONE" = "classic" ]]; then
+    AKS_OMNIA_OPTIONS=(
+        --enable-private-cluster
+        --enable-aad
+    )
+else
+   echo "Unknown parameter"
+fi
+
+if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
+    AKS_ENV_OPTIONS=(
+        --uptime-sla
+    )
+elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
+    AKS_ENV_OPTIONS=()
+else
+   echo "Unknown parameter"
+fi
+
+if [ "$CLUSTER_TYPE" = "production" ]; then
+    CLUSTER_BASE_OPTIONS=(
+        --node-count "12"
+    )
+elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
+    CLUSTER_BASE_OPTIONS=()
+elif [[ "$CLUSTER_TYPE" = "development" ]]; then
+    CLUSTER_BASE_OPTIONS=()
+elif [[ "$CLUSTER_TYPE" = "classicdev" ]]; then
+    CLUSTER_BASE_OPTIONS=()
+elif [[ "$CLUSTER_TYPE" = "classicprod" ]]; then
+    CLUSTER_BASE_OPTIONS=()
+else
+   echo "Unknown parameter"
+fi
+
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}"
+
 ### It might be required to add "--node-count 10 \" below "--max-count "$MAX_COUNT" \" if deploying certain VM sizes
 az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
     --no-ssh-key \
