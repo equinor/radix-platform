@@ -173,7 +173,7 @@ addK8sConfiguration() {
   "activeGateGroup": "${CLUSTER_NAME}",
   "authToken": "${K8S_BEARER}",
   "active": true,
-  "certificateCheckEnabled": "${CERT_CHECK_API}"
+  "certificateCheckEnabled": "${CERT_CHECK_API}",
   "prometheusExportersIntegrationEnabled": "${ENABLE_PROMETHEUS_INTEGRATION}"
 }
 EOF
