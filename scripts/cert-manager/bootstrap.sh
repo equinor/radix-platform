@@ -232,7 +232,7 @@ function transformManifests() {
         CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')
         RESOURCE_ID=$(echo $IDENTITY | jq -r '.id')
 
-        kubectl apply -f ${WORK_DIR}/smi-azure-identity-and-issuer.yaml
+        kubectl apply -f ${WORK_DIR}/manifests/smi-azure-identity-and-issuer.yaml
     else
         # Use Service Principle.
 
