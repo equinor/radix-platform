@@ -204,7 +204,8 @@ function installCertManager(){
     # Install the cert-manager Helm chart 
     #
     # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
-    helm upgrade --install cert-manager \
+
+    if [[ "$(helm upgrade --install cert-manager \
     --namespace cert-manager \
     --version v1.3.1 \
     --set installCRDs=true \
@@ -212,8 +213,31 @@ function installCertManager(){
     --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
     --set ingressShim.defaultIssuerKind=ClusterIssuer \
     jetstack/cert-manager \
-    2>&1 >/dev/null
-    printf "...Done.\n"
+    2>&1)" == *"Error"* ]]; then
+        echo "Could not download chart. Setting proxy and re-trying."
+
+        CLUSTER_API_URL="$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' | awk -F[/:] '{print $4}')"
+        export https_proxy="http://www-proxy.statoil.no:80"
+        export no_proxy=${CLUSTER_API_URL}
+
+        if [[ "$(helm upgrade --install cert-manager \
+        --namespace cert-manager \
+        --version v1.3.1 \
+        --set installCRDs=true \
+        --set global.rbac.create=true \
+        --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
+        --set ingressShim.defaultIssuerKind=ClusterIssuer \
+        jetstack/cert-manager \
+        2>&1)" == *"Error"* ]]; then
+            echo "ERROR: Could not download chart. Exiting."
+            unset https_proxy
+            unset no_proxy
+            exit 1
+        fi
+        unset https_proxy
+        unset no_proxy
+    fi
+    printf "Successfully deployed cert-manager.\n"
 }
 
 
