@@ -8,6 +8,7 @@ This repository is the umbrella for Omnia Radix with issue tracking and feature 
 
 Radix is [Equinor](https://www.equinor.com/)'s Platform-as-a-Service that offers testing, building, deploying, running and monitoring of software. Its goal is to automate "the boring stuff" and let developers focus on business logic and features and offloading much of the tooling and automation to Radix.
 
+
 ## Getting started
 
 Head to the [public website](https://www.radix.equinor.com/) and check the guides and docs. When you are ready, you can register your application in the [Radix Web Console](https://console.radix.equinor.com) — provided you have an Equinor account 😀.
