@@ -253,6 +253,10 @@ while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error
     sleep 5s
 done
 echo ""
+printf "Update Dynatrace integration... "
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
+wait # wait for subshell to finish
+printf "Done updating Dynatrace integration."
 
 # Wait for velero to be deployed from flux
 echo ""

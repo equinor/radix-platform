@@ -91,49 +91,25 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-echo "Get secrets from keyvault"
-
+echo "Getting secrets from keyvault..."
 DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
 DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
+SKIP_CERT_CHECK="true"
+ENABLE_VOLUME_STORAGE="false"
 
-if [[ -z "$DYNATRACE_API_URL" ]]; then
-    echo "Please provide DYNATRACE_API_URL" >&2
-    exit 1
-fi
-if [[ -z "$DYNATRACE_API_TOKEN" ]]; then
-    echo "Please provide DYNATRACE_API_TOKEN" >&2
-    exit 1
-fi
-if [[ -z "$DYNATRACE_PAAS_TOKEN" ]]; then
-    echo "Please provide DYNATRACE_PAAS_TOKEN" >&2
-    exit 1
-fi
-
-# Use the following release version of dynatrace-operator https://github.com/Dynatrace/dynatrace-operator/releases
-RELEASE_VERSION="v0.2.2"
-
-# echo "Install Dynatrace"
-
-# sh ./install.sh \
-#     --api-url "${DYNATRACE_API_URL}" \
-#     --api-token "${DYNATRACE_API_TOKEN}" \
-#     --paas-token "${DYNATRACE_PAAS_TOKEN}" \
-#     --cluster-name "${CLUSTER_NAME}" \
-#     --skip-ssl-verification \
-#     --enable-prometheus-integration "true" \
-#     --release-version "${RELEASE_VERSION}"
-
-echo "Create the dynatrace namespace."
-kubectl create namespace dynatrace 
-
-echo "Create the secret to be used in the helm chart for deploying Dynatrace."
-
+# Store the secrets in a temporary .yaml file.
 echo "apiUrl: ${DYNATRACE_API_URL}
 apiToken: ${DYNATRACE_API_TOKEN}
 paasToken: ${DYNATRACE_PAAS_TOKEN}
-skipCertCheck: true
+skipCertCheck: ${SKIP_CERT_CHECK}
 networkZone: ${CLUSTER_NAME}
+kubernetesMonitoring:
+  enabled: true
+  group: ${CLUSTER_NAME}
+routing:
+  enabled: true
+  group: ${CLUSTER_NAME}
 classicFullStack:
   enabled: true
   tolerations:
@@ -142,18 +118,18 @@ classicFullStack:
     operator: Exists
   env:
   - name: ONEAGENT_ENABLE_VOLUME_STORAGE
-    value: \"false\"
+    value: "${ENABLE_VOLUME_STORAGE}"
   args:
-  - --set-host-group=${CLUSTER_NAME}
-kubernetesMonitoring:
-  enabled: true
-  replicas: 1
-  group: ${CLUSTER_NAME}
-routing:
-  enabled: true
-  replicas: 1
-  group: ${CLUSTER_NAME}" > dynatrace-values.yaml
+  - --set-host-group=${CLUSTER_NAME}" > dynatrace-values.yaml
 
+# Create the dynatrace namespace.
+echo "Creating Dynatrace namespace..."
+if ! kubectl get ns dynatrace >/dev/null 2>&1; then
+  kubectl create namespace dynatrace
+fi
+
+# Create the secret to be used in the helm chart for deploying Dynatrace.
+echo "Creating dynatrace-secret..."
 kubectl create secret generic dynatrace-secret --namespace dynatrace \
     --from-file=./dynatrace-values.yaml \
     --dry-run=client -o yaml |
@@ -162,4 +138,4 @@ kubectl create secret generic dynatrace-secret --namespace dynatrace \
 # Delete the temporary .yaml file.
 rm -f dynatrace-values.yaml
 
-echo "Done."
+echo "Bootstrap of Dynatrace is complete."
