@@ -91,86 +91,157 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Get secrets: api-url and tenant-token from keyvault
-DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
-DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
+API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
+API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
 
-# Get the cluster api-url from Azure. This is what we will be changing to.
-CLUSTER_API_URL="$(kubectl config view --minify -o json | jq --raw-output '.clusters[0].cluster.server' | sed "s :443 / ")"
+# Logic imported from install.sh in https://github.com/Dynatrace/dynatrace-operator/releases/tag/v0.2.2
 
-# Get the credential ID from Dynatrace API (Radix-dev, Radix-playground or Radix-prod)
-CREDENTIAL_ID="$(curl --request GET \
-    --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
-    --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-    --silent | jq -r '.values[] | select(.name=="Radix-'$RADIX_ZONE'").id')"
+set -e
 
-# Check for existing credential
-if [[ "$CREDENTIAL_ID" ]]; then
-    # Check if existing credential is outdated
-    CREDENTIAL_URL="$(curl --request GET \
-        --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID \
-        --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-        --silent | jq --raw-output '.endpointUrl')"
+CLI="kubectl"
+SKIP_CERT_CHECK="true"
+CLUSTER_NAME_LENGTH=256
+ENABLE_PROMETHEUS_INTEGRATION="true"
 
-    if [[ $CREDENTIAL_URL != $CLUSTER_API_URL ]]; then
-        echo "Existing credential outdated, deleting it..." $CREDENTIAL_ID
-        DELETE_CREDENTIAL="$(curl --request DELETE \
-            --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/$CREDENTIAL_ID \
-            --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-            --silent \
-            --write-out '%{http_code}' | jq --raw-output)"
-        
-        if [[ $DELETE_CREDENTIAL == 204 ]]; then
-            echo "Credential deleted."
-        else
-            echo "Error deleting credential"
-            echo $DELETE_CREDENTIAL | jq .
-        fi
-    else
-        # Existing credenital is valid
-        echo "Credential already exists."
-        exit 0
-    fi
+if [ -z "$API_URL" ]; then
+  echo "Error: api-url not set!"
+  exit 1
 fi
 
-# Get the auth token stored in a secret in the dynatrace service agent for kubernetes monitoring. 
-AUTH_TOKEN="$(kubectl get secret $(kubectl get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[0].name}' -n dynatrace) -o jsonpath='{.data.token}' -n dynatrace | base64 --decode)"
+if [ -z "$API_TOKEN" ]; then
+  echo "Error: api-token not set!"
+  exit 1
+fi
 
-# Validate request
-echo "Validating request for credential creation..."
-VALIDATE_CREATE="$(curl --request POST \
-    --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials/validator \
-    --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
-        "endpointUrl": "'$CLUSTER_API_URL'",
-        "authToken": "'$AUTH_TOKEN'",
-        "certificateCheckEnabled": false
-    }' \
-    --silent \
-    --write-out '%{http_code}' | jq --raw-output)"
-if [[ $VALIDATE_CREATE == 204 ]]; then
-    echo "Validation successful, creating new credential..."
+K8S_ENDPOINT="$("${CLI}" config view --minify -o jsonpath='{.clusters[0].cluster.server}')"
+if [ -z "$K8S_ENDPOINT" ]; then
+  echo "Error: failed to get kubernetes endpoint!"
+  exit 1
+fi
 
-    CREATE_CREDENTIAL="$(curl --request POST \
-        --url $DYNATRACE_API_URL/config/v1/kubernetes/credentials \
-        --header 'Authorization: Api-Token '$DYNATRACE_API_TOKEN \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "label": "Radix-'$RADIX_ZONE-$CLUSTER_NAME'",
-            "endpointUrl": "'$CLUSTER_API_URL'",
-            "authToken": "'$AUTH_TOKEN'",
-            "certificateCheckEnabled": false
-        }' \
-        --silent \
-        --write-out '%{http_code}' | jq --raw-output)"
+if [ -n "$CLUSTER_NAME" ]; then
+  if ! echo "$CLUSTER_NAME" | grep -Eq "$CLUSTER_NAME_REGEX"; then
+    echo "Error: cluster name \"$CLUSTER_NAME\" does not match regex: \"$CLUSTER_NAME_REGEX\""
+    exit 1
+  fi
 
-    if [[ $CREATE_CREDENTIAL == 201 ]]; then
-        echo "Credential successfully created."
-    fi
+  if [ "${#CLUSTER_NAME}" -ge $CLUSTER_NAME_LENGTH ]; then
+    echo "Error: cluster name too long: ${#CLUSTER_NAME} >= $CLUSTER_NAME_LENGTH"
+    exit 1
+  fi
+  CONNECTION_NAME="$CLUSTER_NAME"
 else
-    # Validation failed.
-    echo "Validation of create request failed."
-    echo $VALIDATE_CREATE | jq .
+  CONNECTION_NAME="$(echo "${K8S_ENDPOINT}" | awk -F[/:] '{print $4}')"
 fi
-echo "Done."
+
+set -u
+
+addK8sConfiguration() {
+
+  K8S_SECRET_NAME="$(for token in $("${CLI}" get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[*].name}' -n dynatrace); do echo "$token"; done | grep -F token)"
+  if [ -z "$K8S_SECRET_NAME" ]; then
+    echo "Error: failed to get kubernetes-monitoring secret!"
+    exit 1
+  fi
+
+  K8S_BEARER="$("${CLI}" get secret "${K8S_SECRET_NAME}" -o jsonpath='{.data.token}' -n dynatrace | base64 --decode)"
+  if [ -z "$K8S_BEARER" ]; then
+    echo "Error: failed to get bearer token!"
+    exit 1
+  fi
+
+  if "$SKIP_CERT_CHECK" = "true"; then
+    CERT_CHECK_API="false"
+  else
+    CERT_CHECK_API="true"
+  fi
+
+  json="$(
+    cat <<EOF
+{
+  "label": "${CLUSTER_NAME}",
+  "endpointUrl": "${K8S_ENDPOINT}",
+  "eventsFieldSelectors": [
+    {
+      "label": "Node events",
+      "fieldSelector": "involvedObject.kind=Node",
+      "active": true
+    }
+  ],
+  "workloadIntegrationEnabled": true,
+  "eventsIntegrationEnabled": false,
+  "activeGateGroup": "${CLUSTER_NAME}",
+  "authToken": "${K8S_BEARER}",
+  "active": true,
+  "certificateCheckEnabled": "${CERT_CHECK_API}"
+  "prometheusExportersIntegrationEnabled": "${ENABLE_PROMETHEUS_INTEGRATION}"
+}
+EOF
+  )"
+
+  response=$(apiRequest "POST" "/config/v1/kubernetes/credentials" "${json}")
+
+  if echo "$response" | grep -Fq "${CONNECTION_NAME}"; then
+    echo "Kubernetes monitoring successfully setup."
+  else
+    echo "Error adding Kubernetes cluster to Dynatrace: $response"
+  fi
+}
+
+checkForExistingCluster() {
+  response=$(apiRequest "GET" "/config/v1/kubernetes/credentials" "")
+
+  if echo "$response" | grep -Fq "\"name\":\"${CONNECTION_NAME}\""; then
+    echo "Error: Cluster already exists: ${CONNECTION_NAME}"
+    exit 1
+  fi
+}
+
+checkTokenScopes() {
+  jsonAPI="{\"token\": \"${API_TOKEN}\"}"
+
+  responseAPI=$(apiRequest "POST" "/v1/tokens/lookup" "${jsonAPI}")
+
+  if echo "$responseAPI" | grep -Fq "Authentication failed"; then
+    echo "Error: API token authentication failed!"
+    exit 1
+  fi
+
+  if ! echo "$responseAPI" | grep -Fq "WriteConfig"; then
+    echo "Error: API token does not have config write permission!"
+    exit 1
+  fi
+
+  if ! echo "$responseAPI" | grep -Fq "ReadConfig"; then
+    echo "Error: API token does not have config read permission!"
+    exit 1
+  fi
+}
+
+apiRequest() {
+  method=$1
+  url=$2
+  json=$3
+
+  if "$SKIP_CERT_CHECK" = "true"; then
+    curl_command="curl -k"
+  else
+    curl_command="curl"
+  fi
+
+  response="$(${curl_command} -sS -X ${method} "${API_URL}${url}" \
+    -H "accept: application/json; charset=utf-8" \
+    -H "Authorization: Api-Token ${API_TOKEN}" \
+    -H "Content-Type: application/json; charset=utf-8" \
+    -d "${json}")"
+
+  echo "$response"
+}
+
+####### MAIN #######
+printf "\nCheck for token scopes...\n"
+checkTokenScopes
+printf "\nCheck if cluster already exists...\n"
+checkForExistingCluster
+printf "\nAdding cluster to Dynatrace...\n"
+addK8sConfiguration

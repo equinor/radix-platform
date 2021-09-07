@@ -17,7 +17,10 @@
 # - AKS cluster is available
 # - User has role cluster-admin
 # - Helm RBAC is configured in cluster
-# - Tiller is installed in cluster (if using Helm version < 2)
+# - Following secrets in keyvault:
+#       - dynatrace-api-url
+#       - dynatrace-tenant-token (an API-token with config write permission)
+#       - dynatrace-paas-token
 
 #######################################################################################
 ### INPUTS
@@ -32,7 +35,7 @@
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 #######################################################################################
 ### START
@@ -88,20 +91,45 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-echo "Install Dynatrace"
+echo "Getting secrets from keyvault..."
+DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
+DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
+DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
+SKIP_CERT_CHECK="true"
+ENABLE_VOLUME_STORAGE="false"
 
 # Store the secrets in a temporary .yaml file.
-DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
-DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-token | jq -r .value)
-DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
 echo "apiUrl: ${DYNATRACE_API_URL}
 apiToken: ${DYNATRACE_API_TOKEN}
-paasToken: ${DYNATRACE_PAAS_TOKEN}" > dynatrace-values.yaml
+paasToken: ${DYNATRACE_PAAS_TOKEN}
+skipCertCheck: ${SKIP_CERT_CHECK}
+networkZone: ${CLUSTER_NAME}
+kubernetesMonitoring:
+  enabled: true
+  group: ${CLUSTER_NAME}
+routing:
+  enabled: true
+  group: ${CLUSTER_NAME}
+classicFullStack:
+  enabled: true
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists
+  env:
+  - name: ONEAGENT_ENABLE_VOLUME_STORAGE
+    value: "${ENABLE_VOLUME_STORAGE}"
+  args:
+  - --set-host-group=${CLUSTER_NAME}" > dynatrace-values.yaml
 
 # Create the dynatrace namespace.
-kubectl create ns dynatrace --dry-run=client --save-config -o yaml |
-    kubectl apply -f -
+echo "Creating Dynatrace namespace..."
+if ! kubectl get ns dynatrace >/dev/null 2>&1; then
+  kubectl create namespace dynatrace
+fi
+
 # Create the secret to be used in the helm chart for deploying Dynatrace.
+echo "Creating dynatrace-secret..."
 kubectl create secret generic dynatrace-secret --namespace dynatrace \
     --from-file=./dynatrace-values.yaml \
     --dry-run=client -o yaml |
@@ -110,4 +138,4 @@ kubectl create secret generic dynatrace-secret --namespace dynatrace \
 # Delete the temporary .yaml file.
 rm -f dynatrace-values.yaml
 
-echo "Done."
+echo "Bootstrap of Dynatrace is complete."
