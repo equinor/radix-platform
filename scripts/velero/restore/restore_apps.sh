@@ -336,7 +336,7 @@ function showProgress() {
 
 # Exit if cluster does not exist
 echo ""
-echo "Connecting kubectl to vendelo-destination..."
+echo "Connecting kubectl to velero-destination..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then
   # Send message to stderr
   echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
