@@ -121,15 +121,15 @@ function NewWorkItem {
     $WiTitle = "Upgrade component version for $ReleaseName in $Cluster to $ChartVersion"
     $qstring = [System.String]::Concat( `
                     "SELECT [system.Id], [System.WorkItemType], [System.Title], [System.State] FROM workitems ", `
-                    "WHERE [System.WorkItemType] = 'User Story' AND [System.State] = 'New' AND [System.Title] = ", "'", "$WiTitle", "' ", `
-                    "OR [System.WorkItemType] = 'User Story' AND [System.State] = 'On Hold' AND [System.Title] = ", "'", "$WiTitle", "' " , `
-                    "OR [System.WorkItemType] = 'User Story' AND [System.State] = 'Active' AND [System.Title] = ", "'", "$WiTitle", "' ")
+                    "WHERE [System.WorkItemType] = 'Technical Work Item' AND [System.State] = 'New' AND [System.Title] = ", "'", "$WiTitle", "' ", `
+                    "OR [System.WorkItemType] = 'Technical Work Item' AND [System.State] = 'On Hold' AND [System.Title] = ", "'", "$WiTitle", "' " , `
+                    "OR [System.WorkItemType] = 'Technical Work Item' AND [System.State] = 'Active' AND [System.Title] = ", "'", "$WiTitle", "' ")
     try {
         # Check if work item exist
         $wi = (az boards query --wiql $qstring --output json | ConvertFrom-Json).fields.'System.Title'
         if (!$wi) {
             Write-Host "Creating new work item"
-            az boards work-item create --title "$WiTitle" --type "User Story" --description "Old version $ReleaseVersion, new version $ChartVersion" --assigned-to "elirg@equinor.com"
+            az boards work-item create --title "$WiTitle" --type "Technical Work Item" --description "Old version $ReleaseVersion, new version $ChartVersion" --assigned-to "elirg@equinor.com"
         }
         else {
             Write-Host "Work item already exist"
