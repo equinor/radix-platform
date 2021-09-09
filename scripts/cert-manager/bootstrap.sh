@@ -227,7 +227,7 @@ function transformManifests() {
     if [ "$RADIX_ENVIRONMENT" = "classic" ]; then
         # Use Managed Identity.
 
-        IDENTITY="$(az identity show --name $AZ_MANAGED_IDENTITY_NAME --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json)"
+        IDENTITY="$(az identity show --name $MI_CERT_MANAGER --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json)"
         # Used for identity binding
         CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')
         RESOURCE_ID=$(echo $IDENTITY | jq -r '.id')
