@@ -96,7 +96,6 @@ DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT"
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
 DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-paas-token | jq -r .value)
 SKIP_CERT_CHECK="true"
-ENABLE_VOLUME_STORAGE="false"
 
 # Store the secrets in a temporary .yaml file.
 echo "apiUrl: ${DYNATRACE_API_URL}
@@ -116,9 +115,6 @@ classicFullStack:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
     operator: Exists
-  env:
-  - name: ONEAGENT_ENABLE_VOLUME_STORAGE
-    value: "${ENABLE_VOLUME_STORAGE}"
   args:
   - --set-host-group=${CLUSTER_NAME}" > dynatrace-values.yaml
 
