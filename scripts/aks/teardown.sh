@@ -161,6 +161,9 @@ echo "Done."
 ### Delete related stuff
 ###
 
+echo "Deleting Dynatrace integration..."
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
+
 echo "Cleaning up local kube config... "
 kubectl config delete-context "${CLUSTER_NAME}-admin" 2>&1 >/dev/null
 if [[ "$(kubectl config get-contexts -o name)" == *"${CLUSTER_NAME}"* ]]; then
