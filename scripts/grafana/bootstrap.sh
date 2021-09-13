@@ -123,7 +123,7 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
-echo -e "   -  AZ_RESOURCE_AAD_SERVER           : $AZ_RESOURCE_AAD_SERVER"
+echo -e "   -  APP_REGISTRATION_GRAFANA         : $APP_REGISTRATION_GRAFANA"
 echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "   > WHO:"
@@ -160,46 +160,36 @@ else
 fi
 
 #######################################################################################
-### Change cluster name to lowercase for ingress.
-###
-CLUSTER_NAME_LOWER=$(echo $CLUSTER_NAME | awk '{print tolower($0)}')
-
-
-#######################################################################################
 ### Create secret required by Grafana
 ###
 
-echo "Get secret from keyvault"
-# GD_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .id)"
-# GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
-GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name grafana-database-password | jq -r .value)" # should be accessed with the managed identity
+echo "Install secret grafana-secret in cluster"
 
-echo "Get managed identity"
-IDENTITY="$(az identity show --name $MI_GRAFANA --resource-group $AZ_RESOURCE_GROUP_COMMON --output json)"
-GD_CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')
+GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
+GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
+GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name grafana-database-password | jq -r .value)"
 
-echo "Add permission to managed identity"
+# Transform clustername to lowercase
+CLUSTER_NAME="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
-# kubectl create secret generic grafana-secrets \
-#     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GD_CLIENT_ID \
-#     --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
-#     --dry-run=client \
-#     -o yaml |
-#     kubectl apply -f -
+kubectl create secret generic grafana-secrets \
+    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
+    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
+    --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
+    --dry-run=client \
+    -o yaml |
+    kubectl apply -f -
 
 #######################################################################################
 ### Install Grafana
 ###
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
-echo "Installing grafana..."
 helm upgrade --install grafana grafana/grafana -f "${WORK_DIR}/grafana-values.yaml" \
   --version v6.12.0 \
-  --set ingress.hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
-  --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
+  --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
+  --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
   --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-  --set env.GF_DATABASE_PASSWORD=$GF_DB_PWD \
-  --set env.GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GD_CLIENT_ID \
-  --set env.GF_SERVER_ROOT_URL=https://grafana."$AZ_RESOURCE_DNS"
+  --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS"
 
 echo "Done."
