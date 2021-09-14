@@ -170,7 +170,15 @@ GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT -
 GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name grafana-database-password | jq -r .value)"
 
 # Transform clustername to lowercase
-CLUSTER_NAME="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
+CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
+
+if [ "$OMNIA_ZONE" = "standalone" ]; then
+    GF_SERVER_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
+elif [[ "$OMNIA_ZONE" = "classic" ]]; then
+    GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
+else
+   echo "Unknown parameter for \"OMNIA_ZONE\""
+fi
 
 kubectl create secret generic grafana-secrets \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
@@ -187,9 +195,9 @@ helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 helm upgrade --install grafana grafana/grafana -f "${WORK_DIR}/grafana-values.yaml" \
   --version v6.12.0 \
-  --set ingress.hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
-  --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS" \
+  --set ingress.hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
+  --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
   --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-  --set env.GF_SERVER_ROOT_URL=https://grafana."$CLUSTER_NAME.$AZ_RESOURCE_DNS"
+  --set env.GF_SERVER_ROOT_URL=$GF_SERVER_ROOT_URL
 
 echo "Done."
