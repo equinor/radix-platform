@@ -117,7 +117,7 @@ for name in $MI_CERT_MANAGER
 do
     printf "Working on \"${name}\": Creating managed identity..."
     # check if managed identity exists...
-    TestMI="$(az identity show --name $MI_GRAFANA --resource-group $AZ_RESOURCE_GROUP_COMMON --output tsv 2> /dev/null)"
+    TestMI="$(az identity show --name $name --resource-group $AZ_RESOURCE_GROUP_COMMON --output tsv 2> /dev/null)"
     if [ ! -z "$TestMI" ]; then
         printf "exists, skipping.\n"
         continue
