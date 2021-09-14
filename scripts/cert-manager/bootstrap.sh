@@ -205,14 +205,23 @@ function installCertManager(){
     #
     # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
 
+    args=(
+        --namespace cert-manager
+        --version v1.3.1
+        --set installCRDs=true
+        --set global.rbac.create=true
+        --set ingressShim.defaultIssuerName="$CERT_ISSUER"
+        --set ingressShim.defaultIssuerKind=ClusterIssuer
+        --set podLabels={aadpodidbinding: certman-label}
+    )
+    CERT_MANAGER_OPTIONS()
+
+    for arg in "${args[@]}" ; do
+        CERT_MANAGER_OPTIONS+=(-t "$arg")
+    done
+
     if [[ "$(helm upgrade --install cert-manager \
-    --namespace cert-manager \
-    --version v1.3.1 \
-    --set installCRDs=true \
-    --set global.rbac.create=true \
-    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-    --set ingressShim.defaultIssuerKind=ClusterIssuer \
-    --set podLabels={aadpodidbinding: certman-label} \
+    ${CERT_MANAGER_OPTIONS[@]} \
     jetstack/cert-manager \
     2>&1)" == *"Error"* ]]; then
         echo "Could not download chart. Setting proxy and re-trying."
@@ -223,11 +232,7 @@ function installCertManager(){
 
         if [[ "$(helm upgrade --install cert-manager \
         --namespace cert-manager \
-        --version v1.3.1 \
-        --set installCRDs=true \
-        --set global.rbac.create=true \
-        --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-        --set ingressShim.defaultIssuerKind=ClusterIssuer \
+        ${CERT_MANAGER_OPTIONS[@]} \
         jetstack/cert-manager \
         2>&1)" == *"Error"* ]]; then
             echo "ERROR: Could not download chart. Exiting."
