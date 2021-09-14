@@ -171,7 +171,9 @@ apiRequest() {
 ### Main
 ###
 
+echo "Get ID of cluster credential..."
 getClusterId
+echo "Delete cluster credential..."
 deleteK8sConfiguration
 
 
