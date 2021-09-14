@@ -141,10 +141,18 @@ printf "Done.\n"
 ### Get unused VNET address prefix
 ###
 
-echo "Getting unused VNET address space... "
-AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
-VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
-VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
+if [ "$OMNIA_ZONE" = "standalone" ]; then
+    echo "Getting unused VNET address space... "
+    AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
+    VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
+    VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
+elif [[ "$OMNIA_ZONE" = "classic" ]]; then
+    continue
+else
+   echo "Unknown parameter"
+fi
+
+
 
 #######################################################################################
 ### Verify task at hand
@@ -222,64 +230,70 @@ else
 fi
 printf "Done.\n"
 
-#######################################################################################
-### Network
-###
+if [ "$OMNIA_ZONE" = "standalone" ]; then
+    #######################################################################################
+    ### Network
+    ###
 
-echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
+    echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
-printf "   Creating azure VNET ${VNET_NAME}... "
-az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    -n "$VNET_NAME" \
-    --address-prefix "$VNET_ADDRESS_PREFIX" \
-    --subnet-name "$SUBNET_NAME" \
-    --subnet-prefix "$VNET_SUBNET_PREFIX" \
-    --location "$AZ_RADIX_ZONE_LOCATION" \
-    2>&1 >/dev/null
-printf "Done.\n"
+    printf "   Creating azure VNET ${VNET_NAME}... "
+    az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        -n "$VNET_NAME" \
+        --address-prefix "$VNET_ADDRESS_PREFIX" \
+        --subnet-name "$SUBNET_NAME" \
+        --subnet-prefix "$VNET_SUBNET_PREFIX" \
+        --location "$AZ_RADIX_ZONE_LOCATION" \
+        2>&1 >/dev/null
+    printf "Done.\n"
 
-printf "   Granting access to VNET ${VNET_NAME} for Service Principal ${CLUSTER_SYSTEM_USER_ID}... "
-SUBNET_ID=$(az network vnet subnet list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --vnet-name $VNET_NAME --query [].id --output tsv)
-VNET_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_NAME --query "id" --output tsv)"
-printf "Done.\n"
+    printf "   Granting access to VNET ${VNET_NAME} for Service Principal ${CLUSTER_SYSTEM_USER_ID}... "
+    SUBNET_ID=$(az network vnet subnet list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --vnet-name $VNET_NAME --query [].id --output tsv)
+    VNET_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_NAME --query "id" --output tsv)"
+    printf "Done.\n"
 
-# Delete any existing roles
-printf "   Deleting existing roles... "
-az role assignment delete --assignee "${CLUSTER_SYSTEM_USER_ID}" --scope "${VNET_ID}" 2>&1 >/dev/null
-printf "Done.\n"
+    # Delete any existing roles
+    printf "   Deleting existing roles... "
+    az role assignment delete --assignee "${CLUSTER_SYSTEM_USER_ID}" --scope "${VNET_ID}" 2>&1 >/dev/null
+    printf "Done.\n"
 
-# Configure new roles
-printf "   Creating new roles... "
-az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" \
-    --role "Network Contributor" \
-    --scope "${VNET_ID}" \
-    2>&1 >/dev/null
-printf "Done.\n"
+    # Configure new roles
+    printf "   Creating new roles... "
+    az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" \
+        --role "Network Contributor" \
+        --scope "${VNET_ID}" \
+        2>&1 >/dev/null
+    printf "Done.\n"
 
-# peering VNET to hub-vnet
-HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $AZ_VNET_HUB_NAME --query "id" --output tsv)"
-echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-az network vnet peering create -g $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_PEERING_NAME --vnet-name $VNET_NAME --remote-vnet $HUB_VNET_RESOURCE_ID --allow-vnet-access 2>&1
-az network vnet peering create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $HUB_PEERING_NAME --vnet-name $AZ_VNET_HUB_NAME --remote-vnet $VNET_ID --allow-vnet-access 2>&1
+    # peering VNET to hub-vnet
+    HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $AZ_VNET_HUB_NAME --query "id" --output tsv)"
+    echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
+    az network vnet peering create -g $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_PEERING_NAME --vnet-name $VNET_NAME --remote-vnet $HUB_VNET_RESOURCE_ID --allow-vnet-access 2>&1
+    az network vnet peering create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $HUB_PEERING_NAME --vnet-name $AZ_VNET_HUB_NAME --remote-vnet $VNET_ID --allow-vnet-access 2>&1
 
-function linkPrivateDnsZoneToVNET() {
-    local dns_zone=${1}
-    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv 2>&1)"
-    if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
-        echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
-        # throws error if run twice
-        az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False 2>&1
-    fi
-}
+    function linkPrivateDnsZoneToVNET() {
+        local dns_zone=${1}
+        local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv 2>&1)"
+        if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
+            echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
+            # throws error if run twice
+            az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False 2>&1
+        fi
+    }
 
-# linking private dns zones to vnet
-echo "Linking private DNS Zones to vnet $VNET_NAME... "
-for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
-    linkPrivateDnsZoneToVNET $dns_zone &
-done
-wait
+    # linking private dns zones to vnet
+    echo "Linking private DNS Zones to vnet $VNET_NAME... "
+    for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
+        linkPrivateDnsZoneToVNET $dns_zone &
+    done
+    wait
 
-echo "Bootstrap of advanced network done."
+    echo "Bootstrap of advanced network done."
+elif [[ "$OMNIA_ZONE" = "classic" ]]; then
+    continue
+else
+   echo "Unknown parameter"
+fi
 
 #######################################################################################
 ### Create cluster
@@ -287,31 +301,111 @@ echo "Bootstrap of advanced network done."
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
+if [[ "$RADIX_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
+    DNS_ZONE="playground.$DNS_ZONE"
+elif [[ "$RADIX_ENVIRONMENT" != "prod" ]]; then
+    DNS_ZONE="${RADIX_ENVIRONMENT}.${DNS_ZONE}"
+else
+    HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
+fi
+
+AKS_BASE_OPTIONS=(
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --name "$CLUSTER_NAME"
+    --no-ssh-key
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --service-principal "$CLUSTER_SYSTEM_USER_ID"
+    --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD"
+    --min-count "$MIN_COUNT"
+    --max-count "$MAX_COUNT"
+    --node-osdisk-size "$NODE_DISK_SIZE"
+    --node-vm-size "$NODE_VM_SIZE"
+    --max-pods "$POD_PER_NODE"
+    --network-plugin "$NETWORK_PLUGIN"
+    --network-policy "$NETWORK_POLICY"
+    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS"
+    --dns-service-ip "$VNET_DNS_SERVICE_IP"
+    --service-cidr "$VNET_SERVICE_CIDR"
+    --aad-server-app-id "$AAD_SERVER_APP_ID"
+    --aad-server-app-secret "$AAD_SERVER_APP_SECRET"
+    --aad-client-app-id "$AAD_CLIENT_APP_ID"
+    --aad-tenant-id "$AAD_TENANT_ID"
+    --location "$AZ_RADIX_ZONE_LOCATION"
+    --node-osdisk-type "Ephemeral"
+)
+
+if [ "$OMNIA_ZONE" = "standalone" ]; then
+    AKS_OMNIA_OPTIONS=(
+        --vnet-subnet-id "$SUBNET_ID"
+    )
+elif [[ "$OMNIA_ZONE" = "classic" ]]; then
+    AKS_OMNIA_OPTIONS=(
+        --enable-private-cluster
+        --enable-aad
+    )
+else
+   echo "Unknown parameter"
+fi
+
+if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
+    AKS_ENV_OPTIONS=(
+        --uptime-sla
+    )
+elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
+    AKS_ENV_OPTIONS=(
+        --enable-cluster-autoscaler
+    )
+else
+   echo "Unknown parameter"
+fi
+
+if [ "$CLUSTER_TYPE" = "production" ]; then
+    CLUSTER_BASE_OPTIONS=(
+        --node-count "12"
+    )
+elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
+    CLUSTER_BASE_OPTIONS=()
+elif [[ "$CLUSTER_TYPE" = "development" ]]; then
+    CLUSTER_BASE_OPTIONS=()
+elif [[ "$CLUSTER_TYPE" = "classicdev" ]]; then
+    CLUSTER_BASE_OPTIONS=(
+        --vnet-subnet-id "/subscriptions/c44d61d9-1f68-4236-aa19-2103b69766d5/resourceGroups/S045-NE-network/providers/Microsoft.Network/virtualNetworks/S045-NE-vnet"
+    )
+elif [[ "$CLUSTER_TYPE" = "classicprod" ]]; then
+    CLUSTER_BASE_OPTIONS=(
+        --vnet-subnet-id "/subscriptions/7790e999-c11c-4f0b-bfdf-bc2fd5c38e91/resourceGroups/S340-NE-network/providers/Microsoft.Network/virtualNetworks/S340-NE-vnet"
+    )
+else
+   echo "Unknown parameter"
+fi
+
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}"
+
 ### It might be required to add "--node-count 10 \" below "--max-count "$MAX_COUNT" \" if deploying certain VM sizes
-az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
-    --no-ssh-key \
-    --kubernetes-version "$KUBERNETES_VERSION" \
-    --service-principal "$CLUSTER_SYSTEM_USER_ID" \
-    --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
-    --uptime-sla \
-    --enable-cluster-autoscaler \
-    --min-count "$MIN_COUNT" \
-    --max-count "$MAX_COUNT" \
-    --node-osdisk-size "$NODE_DISK_SIZE" \
-    --node-vm-size "$NODE_VM_SIZE" \
-    --max-pods "$POD_PER_NODE" \
-    --network-plugin "$NETWORK_PLUGIN" \
-    --network-policy "$NETWORK_POLICY" \
-    --vnet-subnet-id "$SUBNET_ID" \
-    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" \
-    --dns-service-ip "$VNET_DNS_SERVICE_IP" \
-    --service-cidr "$VNET_SERVICE_CIDR" \
-    --aad-server-app-id "$AAD_SERVER_APP_ID" \
-    --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
-    --aad-client-app-id "$AAD_CLIENT_APP_ID" \
-    --aad-tenant-id "$AAD_TENANT_ID" \
-    --location "$AZ_RADIX_ZONE_LOCATION" \
-    2>&1 >/dev/null
+#az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
+#    --no-ssh-key \
+#    --kubernetes-version "$KUBERNETES_VERSION" \
+#    --service-principal "$CLUSTER_SYSTEM_USER_ID" \
+#    --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
+#    --uptime-sla \
+#    --enable-cluster-autoscaler \
+#    --min-count "$MIN_COUNT" \
+#    --max-count "$MAX_COUNT" \
+#    --node-osdisk-size "$NODE_DISK_SIZE" \
+#    --node-vm-size "$NODE_VM_SIZE" \
+#    --max-pods "$POD_PER_NODE" \
+#    --network-plugin "$NETWORK_PLUGIN" \
+#    --network-policy "$NETWORK_POLICY" \
+#    --vnet-subnet-id "$SUBNET_ID" \
+#    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" \
+#    --dns-service-ip "$VNET_DNS_SERVICE_IP" \
+#    --service-cidr "$VNET_SERVICE_CIDR" \
+#    --aad-server-app-id "$AAD_SERVER_APP_ID" \
+#    --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
+#    --aad-client-app-id "$AAD_CLIENT_APP_ID" \
+#    --aad-tenant-id "$AAD_TENANT_ID" \
+#    --location "$AZ_RADIX_ZONE_LOCATION" \
+#    2>&1 >/dev/null
 
 echo "Done."
 
