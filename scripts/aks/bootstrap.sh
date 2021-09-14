@@ -316,8 +316,6 @@ AKS_BASE_OPTIONS=(
     --kubernetes-version "$KUBERNETES_VERSION"
     --service-principal "$CLUSTER_SYSTEM_USER_ID"
     --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD"
-    --min-count "$MIN_COUNT"
-    --max-count "$MAX_COUNT"
     --node-osdisk-size "$NODE_DISK_SIZE"
     --node-vm-size "$NODE_VM_SIZE"
     --max-pods "$POD_PER_NODE"
@@ -331,7 +329,6 @@ AKS_BASE_OPTIONS=(
     --aad-client-app-id "$AAD_CLIENT_APP_ID"
     --aad-tenant-id "$AAD_TENANT_ID"
     --location "$AZ_RADIX_ZONE_LOCATION"
-    --node-osdisk-type "Ephemeral"
 )
 
 if [ "$OMNIA_ZONE" = "standalone" ]; then
@@ -354,6 +351,8 @@ if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
 elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
     AKS_ENV_OPTIONS=(
         --enable-cluster-autoscaler
+        --min-count "$MIN_COUNT"
+        --max-count "$MAX_COUNT"
     )
 else
    echo "Unknown parameter"
