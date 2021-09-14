@@ -379,10 +379,7 @@ else
    echo "Unknown parameter"
 fi
 
-echo "az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}""
-
-
-exit 0
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}"
 
 ### It might be required to add "--node-count 10 \" below "--max-count "$MAX_COUNT" \" if deploying certain VM sizes
 #az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
