@@ -113,7 +113,7 @@ echo ""
 #######################################################################################
 ### Create managed identities
 ###
-for name in $MI_CERT_MANAGER $MI_GRAFANA
+for name in $MI_CERT_MANAGER
 do
     printf "Working on \"${name}\": Creating managed identity..."
     # check if managed identity exists...
