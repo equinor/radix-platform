@@ -252,50 +252,60 @@ function installCertManager(){
 ###
 
 function transformManifests() {
-    printf "\nStart transforming manifests..."
-    if [ "$RADIX_ENVIRONMENT" = "classic" ]; then
-        # Use Managed Identity.
+    printf "\nCreate identity resource and binding and certificate issuer..."
 
-        IDENTITY="$(az identity show --name $MI_CERT_MANAGER --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json)"
-        # Used for identity binding
-        CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')
-        RESOURCE_ID=$(echo $IDENTITY | jq -r '.id')
+    # Use Managed Identity.
 
-        kubectl apply -f ${WORK_DIR}/manifests/mi-azure-identity-and-issuer.yaml
-    else
-        # Use Service Principle.
-
-        # Fetch dns system user credentials
-        # Read secret, extract stringified json from property "value" and convert it into json
-        local DNS_SP="$(az keyvault secret show \
-            --vault-name $AZ_RESOURCE_KEYVAULT \
-            --name $AZ_SYSTEM_USER_DNS \
-            | jq '.value | fromjson')"
-
-        # Set variables used in the manifest templates
-        local DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
-        local DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
-        local DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
-        local DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
-
-        # Combine and use the templated manifests as a heredocs.
-        # First we combine them all into one heredoc script file.
-        # Then we will then run the heredoc script in context of caller using the "source" command so that it share scope with caller and have access the same vars.
-        # The final output will be a yaml file that contains all the translated manifests.
-        local TMP_DIR="${WORK_DIR}/tmp"
-        test -d "$TMP_DIR" && rm -rf "$TMP_DIR"
-        mkdir "$TMP_DIR"
-        (echo "#!/bin/sh"; echo "cat <<EOF >>${TMP_DIR}/translated-manifests.yaml"; (for templateFile in "$WORK_DIR"/manifests/*.yaml; do cat $templateFile; done;) | cat; echo ""; echo "EOF";)>${TMP_DIR}/heredoc.sh && chmod +x ${TMP_DIR}/heredoc.sh
-        source ${TMP_DIR}/heredoc.sh
+    IDENTITY="$(az identity show --name $MI_CERT_MANAGER --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json 2>&1)"
+    if [[ -z $IDENTITY ]]; then
+        echo "Error: Could not get identity."
+        exit 1
     fi
+
+    # Used for identity binding
+    CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')
+    RESOURCE_ID=$(echo $IDENTITY | jq -r '.id')
+
+    kubectl apply -f ${WORK_DIR}/mi-azure-identity-and-issuer.yaml
+
+    kubectl cert-manager check api --wait=2m
+
+
+    # # Use Service Principle.
+
+    # # Fetch dns system user credentials
+    # # Read secret, extract stringified json from property "value" and convert it into json
+    # local DNS_SP="$(az keyvault secret show \
+    #     --vault-name $AZ_RESOURCE_KEYVAULT \
+    #     --name $AZ_SYSTEM_USER_DNS \
+    #     | jq '.value | fromjson')"
+
+    # # Set variables used in the manifest templates
+    # local DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
+    # local DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
+    # local DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
+    # local DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
+
+    # # Combine and use the templated manifests as a heredocs.
+    # # First we combine them all into one heredoc script file.
+    # # Then we will then run the heredoc script in context of caller using the "source" command so that it share scope with caller and have access the same vars.
+    # # The final output will be a yaml file that contains all the translated manifests.
+    # local TMP_DIR="${WORK_DIR}/tmp"
+    # test -d "$TMP_DIR" && rm -rf "$TMP_DIR"
+    # mkdir "$TMP_DIR"
+    # (echo "#!/bin/sh"; echo "cat <<EOF >>${TMP_DIR}/translated-manifests.yaml"; (for templateFile in "$WORK_DIR"/manifests/*.yaml; do cat $templateFile; done;) | cat; echo ""; echo "EOF";)>${TMP_DIR}/heredoc.sh && chmod +x ${TMP_DIR}/heredoc.sh
+    # source ${TMP_DIR}/heredoc.sh
     printf "...Done.\n"
 }
 
 function applyManifests() {
     printf "\nStart applying manifests..."
-    local TMP_DIR="${WORK_DIR}/tmp"
-    kubectl apply -f "${TMP_DIR}/translated-manifests.yaml"
-    rm -rf "${TMP_DIR}"
+    # local TMP_DIR="${WORK_DIR}/tmp"
+    # kubectl apply -f "${TMP_DIR}/translated-manifests.yaml"
+    # rm -rf "${TMP_DIR}"
+    kubectl apply -f ${WORK_DIR}/manifests/active-cluster-wildcard-tls-cert.yaml
+    kubectl apply -f ${WORK_DIR}/manifests/app-wildcard-tls-cert.yaml
+    kubectl apply -f ${WORK_DIR}/manifests/cluster-wildcard-tls-cert.yaml
     printf "...Done.\n"
 }
 
