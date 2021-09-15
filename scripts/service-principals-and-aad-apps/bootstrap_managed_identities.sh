@@ -113,7 +113,7 @@ echo ""
 #######################################################################################
 ### Create managed identities
 ###
-for name in $MI_CERT_MANAGER
+for name in $MI_AKS $MI_CERT_MANAGER
 do
     printf "Working on \"${name}\": Creating managed identity..."
     # check if managed identity exists...
@@ -122,9 +122,19 @@ do
         printf "exists, skipping.\n"
         continue
     fi
-    az identity create --name $name --resource-group $AZ_RESOURCE_GROUP_COMMON 2> /dev/null
+    az identity create --name $name --resource-group $AZ_RESOURCE_GROUP_COMMON >/dev/null
     printf "Done.\n"
 done
+
+#######################################################################################
+### ADD ROLE ASSIGNMENTS
+###
+
+# Role assignments for aad-pod-identity
+IDENTITY_ID="$(az identity show --resource-group $AZ_RESOURCE_GROUP_COMMON --name $MI_AKS --query clientId)"
+SUBSCRIPTION_ID="$(az account show --query id -otsv)"
+az role assignment create --role "Managed Identity Operator" --assignee $IDENTITY_ID --scope /subscriptions/$SUBSCRIPTION_ID # grant access to whole subscription
+az role assignment create --role "Virtual Machine Contributor" --assignee $IDENTITY_ID --scope /subscriptions/$SUBSCRIPTION_ID # grant access to whole subscription
 
 #######################################################################################
 ### END
