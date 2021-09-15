@@ -223,6 +223,9 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
+    ID_AKS="$(az identity show -g common -n id-aks-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
+    ID_AKSKUBELET="$(az identity show -g common -n id-akskubelet-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
+    ACR_ID="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 else
     # Credentials are provided from input.
     # Source the file to make the key/value pairs readable as script vars
@@ -309,13 +312,13 @@ else
     HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
 fi
 
+# TODO add static public IPs
+
 AKS_BASE_OPTIONS=(
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
     --name "$CLUSTER_NAME"
     --no-ssh-key
     --kubernetes-version "$KUBERNETES_VERSION"
-    --service-principal "$CLUSTER_SYSTEM_USER_ID"
-    --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD"
     --node-osdisk-size "$NODE_DISK_SIZE"
     --node-vm-size "$NODE_VM_SIZE"
     --max-pods "$POD_PER_NODE"
@@ -324,11 +327,15 @@ AKS_BASE_OPTIONS=(
     --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS"
     --dns-service-ip "$VNET_DNS_SERVICE_IP"
     --service-cidr "$VNET_SERVICE_CIDR"
-    --aad-server-app-id "$AAD_SERVER_APP_ID"
-    --aad-server-app-secret "$AAD_SERVER_APP_SECRET"
-    --aad-client-app-id "$AAD_CLIENT_APP_ID"
-    --aad-tenant-id "$AAD_TENANT_ID"
     --location "$AZ_RADIX_ZONE_LOCATION"
+    --enable-managed-identity
+    --enable-aad
+    --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
+    --assign-identity "$ID_AKS"
+    --assign-kubelet-identity "$ID_AKSKUBELET"
+    --attach-acr "$ACR_ID"
+    --load-balancer-outbound-ports "4000"
+
 )
 
 if [ "$OMNIA_ZONE" = "standalone" ]; then
@@ -338,7 +345,6 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
 elif [[ "$OMNIA_ZONE" = "classic" ]]; then
     AKS_OMNIA_OPTIONS=(
         --enable-private-cluster
-        --enable-aad
     )
 else
    echo "Unknown parameter"
