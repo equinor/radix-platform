@@ -256,7 +256,7 @@ function transformManifests() {
 
     # Use Managed Identity.
 
-    IDENTITY="$(az identity show --name $MI_CERT_MANAGER --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json 2>&1)"
+    IDENTITY="$(az identity show --name $MI_CERT_MANAGER --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --output json 2>&1)"
     if [[ -z $IDENTITY ]]; then
         echo "Error: Could not get identity."
         exit 1
