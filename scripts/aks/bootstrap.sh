@@ -335,7 +335,7 @@ AKS_BASE_OPTIONS=(
     --assign-kubelet-identity "$ID_AKSKUBELET"
     --attach-acr "$ACR_ID"
     --load-balancer-outbound-ports "4000"
-
+    --enable-pod-identity
 )
 
 if [ "$OMNIA_ZONE" = "standalone" ]; then
