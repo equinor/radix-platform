@@ -177,8 +177,8 @@ kubectl delete Challenges --all --all-namespaces 2>&1 >/dev/null
 printf "...Done.\n"
 
 # Step 2: Remove the helm release
-printf "\nDelete and purge the helm release..."
-helm delete cert-manager --purge 2>&1 >/dev/null
+printf "\nDelete and the helm release..."
+helm --namespace cert-manager delete cert-manager 2>&1 >/dev/null
 printf "...Done.\n"
 
 # Step 3: Remove the namespace
@@ -186,15 +186,15 @@ printf "\nDelete the namespace..."
 kubectl delete namespace cert-manager 2>&1 >/dev/null
 printf "...Done.\n"
 
-# Step 3.5: Making sure the webhook is really gone
-printf "\nMaking sure the webhook is really gone..."
-kubectl delete apiservice v1beta1.webhook.cert-manager.io 2>&1 >/dev/null
-printf "...Done.\n"
-
 # Step 4: Remove all the custom resource definitions
 printf "\nDelete all the custom resource definitions..."
 # If this step fails then look at https://docs.cert-manager.io/en/release-0.11/tasks/uninstall/kubernetes.html#namespace-stuck-in-terminating-state
-kubectl delete -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml 2>&1 >/dev/null
+kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.crds.yaml
+printf "...Done.\n"
+
+# Step 5: Making sure the webhook is really gone
+printf "\nMaking sure the webhook is really gone..."
+kubectl delete apiservice v1beta1.webhook.cert-manager.io 2>&1 >/dev/null
 printf "...Done.\n"
 
 
