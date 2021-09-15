@@ -268,6 +268,7 @@ function transformManifests() {
 
     kubectl apply -f ${WORK_DIR}/mi-azure-identity-and-issuer.yaml
 
+    # Verify cert-manager installation: https://cert-manager.io/docs/installation/verify/
     kubectl cert-manager check api --wait=2m
 
 

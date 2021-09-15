@@ -15,7 +15,6 @@
 # - AKS cluster is available
 # - User has role cluster-admin
 # - Helm RBAC is configured in cluster
-# - Tiller is installed in cluster (if using Helm version < 2)
 
 
 #######################################################################################
@@ -42,7 +41,7 @@
 ### DOCS
 ### 
 
-# - https://docs.cert-manager.io/en/release-0.11/tasks/uninstall/kubernetes.html
+# - https://cert-manager.io/v1.3-docs/installation/uninstall/kubernetes/
 
 
 #######################################################################################
@@ -188,7 +187,7 @@ printf "...Done.\n"
 
 # Step 4: Remove all the custom resource definitions
 printf "\nDelete all the custom resource definitions..."
-# If this step fails then look at https://docs.cert-manager.io/en/release-0.11/tasks/uninstall/kubernetes.html#namespace-stuck-in-terminating-state
+# If this step fails then look at https://cert-manager.io/v1.3-docs/installation/uninstall/kubernetes/
 kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.crds.yaml
 printf "...Done.\n"
 
