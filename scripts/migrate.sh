@@ -343,71 +343,7 @@ if [[ "$REPLY" =~ (N|n) ]]; then
     echo "Restarting web console to use updated secret value."
     $(kubectl delete pods --all -n radix-web-console-prod 2>&1 >/dev/null)
 
-    exit 1
+    exit 0
 fi
 
-echo ""
-printf "Enabling monitoring addon in the destination cluster... "
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name radix-container-logs-$RADIX_ZONE | jq -r .[0].id)
-az aks enable-addons -a monitoring -n $DEST_CLUSTER -g clusters --workspace-resource-id "$WORKSPACE_ID" --no-wait
-printf "Done.\n"
-
-echo ""
-printf "Disabling monitoring addon in the source cluster... "
-az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters --no-wait
-printf "Done.\n"
-
-echo ""
-printf "Point to source cluster... "
-az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
-    --overwrite-existing \
-    --admin \
-    2>&1 >/dev/null
-[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
-printf "Done.\n"
-
-echo ""
-printf "Delete custom ingresses... "
-while read -r line; do
-    if [[ "$line" ]]; then
-        helm delete ${line}
-    fi
-done <<<"$(helm list --short | grep radix-ingress)"
-
-# Point granana to cluster specific ingress
-GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
-
-echo ""
-printf "Point to destination cluster... "
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
-
-echo ""
-printf "Create aliases in destination cluster... "
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_APP_ALIAS_SCRIPT")
-wait # wait for subshell to finish
-printf "Done creating aliases."
-
-# Point granana to cluster type ingress
-GRAFANA_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
-
-echo ""
-echo "###########################################################"
-echo ""
-echo "NOTE: You need to manually activate the cluster"
-echo ""
-echo "You do this in the https://github.com/equinor/radix-flux repo"
-echo ""
-echo "###########################################################"
-
-echo ""
-echo "###########################################################"
-echo ""
-echo "NOTE: If radix-cicd-canary does not work properly,"
-echo "there may be app alias DNS entries for the old cluster"
-echo "(e.g. app-canarycicd-test2-prod.playground.radix.equinor.com)."
-echo "Delete these DNS entries in Azure DNS!"
-echo ""
-echo "###########################################################"
+source move_custom_ingresses.sh
