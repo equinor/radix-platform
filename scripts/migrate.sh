@@ -135,11 +135,6 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
-BOOTSTRAP_APP_ALIAS_SCRIPT="$WORKDIR_PATH/app_alias/bootstrap.sh"
-if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
-    # Print to stderror
-    echo "The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
-fi
 
 #######################################################################################
 ### Prepare az session

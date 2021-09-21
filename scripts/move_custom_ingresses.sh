@@ -29,7 +29,7 @@
 ### 
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env SOURCE_CLUSTER="weekly-2" DEST_CLUSTER"weekly-3" ./bootstrap.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER="weekly-2" DEST_CLUSTER="weekly-3" ./move_custom_ingresses.sh
 
 
 #######################################################################################
@@ -79,6 +79,23 @@ if [[ -z "$DEST_CLUSTER" ]]; then
     exit 1
 fi
 
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
+
+#######################################################################################
+### Resolve dependencies on other scripts
+###
+
+WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+BOOTSTRAP_APP_ALIAS_SCRIPT="$WORKDIR_PATH/app_alias/bootstrap.sh"
+if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
+    # Print to stderror
+    echo "The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
+fi
+
 #######################################################################################
 ### Verify task at hand
 ###
@@ -117,9 +134,9 @@ echo ""
 
 # Exit if cluster does not exist
 printf "\nConnecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
     # Send message to stderr
-    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
+    echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
     exit 1        
 fi
 printf "...Done.\n"
