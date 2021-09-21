@@ -117,6 +117,12 @@ if ! [[ -x "$INSTALL_BASECOMPONENTS_SCRIPT" ]]; then
     echo "The install base components script is not found or it is not executable in path $INSTALL_BASECOMPONENTS_SCRIPT" >&2
 fi
 
+CERT_MANAGER_CONFIGURATION_SCRIPT="$WORKDIR_PATH/cert-manager/configure.sh"
+if ! [[ -x "$CERT_MANAGER_CONFIGURATION_SCRIPT" ]]; then
+    # Print to stderror
+    echo "The cert-manager configuration script is not found or it is not executable in path $CERT_MANAGER_CONFIGURATION_SCRIPT" >&2
+fi
+
 DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
 if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
     # Print to stderror
@@ -129,11 +135,6 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
-BOOTSTRAP_APP_ALIAS_SCRIPT="$WORKDIR_PATH/app_alias/bootstrap.sh"
-if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
-    # Print to stderror
-    echo "The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
-fi
 
 #######################################################################################
 ### Prepare az session
@@ -235,6 +236,24 @@ printf "Point to destination cluster... "
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
 
+
+# Wait for cert-manager to be deployed from flux
+# Verify installation (v1.3.1): https://cert-manager.io/v1.3-docs/installation/kubernetes/#verifying-the-installation
+echo "Wait for cert-manager to be deployed by flux-operator..."
+echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+while [[ "$(kubectl get deploy cert-manager -n cert-manager 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+while [[ "$(kubectl get pods -n cert-manager -ojsonpath={.items[*].status.containerStatuses[*].ready} | grep --invert-match true 2>&1)" != "" ]]; do
+    printf "."
+    sleep 5s
+done
+echo ""
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$CERT_MANAGER_CONFIGURATION_SCRIPT")
+wait
+
+
 # Wait for operator to be deployed from flux
 echo ""
 echo "Waiting for radix-operator to be deployed by flux-operator so that it can handle migrated apps"
@@ -243,6 +262,20 @@ while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
+
+
+# Wait for grafana to be deployed from flux
+echo ""
+echo "Waiting for grafana to be deployed by flux-operator so that we can add the ingress as a replyURL to \"$APP_REGISTRATION_GRAFANA\""
+while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo ""
+# Add grafana replyUrl to AAD app
+(AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
+wait # wait for subshell to finish
+
 
 # Wait for dynatrace to be deployed from flux
 echo ""

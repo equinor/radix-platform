@@ -242,10 +242,6 @@ echo ""
 (USER_PROMPT="false" ./grafana/bootstrap.sh)
 wait
 
-# Add grafana replyUrl to AAD app
-(AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
-wait # wait for subshell to finish
-
 #######################################################################################
 ### Install prerequisites for external-dns (flux handles the main installation)
 ###

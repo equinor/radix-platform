@@ -180,6 +180,23 @@ else
    echo "Unknown parameter for \"OMNIA_ZONE\""
 fi
 
+echo "ingress:
+  enabled: true
+  hosts:
+  - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
+  tls:
+  - secretName: cluster-wildcard-tls-cert
+    hosts:
+    - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
+env:
+  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" > config
+
+kubectl create secret generic grafana-helm-secret \
+    --from-file=./config \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+    rm -f config
+
 kubectl create secret generic grafana-secrets \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
@@ -188,16 +205,16 @@ kubectl create secret generic grafana-secrets \
     -o yaml |
     kubectl apply -f -
 
-#######################################################################################
-### Install Grafana
-###
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-helm upgrade --install grafana grafana/grafana -f "${WORK_DIR}/grafana-values.yaml" \
-  --version v6.12.0 \
-  --set ingress.hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
-  --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
-  --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
-  --set env.GF_SERVER_ROOT_URL=$GF_SERVER_ROOT_URL
+# #######################################################################################
+# ### Install Grafana
+# ###
+# helm repo add grafana https://grafana.github.io/helm-charts
+# helm repo update
+# helm upgrade --install grafana grafana/grafana -f "${WORK_DIR}/grafana-values.yaml" \
+#   --version v6.12.0 \
+#   --set ingress.hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
+#   --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
+#   --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
+#   --set env.GF_SERVER_ROOT_URL=$GF_SERVER_ROOT_URL
 
 echo "Done."

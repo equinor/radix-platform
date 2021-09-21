@@ -135,10 +135,24 @@ SUBSCRIPTION_ID="$(az account show --query id -otsv)"
 for name in $MI_AKS $MI_AKSKUBELET
 do
     printf "Adding role assignment for \"${name}\"..."
-    IDENTITY_ID="$(az identity show --resource-group $AZ_RESOURCE_GROUP_COMMON --name $name --query clientId)"
+    IDENTITY_ID="$(az identity show --resource-group $AZ_RESOURCE_GROUP_COMMON --name $name --query clientId -o tsv)"
     az role assignment create --role "Contributor" --assignee $IDENTITY_ID --scope /subscriptions/$SUBSCRIPTION_ID >/dev/null # grant access to whole subscription
     printf "Done.\n"
 done
+
+# Role assignments for cert-manager
+for name in $MI_CERT_MANAGER
+do
+    IDENTITY="$(az identity show --name $name --resource-group $AZ_RESOURCE_GROUP_COMMON --output json)"
+    # Gets principalId to use for role assignment
+    PRINCIPAL_ID=$(echo $IDENTITY | jq -r '.principalId')
+    # Get existing DNS Zone Id
+    ZONE_ID=$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" -o tsv)
+    # Create role assignment
+    az role assignment create --assignee $PRINCIPAL_ID --role "DNS Zone Contributor"  --scope $ZONE_ID
+    printf "...Done\n"
+done
+
 #######################################################################################
 ### END
 ###

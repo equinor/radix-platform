@@ -234,7 +234,7 @@ function set_permissions_on_dns() {
         printf "Azure dns zone: Setting permissions for \"${AZ_MANAGED_IDENTITY_NAME}\" on \"${dns}\"..."
 
         # Choose a unique Identity name and existing resource group to create identity in.
-        IDENTITY="$(az identity show --name $AZ_MANAGED_IDENTITY_NAME --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json)"
+        IDENTITY="$(az identity show --name $AZ_MANAGED_IDENTITY_NAME --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --output json)"
         # Gets principalId to use for role assignment
         PRINCIPAL_ID=$(echo $IDENTITY | jq -r '.principalId')
         # Get existing DNS Zone Id

@@ -452,17 +452,12 @@ please_wait_for_reconciling "rd"
 echo ""
 echo "Updating replyUrls for those radix apps that require AD authentication"
 
-echo ""
-echo "Adding replyUrl for Grafana..."
-(AAD_APP_NAME="radix-cluster-aad-server-${RADIX_ENVIRONMENT}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
-wait # wait for subshell to finish
-printf "Done."
-
 # Update replyUrl for web-console
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 RADIX_WEB_CONSOLE_ENV="prod"
 if [[ $CLUSTER_TYPE  == "development" ]]; then
+  echo ""
   echo "Development cluster uses QA web-console"
   RADIX_WEB_CONSOLE_ENV="qa"
 fi

@@ -15,7 +15,6 @@
 # - AKS cluster is available
 # - User has role cluster-admin
 # - Helm RBAC is configured in cluster
-# - Tiller is installed in cluster (if using Helm version < 2)
 
 
 #######################################################################################
@@ -46,7 +45,7 @@
 ### DOCS
 ###
 
-# - https://docs.cert-manager.io/en/release-0.11/getting-started/install/kubernetes.html
+# - https://cert-manager.io/docs/installation/helm/
 
 
 #######################################################################################
@@ -183,151 +182,22 @@ printf "...Done.\n"
 ### Install cert-manager
 ###
 
-function installCertManager(){
-    printf "\nInstalling cert-manager..."
-    # Install the CustomResourceDefinition resources separately
-    #kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml \
-    #2>&1 >/dev/null
+printf "\nInstalling cert-manager..."
 
-    # Create the namespace for cert-manager
-    kubectl create namespace cert-manager \
-    2>&1 >/dev/null
+# Create the namespace for cert-manager
+kubectl create namespace cert-manager \
+2>&1 >/dev/null
 
-    # Add the Jetstack Helm repository
-    helm repo add jetstack https://charts.jetstack.io \
-    2>&1 >/dev/null
+# Create secret for flux
 
-    # Update your local Helm chart repository cache
-    helm repo update \
-    2>&1 >/dev/null
-
-    # Install the cert-manager Helm chart 
-    #
-    # Regarding ingress, see https://cert-manager.io/docs/usage/ingress/
-
-    if [[ "$(helm upgrade --install cert-manager \
-    --namespace cert-manager \
-    --version v1.3.1 \
-    --set installCRDs=true \
-    --set global.rbac.create=true \
-    --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-    --set ingressShim.defaultIssuerKind=ClusterIssuer \
-    --set podLabels={aadpodidbinding: certman-label} \
-    jetstack/cert-manager \
-    2>&1)" == *"Error"* ]]; then
-        echo "Could not download chart. Setting proxy and re-trying."
-
-        CLUSTER_API_URL="$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' | awk -F[/:] '{print $4}')"
-        export https_proxy="http://www-proxy.statoil.no:80"
-        export no_proxy=${CLUSTER_API_URL}
-
-        if [[ "$(helm upgrade --install cert-manager \
-        --namespace cert-manager \
-        --version v1.3.1 \
-        --set installCRDs=true \
-        --set global.rbac.create=true \
-        --set ingressShim.defaultIssuerName="$CERT_ISSUER" \
-        --set ingressShim.defaultIssuerKind=ClusterIssuer \
-        jetstack/cert-manager \
-        2>&1)" == *"Error"* ]]; then
-            echo "ERROR: Could not download chart. Exiting."
-            unset https_proxy
-            unset no_proxy
-            exit 1
-        fi
-        unset https_proxy
-        unset no_proxy
-    fi
-    printf "Successfully deployed cert-manager.\n"
-}
-
-
-#######################################################################################
-### Transform and apply all custom resources
-###
-
-function transformManifests() {
-    printf "\nStart transforming manifests..."
-    if [ "$RADIX_ENVIRONMENT" = "classic" ]; then
-        # Use Managed Identity.
-
-        IDENTITY="$(az identity show --name $MI_CERT_MANAGER --resource-group $AZ_MANAGED_IDENTITY_GROUP --output json)"
-        # Used for identity binding
-        CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')
-        RESOURCE_ID=$(echo $IDENTITY | jq -r '.id')
-
-        kubectl apply -f ${WORK_DIR}/manifests/mi-azure-identity-and-issuer.yaml
-    else
-        # Use Service Principle.
-
-        # Fetch dns system user credentials
-        # Read secret, extract stringified json from property "value" and convert it into json
-        local DNS_SP="$(az keyvault secret show \
-            --vault-name $AZ_RESOURCE_KEYVAULT \
-            --name $AZ_SYSTEM_USER_DNS \
-            | jq '.value | fromjson')"
-
-        # Set variables used in the manifest templates
-        local DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
-        local DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
-        local DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
-        local DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
-
-        # Combine and use the templated manifests as a heredocs.
-        # First we combine them all into one heredoc script file.
-        # Then we will then run the heredoc script in context of caller using the "source" command so that it share scope with caller and have access the same vars.
-        # The final output will be a yaml file that contains all the translated manifests.
-        local TMP_DIR="${WORK_DIR}/tmp"
-        test -d "$TMP_DIR" && rm -rf "$TMP_DIR"
-        mkdir "$TMP_DIR"
-        (echo "#!/bin/sh"; echo "cat <<EOF >>${TMP_DIR}/translated-manifests.yaml"; (for templateFile in "$WORK_DIR"/manifests/*.yaml; do cat $templateFile; done;) | cat; echo ""; echo "EOF";)>${TMP_DIR}/heredoc.sh && chmod +x ${TMP_DIR}/heredoc.sh
-        source ${TMP_DIR}/heredoc.sh
-    fi
-    printf "...Done.\n"
-}
-
-function applyManifests() {
-    printf "\nStart applying manifests..."
-    local TMP_DIR="${WORK_DIR}/tmp"
-    kubectl apply -f "${TMP_DIR}/translated-manifests.yaml"
-    rm -rf "${TMP_DIR}"
-    printf "...Done.\n"
-}
-
-function annotateSecretsForKubedSync() {
-    printf "\nAnnotating tls secrets for Kubed sync..."
-
-    local isAllSecretsAnnotated="false"
-
-    while [[ "$isAllSecretsAnnotated"  == "false" ]]; do
-
-        isAllSecretsAnnotated="true"
-
-        if [[ "$(kubectl annotate --overwrite Secret app-wildcard-tls-cert kubed.appscode.com/sync='app-wildcard-sync=app-wildcard-tls-cert' 2>&1)" == *"Error" ]]; then
-            isAllSecretsAnnotated="false"
-        else
-            printf "annotated app-wildcard-tls-cert..."
-        fi
-
-        if [[ "$(kubectl annotate --overwrite Secret cluster-wildcard-tls-cert kubed.appscode.com/sync='cluster-wildcard-sync=cluster-wildcard-tls-cert' 2>&1)" == *"Error" ]]; then
-            isAllSecretsAnnotated="false"
-        else
-            printf "annotated cluster-wildcard-tls-cert..."
-        fi
-
-        if [[ "$(kubectl annotate --overwrite Secret active-cluster-wildcard-tls-cert kubed.appscode.com/sync='active-cluster-wildcard-sync=active-cluster-wildcard-tls-cert' 2>&1)" == *"Error" ]]; then
-            isAllSecretsAnnotated="false"
-        else
-            printf "annotated active-cluster-wildcard-tls-cert..."
-        fi
-
-        printf "."
-        sleep 3
-
-    done
-
-    printf "...Done\n"
-}
+echo "ingressShim:
+  defaultIssuerName: ${CERT_ISSUER}
+  defaultIssuerKind: ClusterIssuer" > config
+kubectl create secret generic cert-manager-helm-secret --namespace cert-manager \
+    --from-file=./config \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+rm -f config
 
 
 #######################################################################################
@@ -335,21 +205,7 @@ function annotateSecretsForKubedSync() {
 ###
 
 installCertManager
-kubectl wait --for=condition=Available --timeout=300s apiservice v1.cert-manager.io
-sleep 60
-transformManifests
-applyManifests
-annotateSecretsForKubedSync
-sleep 20
-transformManifests
-applyManifests
-annotateSecretsForKubedSync
-sleep 5
-kubectl rollout restart deployment -n cert-manager cert-manager cert-manager-cainjector cert-manager-webhook
 
-#######################################################################################
-### END
-###
 
 echo ""
 echo "Bootstrapping of Cert-Manager done!"
