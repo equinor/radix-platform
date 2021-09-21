@@ -16,6 +16,12 @@ prometheusOperator:
       cpu: "50m"
       memory: "100Mi"
 
+## Configuration for kube-state-metrics subchart
+##
+kube-state-metrics:
+  metricLabelsAllowlist:
+    - pods=[radix-app]
+
 prometheus:
   # service:
   #   targetPort: 4180
