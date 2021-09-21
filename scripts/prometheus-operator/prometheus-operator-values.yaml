@@ -18,6 +18,10 @@ prometheusOperator:
 
 ## Configuration for kube-state-metrics subchart
 ##
+kubeStateMetrics:
+  metricLabelsAllowlist:
+    - pods=[radix-app]
+
 kube-state-metrics:
   metricLabelsAllowlist:
     - pods=[radix-app]
