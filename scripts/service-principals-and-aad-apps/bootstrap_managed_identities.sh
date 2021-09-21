@@ -135,7 +135,7 @@ SUBSCRIPTION_ID="$(az account show --query id -otsv)"
 for name in $MI_AKS $MI_AKSKUBELET
 do
     printf "Adding role assignment for \"${name}\"..."
-    IDENTITY_ID="$(az identity show --resource-group $AZ_RESOURCE_GROUP_COMMON --name $name --query clientId)"
+    IDENTITY_ID="$(az identity show --resource-group $AZ_RESOURCE_GROUP_COMMON --name $name --query clientId -o tsv)"
     az role assignment create --role "Contributor" --assignee $IDENTITY_ID --scope /subscriptions/$SUBSCRIPTION_ID >/dev/null # grant access to whole subscription
     printf "Done.\n"
 done
