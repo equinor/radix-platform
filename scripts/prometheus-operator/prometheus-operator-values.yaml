@@ -18,21 +18,13 @@ prometheusOperator:
 
 ## Configuration for kube-state-metrics subchart
 ##
-kubeStateMetrics:
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "100Mi"
-  metricLabelsAllowlist:
-    - pods=[radix-app]
-
 kube-state-metrics:
   resources:
     requests:
-      cpu: "51m"
-      memory: "101Mi"
+      cpu: "52m"
+      memory: "102Mi"
   metricLabelsAllowlist:
-    - pods=[radix-app]
+    - "pods=[radix-app]"
 
 prometheus:
   # service:
