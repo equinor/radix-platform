@@ -117,6 +117,12 @@ if ! [[ -x "$INSTALL_BASECOMPONENTS_SCRIPT" ]]; then
     echo "The install base components script is not found or it is not executable in path $INSTALL_BASECOMPONENTS_SCRIPT" >&2
 fi
 
+CERT_MANAGER_CONFIGURATION_SCRIPT="$WORKDIR_PATH/cert-manager/configure.sh"
+if ! [[ -x "$CERT_MANAGER_CONFIGURATION_SCRIPT" ]]; then
+    # Print to stderror
+    echo "The cert-manager configuration script is not found or it is not executable in path $CERT_MANAGER_CONFIGURATION_SCRIPT" >&2
+fi
+
 DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
 if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
     # Print to stderror
@@ -234,6 +240,24 @@ echo ""
 printf "Point to destination cluster... "
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+
+
+# Wait for cert-manager to be deployed from flux
+# Verify installation (v1.3.1): https://cert-manager.io/v1.3-docs/installation/kubernetes/#verifying-the-installation
+echo "Wait for cert-manager to be deployed by flux-operator..."
+echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+while [[ "$(kubectl get deploy cert-manager -n cert-manager 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+while [[ "$(kubectl get pods -n cert-manager -ojsonpath={.items[*].status.containerStatuses[*].ready} | grep --invert-match true 2>&1)" != "" ]]; do
+    printf "."
+    sleep 5s
+done
+echo ""
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$CERT_MANAGER_CONFIGURATION_SCRIPT")
+wait
+
 
 # Wait for operator to be deployed from flux
 echo ""

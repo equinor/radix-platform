@@ -22,7 +22,7 @@ spec:
   selector: certman-label # This is the label that needs to be set on cert-manager pods
 ---
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: ClusterIssuer
 metadata:
   name: ${CERT_ISSUER}
 spec:

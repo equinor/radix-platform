@@ -41,7 +41,7 @@
 ### DOCS
 ### 
 
-# - https://cert-manager.io/v1.3-docs/installation/uninstall/kubernetes/
+# - https://cert-manager.io/docs/installation/helm/#uninstalling
 
 
 #######################################################################################
@@ -188,7 +188,7 @@ printf "...Done.\n"
 # Step 4: Remove all the custom resource definitions
 printf "\nDelete all the custom resource definitions..."
 # If this step fails then look at https://cert-manager.io/v1.3-docs/installation/uninstall/kubernetes/
-kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.crds.yaml
+kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.crds.yaml
 printf "...Done.\n"
 
 # Step 5: Making sure the webhook is really gone
