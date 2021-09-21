@@ -23,8 +23,9 @@ kube-state-metrics:
     requests:
       cpu: "52m"
       memory: "102Mi"
-  metricLabelsAllowlist:
-    - "pods=[radix-app]"
+  extraArgs:
+    - --foo=bar
+    - --metric-labels-allowlist=pods=[radix-app,radix-component]
 
 prometheus:
   # service:
