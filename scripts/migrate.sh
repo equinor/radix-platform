@@ -263,6 +263,20 @@ while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     sleep 5s
 done
 
+
+# Wait for grafana to be deployed from flux
+echo ""
+echo "Waiting for grafana to be deployed by flux-operator so that we can add the ingress as a replyURL to \"$APP_REGISTRATION_GRAFANA\""
+while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+echo ""
+# Add grafana replyUrl to AAD app
+(AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
+wait # wait for subshell to finish
+
+
 # Wait for dynatrace to be deployed from flux
 echo ""
 echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
