@@ -88,6 +88,10 @@ fi
 if [[ -z "$CLUSTER_NAME" ]]; then
     echo "Please provide CLUSTER_NAME" >&2
     exit 1
+else
+    # Set cluster name variable for dynatrace integration
+    INITIAL_CLUSTER_NAME=$CLUSTER_NAME
+    CLUSTER_NAME="radix-$CLUSTER_TYPE-$INITIAL_CLUSTER_NAME"
 fi
 
 # Get secrets: api-url and tenant-token from keyvault
@@ -245,3 +249,6 @@ printf "\nCheck if cluster already exists...\n"
 checkForExistingCluster
 printf "\nAdding cluster to Dynatrace...\n"
 addK8sConfiguration
+
+# Change variable back to initial value
+CLUSTER_NAME=$INITIAL_CLUSTER_NAME
