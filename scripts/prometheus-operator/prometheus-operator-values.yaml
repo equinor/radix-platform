@@ -29,8 +29,8 @@ kubeStateMetrics:
 kube-state-metrics:
   resources:
     requests:
-      cpu: "50m"
-      memory: "100Mi"
+      cpu: "51m"
+      memory: "101Mi"
   metricLabelsAllowlist:
     - pods=[radix-app]
 
