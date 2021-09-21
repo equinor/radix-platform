@@ -200,12 +200,5 @@ kubectl create secret generic cert-manager-helm-secret --namespace cert-manager 
 rm -f config
 
 
-#######################################################################################
-### MAIN
-###
-
-installCertManager
-
-
 echo ""
 echo "Bootstrapping of Cert-Manager done!"

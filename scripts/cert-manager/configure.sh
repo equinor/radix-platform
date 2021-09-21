@@ -124,7 +124,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap of cert-manager will use the following configuration:"
+echo -e "Configuration of cert-manager will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
