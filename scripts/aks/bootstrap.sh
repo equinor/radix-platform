@@ -223,8 +223,8 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
-    ID_AKS="$(az identity show -g common -n id-aks-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
-    ID_AKSKUBELET="$(az identity show -g common -n id-akskubelet-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
+    ID_AKS="$(az identity show -g common -n id-radix-aks-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
+    ID_AKSKUBELET="$(az identity show -g common -n id-radix-akskubelet-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
     ACR_ID="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 else
     # Credentials are provided from input.
