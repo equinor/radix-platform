@@ -337,9 +337,26 @@ AKS_BASE_OPTIONS=(
     --load-balancer-outbound-ports "4000"
 )
 
+# TEMPORARY until the script is completed #####################################
+
+#DEV
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004
+
+PIP1="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001"
+PIP2="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"
+PIP3=""
+PIP4=""
+
+###############################################################################
+
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     AKS_OMNIA_OPTIONS=(
         --vnet-subnet-id "$SUBNET_ID"
+        --load-balancer-outbound-ips "$PIP1,$PIP2"
+        --load-balancer-outbound-ports "4000"
     )
 elif [[ "$OMNIA_ZONE" = "classic" ]]; then
     AKS_OMNIA_OPTIONS=(
