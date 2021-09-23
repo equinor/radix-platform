@@ -252,8 +252,6 @@ helm upgrade --install flux \
     --set git.path="$GIT_DIR" \
     --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
     --set registry.acr.enabled=true \
-    --set prometheus.enabled=true \
-    --set prometheus.serviceMonitor.create=true \
     --set manifestGeneration=true \
     --set registry.excludeImage="k8s.gcr.io/*\,aksrepos.azurecr.io/*\,quay.io/*" \
     fluxcd/flux \
@@ -264,8 +262,6 @@ printf "\nInstalling Flux Helm Operator "
 helm upgrade --install helm-operator \
     --version 1.2.0 \
     --set git.ssh.secretName="$FLUX_PRIVATE_KEY_NAME" \
-    --set prometheus.enabled=true \
-    --set prometheus.serviceMonitor.create=true \
     --set helm.versions=v3 \
     fluxcd/helm-operator \
     2>&1 >/dev/null
