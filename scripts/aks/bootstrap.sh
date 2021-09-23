@@ -345,8 +345,14 @@ AKS_BASE_OPTIONS=(
 #/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003
 #/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004
 
-PIP1="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001"
-PIP2="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"
+#PLAYGROUND
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003
+#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004
+
+PIP1="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001"
+PIP2="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002"
 PIP3=""
 PIP4=""
 
@@ -367,14 +373,10 @@ else
 fi
 
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    AKS_ENV_OPTIONS=(
-        --uptime-sla
-    )
+    AKS_ENV_OPTIONS=()
 elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
     AKS_ENV_OPTIONS=(
         --enable-cluster-autoscaler
-        --min-count "$MIN_COUNT"
-        --max-count "$MAX_COUNT"
     )
 else
    echo "Unknown parameter"
@@ -382,12 +384,22 @@ fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
     CLUSTER_BASE_OPTIONS=(
-        --node-count "12"
+        --node-count "16"
+        --uptime-sla
     )
 elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
-    CLUSTER_BASE_OPTIONS=()
+    CLUSTER_BASE_OPTIONS=(
+        --node-count "10"
+        --uptime-sla
+        --min-count "6"
+        --max-count "12"
+    )
 elif [[ "$CLUSTER_TYPE" = "development" ]]; then
-    CLUSTER_BASE_OPTIONS=()
+    CLUSTER_BASE_OPTIONS=(
+        --node-count "3"
+        --min-count "2"
+        --max-count "5"
+    )
 elif [[ "$CLUSTER_TYPE" = "classicdev" ]]; then
     CLUSTER_BASE_OPTIONS=(
         --vnet-subnet-id "/subscriptions/c44d61d9-1f68-4236-aa19-2103b69766d5/resourceGroups/S045-NE-network/providers/Microsoft.Network/virtualNetworks/S045-NE-vnet"
