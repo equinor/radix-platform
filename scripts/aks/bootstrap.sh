@@ -74,7 +74,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${RADIX_ENVIRONMENT}.env"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
 # Optional inputs
 
@@ -373,10 +373,15 @@ else
 fi
 
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    AKS_ENV_OPTIONS=()
+    AKS_ENV_OPTIONS=(
+        --node-count "$NODE_COUNT"
+    )
 elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
     AKS_ENV_OPTIONS=(
         --enable-cluster-autoscaler
+        --node-count "$NODE_COUNT"
+        --min-count "$MIN_COUNT"
+        --max-count "$MAX_COUNT"
     )
 else
    echo "Unknown parameter"
@@ -384,22 +389,14 @@ fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
     CLUSTER_BASE_OPTIONS=(
-        --node-count "16"
         --uptime-sla
     )
 elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
     CLUSTER_BASE_OPTIONS=(
-        --node-count "10"
         --uptime-sla
-        --min-count "6"
-        --max-count "12"
     )
 elif [[ "$CLUSTER_TYPE" = "development" ]]; then
-    CLUSTER_BASE_OPTIONS=(
-        --node-count "3"
-        --min-count "2"
-        --max-count "5"
-    )
+    CLUSTER_BASE_OPTIONS=()
 elif [[ "$CLUSTER_TYPE" = "classicdev" ]]; then
     CLUSTER_BASE_OPTIONS=(
         --vnet-subnet-id "/subscriptions/c44d61d9-1f68-4236-aa19-2103b69766d5/resourceGroups/S045-NE-network/providers/Microsoft.Network/virtualNetworks/S045-NE-vnet"
