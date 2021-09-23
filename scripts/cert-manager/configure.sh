@@ -14,6 +14,7 @@
 # - AKS cluster is available
 # - User has role cluster-admin
 # - Flux has been deployed to the cluster
+# - Cert-manager has been deployed in the cluster
 
 #######################################################################################
 ### INPUTS
@@ -170,6 +171,56 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     exit 1        
 fi
 printf "...Done.\n"
+
+#######################################################################################
+### Verify cert-manager deployment
+###
+
+# https://cert-manager.io/docs/installation/verify/
+
+# We already know that the pods are in a running state from the migration script, so here we create an issuer and issue a certificate
+echo ""
+echo "Verify cert-manager deployment..."
+
+echo "Create test resources..."
+cat <<EOF > test-resources.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager-test
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: test-selfsigned
+  namespace: cert-manager-test
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-cert
+  namespace: cert-manager-test
+spec:
+  dnsNames:
+    - example.com
+  secretName: selfsigned-cert-tls
+  issuerRef:
+    name: test-selfsigned
+EOF
+kubectl apply -f test-resources.yaml
+
+printf "Validate test certificate...\n"
+while [[ "$(kubectl get certificate -n cert-manager-test selfsigned-cert -ojson | jq -r '.status.conditions[0].status' 2>&1)" != "True" ]]; do
+    printf "."
+    sleep 1s
+done
+printf "\n...Done.\nValidation successful!"
+
+echo "Remove test resources..."
+kubectl delete -f test-resources.yaml
+rm -f test-resources.yaml
 
 #######################################################################################
 ### Transform and apply all custom resources
