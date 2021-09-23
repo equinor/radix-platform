@@ -69,7 +69,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${RADIX_ENVIRONMENT}.env"
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${CLUSTER_TYPE}.env"
 
 # Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
@@ -162,7 +162,7 @@ echo "Done."
 ###
 
 echo "Deleting Dynatrace integration..."
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
 
 echo "Cleaning up local kube config... "
 kubectl config delete-context "${CLUSTER_NAME}-admin" 2>&1 >/dev/null
