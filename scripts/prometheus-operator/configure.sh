@@ -18,7 +18,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./configure.sh
 
 #######################################################################################
 ### KNOWN ISSUES
@@ -28,7 +28,7 @@
 ### START
 ###
 
-echo "Bootstrap prometheus-operator..."
+echo "Start configuration of Prometheus..."
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -80,8 +80,6 @@ if [[ -z "$CLUSTER_NAME" ]]; then
   echo "Please provide CLUSTER_NAME" >&2
   exit 1
 fi
-
-WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
@@ -143,35 +141,41 @@ WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # End OAUTH2_PROXY code
 ##########
 
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+#######################################################################################
+### Update deployments
+###
 
-# Prometheus CRDs: https://github.com/prometheus-operator/prometheus-operator/releases
-kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.48.1/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
-kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.48.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
+echo "update flux deployment..."
+helm upgrade --reuse-values flux fluxcd/flux \
+  --set prometheus.enabled=true \
+  --set prometheus.serviceMonitor.create=true > /dev/null
 
-helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
-  --version 16.5.0 \
-  -f "${WORK_DIR}/prometheus-operator-values.yaml"
+echo "update helm-operator deployment..."
+helm upgrade --reuse-values helm-operator fluxcd/helm-operator \
+  --set prometheus.enabled=true \
+  --set prometheus.serviceMonitor.create=true > /dev/null
+
+#######################################################################################
+### Install custom ingresses
+###
 
 # Install Prometheus Ingress with HTTP Basic Authentication
 
 # To generate a new file: `htpasswd -c ./auth prometheus`
 # This file MUST be named `auth` when creating the secret!
+echo ""
+echo "Create secret..."
 htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name prometheus-token | jq -r .value)"
-
 kubectl create secret generic prometheus-htpasswd \
   --from-file auth --dry-run=client -o yaml |
   kubectl apply -f -
-
 rm -f auth
 
+CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
+
 # Create a custom ingress for prometheus that adds HTTP Basic Auth
-
-$CLUSTER_NAME 
-echo "$CLUSTER_NAME " | tr '[:upper:]' '[:lower:]'
-
-
+echo ""
+echo "Creating \"prometheus-basic-auth\" ingress..."
 cat <<EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -185,7 +189,7 @@ metadata:
   name: prometheus-basic-auth
 spec:
   rules:
-  - host: prometheus.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
+  - host: prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
     http:
       paths:
       - backend:
@@ -194,12 +198,12 @@ spec:
         path: /
   tls:
   - hosts:
-    - prometheus.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
+    - prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
     secretName: cluster-wildcard-tls-cert
 EOF
 
-# Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in ./manifests/prometheus-operator-values.yaml)
-
+# Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in flux chart)
+echo "Creating \"prometheus-oauth2-auth\" ingress..."
 cat <<EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -211,7 +215,7 @@ metadata:
   name: prometheus-oauth2-auth
 spec:
   rules:
-  - host: prometheus-oauth2.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
+  - host: prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
     http:
       paths:
       - backend:
@@ -220,6 +224,6 @@ spec:
         path: /
   tls:
   - hosts:
-    - prometheus-oauth2.${CLUSTER_NAME,,}.$AZ_RESOURCE_DNS
+    - prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
     secretName: cluster-wildcard-tls-cert
 EOF

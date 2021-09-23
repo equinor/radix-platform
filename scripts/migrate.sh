@@ -123,6 +123,12 @@ if ! [[ -x "$CERT_MANAGER_CONFIGURATION_SCRIPT" ]]; then
     echo "The cert-manager configuration script is not found or it is not executable in path $CERT_MANAGER_CONFIGURATION_SCRIPT" >&2
 fi
 
+PROMETHEUS_CONFIGURATION_SCRIPT="$WORKDIR_PATH/prometheus/configure.sh"
+if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
+    # Print to stderror
+    echo "The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
+fi
+
 DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
 if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
     # Print to stderror
@@ -253,6 +259,16 @@ echo ""
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$CERT_MANAGER_CONFIGURATION_SCRIPT")
 wait
 
+# Wait for prometheus to be deployed from flux
+echo "Wait for prometheus to be deployed by flux-operator..."
+while [[ "$(kubectl get deploy kube-prometheus-stack-prom-operator 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5s
+done
+
+echo ""
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$PROMETHEUS_CONFIGURATION_SCRIPT")
+wait
 
 # Wait for operator to be deployed from flux
 echo ""

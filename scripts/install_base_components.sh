@@ -228,13 +228,6 @@ kubectl apply -f manifests/storageclass-retain.yaml
 kubectl apply -f manifests/storageclass-retain-nocache.yaml
 
 #######################################################################################
-### Install prometheus-operator
-###
-
-(./prometheus-operator/bootstrap.sh)
-wait
-
-#######################################################################################
 ### Install grafana
 ###
 
