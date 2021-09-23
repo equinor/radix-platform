@@ -131,6 +131,7 @@ done
 ###
 
 # Role assignments for aad-pod-identity
+# NOTE: It takes some time for the identities to be registered, so a check should be created here.
 SUBSCRIPTION_ID="$(az account show --query id -otsv)"
 for name in $MI_AKS $MI_AKSKUBELET
 do
@@ -143,13 +144,14 @@ done
 # Role assignments for cert-manager
 for name in $MI_CERT_MANAGER
 do
+    printf "Adding role assignment for \"${name}\"..."
     IDENTITY="$(az identity show --name $name --resource-group $AZ_RESOURCE_GROUP_COMMON --output json)"
     # Gets principalId to use for role assignment
     PRINCIPAL_ID=$(echo $IDENTITY | jq -r '.principalId')
     # Get existing DNS Zone Id
-    ZONE_ID=$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" -o tsv)
+    ZONE_ID=$(az network dns zone show --name ${AZ_RESOURCE_DNS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" -o tsv)
     # Create role assignment
-    az role assignment create --assignee $PRINCIPAL_ID --role "DNS Zone Contributor"  --scope $ZONE_ID
+    az role assignment create --assignee $PRINCIPAL_ID --role "DNS Zone Contributor"  --scope $ZONE_ID >/dev/null
     printf "...Done\n"
 done
 
