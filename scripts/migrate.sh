@@ -126,7 +126,7 @@ fi
 PROMETHEUS_CONFIGURATION_SCRIPT="$WORKDIR_PATH/prometheus/configure.sh"
 if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
     # Print to stderror
-    echo "The cert-manager configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
+    echo "The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
 fi
 
 DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
