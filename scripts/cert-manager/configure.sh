@@ -209,14 +209,27 @@ spec:
   issuerRef:
     name: test-selfsigned
 EOF
+
+# Verify that the test resources can be deployed
+kubectl create namespace cert-manager-test 2>&1 >/dev/null
+while [[ "$(kubectl apply --dry-run=server -f test-resources.yaml 2>&1)" == *"error"* ]]; do
+    printf "."
+    sleep 1s
+done
+kubectl delete namespace cert-manager-test 2>&1 >/dev/null
+
+# Deploy the test resources
 kubectl apply -f test-resources.yaml
 
+# Wait for the certificate status to be True
 printf "Validate test certificate...\n"
 while [[ "$(kubectl get certificate -n cert-manager-test selfsigned-cert -ojson | jq -r '.status.conditions[0].status' 2>&1)" != "True" ]]; do
     printf "."
     sleep 1s
 done
-printf "\n...Done.\nValidation successful!"
+printf "...Done.\n"
+
+echo "Validation successful!"
 
 echo "Remove test resources..."
 kubectl delete -f test-resources.yaml
