@@ -188,6 +188,18 @@ printf "Create aliases in destination cluster... "
 wait # wait for subshell to finish
 printf "Done creating aliases."
 
+# Update auth proxy secret
+AUTH_PROXY_COMPONENT="auth"
+AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+    echo "Development cluster uses QA web-console"
+    RADIX_WEB_CONSOLE_ENV="qa"
+fi
+AUTH_INGRESS_SUFFIX=".custom-domain"
+WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+
 # Point granana to cluster type ingress
 GRAFANA_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
 kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
