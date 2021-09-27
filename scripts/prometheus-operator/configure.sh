@@ -193,7 +193,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: prometheus-operator-prometheus
+          serviceName: kube-prometheus-stack-prom-prometheus
           servicePort: 9090
         path: /
   tls:
@@ -219,7 +219,7 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: prometheus-operator-prometheus
+          serviceName: kube-prometheus-stack-prom-prometheus
           servicePort: 4180
         path: /
   tls:
