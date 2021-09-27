@@ -370,7 +370,9 @@ printf "Done restoring into cluster."
 
 echo ""
 read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " -n 1 -r
-if [[ "$REPLY" =~ (N|n) ]]; then
+if [[ "$REPLY" =~ (Y|y) ]]; then
+    source move_custom_ingresses.sh
+else
     echo ""
     echo "Chicken!"
 
@@ -391,8 +393,4 @@ if [[ "$REPLY" =~ (N|n) ]]; then
 
     echo "Restarting web console to use updated secret value."
     $(kubectl delete pods --all -n radix-web-console-prod 2>&1 >/dev/null)
-
-    exit 0
 fi
-
-source move_custom_ingresses.sh
