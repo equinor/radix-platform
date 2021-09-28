@@ -172,13 +172,8 @@ GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name g
 # Transform clustername to lowercase
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
-if [ "$OMNIA_ZONE" = "standalone" ]; then
-    GF_SERVER_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
-elif [[ "$OMNIA_ZONE" = "classic" ]]; then
-    GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
-else
-   echo "Unknown parameter for \"OMNIA_ZONE\""
-fi
+# Before moving custom ingresses, the root url should be cluster-specific. 
+GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
 
 echo "ingress:
   enabled: true
