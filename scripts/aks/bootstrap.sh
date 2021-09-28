@@ -223,8 +223,8 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
-    ID_AKS="$(az identity show -g common -n id-radix-aks-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
-    ID_AKSKUBELET="$(az identity show -g common -n id-radix-akskubelet-$CLUSTER_TYPE-northeurope --query 'id' -o tsv)"
+    ID_AKS="$(az identity show --name $MI_AKS --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
+    ID_AKSKUBELET="$(az identity show --name $name --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
     ACR_ID="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 else
     # Credentials are provided from input.
@@ -232,6 +232,18 @@ else
     source ./"$CREDENTIALS_FILE"
 fi
 printf "Done.\n"
+
+#######################################################################################
+### Verify credentials
+###
+if [ -z "$ID_AKS" ]; then
+    echo "Managed identity \"$MI_AKS\" does not exist. Exiting..."
+    exit 1
+fi
+if [ -z "$ID_AKSKUBELET" ]; then
+    echo "Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..."
+    exit 1
+fi
 
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     #######################################################################################
@@ -351,8 +363,8 @@ AKS_BASE_OPTIONS=(
 #/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003
 #/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004
 
-PIP1="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001"
-PIP2="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002"
+PIP1="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003"
+PIP2="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004"
 PIP3=""
 PIP4=""
 
