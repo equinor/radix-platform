@@ -237,11 +237,11 @@ printf "Done.\n"
 ### Verify credentials
 ###
 if [ -z "$ID_AKS" ]; then
-    echo "Managed identity \"$MI_AKS\" does not exist. Exiting..."
+    echo "ERROR: Managed identity \"$MI_AKS\" does not exist. Exiting..."
     exit 1
 fi
 if [ -z "$ID_AKSKUBELET" ]; then
-    echo "Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..."
+    echo "ERROR: Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..."
     exit 1
 fi
 
