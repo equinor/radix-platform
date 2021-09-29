@@ -324,8 +324,6 @@ else
     HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
 fi
 
-# TODO add static public IPs
-
 AKS_BASE_OPTIONS=(
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
     --name "$CLUSTER_NAME"
@@ -349,24 +347,60 @@ AKS_BASE_OPTIONS=(
     --load-balancer-outbound-ports "4000"
 )
 
-# TEMPORARY until the script is completed #####################################
+#######################################################################################
+### Specify static public IPs
+###
 
-#DEV
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004
+# Path to Public IP Prefix which contains the public IPs
+IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
 
-#PLAYGROUND
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003
-#/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004
+# list of AVAILABLE public ips assigned to the Radix Zone
+echo "Getting list of available public ips in $RADIX_ZONE..."
+AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
 
-PIP1="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003"
-PIP2="/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004"
-PIP3=""
-PIP4=""
+# Select range of ips based on IP_COUNT
+SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$IP_COUNT']')"
+
+if [[ -z $AVAILABLE_IPS ]]; then
+    echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
+    exit 1
+else
+    echo "-----------------------------------------------------------"
+    echo ""
+    echo "The following public IP(s) are currently available:"
+    echo ""
+    echo $AVAILABLE_IPS | jq -r '.[].name'
+    echo ""
+    echo "The following public IP(s) will be assigned to the cluster:"
+    echo ""
+    echo $SELECTED_IPS | jq -r '.[].name'
+    echo ""
+    echo "-----------------------------------------------------------"
+fi
+
+echo ""
+USER_PROMPT="true"
+if [[ $USER_PROMPT == true ]]; then
+    read -p "Is this correct? (Y/n) " -n 1 -r
+    if [[ "$REPLY" =~ (Y|y) ]]; then
+        echo ""
+        echo "Sounds good, continuing."
+    else
+        echo ""
+        exit 0
+    fi
+fi
+echo ""
+
+# Create the string to pass in as --load-balancer-outbound-ips
+for ip in $(echo $SELECTED_IPS | jq -r '.[].id')
+do
+    if [[ -z $OUTBOUND_IPS ]]; then
+        OUTBOUND_IPS="$ip"
+    else
+        OUTBOUND_IPS="$OUTBOUND_IPS,$ip"
+    fi
+done
 
 ###############################################################################
 
