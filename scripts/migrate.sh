@@ -141,6 +141,27 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
+#######################################################################################
+### Check the migration strategy
+###
+
+while
+    read -p "Are you migating active to active or active to test? (aa/at) " -r
+    do
+        echo ""
+        if [[ "$REPLY" =~ (AA|aa) ]]; then
+            MIGRATION_STRATEGY="aa"
+            break
+        elif [[ "$REPLY" =~ (AT|at) ]]; then
+            MIGRATION_STRATEGY="at"
+            break
+        else
+            echo "Unknown option."
+            echo ""
+        fi
+done
+
+echo ""
 
 #######################################################################################
 ### Prepare az session
@@ -222,7 +243,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 
     echo ""
     echo "Creating destination cluster..."
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_AKS_SCRIPT")
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
     wait # wait for subshell to finish
     printf "Done creating cluster."
 

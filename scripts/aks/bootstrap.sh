@@ -224,7 +224,7 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
     ID_AKS="$(az identity show --name $MI_AKS --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
-    ID_AKSKUBELET="$(az identity show --name $name --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
+    ID_AKSKUBELET="$(az identity show --name $MI_AKSKUBELET --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
     ACR_ID="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 else
     # Credentials are provided from input.
@@ -262,23 +262,8 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
         2>&1 >/dev/null
     printf "Done.\n"
 
-    printf "   Granting access to VNET ${VNET_NAME} for Service Principal ${CLUSTER_SYSTEM_USER_ID}... "
     SUBNET_ID=$(az network vnet subnet list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --vnet-name $VNET_NAME --query [].id --output tsv)
     VNET_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_NAME --query "id" --output tsv)"
-    printf "Done.\n"
-
-    # Delete any existing roles
-    printf "   Deleting existing roles... "
-    az role assignment delete --assignee "${CLUSTER_SYSTEM_USER_ID}" --scope "${VNET_ID}" 2>&1 >/dev/null
-    printf "Done.\n"
-
-    # Configure new roles
-    printf "   Creating new roles... "
-    az role assignment create --assignee "${CLUSTER_SYSTEM_USER_ID}" \
-        --role "Network Contributor" \
-        --scope "${VNET_ID}" \
-        2>&1 >/dev/null
-    printf "Done.\n"
 
     # peering VNET to hub-vnet
     HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $AZ_VNET_HUB_NAME --query "id" --output tsv)"
@@ -324,6 +309,67 @@ else
     HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
 fi
 
+#######################################################################################
+### Specify static public IPs
+###
+
+# MIGRATION_STRATEGY PIP assignment
+# if migrating active to active cluster (eg. dev to dev)
+if [ "$MIGRATION_STRATEGY" = "aa" ]; then
+    # Path to Public IP Prefix which contains the public IPs
+    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
+
+    # list of AVAILABLE public ips assigned to the Radix Zone
+    echo "Getting list of available public ips in $RADIX_ZONE..."
+    AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
+
+    # Select range of ips based on IP_COUNT
+    SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$IP_COUNT']')"
+
+    if [[ -z $AVAILABLE_IPS ]]; then
+        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
+        exit 1
+    else
+        echo "-----------------------------------------------------------"
+        echo ""
+        echo "The following public IP(s) are currently available:"
+        echo ""
+        echo $AVAILABLE_IPS | jq -r '.[].name'
+        echo ""
+        echo "The following public IP(s) will be assigned to the cluster:"
+        echo ""
+        echo $SELECTED_IPS | jq -r '.[].name'
+        echo ""
+        echo "-----------------------------------------------------------"
+    fi
+
+    echo ""
+    USER_PROMPT="true"
+    if [[ $USER_PROMPT == true ]]; then
+        read -p "Is this correct? (Y/n) " -n 1 -r
+        if [[ "$REPLY" =~ (Y|y) ]]; then
+            echo ""
+            echo "Sounds good, continuing."
+        else
+            echo ""
+            exit 0
+        fi
+    fi
+    echo ""
+
+    # Create the string to pass in as --load-balancer-outbound-ips
+    for ip in $(echo $SELECTED_IPS | jq -r '.[].id')
+    do
+        if [[ -z $OUTBOUND_IPS ]]; then
+            OUTBOUND_IPS="$ip"
+        else
+            OUTBOUND_IPS="$OUTBOUND_IPS,$ip"
+        fi
+    done
+fi
+
+###############################################################################
+
 AKS_BASE_OPTIONS=(
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
     --name "$CLUSTER_NAME"
@@ -344,72 +390,27 @@ AKS_BASE_OPTIONS=(
     --assign-identity "$ID_AKS"
     --assign-kubelet-identity "$ID_AKSKUBELET"
     --attach-acr "$ACR_ID"
-    --load-balancer-outbound-ports "4000"
 )
-
-#######################################################################################
-### Specify static public IPs
-###
-
-# Path to Public IP Prefix which contains the public IPs
-IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
-
-# list of AVAILABLE public ips assigned to the Radix Zone
-echo "Getting list of available public ips in $RADIX_ZONE..."
-AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
-
-# Select range of ips based on IP_COUNT
-SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$IP_COUNT']')"
-
-if [[ -z $AVAILABLE_IPS ]]; then
-    echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
-    exit 1
-else
-    echo "-----------------------------------------------------------"
-    echo ""
-    echo "The following public IP(s) are currently available:"
-    echo ""
-    echo $AVAILABLE_IPS | jq -r '.[].name'
-    echo ""
-    echo "The following public IP(s) will be assigned to the cluster:"
-    echo ""
-    echo $SELECTED_IPS | jq -r '.[].name'
-    echo ""
-    echo "-----------------------------------------------------------"
-fi
-
-echo ""
-USER_PROMPT="true"
-if [[ $USER_PROMPT == true ]]; then
-    read -p "Is this correct? (Y/n) " -n 1 -r
-    if [[ "$REPLY" =~ (Y|y) ]]; then
-        echo ""
-        echo "Sounds good, continuing."
-    else
-        echo ""
-        exit 0
-    fi
-fi
-echo ""
-
-# Create the string to pass in as --load-balancer-outbound-ips
-for ip in $(echo $SELECTED_IPS | jq -r '.[].id')
-do
-    if [[ -z $OUTBOUND_IPS ]]; then
-        OUTBOUND_IPS="$ip"
-    else
-        OUTBOUND_IPS="$OUTBOUND_IPS,$ip"
-    fi
-done
-
-###############################################################################
 
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     AKS_OMNIA_OPTIONS=(
         --vnet-subnet-id "$SUBNET_ID"
-        --load-balancer-outbound-ips "$PIP1,$PIP2"
-        --load-balancer-outbound-ports "4000"
     )
+
+    # MIGRATION_STRATEGY PIP assignment
+    # if migrating active to active cluster (eg. dev to dev)
+    if [ "$MIGRATION_STRATEGY" = "aa" ]; then
+        MIGRATION_STRATEGY_OPTIONS=(
+            --load-balancer-outbound-ips "$OUTBOUND_IPS"
+            --load-balancer-outbound-ports "4000"
+        )
+    # if migrating active to test cluster (eg. dev to test cluster)
+    elif [[ "$MIGRATION_STRATEGY" = "at" ]]; then
+        MIGRATION_STRATEGY_OPTIONS=()
+    # if only bootstraping AKS
+    else
+        MIGRATION_STRATEGY_OPTIONS=()
+    fi
 elif [[ "$OMNIA_ZONE" = "classic" ]]; then
     AKS_OMNIA_OPTIONS=(
         --enable-private-cluster
@@ -455,33 +456,7 @@ else
    echo "Unknown parameter"
 fi
 
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}"
-
-### It might be required to add "--node-count 10 \" below "--max-count "$MAX_COUNT" \" if deploying certain VM sizes
-#az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
-#    --no-ssh-key \
-#    --kubernetes-version "$KUBERNETES_VERSION" \
-#    --service-principal "$CLUSTER_SYSTEM_USER_ID" \
-#    --client-secret "$CLUSTER_SYSTEM_USER_PASSWORD" \
-#    --uptime-sla \
-#    --enable-cluster-autoscaler \
-#    --min-count "$MIN_COUNT" \
-#    --max-count "$MAX_COUNT" \
-#    --node-osdisk-size "$NODE_DISK_SIZE" \
-#    --node-vm-size "$NODE_VM_SIZE" \
-#    --max-pods "$POD_PER_NODE" \
-#    --network-plugin "$NETWORK_PLUGIN" \
-#    --network-policy "$NETWORK_POLICY" \
-#    --vnet-subnet-id "$SUBNET_ID" \
-#    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" \
-#    --dns-service-ip "$VNET_DNS_SERVICE_IP" \
-#    --service-cidr "$VNET_SERVICE_CIDR" \
-#    --aad-server-app-id "$AAD_SERVER_APP_ID" \
-#    --aad-server-app-secret "$AAD_SERVER_APP_SECRET" \
-#    --aad-client-app-id "$AAD_CLIENT_APP_ID" \
-#    --aad-tenant-id "$AAD_TENANT_ID" \
-#    --location "$AZ_RADIX_ZONE_LOCATION" \
-#    2>&1 >/dev/null
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 echo "Done."
 
