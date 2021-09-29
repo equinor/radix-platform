@@ -324,29 +324,6 @@ else
     HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
 fi
 
-AKS_BASE_OPTIONS=(
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --name "$CLUSTER_NAME"
-    --no-ssh-key
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --node-osdisk-size "$NODE_DISK_SIZE"
-    --node-vm-size "$NODE_VM_SIZE"
-    --max-pods "$POD_PER_NODE"
-    --network-plugin "$NETWORK_PLUGIN"
-    --network-policy "$NETWORK_POLICY"
-    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS"
-    --dns-service-ip "$VNET_DNS_SERVICE_IP"
-    --service-cidr "$VNET_SERVICE_CIDR"
-    --location "$AZ_RADIX_ZONE_LOCATION"
-    --enable-managed-identity
-    --enable-aad
-    --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
-    --assign-identity "$ID_AKS"
-    --assign-kubelet-identity "$ID_AKSKUBELET"
-    --attach-acr "$ACR_ID"
-    --load-balancer-outbound-ports "4000"
-)
-
 #######################################################################################
 ### Specify static public IPs
 ###
@@ -404,12 +381,47 @@ done
 
 ###############################################################################
 
+AKS_BASE_OPTIONS=(
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --name "$CLUSTER_NAME"
+    --no-ssh-key
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --node-osdisk-size "$NODE_DISK_SIZE"
+    --node-vm-size "$NODE_VM_SIZE"
+    --max-pods "$POD_PER_NODE"
+    --network-plugin "$NETWORK_PLUGIN"
+    --network-policy "$NETWORK_POLICY"
+    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS"
+    --dns-service-ip "$VNET_DNS_SERVICE_IP"
+    --service-cidr "$VNET_SERVICE_CIDR"
+    --location "$AZ_RADIX_ZONE_LOCATION"
+    --enable-managed-identity
+    --enable-aad
+    --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
+    --assign-identity "$ID_AKS"
+    --assign-kubelet-identity "$ID_AKSKUBELET"
+    --attach-acr "$ACR_ID"
+)
+
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     AKS_OMNIA_OPTIONS=(
         --vnet-subnet-id "$SUBNET_ID"
-        --load-balancer-outbound-ips "$PIP1,$PIP2"
-        --load-balancer-outbound-ports "4000"
     )
+
+    # MIGRATION_STRATEGY PIP assignment
+    # if migrating active to active cluster (eg. dev to dev)
+    if [ "$MIGRATION_STRATEGY" = "aa" ]; then
+        MIGRATION_STRATEGY_OPTIONS=(
+            --load-balancer-outbound-ips "$OUTBOUND_IPS"
+            --load-balancer-outbound-ports "4000"
+        )
+    # if migrating active to test cluster (eg. dev to test cluster)
+    elif [[ "$MIGRATION_STRATEGY" = "at" ]]; then
+        MIGRATION_STRATEGY_OPTIONS=()
+    # if only bootstraping AKS
+    else
+        MIGRATION_STRATEGY_OPTIONS=()
+    fi
 elif [[ "$OMNIA_ZONE" = "classic" ]]; then
     AKS_OMNIA_OPTIONS=(
         --enable-private-cluster
@@ -455,7 +467,7 @@ else
    echo "Unknown parameter"
 fi
 
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}"
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 ### It might be required to add "--node-count 10 \" below "--max-count "$MAX_COUNT" \" if deploying certain VM sizes
 #az aks create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
