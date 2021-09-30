@@ -176,7 +176,7 @@ kubectl delete Challenges --all --all-namespaces 2>&1 >/dev/null
 printf "...Done.\n"
 
 # Step 2: Remove the helm release
-printf "\nDelete and the helm release..."
+printf "\nDelete the helm release..."
 helm --namespace cert-manager delete cert-manager 2>&1 >/dev/null
 printf "...Done.\n"
 
@@ -185,9 +185,8 @@ printf "\nDelete the namespace..."
 kubectl delete namespace cert-manager 2>&1 >/dev/null
 printf "...Done.\n"
 
-# Step 4: Remove all the custom resource definitions
+# Step 4: Remove all the custom resource definitions using the link to the version installed.
 printf "\nDelete all the custom resource definitions..."
-# If this step fails then look at https://cert-manager.io/v1.3-docs/installation/uninstall/kubernetes/
 kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.crds.yaml
 printf "...Done.\n"
 
