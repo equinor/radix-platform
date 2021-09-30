@@ -107,10 +107,8 @@ fi
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ $STAGING == false ]]; then
     CERT_ISSUER="letsencrypt-prod"
-    ACME_URL="https://acme-v02.api.letsencrypt.org/directory"
 else
     CERT_ISSUER="letsencrypt-staging"
-    ACME_URL="https://acme-staging-v02.api.letsencrypt.org/directory"
 fi
 
 
@@ -141,7 +139,6 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  CERT-MANAGER                     : v1.1"
 echo -e "   -  CERT_ISSUER                      : $CERT_ISSUER"
-echo -e "   -  ACME_URL                         : $ACME_URL"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -182,7 +179,7 @@ printf "...Done.\n"
 ### Install cert-manager
 ###
 
-printf "\nInstalling cert-manager..."
+printf "\nCreating cert-manager namespace and secret for flux-chart..."
 
 # Create the namespace for cert-manager
 kubectl create namespace cert-manager \
