@@ -282,7 +282,7 @@ wait
 
 # Wait for prometheus to be deployed from flux
 echo "Wait for prometheus to be deployed by flux-operator..."
-while [[ "$(kubectl get deploy kube-prometheus-stack-prom-operator 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get deploy prometheus-operator-operator 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5s
 done
