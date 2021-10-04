@@ -56,5 +56,5 @@ CheckRelease -ReleaseName grafana -ChartName grafana/grafana -Cluster $zoneVaria
 CheckRelease -ReleaseName ingress-nginx -ChartName ingress-nginx/ingress-nginx -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName kubed -ChartName appscode/kubed -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName kured -ChartName kured/kured -Cluster $zoneVariables.radix.cluster.type
-CheckRelease -ReleaseName prometheus-operator -ChartName prometheus-community/kube-prometheus-stack -Cluster $zoneVariables.radix.cluster.type
+CheckRelease -ReleaseName kube-prometheus-stack -ChartName prometheus-community/kube-prometheus-stack -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName velero -ChartName vmware-tanzu/velero -Cluster $zoneVariables.radix.cluster.type
