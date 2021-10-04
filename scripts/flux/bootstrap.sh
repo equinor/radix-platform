@@ -260,7 +260,7 @@ printf "...Done\n"
 
 printf "\nInstalling Flux Helm Operator "
 helm upgrade --install helm-operator \
-    --version 1.2.0 \
+    --version 1.4.0 \
     --set git.ssh.secretName="$FLUX_PRIVATE_KEY_NAME" \
     --set helm.versions=v3 \
     fluxcd/helm-operator \
