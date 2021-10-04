@@ -177,7 +177,7 @@ CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 echo ""
 echo "Creating \"prometheus-basic-auth\" ingress..."
 cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -205,7 +205,7 @@ EOF
 # Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in flux chart)
 echo "Creating \"prometheus-oauth2-auth\" ingress..."
 cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
