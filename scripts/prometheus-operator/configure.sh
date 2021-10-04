@@ -193,9 +193,12 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: kube-prometheus-stack-prom-prometheus
-          servicePort: 9090
+          service:
+            name: prometheus-operator-prometheus
+            port:
+              number: 9090
         path: /
+        pathType: Prefix
   tls:
   - hosts:
     - prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
@@ -219,9 +222,12 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: kube-prometheus-stack-prom-prometheus
-          servicePort: 4180
+          service:
+            name: prometheus-operator-prometheus
+            port:
+              number: 4180
         path: /
+        pathType: Prefix
   tls:
   - hosts:
     - prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
