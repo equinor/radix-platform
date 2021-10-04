@@ -12,6 +12,7 @@ function GetReleaseVersion {
     )
     Write-Host "Checking release version.."
     $n = helm ls -A -f ('(?i)^' + $Release) -o json | ConvertFrom-Json
+    Write-Host "Checking release version for $n"
     try {
         $v = $n.chart -replace '[a-z-]'
         Write-Host "Found release $Release with version $v"
