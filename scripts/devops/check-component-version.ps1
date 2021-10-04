@@ -36,7 +36,7 @@ az aks get-credentials -n $activeRadixCluster -g $zoneVariables.radix.cluster.re
 $repos = @('jetstack https://charts.jetstack.io', 
             'blob-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/charts',
             'bitnami https://charts.bitnami.com/bitnami',
-            'dynatrace https://raw.githubusercontent.com/Dynatrace/helm-charts',
+            'dynatrace https://raw.githubusercontent.com/Dynatrace/helm-charts/master/repos/stable',
             'grafana https://grafana.github.io/helm-charts',
             'fluxcd https://charts.fluxcd.io',
             'ingress-nginx https://kubernetes.github.io/ingress-nginx',
