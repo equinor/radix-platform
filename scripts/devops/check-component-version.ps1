@@ -51,7 +51,7 @@ UpdateRepos -RepoList $repos
 # TODO refactor this somehow
 CheckRelease -ReleaseName blob-csi-driver -ChartName blob-csi-driver/blob-csi-driver -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName cert-manager -ChartName jetstack/cert-manager -Cluster $zoneVariables.radix.cluster.type
-CheckRelease -ReleaseName dynatrace -ChartName dynatrace/dynatrace-operator -Cluster $zoneVariables.radix.cluster.type
+CheckRelease -ReleaseName dynatrace-operator -ChartName dynatrace/dynatrace-operator -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName external-dns -ChartName bitnami/external-dns -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName flux -ChartName fluxcd/flux -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName grafana -ChartName grafana/grafana -Cluster $zoneVariables.radix.cluster.type
