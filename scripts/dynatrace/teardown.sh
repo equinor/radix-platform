@@ -73,6 +73,10 @@ fi
 if [[ -z "$CLUSTER_NAME" ]]; then
     echo "Please provide CLUSTER_NAME" >&2
     exit 1
+else
+    # Set cluster name variable for dynatrace integration
+    INITIAL_CLUSTER_NAME=$CLUSTER_NAME
+    CLUSTER_NAME="radix-$CLUSTER_TYPE-$INITIAL_CLUSTER_NAME"
 fi
 
 # Optional inputs
@@ -183,3 +187,6 @@ deleteK8sConfiguration
 
 echo ""
 echo "Teardown of Dynatrace is done!"
+
+# Change variable back to initial value
+CLUSTER_NAME=$INITIAL_CLUSTER_NAME
