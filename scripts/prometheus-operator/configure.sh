@@ -177,7 +177,7 @@ CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 echo ""
 echo "Creating \"prometheus-basic-auth\" ingress..."
 cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -193,9 +193,12 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: kube-prometheus-stack-prom-prometheus
-          servicePort: 9090
+          service:
+            name: prometheus-operator-prometheus
+            port:
+              number: 9090
         path: /
+        pathType: Prefix
   tls:
   - hosts:
     - prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
@@ -205,7 +208,7 @@ EOF
 # Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in flux chart)
 echo "Creating \"prometheus-oauth2-auth\" ingress..."
 cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -219,9 +222,12 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: kube-prometheus-stack-prom-prometheus
-          servicePort: 4180
+          service:
+            name: prometheus-operator-prometheus
+            port:
+              number: 4180
         path: /
+        pathType: Prefix
   tls:
   - hosts:
     - prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
