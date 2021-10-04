@@ -331,7 +331,10 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Select range of ips based on IP_COUNT
     SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$IP_COUNT']')"
 
-    if [[ -z $AVAILABLE_IPS ]]; then
+    if [[ "$AVAILABLE_IPS" == "[]" ]]; then
+        echo "ERROR: Query returned no ips. Please check the variable IPPRE_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+        exit 1
+    elif [[ -z $AVAILABLE_IPS ]]; then
         echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
         exit 1
     else
