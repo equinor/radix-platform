@@ -34,6 +34,7 @@ az aks get-credentials -n $activeRadixCluster -g $zoneVariables.radix.cluster.re
 # List of helm repositories used in Radix
 # TODO Add this to a json file so it can be used by other scripts if needed
 $repos = @('jetstack https://charts.jetstack.io', 
+            'blob-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/charts',
             'bitnami https://charts.bitnami.com/bitnami', 
             'grafana https://grafana.github.io/helm-charts',
             'fluxcd https://charts.fluxcd.io',
@@ -47,6 +48,7 @@ UpdateRepos -RepoList $repos
 
 # Runs the check against each component and adds a user story if it detects a new version
 # TODO refactor this somehow
+CheckRelease -ReleaseName blob-csi-driver -ChartName blob-csi-driver/blob-csi-driver -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName cert-manager -ChartName jetstack/cert-manager -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName external-dns -ChartName bitnami/external-dns -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName flux -ChartName fluxcd/flux -Cluster $zoneVariables.radix.cluster.type
