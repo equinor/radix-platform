@@ -154,6 +154,9 @@ echo "Done."
 ### Delete replyUrls
 ###
 
+echo ""
+echo "Delete replyUrls"
+
 function deleteReplyUrl() {
     aadAppName=$1
     aadAppId=$2
@@ -167,6 +170,7 @@ function deleteReplyUrl() {
     done
 
     if [[ -z $index ]]; then
+        echo ""
         echo "ReplyUrl \"${replyUrl}\" not found in App Registration \"${aadAppName}\"."
     else
         echo ""
@@ -187,14 +191,14 @@ fi
 host_name=$(kubectl get ing -n ${K8S_NAMESPACE} auth -o json | jq --raw-output .spec.rules[0].host)
 replyUrl="https://${host_name}/oauth2/callback"
 
-deleteReplyUrl $APP_REGISTRATION_WEB_CONSOLE $aadAppId $replyUrl
+deleteReplyUrl "$APP_REGISTRATION_WEB_CONSOLE" "$aadAppId" "$replyUrl"
 
 # Delete replyUrl for grafana
 aadAppId="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA}" --query [].appId -o tsv)"
 host_name=$(kubectl get ing -n grafana -o json | jq --raw-output .spec.rules[0].host)
 replyUrl="https://${host_name}/login/generic_oauth"
 
-deleteReplyUrl $APP_REGISTRATION_GRAFANA $aadAppId $replyUrl
+deleteReplyUrl "$APP_REGISTRATION_GRAFANA" "$aadAppId" "$replyUrl"
 
 #######################################################################################
 ### Delete related stuff
