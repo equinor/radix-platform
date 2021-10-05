@@ -8,7 +8,7 @@
 # AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh
 # 
 # Example 2: Using a subshell to avoid polluting parent shell
-# (AAD_APP_NAME="radix-cluster-aad-server-dev" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
+# (AAD_APP_NAME="ar-radix-grafana-development" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
 
 # INPUTS:
 #   AAD_APP_NAME            (Mandatory)
