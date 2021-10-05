@@ -134,13 +134,6 @@ echo ""
 
 
 #######################################################################################
-### TODO: delete replyUrls
-###
-
-# Use ingress host name to filter AAD app replyUrl list.
-
-
-#######################################################################################
 ### Delete cluster
 ###
 
@@ -156,6 +149,52 @@ echo "Deleting cluster... "
 az aks delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --yes 2>&1 >/dev/null
 echo "Done."
 
+
+#######################################################################################
+### Delete replyUrls
+###
+
+function deleteReplyUrl() {
+    aadAppName=$1
+    aadAppId=$2
+    replyUrl=$3
+    # Get the index number of the replyUrl we want to delete
+    readarray -t array < <(az ad app show --id ${aadAppId} --query replyUrls --output json | jq -r '.[]')
+    for i in "${!array[@]}"; do
+        if [[ "${array[$i]}" = "${replyUrl}" ]]; then
+            index="${i}"
+        fi
+    done
+
+    if [[ -z $index ]]; then
+        echo "ReplyUrl \"${replyUrl}\" not found in App Registration \"${aadAppName}\"."
+    else
+        echo ""
+        printf "Deleting replyUrl \"${replyUrl}\" from App Registration \"${aadAppName}\"..."
+        az ad app update --id "${aadAppId}" --remove replyUrls ${index}
+        printf " Done.\n"
+    fi
+}
+
+# Delete replyUrl for Radix web-console
+APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" # "Development", "Playground", "Production"
+aadAppId="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId -o tsv)"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+    K8S_NAMESPACE="radix-web-console-qa"
+else
+    K8S_NAMESPACE="radix-web-console-prod"
+fi
+host_name=$(kubectl get ing -n ${K8S_NAMESPACE} auth -o json | jq --raw-output .spec.rules[0].host)
+replyUrl="https://${host_name}/oauth2/callback"
+
+deleteReplyUrl $APP_REGISTRATION_WEB_CONSOLE $aadAppId $replyUrl
+
+# Delete replyUrl for grafana
+aadAppId="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA}" --query [].appId -o tsv)"
+host_name=$(kubectl get ing -n grafana -o json | jq --raw-output .spec.rules[0].host)
+replyUrl="https://${host_name}/login/generic_oauth"
+
+deleteReplyUrl $APP_REGISTRATION_GRAFANA $aadAppId $replyUrl
 
 #######################################################################################
 ### Delete related stuff
