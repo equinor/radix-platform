@@ -199,13 +199,14 @@ echo -e ""
 echo ""
 
 if [[ $USER_PROMPT == true ]]; then
-    read -p "Is this correct? (Y/n) " -n 1 -r
-    if [[ "$REPLY" =~ (N|n) ]]; then
-        echo ""
-        echo "Quitting."
-        exit 0
-    fi
-    echo ""
+    while true; do
+        read -p "Is this correct? (Y/n) " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) printf "\nQuitting.\n"; exit 0;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 fi
 
 echo ""
@@ -230,11 +231,14 @@ echo ""
 echo "Verifying destination cluster existence..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
     if [[ $USER_PROMPT == true ]]; then
-        read -p "Destination cluster does not exists. Create cluster? (Y/n) " create_dest_cluster
-        if [[ $create_dest_cluster =~ (N|n) ]]; then
-            echo "Aborting..."
-            exit 1
-        fi
+        while true; do
+            read -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) echo "Aborting..."; exit 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
     fi
 
     # Copy spec of source cluster
