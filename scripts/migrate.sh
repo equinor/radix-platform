@@ -248,13 +248,27 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     printf "Done creating cluster."
 
     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+fi
 
+install_base_components=true
+
+if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -p "Install base components? " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) install_base_components=false; break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
+if [[ $install_base_components == true ]]; then
     echo ""
     echo "Installing base components..."
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASE_COMPONENTS_SCRIPT")
     wait # wait for subshell to finish
     printf "Done installing base components."
-
 fi
 
 # Connect kubectl so we have the correct context
