@@ -30,11 +30,14 @@ echo ""
 echo "Current cluster is: $DESTINATION_CLUSTER"
 echo ""
 
-read -p "Are you sure you want to continue? (Y/n) " really_sure
-if [[ $really_sure =~ (N|n) ]]; then
-  echo "Chicken!"
-  exit 1
-fi
+while true; do
+   read -p "Are you sure you want to continue? (Y/n) " yn
+   case $yn in
+      [Yy]* ) break;;
+      [Nn]* ) echo ""; echo "Chicken!"; exit 0;;
+      * ) echo "Please answer yes or no.";;
+   esac
+done
 
 echo ""
 echo "Removing all rr..."

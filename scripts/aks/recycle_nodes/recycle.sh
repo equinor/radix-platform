@@ -128,13 +128,14 @@ echo -e ""
 echo ""
 
 if [[ $USER_PROMPT == true ]]; then
-    read -p "Is this correct? (Y/n) " -n 1 -r
-    if [[ "$REPLY" =~ (N|n) ]]; then
-        echo ""
-        echo "Quitting."
-        exit 0
-    fi
-    echo ""
+    while true; do
+        read -p "Is this correct? (Y/n) " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 fi
 
 echo ""
@@ -261,13 +262,14 @@ for node in "${allNodes[@]}"; do
         fi
 
         if [[ $USER_PROMPT == true ]]; then
-            read -p "Continue to next node? (Y/n) " -n 1 -r
-            if [[ "$REPLY" =~ (N|n) ]]; then
-                echo ""
-                echo "Quitting."
-                exit 0
-            fi
-            echo ""
+            while true; do
+                read -p "Continue to next node? (Y/n) " yn
+                case $yn in
+                    [Yy]* ) break;;
+                    [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+                    * ) echo "Please answer yes or no.";;
+                esac
+            done
         fi
 
     elif [[ $NODE_NAME == $node ]]; then

@@ -71,14 +71,14 @@ function updateReplyUrls() {
     echo ""
 
     if [[ $USER_PROMPT == true ]]; then
-        echo "Do you want to continue?"
-        read -p "[Y]es or [N]o " -n 1 -r
-        echo ""
-        if [[ "$REPLY" =~ ^[Nn]$ ]]
-        then
-            echo "Skipping updating replyUrls."
-            exit 0
-        fi
+        while true; do
+            read -p "Do you want to continue? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) echo ""; echo "Skipping updating replyUrls."; exit 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
     fi
 
     # Workaround for newReplyURLs param expansion

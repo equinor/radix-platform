@@ -120,13 +120,14 @@ echo -e ""
 echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
-    read -p "Is this correct? (Y/n) " -n 1 -r
-    if [[ "$REPLY" =~ (N|n) ]]; then
-    echo ""
-    echo "Quitting."
-    exit 0
-    fi
-    echo ""
+    while true; do
+        read -p "Is this correct? (Y/n) " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 fi
 
 echo ""
