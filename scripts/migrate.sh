@@ -111,10 +111,10 @@ if ! [[ -x "$BOOTSTRAP_AKS_SCRIPT" ]]; then
     echo "The bootstrap script is not found or it is not executable in path $BOOTSTRAP_AKS_SCRIPT" >&2
 fi
 
-INSTALL_BASECOMPONENTS_SCRIPT="$WORKDIR_PATH/install_base_components.sh"
-if ! [[ -x "$INSTALL_BASECOMPONENTS_SCRIPT" ]]; then
+INSTALL_BASE_COMPONENTS_SCRIPT="$WORKDIR_PATH/install_base_components.sh"
+if ! [[ -x "$INSTALL_BASE_COMPONENTS_SCRIPT" ]]; then
     # Print to stderror
-    echo "The install base components script is not found or it is not executable in path $INSTALL_BASECOMPONENTS_SCRIPT" >&2
+    echo "The install base components script is not found or it is not executable in path $INSTALL_BASE_COMPONENTS_SCRIPT" >&2
 fi
 
 CERT_MANAGER_CONFIGURATION_SCRIPT="$WORKDIR_PATH/cert-manager/configure.sh"
@@ -251,7 +251,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 
     echo ""
     echo "Installing base components..."
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASECOMPONENTS_SCRIPT")
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASE_COMPONENTS_SCRIPT")
     wait # wait for subshell to finish
     printf "Done installing base components."
 
