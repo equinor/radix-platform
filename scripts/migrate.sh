@@ -146,7 +146,7 @@ fi
 ###
 
 while true; do
-    read -p "Are you migating active to active or active to test? (aa/at) " yn
+    read -p "Are you migrating active to active or active to test? (aa/at) " yn
     case $yn in
         "aa" ) MIGRATION_STRATEGY="aa"; break;;
         "at" ) MIGRATION_STRATEGY="at"; break;;
@@ -250,6 +250,7 @@ fi
 install_base_components=true
 
 if [[ $USER_PROMPT == true ]]; then
+    echo ""
     while true; do
         read -p "Install base components? " yn
         case $yn in

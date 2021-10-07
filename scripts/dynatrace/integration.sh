@@ -36,7 +36,7 @@
 
 echo ""
 while true; do
-  read -p "Is this correct? (Y/n) " yn
+  read -p "Should this cluster be integrated with Dynatrace? (Y/n) " yn
   case $yn in
     [Yy]* ) break;;
     [Nn]* ) echo ""; echo "Quitting."; exit 0;;
