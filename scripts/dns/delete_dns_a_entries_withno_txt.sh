@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # PURPOSE
 # delete A records with no corresponding TXT record

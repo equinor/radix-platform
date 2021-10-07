@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # PURPOSE
 # delete old records belonging to old clusters which no longer exist
