@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # PURPOSE
 # Configures the secrets for radix cost allocation API on the cluster given the context.

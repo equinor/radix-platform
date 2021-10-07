@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # PURPOSE
 # Configures the auth proxy for the cluster given the context.

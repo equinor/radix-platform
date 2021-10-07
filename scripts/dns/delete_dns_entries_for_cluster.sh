@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # PURPOSE
 # delete records belonging to specific cluster

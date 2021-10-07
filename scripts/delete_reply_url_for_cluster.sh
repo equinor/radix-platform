@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # PURPOSE
 # Delete a replyURL from the input AAD app that handles the authentication for an app hosted in k8s.
