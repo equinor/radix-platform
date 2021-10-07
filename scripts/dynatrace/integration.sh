@@ -36,12 +36,12 @@
 
 echo ""
 while true; do
-    read -p "Should this cluster be integrated with Dynatrace? (y/n) " -r -en 1 yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) echo "Exiting.";exit 0;;
-        * ) echo "Please answer yes or no.";;
-    esac
+  read -p "Is this correct? (Y/n) " yn
+  case $yn in
+    [Yy]* ) break;;
+    [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+    * ) echo "Please answer yes or no.";;
+  esac
 done
 
 echo ""

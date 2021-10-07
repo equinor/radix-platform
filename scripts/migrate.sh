@@ -111,10 +111,10 @@ if ! [[ -x "$BOOTSTRAP_AKS_SCRIPT" ]]; then
     echo "The bootstrap script is not found or it is not executable in path $BOOTSTRAP_AKS_SCRIPT" >&2
 fi
 
-INSTALL_BASECOMPONENTS_SCRIPT="$WORKDIR_PATH/install_base_components.sh"
-if ! [[ -x "$INSTALL_BASECOMPONENTS_SCRIPT" ]]; then
+INSTALL_BASE_COMPONENTS_SCRIPT="$WORKDIR_PATH/install_base_components.sh"
+if ! [[ -x "$INSTALL_BASE_COMPONENTS_SCRIPT" ]]; then
     # Print to stderror
-    echo "The install base components script is not found or it is not executable in path $INSTALL_BASECOMPONENTS_SCRIPT" >&2
+    echo "The install base components script is not found or it is not executable in path $INSTALL_BASE_COMPONENTS_SCRIPT" >&2
 fi
 
 CERT_MANAGER_CONFIGURATION_SCRIPT="$WORKDIR_PATH/cert-manager/configure.sh"
@@ -145,20 +145,13 @@ fi
 ### Check the migration strategy
 ###
 
-while
-    read -p "Are you migating active to active or active to test? (aa/at) " -r
-    do
-        echo ""
-        if [[ "$REPLY" =~ (AA|aa) ]]; then
-            MIGRATION_STRATEGY="aa"
-            break
-        elif [[ "$REPLY" =~ (AT|at) ]]; then
-            MIGRATION_STRATEGY="at"
-            break
-        else
-            echo "Unknown option."
-            echo ""
-        fi
+while true; do
+    read -p "Are you migating active to active or active to test? (aa/at) " yn
+    case $yn in
+        "aa" ) MIGRATION_STRATEGY="aa"; break;;
+        "at" ) MIGRATION_STRATEGY="at"; break;;
+        * ) echo "Please answer aa or at.";;
+    esac
 done
 
 echo ""
@@ -199,13 +192,14 @@ echo -e ""
 echo ""
 
 if [[ $USER_PROMPT == true ]]; then
-    read -p "Is this correct? (Y/n) " -n 1 -r
-    if [[ "$REPLY" =~ (N|n) ]]; then
-        echo ""
-        echo "Quitting."
-        exit 0
-    fi
-    echo ""
+    while true; do
+        read -p "Is this correct? (Y/n) " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 fi
 
 echo ""
@@ -230,11 +224,14 @@ echo ""
 echo "Verifying destination cluster existence..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
     if [[ $USER_PROMPT == true ]]; then
-        read -p "Destination cluster does not exists. Create cluster? (Y/n) " create_dest_cluster
-        if [[ $create_dest_cluster =~ (N|n) ]]; then
-            echo "Aborting..."
-            exit 1
-        fi
+        while true; do
+            read -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) echo "Aborting..."; exit 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
     fi
 
     # Copy spec of source cluster
@@ -248,13 +245,27 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     printf "Done creating cluster."
 
     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+fi
 
+install_base_components=true
+
+if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -p "Install base components? " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) install_base_components=false; break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
+if [[ $install_base_components == true ]]; then
     echo ""
     echo "Installing base components..."
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASECOMPONENTS_SCRIPT")
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASE_COMPONENTS_SCRIPT")
     wait # wait for subshell to finish
     printf "Done installing base components."
-
 fi
 
 # Connect kubectl so we have the correct context
@@ -390,28 +401,32 @@ wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
 echo ""
-read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " -n 1 -r
-if [[ "$REPLY" =~ (Y|y) ]]; then
-    source move_custom_ingresses.sh
-else
-    echo ""
-    echo "Chicken!"
+while true; do
+    read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
+    case $yn in
+        [Yy]* ) source move_custom_ingresses.sh; break;;
+        [Nn]* ) 
+            echo ""
+            echo "Chicken!"
 
-    echo ""
-    echo "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url"
+            echo ""
+            echo "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url"
 
-    AUTH_PROXY_COMPONENT="auth"
-    AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-    RADIX_WEB_CONSOLE_ENV="prod"
-    if [[ $CLUSTER_TYPE  == "development" ]]; then
-      echo "Development cluster uses QA web-console"
-      RADIX_WEB_CONSOLE_ENV="qa"
-    fi
-    WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+            AUTH_PROXY_COMPONENT="auth"
+            AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+            RADIX_WEB_CONSOLE_ENV="prod"
+            if [[ $CLUSTER_TYPE  == "development" ]]; then
+            echo "Development cluster uses QA web-console"
+            RADIX_WEB_CONSOLE_ENV="qa"
+            fi
+            WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
-    wait # wait for subshell to finish
+            (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+            wait # wait for subshell to finish
 
-    echo "Restarting web console to use updated secret value."
-    $(kubectl delete pods --all -n radix-web-console-prod 2>&1 >/dev/null)
-fi
+            echo "Restarting web console to use updated secret value."
+            $(kubectl delete pods --all -n radix-web-console-prod 2>&1 >/dev/null)
+            break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done

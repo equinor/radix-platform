@@ -78,11 +78,14 @@ echo -n "As user "
 echo -n $AZ_ACCOUNT | jq '.user.name'
 echo ""
 
-read -p "Is this correct? (Y/n) " correct_az_login
-if [[ $correct_az_login =~ (N|n) ]]; then
-    echo "Please use 'az login' command to login to the correct account. Quitting."
-    exit 1
-fi
+while true; do
+    read -p "Is this correct? (Y/n) " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) echo ""; echo "Please use 'az login' command to login to the correct account. Quitting."; exit 0;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 
 CLUSTERS="$(az network dns record-set list --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --query "[?type=='Microsoft.Network/dnszones/TXT']" | jq --raw-output -r '.[]|select(.txtRecords[].value[]|contains("external-dns/owner='$CLUSTER_NAME'"))|.name')"
 

@@ -21,16 +21,16 @@ trap user_skip_subshell SIGINT
 function user_skip_subshell() {
    echo -e "\n-------------------"
    echo -e "User told me to skip this step..."
-   read -p "Do you want to continue with the next steps? (Y/n) " -n 1 -r
-   if [[ "$REPLY" =~ (N|n) ]]; then      
-      echo -e "\nQuitting script."
-      # "exit" will break out of the subshell
-      # If you want to break out of a while loop in main/parent script then you would use "break"
-      exit 0
-   else
-      echo -e "\nContinuing with next steps..."
-      echo -e "-------------------"
-   fi
+   while true; do
+      read -p "Do you want to continue with the next steps? (Y/n) " yn
+      case $yn in
+         # "exit" will break out of the subshell
+         # If you want to break out of a while loop in main/parent script then you would use "break"
+         [Yy]* ) echo ""; echo "Continuing with next steps..."; break;;
+         [Nn]* ) echo ""; echo "Quitting script."; echo "-------------------" exit 0;;
+         * ) echo "Please answer yes or no.";;
+      esac
+   done
 } 
 
 function everloop() {
