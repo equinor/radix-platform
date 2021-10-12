@@ -213,6 +213,15 @@ function please_wait_until_ra_synced() {
   please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
 }
 
+function please_wait_until_ral_synced() {
+  local resource="ral"
+  local allCmd="kubectl get $resource --all-namespaces"
+  local currentCmd="kubectl get $resource --all-namespaces -o custom-columns=':status.reconciled'"
+  local condition="grep -v '<none>'"
+
+  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
+}
+
 function please_wait() {
   # Loop for $1 iterations.
   # For every iteration, sleep 1s and print $2 delimiter.
@@ -491,6 +500,18 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 
 echo "Wait for jobs to be picked up by radix-operator..."
 please_wait_for_reconciling "rj"
+
+#######################################################################################
+### Restore alerts
+###
+
+echo ""
+echo "Restore alerts..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_ral.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+echo "Wait for alerts to be picked up by radix-operator..."
+please_wait_until_ral_synced
 
 #######################################################################################
 ### Configure velero back to normal operation in destination
