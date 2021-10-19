@@ -252,7 +252,7 @@ install_base_components=true
 if [[ $USER_PROMPT == true ]]; then
     echo ""
     while true; do
-        read -p "Install base components? " yn
+        read -p "Install base components? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) install_base_components=false; break;;
