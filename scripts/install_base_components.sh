@@ -287,17 +287,6 @@ rm radix-platform-config.yaml
 echo "Done."
 
 #######################################################################################
-### Install Flux
-
-echo ""
-(USER_PROMPT="false" \
-  GIT_REPO="$FLUX_GITOPS_REPO" \
-  GIT_BRANCH="$FLUX_GITOPS_BRANCH" \
-  GIT_DIR="$FLUX_GITOPS_DIR" \
-  ./flux/bootstrap.sh)
-wait
-
-#######################################################################################
 ### Install Radix CICD Canary
 ###
 
@@ -355,6 +344,19 @@ fi
 #     --patch "$(cat ./manifests/kube-dns-metrics-patch.yaml)"
 
 #
+
+#######################################################################################
+### Install Flux
+
+echo ""
+echo "Install Flux v2"
+echo ""
+
+(USER_PROMPT="false" \
+  RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
+  CLUSTER_NAME="$CLUSTER_NAME" \
+  ./flux/bootstrap.sh)
+wait
 
 #######################################################################################
 ### END
