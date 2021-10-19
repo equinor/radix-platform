@@ -98,10 +98,15 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+if [[ -z "$FLUX_VERSION" ]]; then
+    echo "Please provide FLUX_VERSION" >&2
+  exit 1
+fi
+
 # Optional inputs
 
 if [[ -z "$GIT_REPO" ]]; then
-    GIT_REPO="git@github.com:equinor/radix-flux.git"
+    GIT_REPO="ssh://git@github.com/equinor/radix-flux"
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
@@ -109,7 +114,7 @@ if [[ -z "$GIT_BRANCH" ]]; then
 fi
 
 if [[ -z "$GIT_DIR" ]]; then
-    GIT_DIR="development-configs"
+    GIT_DIR="clusters/development"
 fi
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -148,7 +153,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Install Flux will use the following configuration:"
+echo -e "Install Flux v2 will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -161,6 +166,7 @@ echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e "   -  GIT_REPO                         : $GIT_REPO"
 echo -e "   -  GIT_BRANCH                       : $GIT_BRANCH"
 echo -e "   -  GIT_DIR                          : $GIT_DIR"
+echo -e "   -  FLUX_VERSION                     : $FLUX_VERSION"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -230,44 +236,64 @@ kubectl create secret generic "$FLUX_PRIVATE_KEY_NAME" \
     kubectl apply -f - \
         2>&1 >/dev/null
 
-rm "$FLUX_PRIVATE_KEY_NAME"
 printf "...Done\n"
+
+# Create secret for Flux v2 to use to authenticate with ACR.
+printf "\nCreating k8s secret \"radix-docker\"..."
+az keyvault secret download \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
+    --file sp_credentials.json \
+        2>&1 >/dev/null
+
+kubectl create secret docker-registry radix-docker \
+    --namespace="flux-system" \
+    --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
+    --docker-username="$(jq -r '.id' sp_credentials.json)" \
+    --docker-password="$(jq -r '.password' sp_credentials.json)" \
+    --docker-email=radix@statoilsrm.onmicrosoft.com \
+    --dry-run=client -o yaml |
+    kubectl apply -f - \
+        2>&1 >/dev/null
+rm -f sp_credentials.json
+printf "...Done\n"
+
+# Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
+printf "Deploy \"radix-flux-config\" configmap in flux-system namespace..."
+cat <<EOF >radix-flux-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: radix-flux-config
+  namespace: flux-system
+data:
+  dnsZone: "$AZ_RESOURCE_DNS"
+  clusterName: "$CLUSTER_NAME"
+  clusterType: "$CLUSTER_TYPE"
+EOF
+
+kubectl apply -f radix-flux-config.yaml 2>&1 >/dev/null
+rm radix-flux-config.yaml
+printf "...Done.\n"
 
 #######################################################################################
 ### INSTALLATION
 
-printf "\nAdding Weaveworks repository to Helm..."
-helm repo add fluxcd https://charts.fluxcd.io --force-update 2>&1 >/dev/null
-printf "...Done\n"
+echo ""
+echo "Starting installation of Flux..."
 
-printf "\nAdding Flux CRDs, no longer included in the helm chart"
-kubectl apply -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
-printf "...Done\n"
+GIT_DIR="clusters/${CLUSTER_TYPE}" # flux2 structure
 
-printf "\nInstalling Flux "
-helm upgrade --install flux \
-    --version 1.11.2 \
-    --set rbac.create=true \
-    --set git.url="$GIT_REPO" \
-    --set git.branch="$GIT_BRANCH" \
-    --set git.path="$GIT_DIR" \
-    --set git.secretName="$FLUX_PRIVATE_KEY_NAME" \
-    --set registry.acr.enabled=true \
-    --set manifestGeneration=true \
-    --set registry.excludeImage="k8s.gcr.io/*\,aksrepos.azurecr.io/*\,quay.io/*" \
-    fluxcd/flux \
-    2>&1 >/dev/null
-printf "...Done\n"
+flux bootstrap git \
+    --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
+    --url="$GIT_REPO" \
+    --branch="$GIT_BRANCH" \
+    --path="$GIT_DIR" \
+    --components-extra=image-reflector-controller,image-automation-controller \
+    --version="$FLUX_VERSION"
+echo "done."
 
-printf "\nInstalling Flux Helm Operator "
-helm upgrade --install helm-operator \
-    --version 1.4.0 \
-    --set git.ssh.secretName="$FLUX_PRIVATE_KEY_NAME" \
-    --set helm.versions=v3 \
-    fluxcd/helm-operator \
-    2>&1 >/dev/null
-printf "...Done\n"
-
+rm "$FLUX_PRIVATE_KEY_NAME"
 
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
