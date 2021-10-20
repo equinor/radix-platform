@@ -30,10 +30,10 @@
 ###
 
 # Example: Restore into same cluster from where the backup was done
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
 
 # Example: Restore into different cluster from where the backup was done
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
 
 #######################################################################################
 ### DEVELOPMENT
@@ -62,6 +62,7 @@
 #######################################################################################
 ### START
 ###
+set +x
 
 echo ""
 echo "Start restore apps... "
@@ -395,8 +396,14 @@ $(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/repl
 echo "Done."
 
 #######################################################################################
-### Restore data
+### Restore Radix registrations
 ###
+
+echo ""
+echo "Restore app registrations..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rr.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
 
 #######################################################################################
 ### Restore secrets
@@ -427,11 +434,6 @@ please_wait_for_all_resources "configmap"
 #######################################################################################
 ### Restore apps
 ###
-
-echo ""
-echo "Restore app registrations..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rr.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
 
 echo ""
 echo "Wait for registrations to be picked up by radix-operator..."
