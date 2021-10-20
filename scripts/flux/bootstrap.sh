@@ -202,6 +202,14 @@ else
     exit 1
 fi
 
+printf "\nWorking on namespace..."
+case "$(kubectl get ns flux-system 2>&1)" in 
+    *Error*)
+        kubectl create ns flux-system 2>&1 >/dev/null
+    ;;
+esac
+printf "...Done"
+
 #######################################################################################
 ### CREDENTIALS
 ###
@@ -282,7 +290,7 @@ printf "...Done.\n"
 echo ""
 echo "Starting installation of Flux..."
 
-GIT_DIR="clusters/${CLUSTER_TYPE}" # flux2 structure
+GIT_BRANCH="automatic-image-updates"
 
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
