@@ -98,46 +98,37 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$FLUX_VERSION" ]]; then
-    echo "Please provide FLUX_VERSION" >&2
-  exit 1
-fi
-
-# Optional inputs
-
 if [[ -z "$GIT_REPO" ]]; then
-    GIT_REPO="ssh://git@github.com/equinor/radix-flux"
+    echo "Please provide GIT_REPO" >&2
+    exit 1
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
-    GIT_BRANCH="master"
+    echo "Please provide GIT_BRANCH" >&2
+    exit 1
 fi
 
 if [[ -z "$GIT_DIR" ]]; then
-    GIT_DIR="clusters/development"
+    echo "Please provide GIT_DIR" >&2
+    exit 1
 fi
+
+if [[ -z "$FLUX_VERSION" ]]; then
+    echo "Please provide FLUX_VERSION" >&2
+    exit 1
+fi
+
+# Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Script vars
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-  echo "Please provide RADIX_ZONE_ENV" >&2
-  exit 1
-else
-  if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-    echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-    exit 1
-  fi
-  source "$RADIX_ZONE_ENV"
-fi
-WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$WORK_DIR"/flux.env
+# Flux vars
 
-GIT_REPO="$FLUX_GITOPS_REPO"
-GIT_BRANCH="$FLUX_GITOPS_BRANCH"
-GIT_DIR="$FLUX_GITOPS_DIR"
+FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
+FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
+FLUX_DEPLOY_KEYS_GENERATED=false
 
 #######################################################################################
 ### Prepare az session
