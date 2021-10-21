@@ -261,7 +261,7 @@ function please_wait_for_reconciling_withcondition() {
   local treshholdPercentage=98
   local treshholdBroken=0
 
-  please_wait_for_existance_of_resource "$resource"
+  please_wait_for_restore_to_be_completed "$resource"
 
   local all="$(bash -c "$allCmd" | wc -l | xargs)"
   local current="$(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs)"
@@ -285,17 +285,16 @@ function please_wait_for_reconciling_withcondition() {
   showProgress 100
 }
 
-# It takes a little while before all resources are visible in the cluster after having
-# been restored
-function please_wait_for_existance_of_resource() {
+# It takes a little while before the velero restore object has state "phase: Completed".
+function please_wait_for_restore_to_be_completed() {
   local resource="${1}"
 
-  exists=($(kubectl get $resource --all-namespaces 2>/dev/null | wc -l | xargs))
+  ready=($(kubectl get restore -n velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
 
-  while [[ $exists == 0 ]]; do
+  while [[ $ready != 'Completed' ]]; do
     printf "$iterator"
     sleep 5s
-    exists=($(kubectl get $resource --all-namespaces 2>/dev/null | wc -l | xargs))
+    ready=($(kubectl get restore -n velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
   done
 
   please_wait_for_all_resources "$resource"
