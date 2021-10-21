@@ -281,8 +281,6 @@ printf "...Done.\n"
 echo ""
 echo "Starting installation of Flux..."
 
-GIT_BRANCH="demo-kustomization"
-
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
     --url="$GIT_REPO" \
