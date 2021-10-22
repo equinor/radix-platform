@@ -257,6 +257,10 @@ kubectl create secret docker-registry radix-docker \
 rm -f sp_credentials.json
 printf "...Done\n"
 
+printf "\nGetting Slack Webhook URL..."
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
+printf "...Done\n"
+
 # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
 printf "Deploy \"radix-flux-config\" configmap in flux-system namespace..."
 cat <<EOF >radix-flux-config.yaml
@@ -269,6 +273,7 @@ data:
   dnsZone: "$AZ_RESOURCE_DNS"
   clusterName: "$CLUSTER_NAME"
   clusterType: "$CLUSTER_TYPE"
+  slackWebhookURL: "$SLACK_WEBHOOK_URL"
 EOF
 
 kubectl apply -f radix-flux-config.yaml 2>&1 >/dev/null
