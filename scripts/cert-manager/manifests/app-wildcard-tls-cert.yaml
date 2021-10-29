@@ -5,6 +5,9 @@ metadata:
   name: app-wildcard-tls-cert
 spec:
   secretName: app-wildcard-tls-cert
+  secretTemplate:
+    annotations:
+      kubed.appscode.com/sync: "app-wildcard-sync=app-wildcard-tls-cert"
   issuerRef:
     kind: ClusterIssuer
     name: ${CERT_ISSUER}
