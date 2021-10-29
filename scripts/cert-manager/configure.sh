@@ -327,42 +327,6 @@ function applyManifests() {
     printf "...Done.\n"
 }
 
-
-function annotateSecretsForKubedSync() {
-    printf "\nAnnotating tls secrets for Kubed sync..."
-
-    local isAllSecretsAnnotated="false"
-
-    while [[ "$isAllSecretsAnnotated"  == "false" ]]; do
-
-        isAllSecretsAnnotated="true"
-
-        if [[ "$(kubectl annotate --overwrite Secret app-wildcard-tls-cert kubed.appscode.com/sync='app-wildcard-sync=app-wildcard-tls-cert' 2>&1)" == *"Error" ]]; then
-            isAllSecretsAnnotated="false"
-        else
-            printf "annotated app-wildcard-tls-cert..."
-        fi
-
-        if [[ "$(kubectl annotate --overwrite Secret cluster-wildcard-tls-cert kubed.appscode.com/sync='cluster-wildcard-sync=cluster-wildcard-tls-cert' 2>&1)" == *"Error" ]]; then
-            isAllSecretsAnnotated="false"
-        else
-            printf "annotated cluster-wildcard-tls-cert..."
-        fi
-
-        if [[ "$(kubectl annotate --overwrite Secret active-cluster-wildcard-tls-cert kubed.appscode.com/sync='active-cluster-wildcard-sync=active-cluster-wildcard-tls-cert' 2>&1)" == *"Error" ]]; then
-            isAllSecretsAnnotated="false"
-        else
-            printf "annotated active-cluster-wildcard-tls-cert..."
-        fi
-
-        printf "."
-        sleep 3
-
-    done
-
-    printf "...Done\n"
-}
-
 #######################################################################################
 ### MAIN
 ###
@@ -374,4 +338,3 @@ function annotateSecretsForKubedSync() {
 transformManifests
 
 applyManifests
-annotateSecretsForKubedSync
