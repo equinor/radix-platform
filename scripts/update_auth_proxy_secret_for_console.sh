@@ -12,6 +12,8 @@
 
 # INPUTS:
 #   RADIX_ZONE_ENV          (Mandatory)
+#   CLUSTER_NAME            (Mandatory)
+#   WEB_COMPONENT           (Mandatory)
 #   AUTH_PROXY_COMPONENT    (Mandatory)
 #   WEB_CONSOLE_NAMESPACE   (Mandatory)
 #   AUTH_PROXY_REPLY_PATH   (Mandatory)
@@ -32,6 +34,16 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "Please provide CLUSTER_NAME."
+    exit 1
+fi
+
+if [[ -z "$WEB_COMPONENT" ]]; then
+    echo "Please provide WEB_COMPONENT."
+    exit 1
+fi
+
 if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
     echo "Please provide AUTH_PROXY_COMPONENT."
     exit 1
@@ -46,6 +58,47 @@ if [[ -z "$AUTH_PROXY_REPLY_PATH" ]]; then
     echo "Please provide AUTH_PROXY_REPLY_PATH."
     exit 1
 fi
+
+function updateWebSecret() {
+    echo "Update web component secret with Cluster IP(s)."
+
+    WEB_CONSOLE_WEB_SECRET_NAME=$(kubectl get secret -l radix-component="$WEB_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
+    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
+    
+    # list of AVAILABLE public ips assigned to the Radix Zone
+    echo "Getting list of public ips assigned to $CLUSTER_NAME..."
+    ASSIGNED_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup=="MC_'$AZ_RESOURCE_GROUP_CLUSTERS'_'$CLUSTER_NAME'_'$AZ_INFRASTRUCTURE_REGION'")' | jq '.ipAddress' | jq -s '.')"
+
+    if [[ "$ASSIGNED_IPS" == "[]" ]]; then
+        echo "ERROR: Found no IPs assigned to the cluster."
+        return
+    fi
+
+    # Loop through list of IPs and create a comma separated string. 
+    for ippre in $(echo $ASSIGNED_IPS | jq -c '.[]')
+    do
+        if [[ -z $IP_LIST ]]; then
+            IP_LIST=$(echo $ippre | jq -r '.')
+        else
+            IP_LIST="$IP_LIST,$(echo $ippre | jq -r '.')"
+        fi
+    done
+
+    WEB_SECRET_ENV_FILE="web_secret.env"
+    echo "REACT_APP_CLUSTER_IPS=$IP_LIST" >>"$WEB_SECRET_ENV_FILE"
+    
+    kubectl create secret generic "$WEB_CONSOLE_WEB_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
+        --from-env-file="$WEB_SECRET_ENV_FILE" \
+        --dry-run=client -o yaml |
+        kubectl apply -f -
+
+    echo "Web component secret updated with cluster IP(s)."
+
+    printf "Restarting web deployment..."
+    kubectl rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $WEB_COMPONENT
+    printf " Done."
+    rm "$WEB_SECRET_ENV_FILE"
+}
 
 function updateAuthProxySecret() {
     az keyvault secret download \
@@ -86,4 +139,5 @@ function updateAuthProxySecret() {
 }
 
 ### MAIN
+updateWebSecret
 updateAuthProxySecret
