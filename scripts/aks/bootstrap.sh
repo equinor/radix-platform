@@ -367,12 +367,12 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     echo ""
 
     # Create the string to pass in as --load-balancer-outbound-ips
-    for ip in $(echo $SELECTED_IPS | jq -r '.[].id')
+    for ippre in $(echo $SELECTED_IPS | jq -c '.[]')
     do
         if [[ -z $OUTBOUND_IPS ]]; then
-            OUTBOUND_IPS="$ip"
+            OUTBOUND_IPS="$(echo $ippre | jq -r '.id')"
         else
-            OUTBOUND_IPS="$OUTBOUND_IPS,$ip"
+            OUTBOUND_IPS+=",$(echo $ippre | jq -r '.id')"
         fi
     done
 fi
