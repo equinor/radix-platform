@@ -413,7 +413,6 @@ while true; do
             echo ""
             echo "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url"
 
-            WEB_COMPONENT="web"
             AUTH_PROXY_COMPONENT="auth"
             AUTH_PROXY_REPLY_PATH="/oauth2/callback"
             RADIX_WEB_CONSOLE_ENV="prod"
@@ -423,7 +422,7 @@ while true; do
             fi
             WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 
-            (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" WEB_COMPONENT="$WEB_COMPONENT" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+            (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
             wait # wait for subshell to finish
 
             echo "Restarting web console to use updated secret value."
