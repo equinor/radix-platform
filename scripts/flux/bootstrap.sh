@@ -257,6 +257,26 @@ kubectl create secret docker-registry radix-docker \
 rm -f sp_credentials.json
 printf "...Done\n"
 
+# list of AVAILABLE public ips assigned to the Radix Zone
+printf "Getting list of public ips assigned to $CLUSTER_NAME..."
+IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
+ASSIGNED_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup=="MC_'$AZ_RESOURCE_GROUP_CLUSTERS'_'$CLUSTER_NAME'_'$AZ_INFRASTRUCTURE_REGION'")' | jq '.ipAddress' | jq -s '.')"
+
+if [[ "$ASSIGNED_IPS" == "[]" ]]; then
+    printf " Found no IPs assigned to the cluster.\n"
+else
+    # Loop through list of IPs and create a comma separated string. 
+    for ippre in $(echo $ASSIGNED_IPS | jq -c '.[]')
+    do
+        if [[ -z $IP_LIST ]]; then
+            IP_LIST=$(echo $ippre | jq -r '.')
+        else
+            IP_LIST="$IP_LIST,$(echo $ippre | jq -r '.')"
+        fi
+    done
+    printf "...Done\n"
+fi
+
 printf "\nGetting Slack Webhook URL..."
 SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
 printf "...Done\n"
@@ -273,6 +293,7 @@ data:
   dnsZone: "$AZ_RESOURCE_DNS"
   clusterName: "$CLUSTER_NAME"
   clusterType: "$CLUSTER_TYPE"
+  clusterIPs: "$IP_LIST"
   slackWebhookURL: "$SLACK_WEBHOOK_URL"
 EOF
 
