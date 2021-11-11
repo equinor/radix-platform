@@ -303,7 +303,7 @@ data:
   imageRegistry: "$IMAGE_REGISTRY"
   clusterName: "$CLUSTER_NAME"
   clusterType: "$CLUSTER_TYPE"
-  clusterIPs: "$IP_LIST"
+  activeClusterIPs: "$IP_LIST"
   slackWebhookURL: "$SLACK_WEBHOOK_URL"
 EOF
 
