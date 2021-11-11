@@ -124,8 +124,6 @@ if [[ -z "$USER_PROMPT" ]]; then
   USER_PROMPT=true
 fi
 
-IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -152,7 +150,6 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  SLACK_CHANNEL                    : $SLACK_CHANNEL"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
-echo -e "   -  IMAGE_REGISTRY                   : $IMAGE_REGISTRY"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -259,30 +256,6 @@ echo ""
 (./config-and-secrets/bootstrap-acr.sh)
 (./config-and-secrets/bootstrap-snyk.sh)
 wait
-
-printf "\nGetting Slack Webhook URL..."
-SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
-printf "...Done\n"
-
-cat <<EOF >radix-platform-config.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: radix-platform-config
-  namespace: default
-data:
-  platform: |
-    dnsZone: "$AZ_RESOURCE_DNS"
-    appAliasBaseURL: "app.$AZ_RESOURCE_DNS"
-    prometheusName: radix-stage1
-    imageRegistry: "$IMAGE_REGISTRY"
-    clusterName: "$CLUSTER_NAME"
-    clusterType: "$CLUSTER_TYPE"
-    slackWebhookURL: "$SLACK_WEBHOOK_URL"
-EOF
-
-kubectl apply -f radix-platform-config.yaml
-rm radix-platform-config.yaml
 
 echo "Done."
 
