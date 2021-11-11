@@ -401,6 +401,8 @@ printf "Restore into destination cluster... "
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" ./update_egress_ips_web_secret_for_console.sh)
+
 echo ""
 while true; do
     read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
