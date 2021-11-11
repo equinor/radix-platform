@@ -194,16 +194,6 @@ kubectl apply -f ./priority-classes/radixComponentPriorityClass.yaml
 wait
 
 #######################################################################################
-### Read secrets from keyvault
-###
-
-if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
-  printf "\nGetting Slack API Token..."
-  SLACK_TOKEN="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-token | jq -r .value)"
-  printf "...Done\n"
-fi
-
-#######################################################################################
 ### Install Helm and related rbac
 ###
 
@@ -292,21 +282,6 @@ echo ""
 wait
 
 #######################################################################################
-### Notify on slack channel
-###
-
-if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
-  echo ""
-  echo "Notifying on Slack"
-  helm upgrade --install radix-boot-notify \
-    ../charts/slack-notification \
-    --set channel="$SLACK_CHANNEL" \
-    --set slackToken="$SLACK_TOKEN" \
-    --set text="Base components have been installed or updated on $CLUSTER_NAME." \
-    2>&1 >/dev/null
-fi
-
-#######################################################################################
 ### Patching kube-dns metrics
 ###
 
@@ -330,6 +305,25 @@ echo ""
   CLUSTER_NAME="$CLUSTER_NAME" \
   ./flux/bootstrap.sh)
 wait
+
+#######################################################################################
+### Notify on slack channel
+###
+
+if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
+  printf "\nGetting Slack API Token..."
+  SLACK_TOKEN="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-token | jq -r .value)"
+  printf "...Done\n"
+
+  echo ""
+  echo "Notifying on Slack"
+  helm upgrade --install radix-boot-notify \
+    ../charts/slack-notification \
+    --set channel="$SLACK_CHANNEL" \
+    --set slackToken="$SLACK_TOKEN" \
+    --set text="Base components have been installed or updated on $CLUSTER_NAME." \
+    2>&1 >/dev/null
+fi
 
 #######################################################################################
 ### END
