@@ -85,7 +85,6 @@ echo ""
 # Get the existing secret
 EXISTING_SECRET_VALUES_FILE="existing_secret_values.yaml"
 FIRST_KEYVAULT=${KEYVAULT_LIST%%,*}
-FIRST_KEYVAULT="radix-vault-dev"
 printf "Getting secret from keyvault \"$FIRST_KEYVAULT\"..."
 if [[ ""$(az keyvault secret download --name "$SECRET_NAME" --vault-name "$FIRST_KEYVAULT" --file "$EXISTING_SECRET_VALUES_FILE" 2>&1)"" == *"ERROR"* ]]; then
     echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..."
