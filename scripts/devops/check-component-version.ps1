@@ -53,7 +53,7 @@ CheckRelease -ReleaseName blob-csi-driver -ChartName blob-csi-driver/blob-csi-dr
 CheckRelease -ReleaseName cert-manager -ChartName jetstack/cert-manager -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName dynatrace-operator -ChartName dynatrace/dynatrace-operator -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName external-dns -ChartName bitnami/external-dns -Cluster $zoneVariables.radix.cluster.type
-CheckRelease -ReleaseName flux -ChartName fluxcd/flux -Cluster $zoneVariables.radix.cluster.type
+# CheckRelease -ReleaseName flux -ChartName fluxcd/flux -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName grafana -ChartName grafana/grafana -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName ingress-nginx -ChartName ingress-nginx/ingress-nginx -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName kubed -ChartName appscode/kubed -Cluster $zoneVariables.radix.cluster.type
