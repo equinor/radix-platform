@@ -26,7 +26,7 @@ az devops configure --defaults organization=https://dev.azure.com/Equinor projec
 
 #Get current active cluster name
 $activeRadixCluster = (Invoke-WebRequest -Method Get `
-    -Uri $zoneVariables.radix.cluster.activeclustercheckurl -UseBasicParsing | ConvertFrom-Yaml).spec.Values.ACTIVE_CLUSTER
+    -Uri $zoneVariables.radix.cluster.activeclustercheckurl -UseBasicParsing | ConvertFrom-Yaml).spec.postBuild.substitute.ACTIVE_CLUSTER
 
 # Get aks credentials and set it as active context for kubectl and helm
 az aks get-credentials -n $activeRadixCluster -g $zoneVariables.radix.cluster.resourcegroup --admin
