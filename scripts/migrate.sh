@@ -426,9 +426,6 @@ while true; do
 
             (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
             wait # wait for subshell to finish
-
-            echo "Restarting web console to use updated secret value."
-            $(kubectl delete pods --all -n radix-web-console-prod 2>&1 >/dev/null)
             break;;
         * ) echo "Please answer yes or no.";;
     esac
