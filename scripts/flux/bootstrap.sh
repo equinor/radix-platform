@@ -262,21 +262,20 @@ echo "Creating \"radix-flux-config\"..."
 
 # list of public ips assigned to the cluster
 printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
-ASSIGNED_IPS="$(az network public-ip list |
-    jq '.[] | select(.ipConfiguration.resourceGroup=="MC_'$AZ_RESOURCE_GROUP_CLUSTERS'_'$CLUSTER_NAME'_'$AZ_INFRASTRUCTURE_REGION'")' |
-    jq '{ipAddress: .ipAddress}' |
-    jq -s '.')"
+ASSIGNED_IPS="$(az network public-ip list \
+    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_INFRASTRUCTURE_REGION}'].ipAddress \
+    --output json)"
 
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then
     echo "ERROR: Could not find Public IP of cluster."
 else
     # Loop through list of IPs and create a comma separated string. 
-    for ippre in $(echo $ASSIGNED_IPS | jq -c '.[]')
+    for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]')
     do
         if [[ -z $IP_LIST ]]; then
-            IP_LIST=$(echo $ippre | jq -r '.ipAddress')
+            IP_LIST=$(echo $ipaddress)
         else
-            IP_LIST="$IP_LIST,$(echo $ippre | jq -r '.ipAddress')"
+            IP_LIST="$IP_LIST,$(echo $ipaddress)"
         fi
     done
     printf "...Done\n"

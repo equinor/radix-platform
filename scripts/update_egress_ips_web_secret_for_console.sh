@@ -48,7 +48,7 @@ function updateEgressIpsSecret() {
     # Get list of IPs of all Public IP Prefixes assigned to Cluster Type
     echo "Getting list of IPs from all Public IP Prefixes assigned to $CLUSTER_TYPE clusters..."
     IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
-    RADIX_CLUSTER_EGRESS_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'")' | jq '.ipAddress' | jq -s '.')"
+    RADIX_CLUSTER_EGRESS_IPS="$(az network public-ip list --query "[?publicIpPrefix.id=='$IPPRE_ID'].ipAddress" --output json)"
 
     if [[ "$RADIX_CLUSTER_EGRESS_IPS" == "[]" ]]; then
         echo "ERROR: Found no IPs."
@@ -56,12 +56,12 @@ function updateEgressIpsSecret() {
     fi
 
     # Loop through list of IPs and create a comma separated string. 
-    for ippre in $(echo $RADIX_CLUSTER_EGRESS_IPS | jq -c '.[]')
+    for ipaddress in $(echo $RADIX_CLUSTER_EGRESS_IPS | jq -cr '.[]')
     do
         if [[ -z $IP_LIST ]]; then
-            IP_LIST=$(echo $ippre | jq -r '.')
+            IP_LIST=$(echo $ipaddress)
         else
-            IP_LIST="$IP_LIST,$(echo $ippre | jq -r '.')"
+            IP_LIST="$IP_LIST,$(echo $ipaddress)"
         fi
     done
 
