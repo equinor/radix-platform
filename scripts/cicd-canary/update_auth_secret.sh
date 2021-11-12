@@ -104,7 +104,7 @@ DEPLOY_KEY_CANARY_4_PRIVATE=$(grep -A2 'deployKeyCanary4:' $EXISTING_SECRET_VALU
 # Remove temporary file.
 rm $EXISTING_SECRET_VALUES_FILE
 
-# Generate new secret for Private Image Hub.
+# Generate new secret for App Registration.
 printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\"..."
 APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NAME" | jq -r '.[].appId')
 
