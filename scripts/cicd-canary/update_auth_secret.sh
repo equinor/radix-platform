@@ -84,6 +84,7 @@ echo ""
 
 # Get the existing secret
 EXISTING_SECRET_VALUES_FILE="existing_secret_values.yaml"
+test -f "$EXISTING_SECRET_VALUES_FILE" && rm "$EXISTING_SECRET_VALUES_FILE"
 FIRST_KEYVAULT=${KEYVAULT_LIST%%,*}
 printf "Getting secret from keyvault \"$FIRST_KEYVAULT\"..."
 if [[ ""$(az keyvault secret download --name "$SECRET_NAME" --vault-name "$FIRST_KEYVAULT" --file "$EXISTING_SECRET_VALUES_FILE" 2>&1)"" == *"ERROR"* ]]; then
@@ -117,6 +118,7 @@ printf " Done.\n"
 
 # Create .yaml with new values.
 UPDATED_SECRET_VALUES_FILE="updated_secret_values.yaml"
+test -f "$UPDATED_SECRET_VALUES_FILE" && rm "$UPDATED_SECRET_VALUES_FILE"
 echo "impersonate:
   user: $IMPERSONATE_USER
 

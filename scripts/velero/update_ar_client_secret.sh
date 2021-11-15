@@ -92,6 +92,7 @@ echo ""
 
 # Get the existing secret
 EXISTING_SECRET_VALUES_FILE="existing_secret_values.json"
+test -f "$EXISTING_SECRET_VALUES_FILE" && rm "$EXISTING_SECRET_VALUES_FILE"
 printf "Getting secret from keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
 if [[ ""$(az keyvault secret download --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$EXISTING_SECRET_VALUES_FILE" 2>&1)"" == *"ERROR"* ]]; then
     echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..."
@@ -112,6 +113,7 @@ printf " Done.\n"
 
 # Create new .json file with updated credential.
 UPDATED_SECRET_VALUES_FILE="updated_secret_values.json"
+test -f "$UPDATED_SECRET_VALUES_FILE" && rm "$UPDATED_SECRET_VALUES_FILE"
 echo $(jq '.password = "'${UPDATED_CLIENT_SECRET}'"' ${EXISTING_SECRET_VALUES_FILE}) | jq '.' >> $UPDATED_SECRET_VALUES_FILE
 
 printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
