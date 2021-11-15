@@ -401,7 +401,16 @@ printf "Restore into destination cluster... "
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" ./update_egress_ips_web_secret_for_console.sh)
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+    # Development cluster uses QA web-console
+    RADIX_WEB_CONSOLE_ENV="qa"
+fi
+WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+
+WEB_COMPONENT="web"
+
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" ./update_egress_ips_web_secret_for_console.sh)
 
 echo ""
 while true; do
@@ -417,12 +426,6 @@ while true; do
 
             AUTH_PROXY_COMPONENT="auth"
             AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-            RADIX_WEB_CONSOLE_ENV="prod"
-            if [[ $CLUSTER_TYPE  == "development" ]]; then
-                # Development cluster uses QA web-console
-                RADIX_WEB_CONSOLE_ENV="qa"
-            fi
-            WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 
             (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
             wait # wait for subshell to finish
