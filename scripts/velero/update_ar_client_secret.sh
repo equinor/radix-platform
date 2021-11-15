@@ -111,13 +111,16 @@ if [[ -z "$UPDATED_CLIENT_SECRET" ]]; then
 fi
 printf " Done.\n"
 
+# Get expiration date of updated credential
+EXPIRATION_DATE=$(az ad app credential list --id $APP_REGISTRATION_CLIENT_ID --query "[?customKeyIdentifier=='rbac'].endDate" --output tsv | sed 's/\..*//')"Z"
+
 # Create new .json file with updated credential.
 UPDATED_SECRET_VALUES_FILE="updated_secret_values.json"
 test -f "$UPDATED_SECRET_VALUES_FILE" && rm "$UPDATED_SECRET_VALUES_FILE"
 echo $(jq '.password = "'${UPDATED_CLIENT_SECRET}'"' ${EXISTING_SECRET_VALUES_FILE}) | jq '.' >> $UPDATED_SECRET_VALUES_FILE
 
 printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
-if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" 2>&1)"" == *"ERROR"* ]]; then
+if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE" 2>&1)"" == *"ERROR"* ]]; then
     echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..."
     exit 1
 fi

@@ -116,6 +116,9 @@ if [[ -z "$UPDATED_PRIVATE_IMAGE_HUB_PASSWORD" ]]; then
 fi
 printf " Done.\n"
 
+# Get expiration date of updated credential
+EXPIRATION_DATE=$(az ad app credential list --id $APP_REGISTRATION_CLIENT_ID --query "[?customKeyIdentifier=='rdx-cicd-canary'].endDate" --output tsv | sed 's/\..*//')"Z"
+
 # Create .yaml with new values.
 UPDATED_SECRET_VALUES_FILE="updated_secret_values.yaml"
 test -f "$UPDATED_SECRET_VALUES_FILE" && rm "$UPDATED_SECRET_VALUES_FILE"
@@ -143,7 +146,7 @@ oldIFS=$IFS
 IFS=","
 for KEYVAULT_NAME in $KEYVAULT_LIST; do
     printf "Updating keyvault \"$KEYVAULT_NAME\"..."
-    if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --file "$UPDATED_SECRET_VALUES_FILE" 2>&1)"" == *"ERROR"* ]]; then
+    if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE" 2>&1)"" == *"ERROR"* ]]; then
         echo -e "\nERROR: Could not update secret in keyvault \"$KEYVAULT_NAME\"."
         script_errors=true
         continue
