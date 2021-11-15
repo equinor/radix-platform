@@ -251,6 +251,68 @@ if [ -z "$ID_AKSKUBELET" ]; then
     exit 1
 fi
 
+#######################################################################################
+### Specify static public IPs
+###
+
+# MIGRATION_STRATEGY PIP assignment
+# if migrating active to active cluster (eg. dev to dev)
+if [ "$MIGRATION_STRATEGY" = "aa" ]; then
+    # Path to Public IP Prefix which contains the public IPs
+    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
+
+    # list of AVAILABLE public ips assigned to the Radix Zone
+    echo "Getting list of available public ips in $RADIX_ZONE..."
+    AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
+
+    # Select range of ips based on IP_COUNT
+    SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$IP_COUNT']')"
+
+    if [[ "$AVAILABLE_IPS" == "[]" ]]; then
+        echo "ERROR: Query returned no ips. Please check the variable IPPRE_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+        exit 1
+    elif [[ -z $AVAILABLE_IPS ]]; then
+        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
+        exit 1
+    else
+        echo "-----------------------------------------------------------"
+        echo ""
+        echo "The following public IP(s) are currently available:"
+        echo ""
+        echo $AVAILABLE_IPS | jq -r '.[].name'
+        echo ""
+        echo "The following public IP(s) will be assigned to the cluster:"
+        echo ""
+        echo $SELECTED_IPS | jq -r '.[].name'
+        echo ""
+        echo "-----------------------------------------------------------"
+    fi
+
+    echo ""
+    USER_PROMPT="true"
+    if [[ $USER_PROMPT == true ]]; then
+        while true; do
+            read -p "Is this correct? (Y/n) " yn
+            case $yn in
+                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
+                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
+    echo ""
+
+    # Create the string to pass in as --load-balancer-outbound-ips
+    for ippre in $(echo $SELECTED_IPS | jq -c '.[]')
+    do
+        if [[ -z $OUTBOUND_IPS ]]; then
+            OUTBOUND_IPS="$(echo $ippre | jq -r '.id')"
+        else
+            OUTBOUND_IPS+=",$(echo $ippre | jq -r '.id')"
+        fi
+    done
+fi
+
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     #######################################################################################
     ### Network
@@ -313,68 +375,6 @@ elif [[ "$RADIX_ENVIRONMENT" != "prod" ]]; then
     DNS_ZONE="${RADIX_ENVIRONMENT}.${DNS_ZONE}"
 else
     HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
-fi
-
-#######################################################################################
-### Specify static public IPs
-###
-
-# MIGRATION_STRATEGY PIP assignment
-# if migrating active to active cluster (eg. dev to dev)
-if [ "$MIGRATION_STRATEGY" = "aa" ]; then
-    # Path to Public IP Prefix which contains the public IPs
-    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
-
-    # list of AVAILABLE public ips assigned to the Radix Zone
-    echo "Getting list of available public ips in $RADIX_ZONE..."
-    AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
-
-    # Select range of ips based on IP_COUNT
-    SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$IP_COUNT']')"
-
-    if [[ "$AVAILABLE_IPS" == "[]" ]]; then
-        echo "ERROR: Query returned no ips. Please check the variable IPPRE_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
-        exit 1
-    elif [[ -z $AVAILABLE_IPS ]]; then
-        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
-        exit 1
-    else
-        echo "-----------------------------------------------------------"
-        echo ""
-        echo "The following public IP(s) are currently available:"
-        echo ""
-        echo $AVAILABLE_IPS | jq -r '.[].name'
-        echo ""
-        echo "The following public IP(s) will be assigned to the cluster:"
-        echo ""
-        echo $SELECTED_IPS | jq -r '.[].name'
-        echo ""
-        echo "-----------------------------------------------------------"
-    fi
-
-    echo ""
-    USER_PROMPT="true"
-    if [[ $USER_PROMPT == true ]]; then
-        while true; do
-            read -p "Is this correct? (Y/n) " yn
-            case $yn in
-                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
-            esac
-        done
-    fi
-    echo ""
-
-    # Create the string to pass in as --load-balancer-outbound-ips
-    for ip in $(echo $SELECTED_IPS | jq -r '.[].id')
-    do
-        if [[ -z $OUTBOUND_IPS ]]; then
-            OUTBOUND_IPS="$ip"
-        else
-            OUTBOUND_IPS="$OUTBOUND_IPS,$ip"
-        fi
-    done
 fi
 
 ###############################################################################

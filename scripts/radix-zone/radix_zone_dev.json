@@ -16,7 +16,7 @@
             "type": "development",
             "resourcegroup": "clusters",
             "monitoringresourcegroup": "monitoring",
-            "activeclustercheckurl": "https://raw.githubusercontent.com/equinor/radix-flux/master/development-configs/radix-platform/radix-operator.yaml"
+            "activeclustercheckurl": "https://raw.githubusercontent.com/equinor/radix-flux/master/clusters/development/postBuild.yaml"
         },
         "dns": {
             "zone": {

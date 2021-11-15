@@ -26,7 +26,7 @@ az devops configure --defaults organization=https://dev.azure.com/Equinor projec
 
 #Get current active cluster name
 $activeRadixCluster = (Invoke-WebRequest -Method Get `
-    -Uri $zoneVariables.radix.cluster.activeclustercheckurl -UseBasicParsing | ConvertFrom-Yaml).spec.Values.activeClusterName
+    -Uri $zoneVariables.radix.cluster.activeclustercheckurl -UseBasicParsing | ConvertFrom-Yaml).spec.postBuild.substitute.ACTIVE_CLUSTER
 
 # Get aks credentials and set it as active context for kubectl and helm
 az aks get-credentials -n $activeRadixCluster -g $zoneVariables.radix.cluster.resourcegroup --admin
@@ -53,7 +53,7 @@ CheckRelease -ReleaseName blob-csi-driver -ChartName blob-csi-driver/blob-csi-dr
 CheckRelease -ReleaseName cert-manager -ChartName jetstack/cert-manager -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName dynatrace-operator -ChartName dynatrace/dynatrace-operator -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName external-dns -ChartName bitnami/external-dns -Cluster $zoneVariables.radix.cluster.type
-CheckRelease -ReleaseName flux -ChartName fluxcd/flux -Cluster $zoneVariables.radix.cluster.type
+# CheckRelease -ReleaseName flux -ChartName fluxcd/flux -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName grafana -ChartName grafana/grafana -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName ingress-nginx -ChartName ingress-nginx/ingress-nginx -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName kubed -ChartName appscode/kubed -Cluster $zoneVariables.radix.cluster.type
