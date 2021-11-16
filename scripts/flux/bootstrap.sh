@@ -257,9 +257,35 @@ kubectl create secret docker-registry radix-docker \
 rm -f sp_credentials.json
 printf "...Done\n"
 
+# Create ConfigMap radix-flux-config which will provide values for flux deployments
+echo "Creating \"radix-flux-config\"..."
+
+# list of public ips assigned to the cluster
+printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
+ASSIGNED_IPS="$(az network public-ip list \
+    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_INFRASTRUCTURE_REGION}'].ipAddress \
+    --output json)"
+
+if [[ "$ASSIGNED_IPS" == "[]" ]]; then
+    echo "ERROR: Could not find Public IP of cluster."
+else
+    # Loop through list of IPs and create a comma separated string. 
+    for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]')
+    do
+        if [[ -z $IP_LIST ]]; then
+            IP_LIST=$(echo $ipaddress)
+        else
+            IP_LIST="$IP_LIST,$(echo $ipaddress)"
+        fi
+    done
+    printf "...Done\n"
+fi
+
 printf "\nGetting Slack Webhook URL..."
 SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
 printf "...Done\n"
+
+IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
 
 # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
 printf "Deploy \"radix-flux-config\" configmap in flux-system namespace..."
@@ -271,8 +297,12 @@ metadata:
   namespace: flux-system
 data:
   dnsZone: "$AZ_RESOURCE_DNS"
+  appAliasBaseURL: "app.$AZ_RESOURCE_DNS"
+  prometheusName: radix-stage1
+  imageRegistry: "$IMAGE_REGISTRY"
   clusterName: "$CLUSTER_NAME"
   clusterType: "$CLUSTER_TYPE"
+  activeClusterIPs: "$IP_LIST"
   slackWebhookURL: "$SLACK_WEBHOOK_URL"
 EOF
 
