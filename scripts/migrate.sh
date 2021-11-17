@@ -282,11 +282,11 @@ echo "Wait for cert-manager to be deployed by flux-operator..."
 echo "If this lasts forever, are you migrating to a cluster without base components installed?"
 while [[ "$(kubectl get deploy cert-manager -n cert-manager 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 while [[ "$(kubectl get pods -n cert-manager -ojsonpath={.items[*].status.containerStatuses[*].ready} | grep --invert-match true 2>&1)" != "" ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 echo ""
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$CERT_MANAGER_CONFIGURATION_SCRIPT")
@@ -296,7 +296,7 @@ wait
 echo "Wait for prometheus to be deployed by flux-operator..."
 while [[ "$(kubectl get deploy prometheus-operator-operator 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 
 echo ""
@@ -309,7 +309,7 @@ echo "Waiting for radix-operator to be deployed by flux-operator so that it can 
 echo "If this lasts forever, are you migrating to a cluster without base components installed?"
 while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 
 
@@ -318,7 +318,7 @@ echo ""
 echo "Waiting for grafana to be deployed by flux-operator so that we can add the ingress as a replyURL to \"$APP_REGISTRATION_GRAFANA\""
 while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 echo ""
 # Add grafana replyUrl to AAD app
@@ -332,7 +332,7 @@ echo "Waiting for dynatrace to be deployed by flux-operator so that it can be in
 echo "If this lasts forever, are you migrating to a cluster without base components installed?"
 while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 echo ""
 printf "Update Dynatrace integration... "
@@ -346,7 +346,7 @@ echo "Waiting for velero to be deployed by flux-operator so that it can handle r
 echo "If this lasts forever, are you migrating to a cluster without base components installed? (Tip: Allow 5 minutes. Try 'fluxctl sync' to force syncing flux repo)"
 while [[ "$(kubectl get deploy velero -n velero 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 
 echo ""

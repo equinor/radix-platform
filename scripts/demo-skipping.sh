@@ -38,7 +38,7 @@ function everloop() {
    local iterator=0   
    while [ "$iterator" -eq 0 ]; do
       echo "$text"
-      sleep 1s
+      sleep 1
    done
 }
 

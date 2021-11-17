@@ -48,7 +48,7 @@ echo ""
 echo "Waiting for all radix app namespaces to be deleted..."
 while [[ "$(kubectl get ns --selector='radix-app' --output=name)" != "" ]]; do   
    printf "."
-   sleep 2s
+   sleep 2
 done
 echo "Done."
 

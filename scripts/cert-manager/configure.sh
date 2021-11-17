@@ -215,7 +215,7 @@ EOF
 kubectl create namespace cert-manager-test 2>&1 >/dev/null
 while [[ "$(kubectl apply --dry-run=server -f test-resources.yaml 2>&1)" == *"error"* ]]; do
     printf "."
-    sleep 1s
+    sleep 1
 done
 kubectl delete namespace cert-manager-test 2>&1 >/dev/null
 
@@ -226,7 +226,7 @@ kubectl apply -f test-resources.yaml
 printf "Validate test certificate...\n"
 while [[ "$(kubectl get certificate -n cert-manager-test selfsigned-cert -ojson | jq -r '.status.conditions[0].status' 2>&1)" != "True" ]]; do
     printf "."
-    sleep 1s
+    sleep 1
 done
 printf "...Done.\n"
 
