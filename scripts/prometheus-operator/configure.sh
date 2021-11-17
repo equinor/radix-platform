@@ -141,19 +141,6 @@ fi
 # End OAUTH2_PROXY code
 ##########
 
-#######################################################################################
-### Update deployments
-###
-
-echo "update flux deployment..."
-helm upgrade --reuse-values flux fluxcd/flux \
-  --set prometheus.enabled=true \
-  --set prometheus.serviceMonitor.create=true > /dev/null
-
-echo "update helm-operator deployment..."
-helm upgrade --reuse-values helm-operator fluxcd/helm-operator \
-  --set prometheus.enabled=true \
-  --set prometheus.serviceMonitor.create=true > /dev/null
 
 #######################################################################################
 ### Install custom ingresses
