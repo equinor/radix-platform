@@ -54,7 +54,7 @@ function wait_for_app_namespace() {
 
     while [[ $($list_ns_command) == "" ]]; do
         printf "."
-        sleep 2s
+        sleep 2
     done
 }
 
@@ -66,7 +66,7 @@ function wait_for_app_namespace_component_secret() {
     echo "Waiting for app $namespace $component secret..."
     while [[ $(kubectl get secrets -n "$namespace" | grep "$component"-) == "" ]]; do
         printf "."
-        sleep 2s
+        sleep 2
     done
 }
 
@@ -167,7 +167,7 @@ echo ""
 echo "Waiting for radix-operator to be deployed by flux-operator so we can register radix apps"
 while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 echo "Radix operator is ready, registering apps... "
 
@@ -198,7 +198,7 @@ helm upgrade --install radix-pipeline-github-webhook-master \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
-sleep 4s
+sleep 4
 
 helm upgrade --install radix-pipeline-github-webhook-release \
     ../charts/radix-pipeline-invocation \
@@ -236,7 +236,7 @@ helm upgrade --install radix-pipeline-api-master \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
-sleep 4s
+sleep 4
 
 helm upgrade --install radix-pipeline-api-release \
     ../charts/radix-pipeline-invocation \
@@ -274,7 +274,7 @@ helm upgrade --install radix-cost-allocation-api-master \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflicts between jobs. I.e trying to create the RA object at the same time
-sleep 4s
+sleep 4
 
 helm upgrade --install radix-cost-allocation-api-release \
     ../charts/radix-pipeline-invocation \
@@ -312,7 +312,7 @@ helm upgrade --install radix-pipeline-canary-master \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflics between jobs. I.e trying to create the RA object at the same time
-sleep 4s
+sleep 4
 
 helm upgrade --install radix-pipeline-canary-release \
     ../charts/radix-pipeline-invocation \
@@ -350,7 +350,7 @@ helm upgrade --install radix-pipeline-web-console-master \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
 # Wait a few seconds so that there is no conflicts between jobs. I.e trying to create the RA object at the same time
-sleep 4s
+sleep 4
 
 helm upgrade --install radix-pipeline-web-console-release \
     ../charts/radix-pipeline-invocation \
@@ -401,7 +401,7 @@ echo ""
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
 while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n "$WEB_CONSOLE_NAMESPACE" 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 echo "Ingress is ready, adding replyUrl... "
 
@@ -426,14 +426,14 @@ echo ""
 echo "Waiting for radix-api ingress to be ready so that the web console can work properly..."
 while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 
 echo ""
 echo "Waiting for radix-cost-allocation-api ingress to be ready so that the API can work properly..."
 while [[ "$(kubectl get ing server -n radix-cost-allocation-api-prod 2>&1)" == *"Error"* ]]; do
     printf "."
-    sleep 5s
+    sleep 5
 done
 
 echo ""

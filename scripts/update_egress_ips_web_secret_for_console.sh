@@ -4,10 +4,10 @@
 # Adds all Private IP Prefix IPs assigned to the Radix Zone to a secret in the web component of Radix Web Console.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" ./update_web_secret_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" ./update_egress_ips_web_secret_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" ./update_web_secret_for_console.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" ./update_egress_ips_web_secret_for_console.sh)
 #
 
 # INPUTS:

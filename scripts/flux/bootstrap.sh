@@ -13,11 +13,11 @@
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
 # - CLUSTER_NAME            : Ex: "test-2", "weekly-93"
+# - GIT_REPO                : Ex: ""
+# - GIT_BRANCH              : Ex: "master"
+# - GIT_DIR                 : Default to "development-configs"
 
 # Optional:
-# - GIT_REPO                : Default to radix-flux
-# - GIT_BRANCH              : Default to "master"
-# - GIT_DIR                 : Default to "development-configs"
 # - USER_PROMPT             : Is human interaction is required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -211,11 +211,11 @@ FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vaul
 printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
 if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
     printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
-    ssh-keygen -t rsa -b 4096 -N "" -C "gm_radix@equinor.com" -f id_rsa."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
-    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
-    az keyvault secret set --file=./id_rsa."$RADIX_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
-    rm id_rsa."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
-    rm id_rsa."$RADIX_ENVIRONMENT".pub 2>&1 >/dev/null
+    ssh-keygen -t ed25519 -N "" -C "gm_radix@equinor.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
+    az keyvault secret set --file=./id_ed25519."$RADIX_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
+    az keyvault secret set --file=./id_ed25519."$RADIX_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
+    rm id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
+    rm id_ed25519."$RADIX_ENVIRONMENT".pub 2>&1 >/dev/null
     FLUX_DEPLOY_KEYS_GENERATED=true
     printf "...Done\n"
 else
@@ -263,7 +263,7 @@ echo "Creating \"radix-flux-config\"..."
 # list of public ips assigned to the cluster
 printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
 ASSIGNED_IPS="$(az network public-ip list \
-    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_INFRASTRUCTURE_REGION}'].ipAddress \
+    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_INFRASTRUCTURE_REGION}'].ipAddress" \
     --output json)"
 
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then
@@ -315,6 +315,16 @@ printf "...Done.\n"
 
 echo ""
 echo "Starting installation of Flux..."
+
+# SSH authentication requires a Kubernetes secret with identity and known_hosts fields:
+# https://fluxcd.io/docs/components/source/gitrepositories/#ssh-authentication
+ssh-keygen -q -N "" -f ./identity
+ssh-keyscan github.com > ./known_hosts 2>/dev/null
+kubectl create secret generic flux-system \
+    --from-file=./identity \
+    --from-file=./identity.pub \
+    --from-file=./known_hosts
+rm identity identity.pub known_hosts
 
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \

@@ -234,7 +234,7 @@ function please_wait() {
   while [[ "$iterator" != "$iteration_end" ]]; do
     iterator="$((iterator + 1))"
     printf "$delimiter"
-    sleep 1s
+    sleep 1
   done
   echo "Done."
 }
@@ -269,7 +269,7 @@ function please_wait_for_reconciling_withcondition() {
   while [[ "$current" -lt "$all" ]]; do
     percentage=$((current * 100 / all))
     showProgress $percentage
-    sleep 5s
+    sleep 5
 
     if [[ "$treshholdBroken" == '10' ]]; then
       break
@@ -293,7 +293,7 @@ function please_wait_for_restore_to_be_completed() {
 
   while [[ $ready != 'Completed' ]]; do
     printf "$iterator"
-    sleep 5s
+    sleep 5
     ready=($(kubectl get restore -n velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
   done
 
@@ -308,7 +308,7 @@ function please_wait_for_all_resources() {
   # are visible in the cluster
   first=($($command 2>/dev/null | wc -l | xargs))
 
-  sleep 5s
+  sleep 5
   second=($($command 2>/dev/null | wc -l | xargs))
 
   # The resources stop growing, we
@@ -316,7 +316,7 @@ function please_wait_for_all_resources() {
   while [[ $((second - first)) != 0 ]]; do
     first=($($command 2>/dev/null | wc -l | xargs))
     printf "$iterator"
-    sleep 5s
+    sleep 5
     second=($($command 2>/dev/null | wc -l | xargs))
   done
 }
@@ -380,7 +380,7 @@ echo ""
 echo "Wait for backup \"$BACKUP_NAME\" to be available in destination cluster \"$DEST_CLUSTER\" before we can restore..."
 while [[ "$(velero backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
   printf "."
-  sleep 2s
+  sleep 2
 done
 echo "Done."
 
@@ -390,7 +390,7 @@ echo "Done."
 
 echo "Restarting Radix operator."
 $(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 0}]" --type json 2>&1 >/dev/null)
-sleep 2s
+sleep 2
 $(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 1}]" --type json 2>&1 >/dev/null)
 echo "Done."
 
@@ -478,7 +478,7 @@ echo ""
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
 while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
   printf "."
-  sleep 5s
+  sleep 5
 done
 echo "Ingress is ready, adding replyUrl... "
 
