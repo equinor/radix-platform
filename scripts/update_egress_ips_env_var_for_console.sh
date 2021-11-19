@@ -15,10 +15,10 @@
 #   WEB_COMPONENT           (Mandatory)
 #   WEB_CONSOLE_NAMESPACE   (Mandatory)
 
-EGRESS_IP_SECRET_NAME="ALL_EGRESS_IPS"
+ENV_VAR_CONFIGMAP_NAME="CLUSTER_TYPE_EGRESS_IPS"
 
 echo ""
-echo "Updating \"$EGRESS_IP_SECRET_NAME\" secret for the radix web console"
+echo "Updating \"$ENV_VAR_CONFIGMAP_NAME\" secret for the radix web console"
 
 # Validate mandatory input
 
@@ -43,49 +43,41 @@ if [[ -z "$WEB_CONSOLE_NAMESPACE" ]]; then
     exit 1
 fi
 
-function updateEgressIpsSecret() {
-
-    # Get list of IPs of all Public IP Prefixes assigned to Cluster Type
+function updateEgressIpsEnvVars() {
+    # Get list of IPs for all Public IP Prefixes assigned to Cluster Type
     echo "Getting list of IPs from all Public IP Prefixes assigned to $CLUSTER_TYPE clusters..."
     IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
     RADIX_CLUSTER_EGRESS_IPS="$(az network public-ip list --query "[?publicIpPrefix.id=='$IPPRE_ID'].ipAddress" --output json)"
 
     if [[ "$RADIX_CLUSTER_EGRESS_IPS" == "[]" ]]; then
-        echo "ERROR: Found no IPs."
+        echo "ERROR: Found no IPs assigned to the cluster."
         return
     fi
 
     # Loop through list of IPs and create a comma separated string. 
-    for ipaddress in $(echo $RADIX_CLUSTER_EGRESS_IPS | jq -cr '.[]')
+    for ippre in $(echo $RADIX_CLUSTER_EGRESS_IPS | jq -c '.[]')
     do
         if [[ -z $IP_LIST ]]; then
-            IP_LIST=$(echo $ipaddress)
+            IP_LIST=$(echo $ippre | jq -r '.')
         else
-            IP_LIST="$IP_LIST,$(echo $ipaddress)"
+            IP_LIST="$IP_LIST,$(echo $ippre | jq -r '.')"
         fi
     done
 
-    # Get name of secret for web component
-    WEB_CONSOLE_WEB_SECRET_NAME=$(kubectl get secret -l radix-component="$WEB_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath='{.items[0].metadata.name}' 2>/dev/null)
-    if [[ -z "$WEB_CONSOLE_WEB_SECRET_NAME" ]]; then
-        echo "ERROR: Secret for web component not found."
-        return
-    fi
+    cat <<EOF >radix-flux-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-vars-${WEB_COMPONENT}
+  namespace: ${WEB_CONSOLE_NAMESPACE}
+data:
+  ${ENV_VAR_CONFIGMAP_NAME}: "${IP_LIST}"
+EOF
 
-    # Populate a temporary file with the contents of the secret
-    WEB_SECRET_ENV_FILE="web_secret.env"
-    echo "REACT_APP_RADIX_CLUSTER_EGRESS_IPS=$IP_LIST" >>"$WEB_SECRET_ENV_FILE"
+    kubectl apply -f radix-flux-config.yaml
+    rm radix-flux-config.yaml
 
-    # Update secret for web component in web console namespace
-    kubectl create secret generic "$WEB_CONSOLE_WEB_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
-        --from-env-file="$WEB_SECRET_ENV_FILE" \
-        --dry-run=client -o yaml |
-        kubectl apply -f -
-
-    # Remove temporary file
-    rm "$WEB_SECRET_ENV_FILE"
-
-    echo "Web component secret updated with Public IP Prefix IPs."
+    echo "Web component env variable updated with Public IP Prefix IPs."
 
     # Restart deployment for web component
     printf "Restarting web deployment..."
@@ -94,4 +86,4 @@ function updateEgressIpsSecret() {
 }
 
 ### MAIN
-updateEgressIpsSecret
+updateEgressIpsEnvVars
