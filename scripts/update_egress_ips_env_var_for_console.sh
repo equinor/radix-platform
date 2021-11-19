@@ -15,7 +15,7 @@
 #   WEB_COMPONENT           (Mandatory)
 #   WEB_CONSOLE_NAMESPACE   (Mandatory)
 
-ENV_VAR_CONFIGMAP_NAME="CLUSTER_TYPE_EGRESS_IPS"
+ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
 
 echo ""
 echo "Updating \"$ENV_VAR_CONFIGMAP_NAME\" secret for the radix web console"
@@ -64,7 +64,7 @@ function updateEgressIpsEnvVars() {
         fi
     done
 
-    cat <<EOF >radix-flux-config.yaml
+    cat <<EOF >egress-ips-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -74,8 +74,8 @@ data:
   ${ENV_VAR_CONFIGMAP_NAME}: "${IP_LIST}"
 EOF
 
-    kubectl apply -f radix-flux-config.yaml
-    rm radix-flux-config.yaml
+    kubectl apply -f egress-ips-configmap.yaml
+    rm egress-ips-configmap.yaml
 
     echo "Web component env variable updated with Public IP Prefix IPs."
 
