@@ -98,12 +98,6 @@ echo ""
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/../../add_reply_url_for_cluster.sh"
-if ! [[ -x "$ADD_REPLY_URL_SCRIPT" ]]; then
-  # Print to stderror
-  echo "The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2
-fi
-
 #######################################################################################
 ### Read inputs and configs
 ###
@@ -455,40 +449,6 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 
 echo "Wait for deployments to be picked up by radix-operator..."
 please_wait_for_reconciling "rd"
-
-#######################################################################################
-### Update replyUrls for those radix apps that require AD authentication
-###
-
-echo ""
-echo "Updating replyUrls for those radix apps that require AD authentication"
-
-# Update replyUrl for web-console
-AUTH_PROXY_COMPONENT="auth"
-AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE  == "development" ]]; then
-  echo ""
-  echo "Development cluster uses QA web-console"
-  RADIX_WEB_CONSOLE_ENV="qa"
-fi
-WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-
-echo ""
-echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
-while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
-  printf "."
-  sleep 5
-done
-echo "Ingress is ready, adding replyUrl... "
-
-echo ""
-echo "Adding replyUrl for radix web-console..."
-
-# The web console has one App Registration per cluster type.
-(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
-wait # wait for subshell to finish
-printf "Done."
 
 #######################################################################################
 ### Restore jobs

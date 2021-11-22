@@ -141,6 +141,30 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
+ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/add_reply_url_for_cluster.sh"
+if ! [[ -x "$ADD_REPLY_URL_SCRIPT" ]]; then
+  # Print to stderror
+  echo "The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2
+fi
+
+WEB_CONSOLE_EGRESS_IP_SCRIPT="$WORKDIR_PATH/update_egress_ips_env_var_for_console.sh"
+if ! [[ -x "$WEB_CONSOLE_EGRESS_IP_SCRIPT" ]]; then
+  # Print to stderror
+  echo "The web console egress ip script is not found or it is not executable in path $WEB_CONSOLE_EGRESS_IP_SCRIPT" >&2
+fi
+
+MOVE_CUSTOM_INGRESSES_SCRIPT="$WORKDIR_PATH/move_custom_ingresses.sh"
+if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
+  # Print to stderror
+  echo "The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
+fi
+
+UPDATE_AUTH_PROXY_SECRET_SCRIPT="$WORKDIR_PATH/update_auth_proxy_secret_for_console.sh"
+if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
+  # Print to stderror
+  echo "The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
+fi
+
 #######################################################################################
 ### Check the migration strategy
 ###
@@ -325,20 +349,21 @@ echo ""
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
 wait # wait for subshell to finish
 
-
-# Wait for dynatrace to be deployed from flux
-echo ""
-echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
-echo "If this lasts forever, are you migrating to a cluster without base components installed?"
-while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-echo ""
-printf "Update Dynatrace integration... "
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
-wait # wait for subshell to finish
-printf "Done updating Dynatrace integration."
+if [ "$CLUSTER_TYPE" != "production" ]; then
+    # Wait for dynatrace to be deployed from flux
+    echo ""
+    echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
+    echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+    while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
+        printf "."
+        sleep 5
+    done
+    echo ""
+    printf "Update Dynatrace integration... "
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
+    wait # wait for subshell to finish
+    printf "Done updating Dynatrace integration."
+fi
 
 # Wait for velero to be deployed from flux
 echo ""
@@ -401,15 +426,29 @@ printf "Restore into destination cluster... "
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
+# Define web console variables
 RADIX_WEB_CONSOLE_ENV="prod"
 if [[ $CLUSTER_TYPE  == "development" ]]; then
     # Development cluster uses QA web-console
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
 WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-
+AUTH_PROXY_COMPONENT="auth"
+AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 WEB_COMPONENT="web"
 
+# Update replyUrls for those radix apps that require AD authentication
+echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
+while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
+  printf "."
+  sleep 5
+done
+echo "Ingress is ready, adding replyUrl for radix web-console..."
+(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+wait # wait for subshell to finish
+printf "Done."
+
+# Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" ./update_egress_ips_env_var_for_console.sh)
 
 echo ""
@@ -423,9 +462,6 @@ while true; do
 
             echo ""
             echo "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url"
-
-            AUTH_PROXY_COMPONENT="auth"
-            AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 
             (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
             wait # wait for subshell to finish
