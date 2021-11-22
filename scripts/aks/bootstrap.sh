@@ -445,21 +445,21 @@ else
 fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
-    CLUSTER_BASE_OPTIONS=(
+    AKS_CLUSTER_OPTIONS=(
         --uptime-sla
     )
 elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
-    CLUSTER_BASE_OPTIONS=(
+    AKS_CLUSTER_OPTIONS=(
         --uptime-sla
     )
 elif [[ "$CLUSTER_TYPE" = "development" ]]; then
-    CLUSTER_BASE_OPTIONS=()
+    AKS_CLUSTER_OPTIONS=()
 elif [[ "$CLUSTER_TYPE" = "classicdev" ]]; then
-    CLUSTER_BASE_OPTIONS=(
+    AKS_CLUSTER_OPTIONS=(
         --vnet-subnet-id "/subscriptions/c44d61d9-1f68-4236-aa19-2103b69766d5/resourceGroups/S045-NE-network/providers/Microsoft.Network/virtualNetworks/S045-NE-vnet"
     )
 elif [[ "$CLUSTER_TYPE" = "classicprod" ]]; then
-    CLUSTER_BASE_OPTIONS=(
+    AKS_CLUSTER_OPTIONS=(
         --vnet-subnet-id "/subscriptions/7790e999-c11c-4f0b-bfdf-bc2fd5c38e91/resourceGroups/S340-NE-network/providers/Microsoft.Network/virtualNetworks/S340-NE-vnet"
     )
 else
