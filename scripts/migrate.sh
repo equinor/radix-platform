@@ -420,11 +420,42 @@ spec:
   - azure
 EOF
 
+if [[ $USER_PROMPT == true ]]; then
+    echo ""
+    echo "About to restore into destination cluster."
+    while true; do
+        read -p "Do you want to be notified once restoration has been completed? (Y/n) " yn
+        case $yn in
+            [Yy]* ) ENABLE_NOTIFY=true; break;;
+            [Nn]* ) ENABLE_NOTIFY=false; break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
+if [[ $ENABLE_NOTIFY == true ]]; then
+    while true; do
+        read -p "Enter slack @ username(s). Example: \"@olmt, @ssmol, @omnia-radix\": " slack_users
+        read -p "You have selected \"$slack_users\". Is this correct? (Y/n) " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) echo "";;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
 echo ""
 printf "Restore into destination cluster... "
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
+
+# Notify on slack
+echo "Notify on slack"
+# Get slack webhook url
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
+curl -X POST -H 'Content-type: application/json' --data '{"text":"'$slack_users' Restore has been completed.","link_names":1}' $SLACK_WEBHOOK_URL
 
 # Define web console variables
 RADIX_WEB_CONSOLE_ENV="prod"
