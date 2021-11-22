@@ -107,7 +107,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Teardown of Dynatrace will use the following configuration:"
+echo -e "Teardown of Prometheus will use the following configuration:"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   ------------------------------------------------------------------"
