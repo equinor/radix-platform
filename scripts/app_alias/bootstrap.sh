@@ -204,7 +204,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
 
     # Create alias in the dns zone
     if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
-        az network dns record-set a add-record \
+        az network dns record-set a update \
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
             --zone-name "$AZ_RESOURCE_DNS" \
             --record-set-name "$RADIX_APP_ALIAS_NAME" \
