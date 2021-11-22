@@ -11,7 +11,6 @@
 ###
 
 # It is assumed that cluster is installed using the aks/bootstrap.sh script
-# The script expects the slack-token to be found as secret in keyvault.
 
 # We don't use Helm to add extra resources any more. Instead we use three different methods:
 # For resources that don't need any change: yaml file in manifests/ directory
@@ -27,7 +26,6 @@
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - SLACK_CHANNEL
 # - FLUX_GITOPS_REPO
 # - FLUX_GITOPS_BRANCH
 # - FLUX_GITOPS_PATH
@@ -116,10 +114,6 @@ fi
 
 # Optional inputs
 
-if [[ -z "$SLACK_CHANNEL" ]]; then
-  SLACK_CHANNEL="CCFLFKM39"
-fi
-
 if [[ -z "$USER_PROMPT" ]]; then
   USER_PROMPT=true
 fi
@@ -147,7 +141,6 @@ echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  SLACK_CHANNEL                    : $SLACK_CHANNEL"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
 echo -e ""
@@ -305,25 +298,6 @@ echo ""
   CLUSTER_NAME="$CLUSTER_NAME" \
   ./flux/bootstrap.sh)
 wait
-
-#######################################################################################
-### Notify on slack channel
-###
-
-if [[ "$RADIX_ENVIRONMENT" != "test" ]]; then
-  printf "\nGetting Slack API Token..."
-  SLACK_TOKEN="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-token | jq -r .value)"
-  printf "...Done\n"
-
-  echo ""
-  echo "Notifying on Slack"
-  helm upgrade --install radix-boot-notify \
-    ../charts/slack-notification \
-    --set channel="$SLACK_CHANNEL" \
-    --set slackToken="$SLACK_TOKEN" \
-    --set text="Base components have been installed or updated on $CLUSTER_NAME." \
-    2>&1 >/dev/null
-fi
 
 #######################################################################################
 ### END
