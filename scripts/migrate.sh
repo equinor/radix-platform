@@ -325,20 +325,21 @@ echo ""
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
 wait # wait for subshell to finish
 
-
-# Wait for dynatrace to be deployed from flux
-echo ""
-echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
-echo "If this lasts forever, are you migrating to a cluster without base components installed?"
-while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-echo ""
-printf "Update Dynatrace integration... "
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
-wait # wait for subshell to finish
-printf "Done updating Dynatrace integration."
+if [ "$CLUSTER_TYPE" != "production" ]; then
+    # Wait for dynatrace to be deployed from flux
+    echo ""
+    echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
+    echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+    while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
+        printf "."
+        sleep 5
+    done
+    echo ""
+    printf "Update Dynatrace integration... "
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
+    wait # wait for subshell to finish
+    printf "Done updating Dynatrace integration."
+fi
 
 # Wait for velero to be deployed from flux
 echo ""
