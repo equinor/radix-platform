@@ -480,7 +480,7 @@ wait # wait for subshell to finish
 printf "Done."
 
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" ./update_egress_ips_env_var_for_console.sh)
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" ./update_egress_ips_env_var_for_console.sh)
 
 echo ""
 while true; do
