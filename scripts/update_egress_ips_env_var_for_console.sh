@@ -4,21 +4,21 @@
 # Adds all Private IP Prefix IPs assigned to the Radix Zone to a secret in the web component of Radix Web Console.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" ./update_egress_ips_web_secret_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" ./update_egress_ips_env_var_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" ./update_egress_ips_web_secret_for_console.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" ./update_egress_ips_env_var_for_console.sh)
 #
 
 # INPUTS:
 #   RADIX_ZONE_ENV          (Mandatory)
 #   WEB_COMPONENT           (Mandatory)
-#   WEB_CONSOLE_NAMESPACE   (Mandatory)
+#   RADIX_WEB_CONSOLE_ENV   (Mandatory)
 
 ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
 
 echo ""
-echo "Updating \"$ENV_VAR_CONFIGMAP_NAME\" secret for the radix web console"
+echo "Updating \"$ENV_VAR_CONFIGMAP_NAME\" environment variable for Radix Web Console"
 
 # Validate mandatory input
 
@@ -38,19 +38,34 @@ if [[ -z "$WEB_COMPONENT" ]]; then
     exit 1
 fi
 
-if [[ -z "$WEB_CONSOLE_NAMESPACE" ]]; then
-    echo "Please provide WEB_CONSOLE_NAMESPACE."
+if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
+    echo "Please provide RADIX_WEB_CONSOLE_ENV."
     exit 1
 fi
 
 function updateEgressIpsEnvVars() {
+    # Get auth token for Radix API
+    printf "Getting auth token for Radix API..."
+    API_ACCESS_TOKEN_RESOURCE=$(echo $OAUTH2_PROXY_SCOPE | awk '{print $4}' | sed 's/\/.*//')
+    if [[ -z $API_ACCESS_TOKEN_RESOURCE ]]; then
+        echo "ERROR: Could not get Radix API access token resource."
+        return
+    fi
+
+    API_ACCESS_TOKEN=$(az account get-access-token --resource $API_ACCESS_TOKEN_RESOURCE | jq -r '.accessToken')
+    if [[ -z $API_ACCESS_TOKEN ]]; then
+        echo "ERROR: Could not get Radix API access token."
+        return
+    fi
+    printf " Done.\n"
+
     # Get list of IPs for all Public IP Prefixes assigned to Cluster Type
-    echo "Getting list of IPs from all Public IP Prefixes assigned to $CLUSTER_TYPE clusters..."
+    printf "Getting list of IPs from all Public IP Prefixes assigned to $CLUSTER_TYPE clusters..."
     IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
     RADIX_CLUSTER_EGRESS_IPS="$(az network public-ip list --query "[?publicIpPrefix.id=='$IPPRE_ID'].ipAddress" --output json)"
 
     if [[ "$RADIX_CLUSTER_EGRESS_IPS" == "[]" ]]; then
-        echo "ERROR: Found no IPs assigned to the cluster."
+        echo -e "\nERROR: Found no IPs assigned to the cluster."
         return
     fi
 
@@ -63,26 +78,28 @@ function updateEgressIpsEnvVars() {
             IP_LIST="$IP_LIST,$(echo $ippre | jq -r '.')"
         fi
     done
+    printf " Done.\n"
 
-    cat <<EOF >egress-ips-configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: env-vars-${WEB_COMPONENT}
-  namespace: ${WEB_CONSOLE_NAMESPACE}
-data:
-  ${ENV_VAR_CONFIGMAP_NAME}: "${IP_LIST}"
-EOF
+    printf "Sending PATCH request to Radix API..."
+    API_REQUEST=$(curl -s -X PATCH "https://api.${AZ_RESOURCE_DNS}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
+        -H "accept: application/json" \
+        -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "[ { \"name\": \"${ENV_VAR_CONFIGMAP_NAME}\", \"value\": \"${IP_LIST}\" }]")
 
-    kubectl apply -f egress-ips-configmap.yaml
-    rm egress-ips-configmap.yaml
+    if [[ "$API_REQUEST" != "\"Success\"" ]]; then
+        echo -e "\nERROR: API request failed."
+        return
+    fi
+    printf " Done.\n"
 
     echo "Web component env variable updated with Public IP Prefix IPs."
 
     # Restart deployment for web component
     printf "Restarting web deployment..."
-    kubectl rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $WEB_COMPONENT
-    printf " Done."
+    kubectl rollout restart deployment -n radix-web-console-$RADIX_WEB_CONSOLE_ENV $WEB_COMPONENT
+
+    echo "Done."
 }
 
 ### MAIN
