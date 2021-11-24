@@ -204,15 +204,33 @@ for alias_config in "$CONFIG_DIR"/*.env; do
 
     # Create alias in the dns zone
     if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
-        az network dns record-set a update \
+        # Check if "@" record exists
+        FIND_RECORD=$(az network dns record-set a show \
+            --name "$RADIX_APP_ALIAS_NAME" \
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
             --zone-name "$AZ_RESOURCE_DNS" \
-            --record-set-name "$RADIX_APP_ALIAS_NAME" \
-            --ipv4-address "$CLUSTER_IP" \
-            --if-none-match \
-            --ttl 300 \
-            2>&1 >/dev/null
-        echo "ERROR OK - Marko"
+            --query name \
+            --output tsv \
+            2>/dev/null)
+        if [[ $FIND_RECORD = "" ]]; then
+            # Create "@" record
+            az network dns record-set a add-record \
+                --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+                --zone-name "$AZ_RESOURCE_DNS" \
+                --record-set-name "$RADIX_APP_ALIAS_NAME" \
+                --ipv4-address "$CLUSTER_IP" \
+                --if-none-match \
+                --ttl 300 \
+                2>&1 >/dev/null
+        else
+            # Update "@" record
+            az network dns record-set a update \
+                --name "$RADIX_APP_ALIAS_NAME" \
+                --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+                --zone-name "$AZ_RESOURCE_DNS" \
+                --set aRecords[0].ipv4Address="$CLUSTER_IP" \
+                2>&1 >/dev/null
+        fi
     else
         az network dns record-set cname set-record \
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
