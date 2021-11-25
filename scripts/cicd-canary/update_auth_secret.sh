@@ -82,29 +82,6 @@ fi
 
 echo ""
 
-# Get the existing secret
-EXISTING_SECRET_VALUES_FILE="existing_secret_values.yaml"
-test -f "$EXISTING_SECRET_VALUES_FILE" && rm "$EXISTING_SECRET_VALUES_FILE"
-FIRST_KEYVAULT=${KEYVAULT_LIST%%,*}
-printf "Getting secret from keyvault \"$FIRST_KEYVAULT\"..."
-if [[ ""$(az keyvault secret download --name "$SECRET_NAME" --vault-name "$FIRST_KEYVAULT" --file "$EXISTING_SECRET_VALUES_FILE" 2>&1)"" == *"ERROR"* ]]; then
-    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..."
-    exit 1
-fi
-printf " Done.\n"
-
-# Extract values from existing secret.
-IMPERSONATE_USER=$(grep -A1 'impersonate:' $EXISTING_SECRET_VALUES_FILE | grep 'user:' | sed 's/^[user: \]*//')
-DEPLOY_KEY_PUBLIC=$(grep -A1 'deployKey:' $EXISTING_SECRET_VALUES_FILE | grep 'public:' | sed 's/^[public: \]*//')
-DEPLOY_KEY_PRIVATE=$(grep -A2 'deployKey:' $EXISTING_SECRET_VALUES_FILE | grep 'private:' | sed 's/^[private: \]*//')
-DEPLOY_KEY_CANARY_3_PUBLIC=$(grep -A1 'deployKeyCanary3:' $EXISTING_SECRET_VALUES_FILE | grep 'public:' | sed 's/^[public: \]*//')
-DEPLOY_KEY_CANARY_3_PRIVATE=$(grep -A2 'deployKeyCanary3:' $EXISTING_SECRET_VALUES_FILE | grep 'private:' | sed 's/^[private: \]*//')
-DEPLOY_KEY_CANARY_4_PUBLIC=$(grep -A1 'deployKeyCanary4:' $EXISTING_SECRET_VALUES_FILE | grep 'public:' | sed 's/^[public: \]*//')
-DEPLOY_KEY_CANARY_4_PRIVATE=$(grep -A2 'deployKeyCanary4:' $EXISTING_SECRET_VALUES_FILE | grep 'private:' | sed 's/^[private: \]*//')
-
-# Remove temporary file.
-rm $EXISTING_SECRET_VALUES_FILE
-
 # Generate new secret for App Registration.
 printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\"..."
 APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NAME" | jq -r '.[].appId')
@@ -118,35 +95,28 @@ printf " Done.\n"
 
 # Get expiration date of updated credential
 EXPIRATION_DATE=$(az ad app credential list --id $APP_REGISTRATION_CLIENT_ID --query "[?customKeyIdentifier=='rdx-cicd-canary'].endDate" --output tsv | sed 's/\..*//')"Z"
+# Get the existing secret and change the value using jq.
+FIRST_KEYVAULT=${KEYVAULT_LIST%%,*}
 
-# Create .yaml with new values.
-UPDATED_SECRET_VALUES_FILE="updated_secret_values.yaml"
-test -f "$UPDATED_SECRET_VALUES_FILE" && rm "$UPDATED_SECRET_VALUES_FILE"
-echo "impersonate:
-  user: $IMPERSONATE_USER
+printf "Getting secret from keyvault \"$FIRST_KEYVAULT\"..."
+SECRET_VALUES=$(az keyvault secret show \
+    --vault-name "$FIRST_KEYVAULT" \
+    --name radix-cicd-canary-values 2>/dev/null |
+    jq --arg password "${UPDATED_PRIVATE_IMAGE_HUB_PASSWORD}" \
+    '.value | fromjson | .privateImageHub.password=$password')
 
-deployKey:
-  public: $DEPLOY_KEY_PUBLIC
-  private: $DEPLOY_KEY_PRIVATE
+if [[ -z "$SECRET_VALUES" ]]; then
+    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..."
+    exit 1
+fi
+printf " Done.\n"
 
-deployKeyCanary3:
-  public: $DEPLOY_KEY_CANARY_3_PUBLIC
-  private: $DEPLOY_KEY_CANARY_3_PRIVATE
-
-deployKeyCanary4:
-  public: $DEPLOY_KEY_CANARY_4_PUBLIC
-  private: $DEPLOY_KEY_CANARY_4_PRIVATE
-
-privateImageHub:
-  password: $UPDATED_PRIVATE_IMAGE_HUB_PASSWORD
-" >> $UPDATED_SECRET_VALUES_FILE
-
-# Update keyvault with new yaml secret for every keyvault in KEYVAULT_LIST
+# Update keyvault with new json secret for every keyvault in KEYVAULT_LIST
 oldIFS=$IFS
 IFS=","
 for KEYVAULT_NAME in $KEYVAULT_LIST; do
     printf "Updating keyvault \"$KEYVAULT_NAME\"..."
-    if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE" 2>&1)"" == *"ERROR"* ]]; then
+    if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" 2>&1)"" == *"ERROR"* ]]; then
         echo -e "\nERROR: Could not update secret in keyvault \"$KEYVAULT_NAME\"."
         script_errors=true
         continue
@@ -154,9 +124,6 @@ for KEYVAULT_NAME in $KEYVAULT_LIST; do
     printf " Done\n"
 done
 IFS=$oldIFS
-
-# Remove temporary file.
-rm $UPDATED_SECRET_VALUES_FILE
 
 if [[ $script_errors == true ]]; then
     echo "Script completed with errors."
