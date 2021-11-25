@@ -13,7 +13,7 @@
 # - AKS cluster is available
 # - User has role cluster-admin
 # - Helm RBAC is configured in cluster
-# - Tiller is installed in cluster (if using Helm version < 2)
+# - Secret "radix-cicd-canary-values" is available in the keyvault
 
 #######################################################################################
 ### INPUTS
@@ -87,21 +87,44 @@ fi
 # Optional inputs
 
 echo "Install Radix CICD Canary"
-az keyvault secret download \
+SECRET_VALUES=$(az keyvault secret show \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name radix-cicd-canary-values \
-    --file radix-cicd-canary-values.yaml
+    --name radix-cicd-canary-values |
+    jq '.value | fromjson')
 
-echo "clusterType: $CLUSTER_TYPE" >>radix-cicd-canary-values.yaml
-echo "clusterFqdn: $CLUSTER_NAME.$AZ_RESOURCE_DNS" >>radix-cicd-canary-values.yaml
+# Create .yaml with values from keyvault.
+YAML_SECRET_FILE="radix-cicd-canary-values.yaml"
+echo "impersonate:
+  user: $(echo $SECRET_VALUES | jq -r '.impersonate.user')
 
+deployKey:
+  public: $(echo $SECRET_VALUES | jq -r '.deployKey.public')
+  private: $(echo $SECRET_VALUES | jq -r '.deployKey.private')
+
+deployKeyCanary3:
+  public: $(echo $SECRET_VALUES | jq -r '.deployKeyCanary3.public')
+  private: $(echo $SECRET_VALUES | jq -r '.deployKeyCanary3.private')
+
+deployKeyCanary4:
+  public: $(echo $SECRET_VALUES | jq -r '.deployKeyCanary4.public')
+  private: $(echo $SECRET_VALUES | jq -r '.deployKeyCanary4.private')
+
+privateImageHub:
+  password: $(echo $SECRET_VALUES | jq -r '.privateImageHub.password')
+
+clusterType: $CLUSTER_TYPE
+clusterFqdn: $CLUSTER_NAME.$AZ_RESOURCE_DNS
+" >> $YAML_SECRET_FILE
+
+# Create radix-cicd-canary namespace
 kubectl create ns radix-cicd-canary --dry-run=client --save-config -o yaml |
     kubectl apply -f -
 
+# Create secret 
 kubectl create secret generic canary-secrets --namespace radix-cicd-canary \
-    --from-file=./radix-cicd-canary-values.yaml \
+    --from-file=./$YAML_SECRET_FILE \
     --dry-run=client -o yaml |
     kubectl apply -f -
 
-rm -f radix-cicd-canary-values.yaml
+rm -f $YAML_SECRET_FILE
 echo "Done."
