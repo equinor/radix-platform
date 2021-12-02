@@ -73,6 +73,10 @@ hash helm 2>/dev/null || {
     echo -e "\nError: helm not found in PATH. Exiting..."
     exit 1
 }
+hash flux 2>/dev/null || {
+    echo -e "\nError: flux not found in PATH. Exiting..."
+    exit 1
+}
 printf "All is good."
 echo ""
 
