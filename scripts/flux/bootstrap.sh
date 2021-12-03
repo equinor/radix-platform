@@ -73,6 +73,10 @@ hash helm 2>/dev/null || {
     echo -e "\nError: helm not found in PATH. Exiting..."
     exit 1
 }
+hash flux 2>/dev/null || {
+    echo -e "\nError: flux not found in PATH. Exiting..."
+    exit 1
+}
 printf "All is good."
 echo ""
 
@@ -222,18 +226,11 @@ else
     printf "...Keys found."
 fi
 
-printf "\nCreating k8s secret \"$FLUX_PRIVATE_KEY_NAME\"..."
 az keyvault secret download \
     --vault-name $AZ_RESOURCE_KEYVAULT \
     --name "$FLUX_PRIVATE_KEY_NAME" \
     --file "$FLUX_PRIVATE_KEY_NAME" \
     2>&1 >/dev/null
-
-kubectl create secret generic "$FLUX_PRIVATE_KEY_NAME" \
-    --from-file=identity="$FLUX_PRIVATE_KEY_NAME" \
-    --dry-run=client -o yaml |
-    kubectl apply -f - \
-        2>&1 >/dev/null
 
 printf "...Done\n"
 
@@ -315,16 +312,6 @@ printf "...Done.\n"
 
 echo ""
 echo "Starting installation of Flux..."
-
-# SSH authentication requires a Kubernetes secret with identity and known_hosts fields:
-# https://fluxcd.io/docs/components/source/gitrepositories/#ssh-authentication
-ssh-keygen -q -N "" -f ./identity
-ssh-keyscan github.com > ./known_hosts 2>/dev/null
-kubectl create secret generic flux-system \
-    --from-file=./identity \
-    --from-file=./identity.pub \
-    --from-file=./known_hosts
-rm identity identity.pub known_hosts
 
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
