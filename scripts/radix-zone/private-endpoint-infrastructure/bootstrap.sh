@@ -86,7 +86,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap radix zone will use the following configuration:"
+echo -e "Bootstrap Private Endpoint infrastructure will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -153,7 +153,7 @@ echo "...Done."
 
 echo ""
 
-echo "Azure service principle: Create ${AZ_RESOURCE_GROUP_VNET_HUB}..."
+echo "Azure service principle: Create ${AZ_SYSTEM_USER_VNET_HUB}..."
 # Create service principle
 create_service_principal_and_store_credentials "${AZ_SYSTEM_USER_VNET_HUB}" "Service principal managing hub vnet and private endpoints"
 ROLE_SCOPE="$(az group show -n $AZ_RESOURCE_GROUP_VNET_HUB --query "id" --output tsv)"
@@ -188,7 +188,7 @@ function createPrivateDNSZones(){
         echo "Private DNS Zone: Creating ${dns_zone}..."
         # throws error if run twice
         az network private-dns zone create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone
-    fi  
+    fi
     DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n hublink -z $dns_zone --query "type" --output tsv)"
     if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
         echo "Linking private DNS Zone:  ${dns_zone} to HUB VNET ${AZ_VNET_HUB_NAME}"
