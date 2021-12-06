@@ -455,11 +455,13 @@ printf "Restore into destination cluster... "
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
-# Notify on slack
-echo "Notify on slack"
-# Get slack webhook url
-SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
-curl -X POST -H 'Content-type: application/json' --data '{"text":"'$slack_users' Restore has been completed.","link_names":1}' $SLACK_WEBHOOK_URL
+if [[ $ENABLE_NOTIFY == true ]]; then
+    # Notify on slack
+    echo "Notify on slack"
+    # Get slack webhook url
+    SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"'$slack_users' Restore has been completed.","link_names":1}' $SLACK_WEBHOOK_URL
+fi
 
 # Define web console variables
 RADIX_WEB_CONSOLE_ENV="prod"
