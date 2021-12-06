@@ -146,6 +146,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 fi
 printf "Done.\n"
 
+# Delete the cluster
 echo "Deleting cluster... "
 az aks delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --yes 2>&1 >/dev/null
 echo "Done."
@@ -161,23 +162,23 @@ echo "Delete replyUrls"
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Delete replyUrl for Radix web-console
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+    WEB_CONSOLE_ENV="radix-web-console-qa"
+else
+    WEB_CONSOLE_ENV="radix-web-console-prod"
+fi
 APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" # "Development", "Playground", "Production"
 APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId -o tsv)"
-if [[ $CLUSTER_TYPE  == "development" ]]; then
-    K8S_NAMESPACE="radix-web-console-qa"
-else
-    K8S_NAMESPACE="radix-web-console-prod"
-fi
-host_name=$(kubectl get ing -n ${K8S_NAMESPACE} auth -o json | jq --raw-output .spec.rules[0].host)
-REPLY_URL="https://${host_name}/oauth2/callback"
+HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
+REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
 
 (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
 
 # Delete replyUrl for grafana
 APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA}" --query [].appId -o tsv)"
-host_name=$(kubectl get ing grafana -o json | jq --raw-output .spec.rules[0].host)
-REPLY_URL="https://${host_name}/login/generic_oauth"
+HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
+REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
 
 (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
