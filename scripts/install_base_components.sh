@@ -243,6 +243,14 @@ wait
 echo "Done."
 
 #######################################################################################
+# Bootstrap snyk-monitor
+# NOTE: Depends on radix-docker secret, created in scripts/config-and-secrets/bootstrap-acr.sh
+
+echo ""
+(./snyk-monitor/bootstrap.sh)
+wait
+
+#######################################################################################
 ### Install Radix CICD Canary
 ###
 
