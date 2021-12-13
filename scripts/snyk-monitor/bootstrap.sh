@@ -40,7 +40,7 @@
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo ""
-echo "Start bootstrap of Grafana... "
+echo "Start bootstrap of snyk-monitor... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -121,8 +121,6 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
-echo -e "   -  APP_REGISTRATION_GRAFANA         : $APP_REGISTRATION_GRAFANA"
-echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -177,7 +175,7 @@ fi
 
 # Create new dockercfg.json file to provide access to ACR.
 test -f "dockercfg.json" && rm "dockercfg.json"
-if [[ $(kubectl get secret radix-dockers 2>&1) == *"Error"* ]]; then
+if [[ $(kubectl get secret radix-docker 2>&1) == *"Error"* ]]; then
     echo "Error: Could not find secret \"radix-docker\" in cluster. Quitting.."
     exit 1
 else
