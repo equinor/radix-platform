@@ -169,6 +169,12 @@ if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
   echo "The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
 fi
 
+UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/update_redis_cache_for_console.sh"
+if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
+  # Print to stderror
+  echo "The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
+fi
+
 #######################################################################################
 ### Check the migration strategy
 ###
@@ -502,6 +508,8 @@ while true; do
             echo "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url"
 
             (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+            wait # wait for subshell to finish
+            (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$RADIX_WEB_CONSOLE_ENV" ./update_redis_cache_for_console.sh)
             wait # wait for subshell to finish
             break;;
         * ) echo "Please answer yes or no.";;

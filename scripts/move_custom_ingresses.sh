@@ -189,7 +189,7 @@ printf "Create aliases in destination cluster... "
 wait # wait for subshell to finish
 printf "Done creating aliases."
 
-# Update auth proxy secret
+# Update auth proxy secret and redis cache
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 RADIX_WEB_CONSOLE_ENV="prod"
@@ -200,6 +200,8 @@ fi
 AUTH_INGRESS_SUFFIX=".custom-domain"
 WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+wait # wait for subshell to finish
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" CLUSTER_NAME="$DEST_CLUSTER" CLUSTER_TYPE="$RADIX_WEB_CONSOLE_ENV" ./update_redis_cache_for_console.sh)
 
 # Point granana to cluster type ingress
 echo "Update grafana reply-URL... "

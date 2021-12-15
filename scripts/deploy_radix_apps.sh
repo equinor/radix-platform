@@ -423,6 +423,11 @@ echo "For the web console to work we need to apply the secrets for the auth prox
 wait # wait for subshell to finish
 
 echo ""
+echo "For the web console to work we need to apply the secrets for the Redis Cache"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" CLUSTER_NAME="$CLUSTER_NAME" CLUSTER_TYPE="$RADIX_WEB_CONSOLE_ENV" ./update_redis_cache_for_console.sh)
+wait # wait for subshell to finish
+
+echo ""
 echo "Waiting for radix-api ingress to be ready so that the web console can work properly..."
 while [[ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]]; do
     printf "."
