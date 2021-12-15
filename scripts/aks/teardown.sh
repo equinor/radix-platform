@@ -28,7 +28,6 @@
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 ./teardown.sh
 
 
-
 #######################################################################################
 ### START
 ### 
@@ -46,6 +45,7 @@ printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
+
 
 #######################################################################################
 ### Read inputs and configs
@@ -83,6 +83,14 @@ fi
 if [[ -z "$VNET_DNS_LINK" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
+
+# Define web console variables
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+    # Development cluster uses QA web-console
+    RADIX_WEB_CONSOLE_ENV="qa"
+fi
+
 
 #######################################################################################
 ### Prepare az session
@@ -153,6 +161,15 @@ echo "Done."
 
 
 #######################################################################################
+### Delete Redis Cache
+###
+
+echo "Deleting Redis Cache..."
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" CLUSTER_TYPE="$RADIX_WEB_CONSOLE_ENV" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
+wait # wait for subshell to finish
+
+
+#######################################################################################
 ### Delete replyUrls
 ###
 
@@ -162,11 +179,7 @@ echo "Delete replyUrls"
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Delete replyUrl for Radix web-console
-if [[ $CLUSTER_TYPE  == "development" ]]; then
-    WEB_CONSOLE_ENV="radix-web-console-qa"
-else
-    WEB_CONSOLE_ENV="radix-web-console-prod"
-fi
+WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" # "Development", "Playground", "Production"
 APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId -o tsv)"
 HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
@@ -182,6 +195,7 @@ REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
 
 (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
+
 
 #######################################################################################
 ### Delete related stuff
@@ -216,10 +230,10 @@ echo "Delete orphaned DNS records"
 (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" ../dns/delete_dns_entries.sh)
 wait # wait for subshell to finish
 
+
 #######################################################################################
 ### END
 ###
 
 echo ""
 echo "Teardown done!"
-
