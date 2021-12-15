@@ -43,7 +43,7 @@ fi
 
 function updateRedisCacheConfiguration() {
     # check if redis cache exist, else create new
-      if ! REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE"); then
+    if ! REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE"); then
         echo "Warning: Redis Cache not found"
 
         while true; do
