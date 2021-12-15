@@ -164,8 +164,11 @@ echo "Done."
 ### Delete Redis Cache
 ###
 
-echo "Deleting Redis Cache..."
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" CLUSTER_TYPE="$RADIX_WEB_CONSOLE_ENV" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
+echo "Deleting Redis Cache for QA..."
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
+wait # wait for subshell to finish
+echo "Deleting Redis Cache for Prod..."
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
 wait # wait for subshell to finish
 
 

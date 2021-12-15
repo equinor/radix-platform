@@ -5,10 +5,9 @@
 
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
-# - WEB_CONSOLE_NAMESPACE   : Ex: "radix-web-console-prod"
 # - AUTH_PROXY_COMPONENT    : Auth Component name, ex: "auth"
 # - CLUSTER_NAME            : Cluster name, ex: "test-2", "weekly-93"
-# - CLUSTER_TYPE            : Cluster type, ex: "qa", "prod"
+# - RADIX_WEB_CONSOLE_ENV   : Web Console Environment, ex: "qa", "prod"
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "Please provide RADIX_ZONE_ENV" >&2
@@ -21,11 +20,6 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$WEB_CONSOLE_NAMESPACE" ]]; then
-    echo "Please provide WEB_CONSOLE_NAMESPACE."
-    exit 1
-fi
-
 if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
     echo "Please provide AUTH_PROXY_COMPONENT."
     exit 1
@@ -36,14 +30,14 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$CLUSTER_TYPE" ]]; then
-    echo "Please provide CLUSTER_TYPE."
+if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
+    echo "Please provide RADIX_WEB_CONSOLE_ENV."
     exit 1
 fi
 
 function updateRedisCacheConfiguration() {
     # check if redis cache exist, else create new
-    if ! REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE"); then
+    if ! REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"); then
         echo "Warning: Redis Cache not found"
 
         while true; do
@@ -56,12 +50,13 @@ function updateRedisCacheConfiguration() {
         done
 
         echo "Creating new Redis Cache"
-        REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_INFRASTRUCTURE_REGION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE" --sku Standard --vm-size c1)
+        REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_INFRASTRUCTURE_REGION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV" --sku Standard --vm-size c1)
     fi
 
+    WEB_CONSOLE_NAMESPACE = "radix-web-console-$RADIX_WEB_CONSOLE_ENV"
     WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
     OAUTH2_PROXY_REDIS_CONNECTION_URL=$(jq -r '"\(.hostName):\(.sslPort)"' <<< $REDIS_CACHE_INSTANCE)
-    OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE" | jq -r .secondaryKey)
+    OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV" | jq -r .secondaryKey)
     REDIS_ENV_FILE="redis_secret.env"
 
     echo "OAUTH2_PROXY_REDIS_CONNECTION_URL=$OAUTH2_PROXY_REDIS_CONNECTION_URL" >> "$REDIS_ENV_FILE"

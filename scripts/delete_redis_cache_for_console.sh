@@ -6,7 +6,7 @@
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
 # - CLUSTER_NAME            : Cluster name, ex: "test-2", "weekly-93"
-# - CLUSTER_TYPE            : Cluster type, ex: "qa", "prod"
+# - RADIX_WEB_CONSOLE_ENV   : Web Console Environment, ex: "qa", "prod"
 
 # Optional:
 # - USER_PROMPT             : Enable/disable user prompt, ex: "true" [default], "false"
@@ -27,8 +27,8 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$CLUSTER_TYPE" ]]; then
-    echo "Please provide CLUSTER_TYPE."
+if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
+    echo "Please provide RADIX_WEB_CONSOLE_ENV."
     exit 1
 fi
 
@@ -38,14 +38,14 @@ fi
 
 function deleteRedisCache() {
     # check if redis cache exist, else exit
-    if ! az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE"; then
+    if ! az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"; then
         echo "Warning: No matching Redis Cache found"
         exit 1 # redis cache not found, exit
     fi
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Do you want to delete Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE"]? (Y/n) " yn
+            read -p "Do you want to delete Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"]? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) echo "Redis Cache not deleted"; exit 0;;
@@ -54,8 +54,8 @@ function deleteRedisCache() {
         done
     fi
 
-    echo "Deleting Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE"]"
-    if az redis delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$CLUSTER_TYPE"; then
+    echo "Deleting Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"]"
+    if az redis delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"; then
         echo "Redis Cache deleted successfully"
     else
         echo "ERROR: An error occurred while deleting Redis Cache"

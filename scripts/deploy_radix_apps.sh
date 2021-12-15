@@ -424,7 +424,9 @@ wait # wait for subshell to finish
 
 echo ""
 echo "For the web console to work we need to apply the secrets for the Redis Cache"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" CLUSTER_NAME="$CLUSTER_NAME" CLUSTER_TYPE="$RADIX_WEB_CONSOLE_ENV" ./update_redis_cache_for_console.sh)
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" ./update_redis_cache_for_console.sh)
+wait # wait for subshell to finish
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="prod" ./update_redis_cache_for_console.sh)
 wait # wait for subshell to finish
 
 echo ""
