@@ -189,7 +189,8 @@ kubectl create secret generic grafana-helm-secret \
     --from-file=./config \
     --dry-run=client -o yaml |
     kubectl apply -f -
-    rm -f config
+
+rm -f config
 
 kubectl create secret generic grafana-secrets \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \

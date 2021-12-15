@@ -202,8 +202,36 @@ WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
 
 # Point granana to cluster type ingress
-GRAFANA_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
+echo "Update grafana reply-URL... "
+# Transform clustername to lowercase
+CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
+GF_SERVER_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
+
+printf "Update grafana-helm-secret... "
+
+echo "ingress:
+  enabled: true
+  hosts:
+  - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
+  tls:
+  - secretName: cluster-wildcard-tls-cert
+    hosts:
+    - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
+env:
+  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" > config
+
+kubectl create secret generic grafana-helm-secret \
+    --from-file=./config \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+
+rm -f config
+
+printf "Update grafana deployment... "
+kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
+
+echo ""
+echo "Grafana reply-URL has been updated."
 
 echo ""
 echo "###########################################################"
