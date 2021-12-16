@@ -3,14 +3,20 @@
 # PURPOSE
 # Configures the redis cache for the cluster given the context.
 
-# Example:
+# Example 1:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./update_redis_cache_for_console.sh
+
+# Example 2:
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh
 
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
 # - AUTH_PROXY_COMPONENT    : Auth Component name, ex: "auth"
 # - CLUSTER_NAME            : Cluster name, ex: "test-2", "weekly-93"
 # - RADIX_WEB_CONSOLE_ENV   : Web Console Environment, ex: "qa", "prod"
+
+# Optional:
+# - USER_PROMPT             : Enable/disable user prompt, ex: "true" [default], "false"
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "Please provide RADIX_ZONE_ENV" >&2
@@ -38,20 +44,26 @@ if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
     exit 1
 fi
 
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
 function updateRedisCacheConfiguration() {
     # check if redis cache exist, else create new
     REDIS_CLUSTER_NAME = "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
     if ! REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME"); then
         echo "Info: Redis Cache not found [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME"]"
 
-        while true; do
-            read -p "Do you want to create a new Redis Cache? (Y/n) " yn
-            case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) echo "ERROR: No Redis Cache available!"; exit 1;; # no redis cache available, exit
-                * ) echo "Please answer yes or no.";;
-            esac
-        done
+        if [[ $USER_PROMPT == true ]]; then
+            while true; do
+                read -p "Do you want to create a new Redis Cache? (Y/n) " yn
+                case $yn in
+                    [Yy]* ) break;;
+                    [Nn]* ) echo "ERROR: No Redis Cache available!"; exit 1;; # no redis cache available, exit
+                    * ) echo "Please answer yes or no.";;
+                esac
+            done
+        if
 
         echo "Creating new Redis Cache"
         REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_INFRASTRUCTURE_REGION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME" --sku Standard --vm-size c1)
