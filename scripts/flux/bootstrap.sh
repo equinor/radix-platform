@@ -215,7 +215,7 @@ FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vaul
 printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
 if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
     printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
-    ssh-keygen -t ed25519 -N "" -C "gm_radix@equinor.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
+    ssh-keygen -t ed25519 -N "" -C "radix@statoilsrm.onmicrosoft.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
     az keyvault secret set --file=./id_ed25519."$RADIX_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
     az keyvault secret set --file=./id_ed25519."$RADIX_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
     rm id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
