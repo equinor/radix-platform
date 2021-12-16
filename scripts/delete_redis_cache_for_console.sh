@@ -44,15 +44,15 @@ fi
 
 function deleteRedisCache() {
     # check if redis cache exist, else exit
-    REDIS_CLUSTER_NAME = "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
-    if ! az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME"; then
-        echo "Warning: No matching Redis Cache found [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME"]"
+    REDIS_CACHE_NAME = "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
+    if ! az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"; then
+        echo "Warning: No matching Redis Cache found [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"]"
         exit 1 # redis cache not found, exit
     fi
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Do you want to delete Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME"]? (Y/n) " yn
+            read -p "Do you want to delete Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"]? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) echo "Redis Cache not deleted"; exit 0;;
@@ -61,8 +61,8 @@ function deleteRedisCache() {
         done
     fi
 
-    echo "Deleting Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME"]"
-    if az redis delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CLUSTER_NAME"; then
+    echo "Deleting Redis Cache [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"]"
+    if az redis delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"; then
         echo "Redis Cache deleted successfully"
     else
         echo "ERROR: An error occurred while deleting Redis Cache"
