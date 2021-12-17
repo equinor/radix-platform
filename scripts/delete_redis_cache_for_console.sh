@@ -44,7 +44,7 @@ fi
 
 function deleteRedisCache() {
     # check if redis cache exist, else exit
-    REDIS_CACHE_NAME = "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
+    REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
     if ! az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"; then
         echo "Warning: No matching Redis Cache found [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"]"
         exit 1 # redis cache not found, exit

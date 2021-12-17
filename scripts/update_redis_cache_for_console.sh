@@ -50,7 +50,7 @@ fi
 
 function updateRedisCacheConfiguration() {
     # check if redis cache exist, else create new
-    REDIS_CACHE_NAME = "$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
+    REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
     if ! REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"); then
         echo "Info: Redis Cache not found [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"]"
 
@@ -63,15 +63,15 @@ function updateRedisCacheConfiguration() {
                     * ) echo "Please answer yes or no.";;
                 esac
             done
-        if
+        fi
 
         echo "Creating new Redis Cache"
         REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_INFRASTRUCTURE_REGION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Standard --vm-size c1)
     fi
 
-    WEB_CONSOLE_NAMESPACE = "radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+    WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
     WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
-    OAUTH2_PROXY_REDIS_CONNECTION_URL=$(jq -r '"\(.hostName):\(.sslPort)"' <<< $REDIS_CACHE_INSTANCE)
+    OAUTH2_PROXY_REDIS_CONNECTION_URL="rediss://"$(jq -r '"\(.hostName):\(.sslPort)"' <<< $REDIS_CACHE_INSTANCE)
     OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" | jq -r .primaryKey)
     REDIS_ENV_FILE="redis_secret.env"
 
