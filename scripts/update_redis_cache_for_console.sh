@@ -78,10 +78,8 @@ function updateRedisCacheConfiguration() {
     echo "OAUTH2_PROXY_REDIS_CONNECTION_URL=$OAUTH2_PROXY_REDIS_CONNECTION_URL" >> "$REDIS_ENV_FILE"
     echo "OAUTH2_PROXY_REDIS_PASSWORD=$OAUTH2_PROXY_REDIS_PASSWORD" >> "$REDIS_ENV_FILE"
 
-    kubectl create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
-        --from-env-file="$REDIS_ENV_FILE" \
-        --dry-run=client -o yaml |
-        kubectl apply -f -
+    kubectl patch secret "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
+        --patch "$(kubectl create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$REDIS_ENV_FILE" --dry-run=client -o yaml)"
 
     rm "$REDIS_ENV_FILE"
 
