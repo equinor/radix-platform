@@ -4,10 +4,10 @@
 # Adds all Private IP Prefix IPs assigned to the Radix Zone to a secret in the web component of Radix Web Console.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" ./update_egress_ips_env_var_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_egress_ips_env_var_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" ./update_egress_ips_env_var_for_console.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_egress_ips_env_var_for_console.sh)
 #
 
 # INPUTS:
@@ -81,7 +81,7 @@ function updateEgressIpsEnvVars() {
     printf " Done.\n"
 
     printf "Sending PATCH request to Radix API..."
-    API_REQUEST=$(curl -s -X PATCH "https://api.${AZ_RESOURCE_DNS}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
+    API_REQUEST=$(curl -s -X PATCH "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
         -H "accept: application/json" \
         -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
         -H "Content-Type: application/json" \

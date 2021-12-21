@@ -51,15 +51,15 @@ fi
 function updateRedisCacheConfiguration() {
     # check if redis cache exist, else create new
     REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
-    if ! REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"); then
-        echo "Info: Redis Cache not found [--resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME"]"
+    if [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>/dev/null) == "" ]]); then
+        echo "Info: Redis Cache \"$REDIS_CACHE_NAME\" not found."
 
         if [[ $USER_PROMPT == true ]]; then
             while true; do
                 read -p "Do you want to create a new Redis Cache? (Y/n) " yn
                 case $yn in
                     [Yy]* ) break;;
-                    [Nn]* ) echo "ERROR: No Redis Cache available!"; exit 1;; # no redis cache available, exit
+                    [Nn]* ) echo "Quitting."; exit 1;; # no redis cache available, exit
                     * ) echo "Please answer yes or no.";;
                 esac
             done
