@@ -51,7 +51,8 @@ fi
 function updateRedisCacheConfiguration() {
     # check if redis cache exist, else create new
     REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
-    if [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>/dev/null) == "" ]]); then
+    REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>/dev/null)
+    if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
         echo "Info: Redis Cache \"$REDIS_CACHE_NAME\" not found."
 
         if [[ $USER_PROMPT == true ]]; then
