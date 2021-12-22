@@ -167,7 +167,7 @@ echo "Install secret \"snyk-monitor\" in cluster..."
 kubectl create namespace snyk-monitor \
 2>&1 >/dev/null
 
-SNYK_INTEGRATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-sa-access-token-${RADIX_ZONE} 2>/dev/null | jq -r .value)"
+SNYK_INTEGRATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-integration-token 2>/dev/null | jq -r .value)"
 if [[ $SNYK_INTEGRATION_ID == "" ]]; then
     echo "Error: Could not find secret \"radix-snyk-sa-access-token-${RADIX_ZONE}\" in keyvault. Quitting.."
     exit 1
