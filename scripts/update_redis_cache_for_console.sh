@@ -66,8 +66,21 @@ function updateRedisCacheConfiguration() {
             done
         fi
 
-        echo "Creating new Redis Cache"
-        REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_INFRASTRUCTURE_REGION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Standard --vm-size c1)
+        printf "Creating new Redis Cache..."
+        REDIS_CACHE_INSTANCE=$(az redis create \
+            --location "$AZ_INFRASTRUCTURE_REGION" \
+            --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+            --name "$REDIS_CACHE_NAME" \
+            --sku Standard \
+            --vm-size c1 \
+            2>/dev/null)
+
+        if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
+            echo ""
+            echo "Error: Could not create Redis Cache. Quitting."
+            exit 1
+        fi
+        printf " Done.\n"
     fi
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
