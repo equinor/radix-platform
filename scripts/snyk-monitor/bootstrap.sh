@@ -184,7 +184,9 @@ else
     kubectl create secret generic snyk-monitor \
         --namespace snyk-monitor \
         --from-file=dockercfg.json \
-        --from-literal=integrationId=$SNYK_INTEGRATION_ID
+        --from-literal=integrationId=$SNYK_INTEGRATION_ID \
+        --dry-run=client -o yaml |
+        kubectl apply -f -
 
     rm "dockercfg.json"
 fi
