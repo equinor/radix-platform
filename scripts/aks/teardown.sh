@@ -164,6 +164,8 @@ echo "Done."
 ### Delete Redis Cache
 ###
 
+WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 echo "Deleting Redis Cache for QA..."
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
 wait # wait for subshell to finish
@@ -178,8 +180,6 @@ wait # wait for subshell to finish
 
 echo ""
 echo "Delete replyUrls"
-
-WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Delete replyUrl for Radix web-console
 WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
