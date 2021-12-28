@@ -28,7 +28,7 @@
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 # Configure a dev cluster to use custom configs
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GIT_BRANCH=my-test-configs GIT_DIR=my-test-directory ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" OVERRIDE_GIT_BRANCH=my-test-configs OVERRIDE_GIT_DIR=my-test-directory ./bootstrap.sh
 
 #######################################################################################
 ### DOCS
@@ -95,6 +95,14 @@ else
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
+fi
+
+if [[ ! -z "$OVERRIDE_GIT_BRANCH" ]]; then
+    GIT_BRANCH="$OVERRIDE_GIT_BRANCH"
+fi
+
+if [[ ! -z "$OVERRIDE_GIT_DIR" ]]; then
+    GIT_DIR="$OVERRIDE_GIT_DIR"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
