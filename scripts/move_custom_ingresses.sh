@@ -208,7 +208,7 @@ wait # wait for subshell to finish
 # Point granana to cluster type ingress
 echo "Update grafana reply-URL... "
 # Transform clustername to lowercase
-CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
+CLUSTER_NAME_LOWER="$(echo "$DEST_CLUSTER" | awk '{print tolower($0)}')"
 GF_SERVER_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
 
 printf "Update grafana-helm-secret... "
