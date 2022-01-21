@@ -150,11 +150,8 @@ if [[ $ADD_OWNERS == true ]]; then
     printf "Adding owners to app registration \"$APP_REGISTRATION_CERT_MANAGER\"..."
 
     for row in $(az ad group member list --group "Radix" | jq -r '.[] | @base64'); do
-        _jq() {
-        echo ${row} | base64 --decode | jq -r ${1}
-        }
-    USER_OBJECT_ID=$(_jq '.objectId')
-    USER_PRINCIPAL_NAME=$(_jq '.userPrincipalName')    
+        USER_OBJECT_ID=$(echo $row | base64 --decode | jq -r '.objectId')
+        USER_PRINCIPAL_NAME=$(echo $row | base64 --decode | jq -r '.userPrincipalName')
 
     ADD_APP_OWNERS=$(az ad app owner add --id $APP_ID --owner-object-id $USER_OBJECT_ID 2>&1)
 
