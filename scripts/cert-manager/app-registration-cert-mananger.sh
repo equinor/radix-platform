@@ -294,7 +294,7 @@ fi
 DEVELOPERS=$(az ad app list --filter "(displayName eq '$APP_REGISTRATION_CERT_MANAGER')" --query "[].appId" --output tsv)
 
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
-printf "Adding permissions to role..."
+printf "Assigning role to app registration..."
 UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$DEVELOPERS" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
 fi
 printf " Done.\n"
