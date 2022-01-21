@@ -133,14 +133,14 @@ fi
 #######################################################################################
 ### Add owners to app registration
 ###
-
+ADD_OWNERS=true
 echo ""
 if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Add owners to app registration? (Y/n) " yn
         case $yn in
-            [Yy]* ) ADD_OWNERS=true; break;;
-            [Nn]* ) echo "Skipping."; break;;
+            [Yy]* ) break;;
+            [Nn]* ) ADD_OWNERS=false; echo "Skipping."; break;;
             * ) echo "Please answer yes or no.";;
         esac
     done
@@ -274,7 +274,7 @@ echo -e "Creating $ROLENAME"
 az role definition create --role-definition ./cert-mananger-custom-dns-role.json
 fi
 
-
+test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
 #######################################################################################
 ### Assign members to role
 ###
