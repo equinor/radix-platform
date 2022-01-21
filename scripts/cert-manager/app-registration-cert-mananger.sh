@@ -89,14 +89,14 @@ if [[ $APP_ID == "" ]]; then
     echo "App registration \"$APP_REGISTRATION_CERT_MANAGER\" does not exist."
 
     if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        read -p "Create app registration? (Y/n) " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
+        while true; do
+            read -p "Create app registration? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
     fi
     printf "Creating app registration..."
     MANIFEST_JSON="manifest.json"
