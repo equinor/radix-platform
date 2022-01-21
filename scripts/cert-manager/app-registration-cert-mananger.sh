@@ -115,8 +115,8 @@ if [[ $APP_ID == "" ]]; then
 ]
 EOF
         CREATE_APP_REGISTRATION=$(az ad app create \
-        --display-name "${APP_REGISTRATION_CERT_MANAGER}" \
-        --required-resource-accesses @${MANIFEST_JSON} 2>&1)
+            --display-name "${APP_REGISTRATION_CERT_MANAGER}" \
+            --required-resource-accesses @${MANIFEST_JSON} 2>&1)
         rm "$MANIFEST_JSON"
 
         if [[ $CREATE_APP_REGISTRATION == *"ERROR"* ]]; then
