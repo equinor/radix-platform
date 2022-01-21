@@ -153,11 +153,11 @@ if [[ $ADD_OWNERS == true ]]; then
         USER_OBJECT_ID=$(echo $row | base64 --decode | jq -r '.objectId')
         USER_PRINCIPAL_NAME=$(echo $row | base64 --decode | jq -r '.userPrincipalName')
 
-    ADD_APP_OWNERS=$(az ad app owner add --id $APP_ID --owner-object-id $USER_OBJECT_ID 2>&1)
+        ADD_APP_OWNERS=$(az ad app owner add --id $APP_ID --owner-object-id $USER_OBJECT_ID 2>&1)
 
-    if [[ $ADD_APP_OWNERS == *"ERROR"* ]]; then
-        printf " ERROR: Could not add user \"$USER_PRINCIPAL_NAME\" as owner of app registration.\n"
-    fi
+        if [[ $ADD_APP_OWNERS == *"ERROR"* ]]; then
+            printf " ERROR: Could not add user \"$USER_PRINCIPAL_NAME\" as owner of app registration.\n"
+        fi
 
     done
     printf " Done.\n"
