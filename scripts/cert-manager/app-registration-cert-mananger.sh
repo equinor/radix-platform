@@ -166,115 +166,122 @@ fi
 #######################################################################################
 ### Refresh credential secret
 ###
-
+CRED_SECRETS=true
 echo ""
 if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Refresh credential secret? (Y/n) " yn
         case $yn in
-            [Yy]* ) CRED_SECRETS=true; break;;
-            [Nn]* ) echo "Skipping."; break;;
+            [Yy]* ) break;;
+            [Nn]* ) CRED_SECRETS=false; echo "Skipping."; break;;
             * ) echo "Please answer yes or no.";;
         esac
     done
 fi
 
 if [[ $CRED_SECRETS == true ]]; then
-printf "Refresh credential secret..."
-APP_DESCRIPTION="$APP_REGISTRATION_CERT_MANAGER"
-UPDATED_CLIENT_SECRET=$(az ad app credential reset --id "$APP_ID" --credential-description "$APP_DESCRIPTION" 2>/dev/null) # For some reason, description can not be too long.
+    printf "Refresh credential secret..."
+    APP_DESCRIPTION="$APP_REGISTRATION_CERT_MANAGER"
+    UPDATED_CLIENT_SECRET=$(az ad app credential reset --id "$APP_ID" --credential-description "$APP_DESCRIPTION" 2>/dev/null) # For some reason, description can not be too long.
 
-if [[ $UPDATED_CLIENT_SECRET == "" ]]; then
-    printf " ERROR: Could not refresh client secret for App Registration \"$APP_REGISTRATION_CERT_MANAGER\". Exiting...\n"
-    exit 1
-fi
-printf " Done.\n"
+    if [[ $UPDATED_CLIENT_SECRET == "" ]]; then
+        printf " ERROR: Could not refresh client secret for App Registration \"$APP_REGISTRATION_CERT_MANAGER\". Exiting...\n"
+        exit 1
+    fi
+    printf " Done.\n"
 
-APP_PASSWORD=$(echo $UPDATED_CLIENT_SECRET | jq '.password')
-APP_NAME=$(echo $UPDATED_CLIENT_SECRET | jq '.name')
-APP_TENANT=$(echo $UPDATED_CLIENT_SECRET | jq '.tenant')
+    APP_PASSWORD=$(echo $UPDATED_CLIENT_SECRET | jq '.password')
+    APP_NAME=$(echo $UPDATED_CLIENT_SECRET | jq '.name')
+    APP_TENANT=$(echo $UPDATED_CLIENT_SECRET | jq '.tenant')
 
 
-# Get expiration date of updated credential
-EXPIRATION_DATE=$(az ad app credential list --id $APP_ID --query "[?customKeyIdentifier=='$APP_DESCRIPTION'].endDate" --output tsv | sed 's/\..*//')"Z"
+    # Get expiration date of updated credential
+    EXPIRATION_DATE=$(az ad app credential list --id $APP_ID --query "[?customKeyIdentifier=='$APP_DESCRIPTION'].endDate" --output tsv | sed 's/\..*//')"Z"
 
-# Create new .json file with updated credential.
-UPDATED_SECRET_VALUES_FILE="updated_secret_values.json"
-test -f "$UPDATED_SECRET_VALUES_FILE" && rm "$UPDATED_SECRET_VALUES_FILE"
+    # Create new .json file with updated credential.
+    UPDATED_SECRET_VALUES_FILE="updated_secret_values.json"
+    test -f "$UPDATED_SECRET_VALUES_FILE" && rm "$UPDATED_SECRET_VALUES_FILE"
 
-cat <<EOF >>${UPDATED_SECRET_VALUES_FILE}
+    cat <<EOF >>${UPDATED_SECRET_VALUES_FILE}
 {
-  "name": "${APP_REGISTRATION_CERT_MANAGER}",
-  "id": "${APP_ID}",
-  "password": "${APP_PASSWORD}",
-  "description": "${APP_DESCRIPTION}",
-  "tenantId": "${APP_TENANT}"
+"name": "${APP_REGISTRATION_CERT_MANAGER}",
+"id": "${APP_ID}",
+"password": "${APP_PASSWORD}",
+"description": "${APP_DESCRIPTION}",
+"tenantId": "${APP_TENANT}"
 }
 EOF
 
-# Update keyvault with secret
-printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
-if [[ $(az keyvault secret set --name "$APP_REGISTRATION_CERT_MANAGER" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE" 2>&1) == *"ERROR"* ]]; then
-    az keyvault secret set --name "$APP_REGISTRATION_CERT_MANAGER" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE"
-    echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..."
-    exit 1
-fi
-printf " Done\n"
+    # Update keyvault with secret
+    printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
+    if [[ $(az keyvault secret set --name "$APP_REGISTRATION_CERT_MANAGER" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE" 2>&1) == *"ERROR"* ]]; then
+        az keyvault secret set --name "$APP_REGISTRATION_CERT_MANAGER" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE"
+        echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..."
+        exit 1
+    fi
+    printf " Done\n"
 
-rm $UPDATED_SECRET_VALUES_FILE
+    rm $UPDATED_SECRET_VALUES_FILE
 fi
 
 #######################################################################################
 ### Assign custom permission on TXT records
 ###
+
 ROLENAME="DNS TXT Contributor"
-echo ""
-if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        read -p "Create role '$ROLENAME'? (Y/n) " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
-fi
-
-CUSTOMDNSROLE_JSON="cert-mananger-custom-dns-role.json"
-test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
-cat <<EOF >>${CUSTOMDNSROLE_JSON}
-{
-    "Name": "$ROLENAME",
-    "Id": "",
-    "IsCustom": true,
-    "Description": "Can manage DNS TXT records only.",
-    "Actions": [
-        "Microsoft.Network/dnsZones/TXT/*",
-        "Microsoft.Network/dnsZones/read",
-        "Microsoft.Authorization/*/read",
-        "Microsoft.Insights/alertRules/*",
-        "Microsoft.ResourceHealth/availabilityStatuses/read",
-        "Microsoft.Resources/deployments/*",
-        "Microsoft.Resources/subscriptions/resourceGroups/read",
-        "Microsoft.Support/*"
-    ],
-    "NotActions": [
-    ],
-    "AssignableScopes": [
-        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}"
-    ]
-}
-EOF
 APP_ID=$(az role definition list --name "$ROLENAME" -o tsv)
+CRED_ROLE=true
+echo ""
+if [[ $APP_ID == "" ]]; then
+    echo "Role \"$ROLENAME\" does not exist."
 
-if [ ! -z "$APP_ID" ]; then
-echo -e "$ROLENAME exists. Skipping";
+    if [[ $USER_PROMPT == true ]]; then
+        while true; do
+            read -p "Create Role $ROLENAME? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) CRED_ROLE=false; echo "Skipping."; break;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
+
+    printf "Creating app registration..."
+
+    if [[ $CRED_ROLE == true ]]; then
+        CUSTOMDNSROLE_JSON="cert-mananger-custom-dns-role.json"
+        test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
+    cat <<EOF >>${CUSTOMDNSROLE_JSON}
+    {
+        "Name": "$ROLENAME",
+        "Id": "",
+        "IsCustom": true,
+        "Description": "Can manage DNS TXT records only.",
+        "Actions": [
+            "Microsoft.Network/dnsZones/TXT/*",
+            "Microsoft.Network/dnsZones/read",
+            "Microsoft.Authorization/*/read",
+            "Microsoft.Insights/alertRules/*",
+            "Microsoft.ResourceHealth/availabilityStatuses/read",
+            "Microsoft.Resources/deployments/*",
+            "Microsoft.Resources/subscriptions/resourceGroups/read",
+            "Microsoft.Support/*"
+        ],
+        "NotActions": [
+        ],
+        "AssignableScopes": [
+            "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}"
+        ]
+    }
+EOF
+
+
+    az role definition create --role-definition ./cert-mananger-custom-dns-role.json
+    test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
+    fi
 else
-echo -e "Creating $ROLENAME"
-az role definition create --role-definition ./cert-mananger-custom-dns-role.json
+    echo -e "Role $ROLENAME exists.";
 fi
-
-test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
 #######################################################################################
 ### Assign members to role
 ###
@@ -294,8 +301,8 @@ fi
 DEVELOPERS=$(az ad app list --filter "(displayName eq '$APP_REGISTRATION_CERT_MANAGER')" --query "[].appId" --output tsv)
 
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
-printf "Assigning role to app registration..."
-UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$DEVELOPERS" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
+    printf "Assigning role to app registration..."
+    UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$DEVELOPERS" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
 fi
-printf " Done.\n"
+printf "Done.\n"
 
