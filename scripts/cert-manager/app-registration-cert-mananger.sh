@@ -229,7 +229,6 @@ fi
 ###
 
 ROLENAME="DNS TXT Contributor"
-#ROLENAME_ID=$(az role definition list --name "$ROLENAME" -o tsv)
 ROLENAME_ID=$(az role definition list --name "$ROLENAME" --query "[].name" -o tsv)
 CRED_ROLE=true
 echo ""
