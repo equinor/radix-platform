@@ -229,7 +229,8 @@ fi
 ###
 
 ROLENAME="DNS TXT Contributor"
-ROLENAME_ID=$(az role definition list --name "$ROLENAME" -o tsv)
+#ROLENAME_ID=$(az role definition list --name "$ROLENAME" -o tsv)
+ROLENAME_ID=$(az role definition list --name "$ROLENAME" --query "[].name" -o tsv)
 CRED_ROLE=true
 echo ""
 if [[ $ROLENAME_ID == "" ]]; then
@@ -285,14 +286,15 @@ fi
 #######################################################################################
 ### Assign members to role
 ###
+DNSTXT_PERMISSIONS=true
 
 echo ""
 if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Assign '$APP_REGISTRATION_CERT_MANAGER' permission to $ROLENAME? (Y/n) " yn
         case $yn in
-            [Yy]* ) DNSTXT_PERMISSIONS=true; break;;
-            [Nn]* ) echo "Skipping."; break;;
+            [Yy]* ) break;;
+            [Nn]* ) DNSTXT_PERMISSIONS=false; echo "Skipping."; break;;
             * ) echo "Please answer yes or no.";;
         esac
     done
