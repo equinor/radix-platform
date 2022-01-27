@@ -233,7 +233,7 @@ APP_ID=$(az role definition list --name "$ROLENAME" -o tsv)
 CRED_ROLE=true
 echo ""
 if [[ $APP_ID == "" ]]; then
-    echo "Role \"$ROLENAME\" does not exist."
+    echo "Role definition \"$ROLENAME\" does not exist."
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
