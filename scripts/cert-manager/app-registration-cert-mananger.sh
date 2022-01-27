@@ -251,7 +251,7 @@ if [[ $APP_ID == "" ]]; then
     if [[ $CRED_ROLE == true ]]; then
         CUSTOMDNSROLE_JSON="cert-mananger-custom-dns-role.json"
         test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
-    cat <<EOF >>${CUSTOMDNSROLE_JSON}
+        cat <<EOF >>${CUSTOMDNSROLE_JSON}
     {
         "Name": "$ROLENAME",
         "Id": "",
