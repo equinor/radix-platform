@@ -276,7 +276,7 @@ if [[ $APP_ID == "" ]]; then
 EOF
 
 
-    az role definition create --role-definition ./cert-mananger-custom-dns-role.json
+        az role definition create --role-definition "$CUSTOMDNSROLE_JSON"
     test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
     fi
 else
