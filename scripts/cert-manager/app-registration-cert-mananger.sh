@@ -32,8 +32,7 @@ fi
 #######################################################################################
 ### START
 ###
- 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
+ if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
@@ -50,8 +49,6 @@ APP_ID=$(az ad app list --display-name $APP_REGISTRATION_CERT_MANAGER --query '[
 #######################################################################################
 ### Verify task at hand
 ###
-
-
 echo -e ""
 echo -e "Cert-manager app registration:"
 echo -e ""
@@ -227,7 +224,6 @@ fi
 #######################################################################################
 ### Assign custom permission on TXT records
 ###
-
 ROLENAME="DNS TXT Contributor"
 ROLENAME_ID=$(az role definition list --name "$ROLENAME" --query "[].name" -o tsv)
 CRED_ROLE=true
@@ -286,7 +282,6 @@ fi
 ### Assign members to role
 ###
 DNSTXT_PERMISSIONS=true
-
 echo ""
 if [[ $USER_PROMPT == true ]]; then
     while true; do
