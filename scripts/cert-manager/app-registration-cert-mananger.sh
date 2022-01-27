@@ -229,10 +229,10 @@ fi
 ###
 
 ROLENAME="DNS TXT Contributor"
-APP_ID=$(az role definition list --name "$ROLENAME" -o tsv)
+ROLENAME_ID=$(az role definition list --name "$ROLENAME" -o tsv)
 CRED_ROLE=true
 echo ""
-if [[ $APP_ID == "" ]]; then
+if [[ $ROLENAME_ID == "" ]]; then
     echo "Role definition \"$ROLENAME\" does not exist."
 
     if [[ $USER_PROMPT == true ]]; then
@@ -298,11 +298,9 @@ if [[ $USER_PROMPT == true ]]; then
     done
 fi
 
-DEVELOPERS=$(az ad app list --filter "(displayName eq '$APP_REGISTRATION_CERT_MANAGER')" --query "[].appId" --output tsv)
-
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
     printf "Assigning role to app registration..."
-    UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$DEVELOPERS" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
+    UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
 fi
 printf "Done.\n"
 
