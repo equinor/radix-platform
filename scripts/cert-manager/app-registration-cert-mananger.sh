@@ -277,7 +277,7 @@ EOF
 
 
         az role definition create --role-definition "$CUSTOMDNSROLE_JSON"
-    test -f "$CUSTOMDNSROLE_JSON" && rm "$CUSTOMDNSROLE_JSON"
+        rm "$CUSTOMDNSROLE_JSON"
     fi
 else
     echo -e "Role $ROLENAME exists.";
