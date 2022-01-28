@@ -157,7 +157,11 @@ else
    echo "Unknown parameter"
 fi
 
+#######################################################################################
+### Get api server whitelist
+###
 
+USER_PROMPT=false CLUSTER_NAME="" source './update_api_server_whitelist.sh'
 
 #######################################################################################
 ### Verify task at hand
@@ -192,6 +196,7 @@ echo -e "   -  VNET_SERVICE_CIDR                : $VNET_SERVICE_CIDR"
 echo -e "   -  HUB_VNET_RESOURCE_GROUP          : $AZ_RESOURCE_GROUP_VNET_HUB"
 echo -e "   -  HUB_VNET_NAME                    : $AZ_VNET_HUB_NAME"
 echo -e "   -  IP_COUNT                         : $IP_COUNT"
+echo -e "   -  K8S_API_IP_WHITELIST             : $K8S_API_IP_WHITELIST"
 echo -e ""
 echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf $AZ_RESOURCE_KEYVAULT; else printf $CREDENTIALS_FILE; fi)"
 echo -e ""
@@ -312,11 +317,11 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     done
 fi
 
-if [ "$OMNIA_ZONE" = "standalone" ]; then
-    #######################################################################################
-    ### Network
-    ###
+#######################################################################################
+### Network
+###
 
+if [ "$OMNIA_ZONE" = "standalone" ]; then
     echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
     printf "   Creating azure VNET ${VNET_NAME}... "
@@ -398,6 +403,7 @@ AKS_BASE_OPTIONS=(
     --assign-identity "$ID_AKS"
     --assign-kubelet-identity "$ID_AKSKUBELET"
     --attach-acr "$ACR_ID"
+    --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST"
 )
 
 if [ "$OMNIA_ZONE" = "standalone" ]; then
