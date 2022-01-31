@@ -228,16 +228,16 @@ fi
 #######################################################################################
 ### Assign custom permission on TXT records
 ###
-GET_ROLENAME_ID () {
-  ROLENAME_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
+GET_ROLE_DEFINITION_ID () {
+  ROLE_DEFINITION_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
   wait
 }
 
 ROLENAME="DNS TXT Contributor"
-GET_ROLENAME_ID
+GET_ROLE_DEFINITION_ID
 CRED_ROLE=true
 echo ""
-if [[ $ROLENAME_ID == "" ]]; then
+if [[ $ROLE_DEFINITION_ID == "" ]]; then
     echo "Role definition \"$ROLENAME\" does not exist."
 
     if [[ $USER_PROMPT == true ]]; then
@@ -284,12 +284,12 @@ EOF
         CREATE_ROLE=$(az role definition create --role-definition "$CUSTOMDNSROLE_JSON" 2>/dev/null)
         wait
         rm "$CUSTOMDNSROLE_JSON"
-        GET_ROLENAME_ID
+        GET_ROLE_DEFINITION_ID
         printf "${red}Waiting${normal}: Waiting for role to be created before next step. 5 seconds pause...\n"
-        while [ -z "$ROLENAME_ID" ]; do
+        while [ -z "$ROLE_DEFINITION_ID" ]; do
             sleep 5
             printf "."
-            GET_ROLENAME_ID
+            GET_ROLE_DEFINITION_ID
         done
         printf "\n"
         echo "Role created ${grn}OK${normal}"
@@ -302,8 +302,8 @@ fi
 #######################################################################################
 ### Assign members to role
 ###
-GET_DNS_PERMISSIONS () {
-  UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
+CREATE_ROLE_ASSIGNMENT () {
+  ROLE_ASSIGNMENT=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
   wait
 }
 
@@ -322,12 +322,12 @@ fi
 
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
     printf "Assigning permission to app registration...\n"
-    GET_DNS_PERMISSIONS
+    CREATE_ROLE_ASSIGNMENT
     printf "${red}Waiting${normal}: Permission not compleded. 5 seconds pause before next try...\n"
-    while [ -z "$UPDATED_DNS_PERMISSIONS" ]; do
+    while [ -z "$ROLE_ASSIGNMENT" ]; do
             sleep 5
             printf "."
-            GET_DNS_PERMISSIONS
+            CREATE_ROLE_ASSIGNMENT
     done
 fi
 printf "\n"
