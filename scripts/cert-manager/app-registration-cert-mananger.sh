@@ -32,6 +32,10 @@ fi
 #######################################################################################
 ### START
 ###
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
  if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
@@ -178,7 +182,7 @@ fi
 
 if [[ $CRED_SECRETS == true ]]; then
     printf "Refresh credential secret..."
-    APP_DESCRIPTION="$APP_REGISTRATION_CERT_MANAGER"
+    APP_DESCRIPTION="Cert-Manager"
     UPDATED_CLIENT_SECRET=$(az ad app credential reset --id "$APP_ID" --credential-description "$APP_DESCRIPTION" 2>/dev/null) # For some reason, description can not be too long.
 
     if [[ $UPDATED_CLIENT_SECRET == "" ]]; then
@@ -224,11 +228,16 @@ fi
 #######################################################################################
 ### Assign custom permission on TXT records
 ###
+GET_ROLE_DEFINITION_ID () {
+  ROLE_DEFINITION_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
+  wait
+}
+
 ROLENAME="DNS TXT Contributor"
-ROLENAME_ID=$(az role definition list --name "$ROLENAME" --query "[].name" -o tsv)
+GET_ROLE_DEFINITION_ID
 CRED_ROLE=true
 echo ""
-if [[ $ROLENAME_ID == "" ]]; then
+if [[ $ROLE_DEFINITION_ID == "" ]]; then
     echo "Role definition \"$ROLENAME\" does not exist."
 
     if [[ $USER_PROMPT == true ]]; then
@@ -242,7 +251,7 @@ if [[ $ROLENAME_ID == "" ]]; then
         done
     fi
 
-    printf "Creating app registration..."
+    printf "Creating app registration...\n"
 
     if [[ $CRED_ROLE == true ]]; then
         CUSTOMDNSROLE_JSON="cert-mananger-custom-dns-role.json"
@@ -272,8 +281,20 @@ if [[ $ROLENAME_ID == "" ]]; then
 EOF
 
 
-        az role definition create --role-definition "$CUSTOMDNSROLE_JSON"
+        CREATE_ROLE=$(az role definition create --role-definition "$CUSTOMDNSROLE_JSON" 2>/dev/null)
+        wait
         rm "$CUSTOMDNSROLE_JSON"
+        GET_ROLE_DEFINITION_ID
+        printf "${red}Waiting${normal}: Waiting for role to be created before next step. 5 seconds pause...\n"
+        while [ -z "$ROLE_DEFINITION_ID" ]; do
+            sleep 5
+            printf "."
+            GET_ROLE_DEFINITION_ID
+        done
+        printf "\n"
+        echo "Role created ${grn}OK${normal}"
+
+
     fi
 else
     echo -e "Role $ROLENAME exists.";
@@ -281,6 +302,11 @@ fi
 #######################################################################################
 ### Assign members to role
 ###
+CREATE_ROLE_ASSIGNMENT () {
+  ROLE_ASSIGNMENT=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
+  wait
+}
+
 DNSTXT_PERMISSIONS=true
 echo ""
 if [[ $USER_PROMPT == true ]]; then
@@ -295,8 +321,14 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
-    printf "Assigning role to app registration..."
-    UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
+    printf "Assigning permission to app registration...\n"
+    CREATE_ROLE_ASSIGNMENT
+    printf "${red}Waiting${normal}: Permission not completed. 5 seconds pause before next try...\n"
+    while [ -z "$ROLE_ASSIGNMENT" ]; do
+            sleep 5
+            printf "."
+            CREATE_ROLE_ASSIGNMENT
+    done
 fi
-printf "Done.\n"
-
+printf "\n"
+printf "${grn}Done.${normal}\n"
