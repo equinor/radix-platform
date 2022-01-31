@@ -230,6 +230,7 @@ fi
 ###
 GET_ROLENAME_ID () {
   ROLENAME_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
+  wait
 }
 
 ROLENAME="DNS TXT Contributor"
@@ -282,15 +283,18 @@ EOF
 
 
         CREATE_ROLE=$(az role definition create --role-definition "$CUSTOMDNSROLE_JSON" 2>/dev/null)
+        wait
         rm "$CUSTOMDNSROLE_JSON"
         GET_ROLENAME_ID
         #ROLENAME_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
+        printf "${red}Waiting${normal}: Waiting for role to be created before next step. 5 seconds pause...\n"
         while [ -z "$ROLENAME_ID" ]; do
-            printf "${red}Waiting${normal}: Waiting for role to be created before next step. 5 seconds pause...\n"
             sleep 5
+            printf "."
             GET_ROLENAME_ID
             #ROLENAME_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
         done
+        printf "\n"
         echo "Role created ${grn}OK${normal}"
 
 
@@ -303,6 +307,7 @@ fi
 ###
 GET_DNS_PERMISSIONS () {
   UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
+  wait
 }
 
 DNSTXT_PERMISSIONS=true
@@ -322,11 +327,13 @@ if [[ $DNSTXT_PERMISSIONS == true ]]; then
     printf "Assigning permission to app registration...\n"
     #UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
     GET_DNS_PERMISSIONS
+    printf "${red}Waiting${normal}: Permission not compleded. 5 seconds pause before next try...\n"
     while [ -z "$UPDATED_DNS_PERMISSIONS" ]; do
-            printf "${red}Waiting${normal}: Permission not compleded. 5 seconds pause before next try...\n"
             sleep 5
+            printf "."
             #UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
             GET_DNS_PERMISSIONS
     done
 fi
+printf "\n"
 printf "${grn}Done.${normal}\n"
