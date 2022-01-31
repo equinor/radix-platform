@@ -323,7 +323,7 @@ fi
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
     printf "Assigning permission to app registration...\n"
     CREATE_ROLE_ASSIGNMENT
-    printf "${red}Waiting${normal}: Permission not compleded. 5 seconds pause before next try...\n"
+    printf "${red}Waiting${normal}: Permission not completed. 5 seconds pause before next try...\n"
     while [ -z "$ROLE_ASSIGNMENT" ]; do
             sleep 5
             printf "."
