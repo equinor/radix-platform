@@ -235,7 +235,6 @@ GET_ROLENAME_ID () {
 
 ROLENAME="DNS TXT Contributor"
 GET_ROLENAME_ID
-#ROLENAME_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
 CRED_ROLE=true
 echo ""
 if [[ $ROLENAME_ID == "" ]]; then
@@ -286,13 +285,11 @@ EOF
         wait
         rm "$CUSTOMDNSROLE_JSON"
         GET_ROLENAME_ID
-        #ROLENAME_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
         printf "${red}Waiting${normal}: Waiting for role to be created before next step. 5 seconds pause...\n"
         while [ -z "$ROLENAME_ID" ]; do
             sleep 5
             printf "."
             GET_ROLENAME_ID
-            #ROLENAME_ID=$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)
         done
         printf "\n"
         echo "Role created ${grn}OK${normal}"
@@ -325,13 +322,11 @@ fi
 
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
     printf "Assigning permission to app registration...\n"
-    #UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
     GET_DNS_PERMISSIONS
     printf "${red}Waiting${normal}: Permission not compleded. 5 seconds pause before next try...\n"
     while [ -z "$UPDATED_DNS_PERMISSIONS" ]; do
             sleep 5
             printf "."
-            #UPDATED_DNS_PERMISSIONS=$(az role assignment create --assignee "$APP_ID" --role "$ROLENAME" --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" 2>/dev/null)
             GET_DNS_PERMISSIONS
     done
 fi
