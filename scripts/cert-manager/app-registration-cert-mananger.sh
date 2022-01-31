@@ -323,7 +323,7 @@ fi
 if [[ $DNSTXT_PERMISSIONS == true ]]; then
     printf "Assigning permission to app registration...\n"
     GET_DNS_PERMISSIONS
-    printf "${red}Waiting${normal}: Permission not compleded. 5 seconds pause before next try...\n"
+    printf "${red}Waiting${normal}: Permission not completed. 5 seconds pause before next try...\n"
     while [ -z "$UPDATED_DNS_PERMISSIONS" ]; do
             sleep 5
             printf "."
