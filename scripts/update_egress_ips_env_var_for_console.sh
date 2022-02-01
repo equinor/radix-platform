@@ -43,6 +43,11 @@ if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
     exit 1
 fi
 
+if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
+    echo "Please provide OAUTH2_PROXY_SCOPE."
+    exit 1
+fi
+
 function updateEgressIpsEnvVars() {
     # Get auth token for Radix API
     printf "Getting auth token for Radix API..."
