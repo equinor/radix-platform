@@ -206,11 +206,9 @@ else
 fi
 
 printf "\nWorking on namespace..."
-case "$(kubectl get ns flux-system 2>&1)" in 
-    *Error*)
-        kubectl create ns flux-system 2>&1 >/dev/null
-    ;;
-esac
+if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
+    kubectl create ns flux-system 2>&1 >/dev/null
+fi
 printf "...Done"
 
 #######################################################################################
@@ -327,7 +325,8 @@ flux bootstrap git \
     --branch="$GIT_BRANCH" \
     --path="$GIT_DIR" \
     --components-extra=image-reflector-controller,image-automation-controller \
-    --version="$FLUX_VERSION"
+    --version="$FLUX_VERSION" \
+    --silent
 echo "done."
 
 rm "$FLUX_PRIVATE_KEY_NAME"

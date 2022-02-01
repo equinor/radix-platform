@@ -191,9 +191,9 @@ if [[ $CRED_SECRETS == true ]]; then
     fi
     printf " Done.\n"
 
-    APP_PASSWORD=$(echo $UPDATED_CLIENT_SECRET | jq '.password')
-    APP_NAME=$(echo $UPDATED_CLIENT_SECRET | jq '.name')
-    APP_TENANT=$(echo $UPDATED_CLIENT_SECRET | jq '.tenant')
+    APP_PASSWORD=$(echo $UPDATED_CLIENT_SECRET | jq -r '.password')
+    APP_NAME=$(echo $UPDATED_CLIENT_SECRET | jq -r '.name')
+    APP_TENANT=$(echo $UPDATED_CLIENT_SECRET | jq -r '.tenant')
 
 
     # Get expiration date of updated credential
