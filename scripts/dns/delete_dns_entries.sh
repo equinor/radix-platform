@@ -15,10 +15,10 @@
 # Example: Delete from playground
 # RADIX_ENVIRONMENT="dev" CLUSTER_TYPE="playground" ./delete_dns_entries.sh
 #
-# RADIX_ENVIRONMENT         (Mandatory. Example: prod|dev)
-# CLUSTER_TYPE                     (Optional. Defaulted if omitted. ex: "production", "playground", "development")
-# RESOURCE_GROUP                   (Optional. Example: common)
-# DNS_ZONE                         (Optional. Example:e.g. radix.equinor.com|dev.radix.equinor.com|playground.radix.equinor.com)
+# RADIX_ENVIRONMENT                 (Mandatory. Example: prod|dev)
+# CLUSTER_TYPE                      (Optional. Defaulted if omitted. ex: "production", "playground", "development")
+# RESOURCE_GROUP                    (Optional. Example: common)
+# DNS_ZONE                          (Optional. Example:e.g. radix.equinor.com|dev.radix.equinor.com|playground.radix.equinor.com)
 
 #######################################################################################
 ### Validate mandatory input
@@ -55,26 +55,21 @@ fi
 ### Ask user to verify inputs and az login
 ###
 
-# Print inputs
 echo -e ""
-echo -e "Start deleting of orphaned DNS records using the following settings:"
-echo -e "RADIX_ENVIRONMENT: $RADIX_ENVIRONMENT"
-echo -e "CLUSTER_TYPE            : $CLUSTER_TYPE"
-echo -e "DNS_ZONE                : $DNS_ZONE"
-echo -e "RESOURCE_GROUP          : $RESOURCE_GROUP"
+echo -e "Start deleting of orphaned DNS records using the following configuration:"
 echo -e ""
-
-# Check for Azure login
-echo "Checking Azure account information"
-
-AZ_ACCOUNT=`az account list | jq ".[] | select(.isDefault == true)"`
-echo -n "You are logged in to subscription "
-echo -n $AZ_ACCOUNT | jq '.id'
-echo -n "Which is named " 
-echo -n $AZ_ACCOUNT | jq '.name'
-echo -n "As user " 
-echo -n $AZ_ACCOUNT | jq '.user.name'
-echo ""
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
+echo -e "   -  CLUSTER_TYPE                     : $CLUSTER_TYPE"
+echo -e "   -  DNS_ZONE                         : $DNS_ZONE"
+echo -e "   -  RESOURCE_GROUP                   : $RESOURCE_GROUP"
+echo -e ""
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e ""
 
 while true; do
     read -p "Is this correct? (Y/n) " yn
@@ -85,50 +80,61 @@ while true; do
     esac
 done
 
+printf "Getting list of aks clusters..."
 CLUSTERS="$(az aks list | jq --raw-output -r '.[].name')"
-REFERS_TO_CLUSTER=0
+printf " Done.\n"
 
-function refers_to_existing_cluster() {
-    local txt # Input 1
-    txt="${1}"
-    
-    while read -r cluster_name; do
-        if [[ "$cluster_name" ]]; then
-            if [[ $txt == *"${cluster_name}"* ]]; then
-                REFERS_TO_CLUSTER=1
-                return
-            fi
-        fi
-    done <<<"${CLUSTERS}"
+printf "Get TXT records..."
 
-    REFERS_TO_CLUSTER=0
-}
+TXT_RECORD_LIST=$(az network dns record-set txt list \
+    --resource-group ${RESOURCE_GROUP} \
+    --zone-name ${DNS_ZONE} \
+    --query "[].{name:name,value:to_string(txtRecords[].value[0])}")
 
-echo "Deleting TXT records with no matching TXT record"
-while read -r line; do
-    if [[ "$line" ]]; then
-        stringarray=($line)
+printf " Done.\n"
 
-        refers_to_existing_cluster ${stringarray[2]}
-        if (( $REFERS_TO_CLUSTER == 0 )); then 
-            $(az network dns record-set txt delete -y -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n ${stringarray[1]})
-            $(az network dns record-set a delete -y -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n ${stringarray[1]})
-            echo "Deleted ${stringarray[1]}"
-        fi
+echo "Find TXT records not bound to a cluster..."
+
+for record in $(echo $TXT_RECORD_LIST | jq -r '.[] | @base64'); do
+    record_name=$(echo $record | base64 --decode | jq -r '.name')
+    heritage=$(echo $record | base64 --decode | jq -r '.value' | sed 's/.*owner=\(.*\),external-dns\/resource.*/\1/')
+    if [[ ${CLUSTERS[@]} != *"$heritage"* || -z $heritage ]]; then
+        # Clusters list does not contain the heritage cluster or the heritage property is missing.
+        # Delete TXT record. 
+        echo "$heritage: delete $record_name"
+        printf "Deleting: $record_name..."
+        az network dns record-set txt delete --yes --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --name $record_name
+        printf " Done.\n"
     fi
-done <<< "$(az network dns record-set list --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --query "[?type=='Microsoft.Network/dnszones/TXT']" | jq --raw-output -r '.[] | .id + " " + .name + " " + .txtRecords[].value[0]')"
+done
+echo "Done."
 
-echo "Deleting A records with no matching TXT record"
-while read -r line; do
-    if [[ "$line" ]]; then
-        stringarray=($line)
-        TXT_RECORD_EXISTS=$(az network dns record-set txt show -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n ${stringarray[1]} 2>&1)
+printf "Get A-records..."
 
-        if [[ ""${TXT_RECORD_EXISTS}"" == *"Not Found"* ]] && [[ ""${stringarray[1]}"" != "*.ext-mon" ]]; then
-            $(az network dns record-set a delete -y -g ${RESOURCE_GROUP} -z ${DNS_ZONE} -n ${stringarray[1]})
-            echo "Deleted ${stringarray[1]}"
-        fi
+A_RECORD_LIST=$(az network dns record-set a list \
+    --resource-group ${RESOURCE_GROUP} \
+    --zone-name ${DNS_ZONE} \
+    --query "[].{name:name}")
+
+printf " Done.\n"
+
+EXCLUDE_LIST=(
+    "@"
+    "*.ext-mon"
+)
+
+echo "Find A records not bound to a TXT-record..."
+
+for record in $(echo $A_RECORD_LIST | jq -r '.[] | @base64'); do
+    record_name=$(echo $record | base64 --decode | jq -r '.name')
+    if [[ $TXT_RECORD_LIST != *"$record_name"* && ${EXCLUDE_LIST[@]} != *"$record_name"* ]]; then
+        printf "Deleting: $record_name..."
+        az network dns record-set a delete --yes --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --name $record_name
+        printf " Done.\n"
     fi
-done <<< "$(az network dns record-set list --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --query "[?type=='Microsoft.Network/dnszones/A']" | jq --raw-output -r '.[] | .id + " " + .name')"
+done
 
+echo " Done."
+
+echo ""
 echo "Deleted orphaned DNSs"
