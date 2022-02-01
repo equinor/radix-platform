@@ -325,7 +325,8 @@ flux bootstrap git \
     --branch="$GIT_BRANCH" \
     --path="$GIT_DIR" \
     --components-extra=image-reflector-controller,image-automation-controller \
-    --version="$FLUX_VERSION"
+    --version="$FLUX_VERSION" \
+    --silent
 echo "done."
 
 rm "$FLUX_PRIVATE_KEY_NAME"
