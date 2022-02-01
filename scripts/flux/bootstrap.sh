@@ -206,11 +206,9 @@ else
 fi
 
 printf "\nWorking on namespace..."
-case "$(kubectl get ns flux-system 2>&1)" in 
-    *Error*)
-        kubectl create ns flux-system 2>&1 >/dev/null
-    ;;
-esac
+if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
+    kubectl create ns flux-system 2>&1 >/dev/null
+fi
 printf "...Done"
 
 #######################################################################################
