@@ -161,7 +161,7 @@ fi
 ### Get api server whitelist
 ###
 
-USER_PROMPT=false CLUSTER_NAME="" source './update_api_server_whitelist.sh'
+USER_PROMPT=false CLUSTER_NAME="" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh"
 
 #######################################################################################
 ### Verify task at hand
