@@ -173,7 +173,7 @@ addK8sConfiguration() {
     }
   ],
   "workloadIntegrationEnabled": true,
-  "eventsIntegrationEnabled": false,
+  "eventsIntegrationEnabled": true,
   "activeGateGroup": "${CLUSTER_NAME}",
   "authToken": "${K8S_BEARER}",
   "active": true,
