@@ -275,7 +275,9 @@ if [[ $ROLE_DEFINITION_ID == "" ]]; then
         "NotActions": [
         ],
         "AssignableScopes": [
-            "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}"
+            "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/dnszones/dev.radix.equinor.com",
+            "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/dnszones/playground.radix.equinor.com",
+            "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/dnszones/radix.equinor.com"
         ]
     }
 EOF
