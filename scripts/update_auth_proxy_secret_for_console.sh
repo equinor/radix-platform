@@ -47,6 +47,15 @@ if [[ -z "$AUTH_PROXY_REPLY_PATH" ]]; then
     exit 1
 fi
 
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
 function updateAuthProxySecret() {
     az keyvault secret download \
         -f radix-web-console-client-secret.yaml \

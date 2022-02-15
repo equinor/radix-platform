@@ -72,6 +72,15 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
     --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \

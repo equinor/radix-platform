@@ -86,6 +86,15 @@ fi
 
 # Optional inputs
 
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
 echo "Install Radix CICD Canary"
 SECRET_VALUES=$(az keyvault secret show \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \

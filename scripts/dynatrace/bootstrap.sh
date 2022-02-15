@@ -95,6 +95,15 @@ else
     CLUSTER_NAME="radix-$CLUSTER_TYPE-$INITIAL_CLUSTER_NAME"
 fi
 
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
 echo "Getting secrets from keyvault..."
 DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)

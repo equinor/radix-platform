@@ -57,6 +57,15 @@ SECRET_NAME=$AZ_VELERO_SERVICE_PRINCIPAL_NAME
 APP_REGISTRATION_NAME=$AZ_VELERO_SERVICE_PRINCIPAL_NAME
 
 #######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
+#######################################################################################
 ### Verify task at hand
 ###
 

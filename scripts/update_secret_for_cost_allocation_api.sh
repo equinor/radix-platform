@@ -29,6 +29,15 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
 function updateSecret() {
     echo "SQL_SERVER=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.db.server')
     SQL_DATABASE=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.db.database')
