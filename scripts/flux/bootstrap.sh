@@ -205,6 +205,16 @@ else
     exit 1
 fi
 
+#######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
+
 printf "\nWorking on namespace..."
 if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
     kubectl create ns flux-system 2>&1 >/dev/null

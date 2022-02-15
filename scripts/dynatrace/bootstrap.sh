@@ -117,6 +117,16 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 fi
 printf "...Done.\n"
 
+#######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
+
 echo "Getting secrets from keyvault..."
 DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
