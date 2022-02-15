@@ -197,13 +197,6 @@ kubectl apply -f ./priority-classes/radixComponentPriorityClass.yaml
 wait
 
 #######################################################################################
-### Install Helm and related rbac
-###
-
-#(USER_PROMPT="false" ./helm/bootstrap.sh)
-#wait
-
-#######################################################################################
 ### Install cert-manager
 ###
 
