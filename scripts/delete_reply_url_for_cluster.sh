@@ -30,6 +30,10 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 APP_REGISTRATION_NAME=$(az ad app show --id "${APP_REGISTRATION_ID}" --query displayName -o tsv)
+if [[ -z $APP_REGISTRATION_NAME ]]; then
+    echo "ERROR: Could not get app registration name. Quitting..."
+    exit 1
+fi
 
 echo ""
 echo "Deleting replyUrl for App Registration \"${APP_REGISTRATION_NAME}\"..."

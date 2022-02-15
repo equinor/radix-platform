@@ -95,6 +95,38 @@ else
     CLUSTER_NAME="radix-$CLUSTER_TYPE-$INITIAL_CLUSTER_NAME"
 fi
 
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
+#######################################################################################
+### Connect kubectl
+###
+
+# Exit if cluster does not exist
+printf "\nConnecting kubectl..."
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$INITIAL_CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+    # Send message to stderr
+    echo -e "Error: Cluster \"$INITIAL_CLUSTER_NAME\" not found." >&2
+    exit 1        
+fi
+printf "...Done.\n"
+
+#######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
+
 echo "Getting secrets from keyvault..."
 DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)

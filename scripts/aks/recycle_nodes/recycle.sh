@@ -154,6 +154,16 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 fi
 
 #######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
+
+#######################################################################################
 ### Support funcs
 ###
 

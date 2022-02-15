@@ -42,6 +42,16 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+#######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
+
 function updateReplyUrls() {
     local aadAppId
     local currentReplyUrls
@@ -49,17 +59,21 @@ function updateReplyUrls() {
     local additionalReplyURL
 
     aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
+    if [[ -z $aadAppId ]]; then
+        echo "ERROR: Could not find app registration. Quitting..."
+        exit 1
+    fi
     # Convert list to string where urls are separated by space
     currentReplyUrls="$(az ad app show --id ${aadAppId} --query replyUrls --output json | jq -r '.[] | @sh')"
     # Remove tabs as mac really insist on one being there
     currentReplyUrls="$(printf '%s\t' ${currentReplyUrls})"
     host_name=$(kubectl get ing -n ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
-    additionalReplyURL="https://${host_name}${REPLY_PATH}"  
-    
+    additionalReplyURL="https://${host_name}${REPLY_PATH}"
+
     if [[ "$currentReplyUrls" == *"${additionalReplyURL}"* ]]; then
         echo "replyUrl \"${additionalReplyURL}\" already exist in AAD app \"${AAD_APP_NAME}\"."
         echo ""
-        exit 0        
+        exit 0
     fi
 
     local newReplyURLs
@@ -91,5 +105,4 @@ function updateReplyUrls() {
 }
 
 ### MAIN
- updateReplyUrls
-
+updateReplyUrls

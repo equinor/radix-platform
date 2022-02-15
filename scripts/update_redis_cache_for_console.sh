@@ -49,6 +49,15 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 #######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
+#######################################################################################
 ### Connect kubectl
 ###
 
@@ -60,6 +69,16 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     exit 1        
 fi
 printf "...Done.\n"
+
+#######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
 
 #######################################################################################
 

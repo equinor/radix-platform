@@ -71,6 +71,15 @@ SECRET_NAME="kubernetes-api-server-whitelist-ips-${RADIX_ZONE}"
 UPDATE_KEYVAULT=true
 
 #######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
+#######################################################################################
 ### Verify task at hand
 ###
 

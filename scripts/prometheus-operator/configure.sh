@@ -81,6 +81,38 @@ if [[ -z "$CLUSTER_NAME" ]]; then
   exit 1
 fi
 
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
+#######################################################################################
+### CLUSTER?
+###
+
+kubectl_context="$(kubectl config current-context)"
+
+if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
+    echo "kubectl is ready..."
+else
+    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"
+    exit 1
+fi
+
+#######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
+
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
 ##########

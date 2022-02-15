@@ -207,12 +207,6 @@ function set_permissions_on_acr() {
     # Configure new roles
     az role assignment create --assignee "${id}" --role Contributor --scope "${scope}" --output none
 
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CLUSTER}\"..."
-    id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CLUSTER} --query appId --output tsv)"
-    # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
-    # Configure new roles
-    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
 
     printf "...Done\n"
 }
@@ -265,7 +259,6 @@ function set_permissions_on_dns() {
 function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Service principal that provide read-only access to container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
-    create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CLUSTER" "The AKS service principal"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
 }
 
