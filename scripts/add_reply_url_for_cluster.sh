@@ -59,6 +59,10 @@ function updateReplyUrls() {
     local additionalReplyURL
 
     aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
+    if [[ -z $aadAppId ]]; then
+        echo "ERROR: Could not find app registration. Quitting..."
+        exit 1
+    fi
     # Convert list to string where urls are separated by space
     currentReplyUrls="$(az ad app show --id ${aadAppId} --query replyUrls --output json | jq -r '.[] | @sh')"
     # Remove tabs as mac really insist on one being there
