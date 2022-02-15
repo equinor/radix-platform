@@ -90,6 +90,19 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+#######################################################################################
+### CLUSTER?
+###
+
+kubectl_context="$(kubectl config current-context)"
+
+if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
+    echo "kubectl is ready..."
+else
+    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"
+    exit 1
+fi
+
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
 ##########

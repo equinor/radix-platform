@@ -104,6 +104,19 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+#######################################################################################
+### Connect kubectl
+###
+
+# Exit if cluster does not exist
+printf "\nConnecting kubectl..."
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$INITIAL_CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+    # Send message to stderr
+    echo -e "Error: Cluster \"$INITIAL_CLUSTER_NAME\" not found." >&2
+    exit 1        
+fi
+printf "...Done.\n"
+
 echo "Getting secrets from keyvault..."
 DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 DYNATRACE_API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
