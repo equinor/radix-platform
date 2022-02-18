@@ -11,6 +11,7 @@ function GetReleaseVersion {
 
     )
     Write-Host "Checking release version.."
+    Write-Host "Component  $Release"
     $n = helm ls -A -f ('(?i)^' + $Release) -o json | ConvertFrom-Json
     Write-Host "Checking release version for $n"
     try {
