@@ -35,7 +35,7 @@ az aks get-credentials -n $activeRadixCluster -g $zoneVariables.radix.cluster.re
 # TODO Add this to a json file so it can be used by other scripts if needed
 $repos = @('jetstack https://charts.jetstack.io',
             'blob-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/charts',
-            'csi-secrets https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts',
+            'csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts',
             'bitnami https://charts.bitnami.com/bitnami',
             'dynatrace https://raw.githubusercontent.com/Dynatrace/helm-charts/master/repos/stable',
             'grafana https://grafana.github.io/helm-charts',
@@ -51,8 +51,8 @@ UpdateRepos -RepoList $repos
 # Runs the check against each component and adds a user story if it detects a new version
 # TODO refactor this somehow
 CheckRelease -ReleaseName blob-csi-driver -ChartName blob-csi-driver/blob-csi-driver -Cluster $zoneVariables.radix.cluster.type
-CheckRelease -ReleaseName csi-secrets-store-provider-azure -ChartName csi-secrets/csi-secrets-store-provider-azure -Cluster $zoneVariables.radix.cluster.type
-# CheckRelease -ReleaseName cert-manager -ChartName jetstack/cert-manager -Cluster $zoneVariables.radix.cluster.type
+CheckRelease -ReleaseName csi-secrets-store-provider-azure -ChartName csi-secrets-store-provider-azure/csi-secrets-store-provider-azure -Cluster $zoneVariables.radix.cluster.type
+CheckRelease -ReleaseName cert-manager -ChartName jetstack/cert-manager -Cluster $zoneVariables.radix.cluster.type
 # CheckRelease -ReleaseName dynatrace-operator -ChartName dynatrace/dynatrace-operator -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName external-dns -ChartName bitnami/external-dns -Cluster $zoneVariables.radix.cluster.type
 # CheckRelease -ReleaseName flux -ChartName fluxcd/flux -Cluster $zoneVariables.radix.cluster.type
