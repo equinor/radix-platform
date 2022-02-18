@@ -33,7 +33,7 @@ az aks get-credentials -n $activeRadixCluster -g $zoneVariables.radix.cluster.re
 
 # List of helm repositories used in Radix
 # TODO Add this to a json file so it can be used by other scripts if needed
-$repos = @('jetstack https://charts.jetstack.io', 
+$repos = @('jetstack https://charts.jetstack.io',
             'blob-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/blob-csi-driver/master/charts',
             'csi-secrets https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts',
             'bitnami https://charts.bitnami.com/bitnami',
