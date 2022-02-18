@@ -390,6 +390,17 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$S
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
+
+#######################################################################################
+### Verify cluster access
+###
+printf "Verifying cluster access..."
+if [[ $(kubectl cluster-info --request-timeout "1s" 2>&1) == *"Unable to connect to the server"* ]]; then
+    printf "ERROR: Could not access cluster. Quitting...\n"
+    exit 1
+fi
+printf " OK\n"
+
 [[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
 printf "Done.\n"
 
