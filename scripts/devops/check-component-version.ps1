@@ -49,7 +49,7 @@ UpdateRepos -RepoList $repos
 
 # Runs the check against each component and adds a user story if it detects a new version
 # TODO refactor this somehow
-CheckRelease -ReleaseName blob-csi-driver -ChartName blob-csi-driver/blob-csi-driver -Cluster $zoneVariables.radix.cluster.type
+# CheckRelease -ReleaseName blob-csi-driver -ChartName blob-csi-driver/blob-csi-driver -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName cert-manager -ChartName jetstack/cert-manager -Cluster $zoneVariables.radix.cluster.type
 # CheckRelease -ReleaseName dynatrace-operator -ChartName dynatrace/dynatrace-operator -Cluster $zoneVariables.radix.cluster.type
 CheckRelease -ReleaseName external-dns -ChartName bitnami/external-dns -Cluster $zoneVariables.radix.cluster.type
