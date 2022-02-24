@@ -508,31 +508,17 @@ printf "Done."
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" ./update_egress_ips_env_var_for_console.sh)
 wait # wait for subshell to finish
-BUILD_REDISCACHE=true
 echo ""
-if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        read -p "Build Proxy Secrets and Redis Cahce for Console? (Y/n) " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) BUILD_REDISCACHE=false; echo "Skipping."; break;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
-fi
-
-if [[ $BUILD_REDISCACHE == true ]]; then
-    printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
-    printf "Update Auth proxy secret...\n"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
-    wait # wait for subshell to finish
-    printf "Update Redis Cache for Console in ${grn}QA${normal}...\n"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" ./update_redis_cache_for_console.sh)
-    wait # wait for subshell to finish
-    printf "Update Redis Cache for Console in ${grn}PROD${normal}...\n"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" ./update_redis_cache_for_console.sh)
-    wait # wait for subshell to finish
-fi
+printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
+printf "Update Auth proxy secret...\n"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+wait # wait for subshell to finish
+printf "Update Redis Cache for Console in ${grn}QA${normal}...\n"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" ./update_redis_cache_for_console.sh)
+wait # wait for subshell to finish
+printf "Update Redis Cache for Console in ${grn}PROD${normal}...\n"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" ./update_redis_cache_for_console.sh)
+wait # wait for subshell to finish
 
 CUSTOM_INGRESSES=true
 echo ""
