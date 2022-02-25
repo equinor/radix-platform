@@ -142,6 +142,12 @@ if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
     echo "The dynatrace integration script is not found or it is not executable in path $DYNATRACE_INTEGRATION_SCRIPT" >&2
 fi
 
+DYNATRACE_DASHBOARD_SCRIPT="$WORKDIR_PATH/dynatrace/dashboard/create-dashboard.sh"
+if ! [[ -x "$DYNATRACE_DASHBOARD_SCRIPT" ]]; then
+    # Print to stderror
+    echo "The dynatrace dashboard script is not found or it is not executable in path $DYNATRACE_DASHBOARD_SCRIPT" >&2
+fi
+
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
@@ -376,6 +382,12 @@ if [ "$CLUSTER_TYPE" != "production" ]; then
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
     wait # wait for subshell to finish
     printf "Done updating Dynatrace integration."
+
+    echo ""
+    printf "Create Dynatrace dashboard for $DEST_CLUSTER... "
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_DASHBOARD_SCRIPT")
+    wait # wait for subshell to finish
+    printf "Done creating Dynatrace dashboard."
 fi
 
 # Wait for velero to be deployed from flux
