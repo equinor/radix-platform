@@ -530,7 +530,7 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
-    source move_custom_ingresses.sh; break;;
+    source move_custom_ingresses.sh
 else
     echo ""
     echo "Chicken!"
