@@ -175,6 +175,10 @@ printf "Disabling monitoring addon in the source cluster... "
 az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters --no-wait
 printf "Done.\n"
 
+#######################################################################################
+### Change credentials to Source cluster
+###
+
 echo ""
 printf "Point to source cluster... "
 az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
@@ -192,9 +196,58 @@ while read -r line; do
     fi
 done <<<"$(helm list --short | grep radix-ingress)"
 
-# Point granana to cluster specific ingress
+#######################################################################################
+### 
+###
+# Point grafana to cluster specific ingress
 GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
 kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
+
+#######################################################################################
+### Scale down source cluster resources
+###
+echo ""
+printf "Scale down radix-cicd-canary in $SOURCE_CLUSTER...\n"
+kubectl scale deployment -n radix-cicd-canary radix-cicd-canary --replicas=0
+wait
+printf "Done.\n"
+
+echo ""
+printf "Scale down radix-acr-cleanup in $SOURCE_CLUSTER...\n"
+kubectl scale deployment radix-acr-cleanup --replicas=0
+wait
+printf "Done.\n"
+
+#######################################################################################
+### Suspend source flux resources
+###
+echo ""
+printf "Suspend flux source...\n"
+flux suspend source git radix-acr-cleanup
+wait
+flux suspend source git radix-cicd-canary
+wait
+printf "Done.\n"
+
+echo ""
+printf "Suspend flux image...\n"
+flux suspend image repository radix-acr-cleanup
+wait
+flux suspend image repository radix-cicd-canary
+wait
+flux suspend image update radix-dev-acr-auto-update
+wait
+printf "Done.\n"
+
+echo ""
+printf "Suspend flux kustomization...\n"
+flux suspend kustomization flux-system
+wait
+printf "Done.\n"
+
+#######################################################################################
+### Change credentials to Destination cluster
+###
 
 echo ""
 printf "Point to destination cluster... "
