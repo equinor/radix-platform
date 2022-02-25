@@ -175,6 +175,10 @@ printf "Disabling monitoring addon in the source cluster... "
 az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters --no-wait
 printf "Done.\n"
 
+#######################################################################################
+### Change credentials to Source cluster
+###
+
 echo ""
 printf "Point to source cluster... "
 az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
@@ -191,6 +195,13 @@ while read -r line; do
         helm delete ${line}
     fi
 done <<<"$(helm list --short | grep radix-ingress)"
+
+#######################################################################################
+### 
+###
+# Point grafana to cluster specific ingress
+GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
+kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
 #######################################################################################
 ### Scale down source cluster resources
@@ -235,11 +246,8 @@ wait
 printf "Done.\n"
 
 #######################################################################################
-### 
+### Change credentials to Destination cluster
 ###
-# Point granana to cluster specific ingress
-GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
 echo ""
 printf "Point to destination cluster... "
