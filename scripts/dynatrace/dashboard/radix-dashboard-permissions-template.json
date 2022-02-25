@@ -1,0 +1,16 @@
+{
+    "id": "${DASHBOARD_ID}",
+    "enabled": true,
+    "preset": false,
+    "permissions": [
+        {
+            "id": "radixplatformdevelopers",
+            "type": "GROUP",
+            "permission": "EDIT"
+        }
+    ],
+    "publicAccess": {
+        "managementZoneIds": [],
+        "urls": {}
+    }
+}

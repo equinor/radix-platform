@@ -206,6 +206,7 @@ wait # wait for subshell to finish
 
 echo "Deleting Dynatrace integration..."
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
 
 echo "Cleaning up local kube config... "
 kubectl config delete-context "${CLUSTER_NAME}-admin" 2>&1 >/dev/null
