@@ -192,6 +192,24 @@ while read -r line; do
     fi
 done <<<"$(helm list --short | grep radix-ingress)"
 
+#######################################################################################
+### Scale down Source Cluster resources
+###
+echo ""
+printf "Scale down radix-cicd-canary in $SOURCE_CLUSTER... "
+kubectl scale deployment -n radix-cicd-canary radix-cicd-canary --replicas=0
+wait
+printf "Done.\n"
+
+echo ""
+printf "Scale down radix-acr-cleanup in $SOURCE_CLUSTER... "
+kubectl scale deployment radix-acr-cleanup --replicas=0
+wait
+printf "Done.\n"
+
+#######################################################################################
+### 
+###
 # Point granana to cluster specific ingress
 GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
 kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
