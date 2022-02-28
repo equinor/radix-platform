@@ -178,7 +178,7 @@ kubectl create namespace snyk-monitor \
 2>&1 >/dev/null
 
 SNYK_INTEGRATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-integration-token 2>/dev/null | jq -r .value)"
-if [[ $SNYK_INTEGRATION_ID == "" ]]; then
+if [[ -z $SNYK_INTEGRATION_ID ]]; then
     echo "Error: Could not find secret \"radix-snyk-integration-token\" in keyvault. Quitting.."
     exit 1
 fi
@@ -206,7 +206,7 @@ echo "Done."
 echo "Install secret \"snyk-helm-secret\" in cluster..."
 
 SNYK_ORGANIZATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-organization-token 2>/dev/null | jq -r .value)"
-if [[ $SNYK_ORGANIZATION_ID == "" ]]; then
+if [[ -z $SNYK_ORGANIZATION_ID ]]; then
     echo "Error: Could not find secret \"radix-snyk-organization-token\" in keyvault. Quitting.."
     exit 1
 fi
