@@ -211,10 +211,13 @@ if [[ -z $SNYK_ORGANIZATION_ID ]]; then
     exit 1
 fi
 
+echo "policyOrgs: $SNYK_ORGANIZATION_ID" > values
+
 kubectl create secret generic snyk-helm-secret \
     --namespace snyk-monitor \
-    --from-literal=policyOrgs=$SNYK_ORGANIZATION_ID \
+    --from-file=./values \
     --dry-run=client -o yaml |
     kubectl apply -f -
+rm -f values
 
 echo "Done."
