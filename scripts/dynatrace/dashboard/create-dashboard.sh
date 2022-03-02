@@ -62,7 +62,8 @@ function create_dashboard_json (){
     export DASHBOARD_CLUSTER_NAME="radix-${radix_env}-$cluster_name"
     export START_POS_TOP="$offset"
 
-    DASHBOARD_JSON_TEMPLATE="radix-dashboard-template.json"
+    WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    DASHBOARD_JSON_TEMPLATE="$WORKDIR_PATH/radix-dashboard-template.json"
     TEMP_DASHBOARD_JSON="dashboard.json"
     test -f "$TEMP_DASHBOARD_JSON" && rm "$TEMP_DASHBOARD_JSON" # Delete dashboard JSON file if it exists.
 
@@ -122,7 +123,7 @@ function create_dashboard_json (){
     fi
 
     # Update share settings
-    PERMISSIONS_JSON_TEMPLATE="radix-dashboard-permissions-template.json"
+    PERMISSIONS_JSON_TEMPLATE="$WORKDIR_PATH/radix-dashboard-permissions-template.json"
     TEMP_DASHBOARD_PERMISSIONS_JSON="permissions.json"
     test -f "$TEMP_DASHBOARD_PERMISSIONS_JSON" && rm "$TEMP_DASHBOARD_PERMISSIONS_JSON" # Delete dashboard permissions JSON file if it exists.
     envsubst < $PERMISSIONS_JSON_TEMPLATE > $TEMP_DASHBOARD_PERMISSIONS_JSON # Substitute variables in template file with values into dashboard permissions JSON file.
