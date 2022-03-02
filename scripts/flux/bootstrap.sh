@@ -13,9 +13,9 @@
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
 # - CLUSTER_NAME            : Ex: "test-2", "weekly-93"
-# - GIT_REPO                : Ex: ""
+# - GIT_REPO                : Ex: "ssh://git@github.com/equinor/radix-flux"
 # - GIT_BRANCH              : Ex: "master"
-# - GIT_DIR                 : Default to "development-configs"
+# - GIT_DIR                 : Ex: "clusters/development"
 
 # Optional:
 # - USER_PROMPT             : Is human interaction is required to run script? true/false. Default is true.

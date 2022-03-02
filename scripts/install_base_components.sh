@@ -26,9 +26,8 @@
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - FLUX_GITOPS_REPO
-# - FLUX_GITOPS_BRANCH
-# - FLUX_GITOPS_PATH
+# - OVERRIDE_GIT_BRANCH
+# - OVERRIDE_GIT_DIR
 # - USER_PROMPT                 : Is human interaction is required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -39,7 +38,7 @@
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./install_base_components.sh
 
 # Configure a dev cluster to use custom configs
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="please-work-4" FLUX_GITOPS_BRANCH=testing-something FLUX_GITOPS_DIR=development-configs ./install_base_components.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="please-work-4" FLUX_OVERRIDE_GIT_BRANCH=testing-something FLUX_OVERRIDE_GIT_DIR=clusters/test-overlay ./install_base_components.sh
 
 #######################################################################################
 ### START
@@ -96,15 +95,6 @@ else
     exit 1
   fi
   source "$RADIX_ZONE_ENV"
-fi
-
-# Return to overrided values, if present
-if [[ -n "$FLUX_GITOPS_BRANCH_OVERRIDE" ]]; then
-  FLUX_GITOPS_BRANCH=$FLUX_GITOPS_BRANCH_OVERRIDE
-fi
-
-if [[ -n "$FLUX_GITOPS_DIR_OVERRIDE" ]]; then
-  FLUX_GITOPS_DIR=$FLUX_GITOPS_DIR_OVERRIDE
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
@@ -309,6 +299,8 @@ echo ""
 (USER_PROMPT="false" \
   RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
   CLUSTER_NAME="$CLUSTER_NAME" \
+  OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
+  OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
   ./flux/bootstrap.sh)
 wait
 

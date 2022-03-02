@@ -347,9 +347,13 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
         local dns_zone=${1}
         local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv 2>&1)"
         if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
-            echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
-            # throws error if run twice
-            az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False 2>&1
+            if [[ $DNS_ZONE_LINK_EXIST == *"ARMResourceNotFoundFix"* ]]; then
+                echo "DNS Zone ${dns_zone} not found."
+            else
+                echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
+                # throws error if run twice
+                az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False 2>&1
+            fi
         fi
     }
 

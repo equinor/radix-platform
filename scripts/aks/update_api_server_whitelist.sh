@@ -36,7 +36,7 @@
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./update_api_server_whitelist.sh
 
 # Update the keyvault secret and a cluster with the list
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" 8S_API_IP_WHITELIST="10.1.0.0/16,123.456.78.90" ./update_api_server_whitelist.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" K8S_API_IP_WHITELIST="10.1.0.0/16,123.456.78.90" ./update_api_server_whitelist.sh
 
 #######################################################################################
 ### START
