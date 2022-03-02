@@ -200,7 +200,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     printf "     Working..."
 
     # Get cluster IP
-    CLUSTER_IP=$(dig +short public-site-radix-platform-prod.$CLUSTER_NAME.$AZ_RESOURCE_DNS)
+    CLUSTER_IP=$(kubectl get service --namespace ingress-nginx ingress-nginx-controller -ojson | jq -r .status.loadBalancer.ingress[0].ip)
 
     # Create alias in the dns zone
     if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
