@@ -410,7 +410,7 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$S
 ### Verify cluster access
 ###
 printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info --request-timeout "5s" 2>&1) == *"Unable to connect to the server"* ]]; then
+if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
     printf "ERROR: Could not access cluster. Quitting...\n"
     exit 1
 fi
