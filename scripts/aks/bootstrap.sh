@@ -78,6 +78,11 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+if [[ -z "$MIGRATION_STRATEGY" ]]; then
+    echo "Please provide MIGRATION_STRATEGY" >&2
+    exit 1
+fi
+
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
@@ -345,15 +350,14 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
 
     function linkPrivateDnsZoneToVNET() {
         local dns_zone=${1}
+        local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone --query "id" --output tsv 2>&1)"
         local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv 2>&1)"
-        if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
-            if [[ $DNS_ZONE_LINK_EXIST == *"ARMResourceNotFoundFix"* ]]; then
-                echo "DNS Zone ${dns_zone} not found."
-            else
-                echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
-                # throws error if run twice
-                az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False 2>&1
-            fi
+        if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
+            echo "ERROR: Private DNS Zone ${dns_zone} not found."
+        elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
+            echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
+            # throws error if run twice
+            az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False 2>&1
         fi
     }
 
