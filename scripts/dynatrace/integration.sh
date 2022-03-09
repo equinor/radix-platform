@@ -176,8 +176,8 @@ addK8sConfiguration() {
   "endpointUrl": "${K8S_ENDPOINT}",
   "eventsFieldSelectors": [
     {
-      "label": "Node events",
-      "fieldSelector": "involvedObject.kind=Node",
+      "label": "All events",
+      "fieldSelector": "type!=UNDEFINED",
       "active": true
     }
   ],
