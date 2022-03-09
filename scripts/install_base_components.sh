@@ -133,6 +133,12 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
+if [ -n "$FLUX_OVERRIDE_GIT_BRANCH" ]; then
+echo -e "   -  FLUX_OVERRIDE_GIT_BRANCH         : $FLUX_OVERRIDE_GIT_BRANCH"
+fi
+if [ -n "$FLUX_OVERRIDE_GIT_DIR" ]; then
+echo -e "   -  FLUX_OVERRIDE_GIT_DIR            : $FLUX_OVERRIDE_GIT_DIR"
+fi
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
