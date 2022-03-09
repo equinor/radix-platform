@@ -172,8 +172,16 @@ addK8sConfiguration() {
   json="$(
     cat <<EOF
 {
+  "active": true,
   "label": "${CLUSTER_NAME}",
   "endpointUrl": "${K8S_ENDPOINT}",
+  "authToken": "${K8S_BEARER}",
+  "activeGateGroup": "${CLUSTER_NAME}",
+  "eventsIntegrationEnabled": true,
+  "eventAnalysisAndAlertingEnabled": true,
+  "workloadIntegrationEnabled": true,
+  "prometheusExportersIntegrationEnabled": "${ENABLE_PROMETHEUS_INTEGRATION}",
+  "davisEventsIntegrationEnabled": false,
   "eventsFieldSelectors": [
     {
       "label": "All events",
@@ -181,13 +189,8 @@ addK8sConfiguration() {
       "active": true
     }
   ],
-  "workloadIntegrationEnabled": true,
-  "eventsIntegrationEnabled": true,
-  "activeGateGroup": "${CLUSTER_NAME}",
-  "authToken": "${K8S_BEARER}",
-  "active": true,
   "certificateCheckEnabled": "${CERT_CHECK_API}",
-  "prometheusExportersIntegrationEnabled": "${ENABLE_PROMETHEUS_INTEGRATION}"
+  "hostnameVerificationEnabled": true
 }
 EOF
   )"
