@@ -49,40 +49,42 @@ fi
 printf " OK\n"
 
 function updateSecret() {
-    echo "SQL_SERVER=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.db.server')
-    SQL_DATABASE=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.db.database')
-    SQL_USER=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.db.user')
-    SQL_PASSWORD=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.db.password')
-    SUBSCRIPTION_COST_VALUE=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.subscriptionCost.value')
-    SUBSCRIPTION_COST_CURRENCY=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.subscriptionCost.currency')
-    WHITELIST=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.subscriptionCost.whiteList')
-    AD_REPORT_READERS=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.auth.reportReaders')
-    TOKEN_ISSUER=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT|jq -r '.value'| jq -r '.auth.tokenIssuer')
-    " > radix-cost-allocation-api-secrets.yaml
-    
-    COST_ALLOCATION_API_SECRET_NAME_QA=$(kubectl get secret -l radix-component="server" -n "radix-cost-allocation-api-qa" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
+    COST_ALLOCATION_API_SECRET=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT | jq -r '.value' | sed 's/"{/{/g' | sed 's/}"/}/g')
+
+    echo "SQL_SERVER=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.server')
+    SQL_DATABASE=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.database')
+    SQL_USER=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.user')
+    SQL_PASSWORD=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.password')
+    SUBSCRIPTION_COST_VALUE=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.subscriptionCost.value')
+    SUBSCRIPTION_COST_CURRENCY=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.subscriptionCost.currency')
+    WHITELIST=$(echo $COST_ALLOCATION_API_SECRET | jq -c '.subscriptionCost.whiteList')
+    AD_REPORT_READERS=$(echo $COST_ALLOCATION_API_SECRET | jq -c '.auth.reportReaders')
+    TOKEN_ISSUER=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.auth.tokenIssuer')
+    " > radix-cost-allocation-api-secrets.env
+
+    COST_ALLOCATION_API_SECRET_NAME_QA=$(kubectl get secret --namespace "radix-cost-allocation-api-qa" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$COST_ALLOCATION_API_SECRET_NAME_QA" ]]; then
-        echo "Please provide COST_ALLOCATION_API_SECRET_NAME_QA."
+        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa."
     else
         kubectl create secret generic "$COST_ALLOCATION_API_SECRET_NAME_QA" --namespace radix-cost-allocation-api-qa \
-            --from-env-file=./radix-cost-allocation-api-secrets.yaml \
+            --from-env-file=./radix-cost-allocation-api-secrets.env \
             --dry-run=client -o yaml |
             kubectl apply -f -
     fi
 
-    COST_ALLOCATION_API_SECRET_NAME_PROD=$(kubectl get secret -l radix-component="server" -n "radix-cost-allocation-api-prod" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
+    COST_ALLOCATION_API_SECRET_NAME_PROD=$(kubectl get secret --namespace "radix-cost-allocation-api-prod" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$COST_ALLOCATION_API_SECRET_NAME_PROD" ]]; then
-        echo "Please provide COST_ALLOCATION_API_SECRET_NAME_PROD."
+        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa."
     else
         kubectl create secret generic "$COST_ALLOCATION_API_SECRET_NAME_PROD" --namespace radix-cost-allocation-api-prod \
-            --from-env-file=./radix-cost-allocation-api-secrets.yaml \
+            --from-env-file=./radix-cost-allocation-api-secrets.env \
             --dry-run=client -o yaml |
             kubectl apply -f -
     fi
 
-    rm radix-cost-allocation-api-secrets.yaml
+    rm radix-cost-allocation-api-secrets.env
 
     echo "Secret updated"
 }
