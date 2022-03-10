@@ -133,6 +133,12 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
+if [ -n "$FLUX_OVERRIDE_GIT_BRANCH" ]; then
+echo -e "   -  FLUX_OVERRIDE_GIT_BRANCH         : $FLUX_OVERRIDE_GIT_BRANCH"
+fi
+if [ -n "$FLUX_OVERRIDE_GIT_DIR" ]; then
+echo -e "   -  FLUX_OVERRIDE_GIT_DIR            : $FLUX_OVERRIDE_GIT_DIR"
+fi
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -206,7 +212,7 @@ kubectl apply -f manifests/storageclass-retain-nocache.yaml
 ###
 
 echo ""
-(USER_PROMPT="false" ./grafana/bootstrap.sh)
+(USER_PROMPT="$USER_PROMPT" ./grafana/bootstrap.sh)
 wait
 
 #######################################################################################
@@ -230,7 +236,7 @@ echo "Start on radix platform shared configs and secrets..."
 
 echo ""
 (./config-and-secrets/bootstrap-acr.sh)
-(./config-and-secrets/bootstrap-snyk.sh)
+(USER_PROMPT="$USER_PROMPT" ./config-and-secrets/bootstrap-snyk.sh)
 wait
 
 echo "Done."
@@ -240,7 +246,7 @@ echo "Done."
 # NOTE: Depends on radix-docker secret, created in scripts/config-and-secrets/bootstrap-acr.sh
 
 echo ""
-(./snyk-monitor/bootstrap.sh)
+(USER_PROMPT="$USER_PROMPT" ./snyk-monitor/bootstrap.sh)
 wait
 
 #######################################################################################
@@ -296,7 +302,7 @@ echo ""
 echo "Install Flux v2"
 echo ""
 
-(USER_PROMPT="false" \
+(USER_PROMPT="$USER_PROMPT" \
   RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
   CLUSTER_NAME="$CLUSTER_NAME" \
   OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
