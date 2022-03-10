@@ -554,7 +554,12 @@ done
 printf " Done\n."
 
 # Move custom ingresses
-CUSTOM_INGRESSES=true
+if [[ $MIGRATION_STRATEGY == "aa" ]]; then
+    CUSTOM_INGRESSES=true
+else
+    CUSTOM_INGRESSES=false
+fi
+
 echo ""
 if [[ $USER_PROMPT == true ]]; then
     while true; do
