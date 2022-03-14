@@ -500,7 +500,6 @@ printf "Done.\n"
 ### Specify static public inbound IP
 ###
 
-
 # Path to Public IP Prefix which contains the public inbound IPs
 IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_INBOUND_NAME"
 
@@ -544,8 +543,10 @@ IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/provi
     fi
     echo ""
 
-    # Patch the ingress service with inbound IP
-    kubectl patch service ingress-nginx-controller --namespace ingress-nginx -p '{"metadata":{"annotations":{"service.beta.kubernetes.io/azure-load-balancer-resource-group": "'$AZ_RESOURCE_GROUP_COMMON'"}},"spec":{"loadBalancerIP":"'$SELECTED_IP'"}}'
+    kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
+            --from-literal=ingressIp=$SELECTED_IP \
+            --dry-run=client -o yaml |
+            kubectl apply -f -
 fi
 
 #######################################################################################
