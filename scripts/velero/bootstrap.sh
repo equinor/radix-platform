@@ -199,6 +199,29 @@ printf "Done.\n"
 # Clean up
 unset AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD # Clear credentials from memory
 
+#######################################################################################
+### Velero custom RBAC clusterrole
+###
+RBAC_CLUSTERROLE="velero-admin"
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+    name: $RBAC_CLUSTERROLE
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - "*"
+  verbs:
+  - "*"
+- nonResourceURLs: ["*"]
+  verbs: ["*"]
+EOF                              
 
 #######################################################################################
 ### END
