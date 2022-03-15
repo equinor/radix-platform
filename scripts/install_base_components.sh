@@ -187,6 +187,13 @@ kubectl apply -f ./priority-classes/radixComponentPriorityClass.yaml
 wait
 
 #######################################################################################
+### Install ingress-nginx
+###
+
+(USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
+wait
+
+#######################################################################################
 ### Install cert-manager
 ###
 

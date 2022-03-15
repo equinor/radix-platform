@@ -496,58 +496,6 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$C
 
 printf "Done.\n"
 
-#######################################################################################
-### Specify static public inbound IP
-###
-
-# Path to Public IP Prefix which contains the public inbound IPs
-IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_INBOUND_NAME"
-
-    # list of AVAILABLE public ips assigned to the Radix Zone
-    echo "Getting list of available public inbound ips in $RADIX_ZONE..."
-    AVAILABLE_INBOUND_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INBOUND_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
-
-    SELECTED_IP="$(echo $AVAILABLE_INBOUND_IPS | jq '.[0:1]')"
-
-    if [[ "$AVAILABLE_INBOUND_IPS" == "[]" ]]; then
-        echo "ERROR: Query returned no ips. Please check the variable IPPRE_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
-        exit 1
-    elif [[ -z $AVAILABLE_INBOUND_IPS ]]; then
-        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
-        exit 1
-    else
-        echo "-----------------------------------------------------------"
-        echo ""
-        echo "The following public IP(s) are currently available:"
-        echo ""
-        echo $AVAILABLE_INBOUND_IPS | jq -r '.[].name'
-        echo ""
-        echo "The following public IP will be assigned as inbound IP to the cluster:"
-        echo ""
-        echo $SELECTED_IP | jq -r '.[].name'
-        echo ""
-        echo "-----------------------------------------------------------"
-    fi
-
-    echo ""
-    USER_PROMPT="true"
-    if [[ $USER_PROMPT == true ]]; then
-        while true; do
-            read -p "Is this correct? (Y/n) " yn
-            case $yn in
-                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
-            esac
-        done
-    fi
-    echo ""
-
-    kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
-            --from-literal=ingressIp=$SELECTED_IP \
-            --dry-run=client -o yaml |
-            kubectl apply -f -
-fi
 
 #######################################################################################
 ### Add GPU node pools
