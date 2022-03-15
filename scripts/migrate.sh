@@ -521,14 +521,45 @@ printf "Done."
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" ./update_egress_ips_env_var_for_console.sh)
 wait # wait for subshell to finish
 echo ""
-printf "Update Redis Cache for Console in ${grn}QA${normal}...\n"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" ./update_redis_cache_for_console.sh)
-wait # wait for subshell to finish
-printf "Update Redis Cache for Console in ${grn}PROD${normal}...\n"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" ./update_redis_cache_for_console.sh)
-wait # wait for subshell to finish
 
-CUSTOM_INGRESSES=true
+create_redis_cache=true
+if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -p "Update Redis Caches for Console? (Y/n) " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) create_redis_cache=false; exit 0;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
+if [[ $create_redis_cache == true ]]; then
+    printf "Creating Redis Caches for Console..."
+    (
+        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_qa &
+        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_prod &
+    )
+    printf " Done.\n"
+    cat tmp_qa && rm tmp_qa
+    cat tmp_prod && rm tmp_prod
+fi
+
+# Wait for redis caches to be created.
+printf "Waiting for redis caches to be created..."
+while [[ $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $CLUSTER_NAME-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $CLUSTER_NAME-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
+  printf "."
+  sleep 5
+done
+printf " Done\n."
+
+# Move custom ingresses
+if [[ $MIGRATION_STRATEGY == "aa" ]]; then
+    CUSTOM_INGRESSES=true
+else
+    CUSTOM_INGRESSES=false
+fi
+
 echo ""
 if [[ $USER_PROMPT == true ]]; then
     while true; do

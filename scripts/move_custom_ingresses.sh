@@ -97,6 +97,19 @@ if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
 fi
 
 #######################################################################################
+### Define web console auth secret variables
+###
+
+AUTH_PROXY_COMPONENT="auth"
+AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+RADIX_WEB_CONSOLE_ENV="prod"
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+    RADIX_WEB_CONSOLE_ENV="qa"
+fi
+AUTH_INGRESS_SUFFIX=".custom-domain"
+WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+
+#######################################################################################
 ### Prepare az session
 ###
 
@@ -239,10 +252,8 @@ flux suspend image update radix-dev-acr-auto-update
 wait
 printf "Done.\n"
 
-echo ""
-printf "Suspend flux kustomization...\n"
-flux suspend kustomization flux-system
-wait
+printf "Update Auth proxy secret...\n"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
 printf "Done.\n"
 
 #######################################################################################
@@ -261,15 +272,6 @@ wait # wait for subshell to finish
 printf "Done creating aliases."
 
 # Update auth proxy secret and redis cache
-AUTH_PROXY_COMPONENT="auth"
-AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE  == "development" ]]; then
-    echo "Development cluster uses QA web-console"
-    RADIX_WEB_CONSOLE_ENV="qa"
-fi
-AUTH_INGRESS_SUFFIX=".custom-domain"
-WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
 wait # wait for subshell to finish
 
