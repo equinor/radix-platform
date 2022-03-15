@@ -207,11 +207,11 @@ cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  annotations:
-    rbac.authorization.kubernetes.io/autoupdate: "true"
+  name: $RBAC_CLUSTERROLE
   labels:
     kubernetes.io/bootstrapping: rbac-defaults
-    name: $RBAC_CLUSTERROLE
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
 rules:
 - apiGroups:
   - "*"
@@ -221,7 +221,7 @@ rules:
   - "*"
 - nonResourceURLs: ["*"]
   verbs: ["*"]
-EOF                              
+EOF                            
 
 #######################################################################################
 ### END
