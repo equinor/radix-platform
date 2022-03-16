@@ -55,10 +55,6 @@ hash kubectl 2>/dev/null || {
     echo -e "\nError: kubectl not found in PATH. Exiting..."
     exit 1
 }
-hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..."
-    exit 1
-}
 hash jq 2>/dev/null || {
     echo -e "\nError: jq not found in PATH. Exiting..."
     exit 1
@@ -225,5 +221,7 @@ kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
             --from-file=./config \
             --dry-run=client -o yaml |
             kubectl apply -f -
+
+rm config
 
 echo "Done."
