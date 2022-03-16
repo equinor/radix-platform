@@ -278,7 +278,7 @@ printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
 ASSIGNED_IPS="$(az network public-ip list \
     --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_INFRASTRUCTURE_REGION}'].ipAddress" \
     --output json)"
-
+echo $ASSIGNED_IPS
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then
     echo "ERROR: Could not find Public IP of cluster."
 else
