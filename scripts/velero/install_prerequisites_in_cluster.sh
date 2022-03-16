@@ -252,8 +252,31 @@ az storage container create -n "$CLUSTER_NAME" \
   2>&1 >/dev/null
 printf "...Done"
 
+# Velero custom RBAC clusterrole
+RBAC_CLUSTERROLE="velero-admin"
+printf "\nCreating $RBAC_CLUSTERROLE clusterrole..\n"
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: $RBAC_CLUSTERROLE
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - "*"
+  verbs:
+  - "*"
+- nonResourceURLs: ["*"]
+  verbs: ["*"]
+EOF
+
 # Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
-printf "\nWorking on configmap for flux..."
+printf "Working on configmap for flux..."
 cat <<EOF | kubectl apply -f - 2>&1 >/dev/null
 apiVersion: v1
 kind: ConfigMap
