@@ -547,7 +547,7 @@ fi
 
 # Wait for redis caches to be created.
 printf "Waiting for redis caches to be created..."
-while [[ $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $CLUSTER_NAME-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $CLUSTER_NAME-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
+while [[ $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
   printf "."
   sleep 5
 done

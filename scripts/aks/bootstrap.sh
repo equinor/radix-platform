@@ -200,7 +200,7 @@ echo -e "   -  VNET_DNS_SERVICE_IP              : $VNET_DNS_SERVICE_IP"
 echo -e "   -  VNET_SERVICE_CIDR                : $VNET_SERVICE_CIDR"
 echo -e "   -  HUB_VNET_RESOURCE_GROUP          : $AZ_RESOURCE_GROUP_VNET_HUB"
 echo -e "   -  HUB_VNET_NAME                    : $AZ_VNET_HUB_NAME"
-echo -e "   -  IP_COUNT                         : $IP_COUNT"
+echo -e "   -  OUTBOUND_IP_COUNT                : $OUTBOUND_IP_COUNT"
 echo -e "   -  K8S_API_IP_WHITELIST             : $K8S_API_IP_WHITELIST"
 echo -e ""
 echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf $AZ_RESOURCE_KEYVAULT; else printf $CREDENTIALS_FILE; fi)"
@@ -261,21 +261,21 @@ if [ -z "$ID_AKSKUBELET" ]; then
 fi
 
 #######################################################################################
-### Specify static public IPs
+### Specify static public outbound IPs
 ###
 
-# MIGRATION_STRATEGY PIP assignment
+# MIGRATION_STRATEGY outbound PIP assignment
 # if migrating active to active cluster (eg. dev to dev)
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
-    # Path to Public IP Prefix which contains the public IPs
+    # Path to Public IP Prefix which contains the public outbound IPs
     IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
 
     # list of AVAILABLE public ips assigned to the Radix Zone
     echo "Getting list of available public ips in $RADIX_ZONE..."
     AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
 
-    # Select range of ips based on IP_COUNT
-    SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$IP_COUNT']')"
+    # Select range of outbound ips based on OUTBOUND_IP_COUNT
+    SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$OUTBOUND_IP_COUNT']')"
 
     if [[ "$AVAILABLE_IPS" == "[]" ]]; then
         echo "ERROR: Query returned no ips. Please check the variable IPPRE_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
