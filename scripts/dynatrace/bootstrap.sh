@@ -171,7 +171,7 @@ kubectl create secret generic dynatrace-secret --namespace dynatrace \
 rm -f dynatrace-values.yaml
 
 # Add Dynatrace operator CRD https://github.com/Dynatrace/dynatrace-operator/releases 
-kubectl apply -f https://github.com/Dynatrace/dynatrace-operator/releases/download/v0.4.1/dynatrace.com_dynakubes.yaml
+kubectl apply -f https://github.com/Dynatrace/dynatrace-operator/releases/download/v0.4.2/dynatrace.com_dynakubes.yaml
 
 # Change variable back to initial value
 CLUSTER_NAME=$INITIAL_CLUSTER_NAME

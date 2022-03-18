@@ -72,10 +72,11 @@ function create_dashboard_json (){
 
     printf "Get API token..."
     API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
+    DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
     printf " done.\n"
 
     # Check if dashboard exists, get id
-    response="$(curl -k -sS -X GET "https://spa-equinor.kanari.com/e/eddaec99-38b1-4a9c-9f4c-9148921efa10/api/config/v1/dashboards?tags=RADIX" \
+    response="$(curl -k -sS -X GET "${DYNATRACE_API_URL}/config/v1/dashboards?tags=RADIX" \
         -H "accept: application/json; charset=utf-8" \
         -H "Authorization: Api-Token ${API_TOKEN}" \
         -H "Content-Type: application/json; charset=utf-8")"
@@ -86,7 +87,7 @@ function create_dashboard_json (){
         JSON=$(cat $TEMP_DASHBOARD_JSON)
 
         printf "Send API request (create dashboard)..."
-        response="$(curl -k -sS -X POST "https://spa-equinor.kanari.com/e/eddaec99-38b1-4a9c-9f4c-9148921efa10/api/config/v1/dashboards" \
+        response="$(curl -k -sS -X POST "${DYNATRACE_API_URL}/config/v1/dashboards" \
             -H "accept: application/json; charset=utf-8" \
             -H "Authorization: Api-Token ${API_TOKEN}" \
             -H "Content-Type: application/json; charset=utf-8" \
@@ -108,7 +109,7 @@ function create_dashboard_json (){
         JSON=$(jq '.id = "'${DASHBOARD_ID}'"' ${TEMP_DASHBOARD_JSON})
 
         printf "Send API request (update dashboard)..."
-        response="$(curl -k -sS -X PUT "https://spa-equinor.kanari.com/e/eddaec99-38b1-4a9c-9f4c-9148921efa10/api/config/v1/dashboards/${DASHBOARD_ID}" \
+        response="$(curl -k -sS -X PUT "${DYNATRACE_API_URL}/config/v1/dashboards/${DASHBOARD_ID}" \
             -H "accept: application/json; charset=utf-8" \
             -H "Authorization: Api-Token ${API_TOKEN}" \
             -H "Content-Type: application/json; charset=utf-8" \
@@ -131,7 +132,7 @@ function create_dashboard_json (){
     JSON=$(cat $TEMP_DASHBOARD_PERMISSIONS_JSON | jq '')
 
     printf "Send API request (update share settings)..."
-    response="$(curl -k -sS -X PUT "https://spa-equinor.kanari.com/e/eddaec99-38b1-4a9c-9f4c-9148921efa10/api/config/v1/dashboards/${DASHBOARD_ID}/shareSettings" \
+    response="$(curl -k -sS -X PUT "${DYNATRACE_API_URL}/config/v1/dashboards/${DASHBOARD_ID}/shareSettings" \
         -H "accept: application/json; charset=utf-8" \
         -H "Authorization: Api-Token ${API_TOKEN}" \
         -H "Content-Type: application/json; charset=utf-8" \

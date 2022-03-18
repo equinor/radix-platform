@@ -58,17 +58,17 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
-### Connect kubectl
+### CLUSTER?
 ###
 
-# Exit if cluster does not exist
-printf "\nConnecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
-    # Send message to stderr
-    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 1        
+kubectl_context="$(kubectl config current-context)"
+
+if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
+    echo "kubectl is ready..."
+else
+    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"
+    exit 1
 fi
-printf "...Done.\n"
 
 #######################################################################################
 ### Verify cluster access
@@ -118,10 +118,10 @@ function updateRedisCacheConfiguration() {
     fi
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-    WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
+    WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -ojson | jq -r .items[0].metadata.name)
     OAUTH2_PROXY_REDIS_CONNECTION_URL="rediss://"$(jq -r '"\(.hostName):\(.sslPort)"' <<< $REDIS_CACHE_INSTANCE)
     OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" | jq -r .primaryKey)
-    REDIS_ENV_FILE="redis_secret.env"
+    REDIS_ENV_FILE="redis_secret_$REDIS_CACHE_NAME.env"
 
     echo "OAUTH2_PROXY_REDIS_CONNECTION_URL=$OAUTH2_PROXY_REDIS_CONNECTION_URL" >> "$REDIS_ENV_FILE"
     echo "OAUTH2_PROXY_REDIS_PASSWORD=$OAUTH2_PROXY_REDIS_PASSWORD" >> "$REDIS_ENV_FILE"
@@ -133,7 +133,7 @@ function updateRedisCacheConfiguration() {
 
     echo "Redis Cache secrets updated"
 
-    printf "Restarting auth deployment..."
+    printf "Restarting $AUTH_PROXY_COMPONENT deployment in $WEB_CONSOLE_NAMESPACE..."
     kubectl rollout restart deployment -n "$WEB_CONSOLE_NAMESPACE" "$AUTH_PROXY_COMPONENT"
     printf " Done.\n"
 }
