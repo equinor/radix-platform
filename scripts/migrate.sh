@@ -536,7 +536,7 @@ if [[ $create_redis_cache == true ]]; then
     printf "Creating Redis Caches for Console..."
     (
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_qa &
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_prod &
+        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_prod
     )
     printf " Done.\n"
     cat tmp_qa && rm tmp_qa
@@ -544,7 +544,7 @@ if [[ $create_redis_cache == true ]]; then
 fi
 
 # Wait for redis caches to be created.
-printf "Waiting for redis caches to be created..."
+printf "\nWaiting for redis caches to be created..."
 while [[ $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
   printf "."
   sleep 5
