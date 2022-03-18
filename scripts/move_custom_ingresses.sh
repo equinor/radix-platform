@@ -235,20 +235,10 @@ printf "Done.\n"
 ### Suspend source flux resources
 ###
 echo ""
-printf "Suspend flux source...\n"
-flux suspend source git radix-acr-cleanup
+printf "Suspend radix-acr-cleanup and radix-cicd-canary kustomizations...\n"
+flux suspend kustomization radix-acr-cleanup
 wait
-flux suspend source git radix-cicd-canary
-wait
-printf "Done.\n"
-
-echo ""
-printf "Suspend flux image...\n"
-flux suspend image repository radix-acr-cleanup
-wait
-flux suspend image repository radix-cicd-canary
-wait
-flux suspend image update radix-dev-acr-auto-update
+flux suspend kustomization radix-cicd-canary
 wait
 printf "Done.\n"
 

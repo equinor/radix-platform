@@ -368,27 +368,25 @@ echo ""
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" ./add_reply_url_for_cluster.sh)
 wait # wait for subshell to finish
 
-if [ "$CLUSTER_TYPE" != "production" ]; then
-    # Wait for dynatrace to be deployed from flux
-    echo ""
-    echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
-    echo "If this lasts forever, are you migrating to a cluster without base components installed?"
-    while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
-        printf "."
-        sleep 5
-    done
-    echo ""
-    printf "Update Dynatrace integration... "
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
-    wait # wait for subshell to finish
-    printf "Done updating Dynatrace integration."
+# Wait for dynatrace to be deployed from flux
+echo ""
+echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
+echo "If this lasts forever, are you migrating to a cluster without base components installed?"
+while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5
+done
+echo ""
+printf "Update Dynatrace integration... "
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
+wait # wait for subshell to finish
+printf "Done updating Dynatrace integration."
 
-    echo ""
-    printf "Create Dynatrace dashboard for $DEST_CLUSTER... "
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_DASHBOARD_SCRIPT")
-    wait # wait for subshell to finish
-    printf "Done creating Dynatrace dashboard."
-fi
+echo ""
+printf "Create Dynatrace dashboard for $DEST_CLUSTER... "
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_DASHBOARD_SCRIPT")
+wait # wait for subshell to finish
+printf "Done creating Dynatrace dashboard."
 
 # Wait for velero to be deployed from flux
 echo ""
@@ -538,7 +536,7 @@ if [[ $create_redis_cache == true ]]; then
     printf "Creating Redis Caches for Console..."
     (
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_qa &
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_prod &
+        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh > tmp_prod
     )
     printf " Done.\n"
     cat tmp_qa && rm tmp_qa
@@ -546,7 +544,7 @@ if [[ $create_redis_cache == true ]]; then
 fi
 
 # Wait for redis caches to be created.
-printf "Waiting for redis caches to be created..."
+printf "\nWaiting for redis caches to be created..."
 while [[ $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
   printf "."
   sleep 5

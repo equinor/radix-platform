@@ -98,6 +98,7 @@ fi
 if [[ -n $K8S_API_IP_WHITELIST ]]; then
     echo -e "   -  K8S_API_IP_WHITELIST             : $K8S_API_IP_WHITELIST"
 fi
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e "   -  SECRET_NAME                      : $SECRET_NAME"
 echo -e ""
 echo -e "   > WHO:"
@@ -122,11 +123,15 @@ fi
 ###
 
 if [[ -z $K8S_API_IP_WHITELIST ]];then
+    # Get secret from keyvault
+    printf "Getting secret from keyvault..."
+    EXISTING_K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $SECRET_NAME --query="value" -otsv 2>/dev/null)
+    printf " Done.\n"
+    echo "Existing list of IPs: $EXISTING_K8S_API_IP_WHITELIST"
     # Prompt to paste list.
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            echo "Whitelisted IPs not found. Enter a list of IPs or the script will get the secret from keyvault."
-            read -p "Do you want to enter a list of IPs? (Y/n) " yn
+            read -p "Do you want to update the list of IPs? (Y/n) " yn
             case $yn in
                 [Yy]* ) PASTE_LIST=true; break;;
                 [Nn]* ) break;;
@@ -135,7 +140,7 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
         done
         if [[ $PASTE_LIST == true ]]; then
             while true; do
-                read -p "Enter a comma-separated list of IPs: " K8S_API_IP_WHITELIST
+                read -p "Enter the complete comma-separated list of IPs: " K8S_API_IP_WHITELIST
                 case $K8S_API_IP_WHITELIST in
                     [0-9.,/]* ) break;;
                     * ) echo "Please enter a comma-separated list of IPs.";;
@@ -144,15 +149,12 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
         fi
     fi
     if [[ -z $K8S_API_IP_WHITELIST ]]; then
-        # Get secret from keyvault
         UPDATE_KEYVAULT=false
-        printf "Getting secret from keyvault..."
-        K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $SECRET_NAME --query="value" -otsv 2>/dev/null)
+        K8S_API_IP_WHITELIST=$EXISTING_K8S_API_IP_WHITELIST
         if [[ -z $K8S_API_IP_WHITELIST ]]; then
             printf " ERROR: Could not get secret \"$SECRET_NAME\" from keyvault \"$AZ_RESOURCE_KEYVAULT\". Quitting...\n"
             exit 1
         fi
-        printf " Done.\n"
     fi
 fi
 
@@ -176,8 +178,8 @@ fi
 
 if [[ -n $CLUSTER_NAME ]]; then
     # Check if cluster exists
-    echo "Update cluster \"$CLUSTER_NAME\" to "
-    if [[ -n $(az aks list --query "[?name=='$CLUSTER_NAME'].name" -otsv) ]];then
+    echo "Update cluster \"$CLUSTER_NAME\"."
+    if [[ -n "$(az aks list --query "[?name=='$CLUSTER_NAME'].name" --subscription $AZ_SUBSCRIPTION_ID -otsv)" ]];then
         if [[ $USER_PROMPT == true ]]; then
             echo "This will update \"$CLUSTER_NAME\" with \"$K8S_API_IP_WHITELIST\""
             while true; do
@@ -197,6 +199,6 @@ if [[ -n $CLUSTER_NAME ]]; then
         fi
         printf " Done.\n"
     else
-        echo ""
+        echo "ERROR: Could not find the cluster. Make sure you have access to it."
     fi
 fi
