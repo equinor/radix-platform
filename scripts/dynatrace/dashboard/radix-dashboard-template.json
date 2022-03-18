@@ -255,7 +255,7 @@
             }
         },
         {
-            "name": "Ingress errors",
+            "name": "Service failure rate",
             "tileType": "DATA_EXPLORER",
             "configured": true,
             "bounds": {
@@ -270,14 +270,13 @@
                 {
                     "id": "A",
                     "timeAggregation": "DEFAULT",
-                    "metricSelector": "(\n    nginx_ingress_controller_requests.count:filter(\n        and(\n            in(\n                \"dt.entity.kubernetes_cluster\",\n                entitySelector(\"\n                    type(kubernetes_cluster),\n                    entityName(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                \")\n            ),\n            or(\n                eq(status,\"429\"),\n                prefix(status,\"5\")\n            )\n        )\n    ):splitBy():sum:auto:sort(value(sum,descending)):limit(10)\n) / (\n    nginx_ingress_controller_requests.count:filter(\n        and(\n            in(\n                \"dt.entity.kubernetes_cluster\",\n                entitySelector(\"\n                    type(kubernetes_cluster),\n                    entityName(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                \")\n            )\n        )\n    ):splitBy():sum:auto:sort(value(sum,descending)):limit(10)\n)",
+                    "metricSelector": "(\n    builtin:service.errors.total.rate:filter(\n        and(\n            in(\n                \"dt.entity.service\",\n                entitySelector(\"\n                    type(service),\n                    fromRelationships.isServiceOf(\n                        type(CLOUD_APPLICATION),\n                        entityName.equals(~\"ingress-nginx-controller~\")\n                    ),\n                    toRelationships.isClusterOfService(\n                        type(KUBERNETES_CLUSTER),\n                        entityName.equals(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                    )\n                \")\n            )\n        )\n    ):splitBy():avg:auto:sort(value(sum,descending)):limit(10)\n)",
                     "enabled": true
                 }
             ],
             "visualConfig": {
                 "type": "GRAPH_CHART",
                 "global": {
-                    "seriesType": "LINE",
                     "hideLegend": false
                 },
                 "rules": [
@@ -286,7 +285,7 @@
                         "properties": {
                             "color": "DEFAULT",
                             "seriesType": "LINE",
-                            "alias": "Ingress errors"
+                            "alias": "Total rate"
                         },
                         "seriesOverrides": []
                     }
@@ -300,8 +299,8 @@
                         {
                             "displayName": "",
                             "visible": true,
-                            "min": "0",
-                            "max": "100",
+                            "min": "AUTO",
+                            "max": "AUTO",
                             "position": "LEFT",
                             "queryIds": [
                                 "A"
@@ -316,7 +315,6 @@
                         "axisTarget": "LEFT",
                         "rules": [
                             {
-                                "value": 0,
                                 "color": "#7dc540"
                             },
                             {
@@ -324,7 +322,6 @@
                                 "color": "#f5d30f"
                             },
                             {
-                                "value": -1,
                                 "color": "#dc172a"
                             }
                         ],
@@ -567,7 +564,7 @@
             }
         },
         {
-            "name": "Ingress requests per second",
+            "name": "Service requests",
             "tileType": "DATA_EXPLORER",
             "configured": true,
             "bounds": {
@@ -582,27 +579,26 @@
                 {
                     "id": "A",
                     "timeAggregation": "DEFAULT",
-                    "metricSelector": "nginx_ingress_controller_requests.count:filter(\n    and(\n        in(\n            \"dt.entity.kubernetes_cluster\",\n            entitySelector(\"\n                type(kubernetes_cluster),\n                entityName(~\"${DASHBOARD_CLUSTER_NAME}~\")\n            \")\n        ),\n        not(prefix(namespace,radix-))\n    )\n):splitBy():sum:auto:sort(value(sum,descending)):limit(10) / (60)",
+                    "metricSelector": "builtin:service.requestCount.total:filter(\n    and(\n        in(\n            \"dt.entity.service\",\n            entitySelector(\"\n                type(service),\n                fromRelationships.isServiceOf(\n                    type(CLOUD_APPLICATION),\n                    entityName.equals(~\"ingress-nginx-controller~\")\n                ),\n                toRelationships.isClusterOfService(\n                    type(KUBERNETES_CLUSTER),\n                    entityName.equals(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                ),\n                not(\n                    toRelationships.calls(\n                        type(SERVICE),\n                        toRelationships.isNamespaceOfService(\n                            type(CLOUD_APPLICATION_NAMESPACE),\n                            entityName.startsWith(~\"radix-~\")\n                        )\n                    )\n                )\n            \")\n        )\n    )\n):splitBy():sum:auto:sort(value(sum,descending)):limit(10) / 60",
                     "enabled": true
                 },
                 {
                     "id": "B",
                     "timeAggregation": "DEFAULT",
-                    "metricSelector": "nginx_ingress_controller_requests.count:filter(\n    and(\n        in(\n            \"dt.entity.kubernetes_cluster\",\n            entitySelector(\"\n                type(kubernetes_cluster),\n                entityName(~\"${DASHBOARD_CLUSTER_NAME}~\")\n            \")\n        )\n    )\n):splitBy():sum:auto:sort(value(sum,descending)):limit(10) / (60)",
+                    "metricSelector": "builtin:service.requestCount.total:filter(\n    and(\n        in(\n            \"dt.entity.service\",\n            entitySelector(\"\n                type(service),\n                fromRelationships.isServiceOf(\n                    type(CLOUD_APPLICATION),\n                    entityName.equals(~\"ingress-nginx-controller~\")\n                ),\n                toRelationships.isClusterOfService(\n                    type(KUBERNETES_CLUSTER),\n                    entityName.equals(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                )\n            \")\n        )\n    )\n):splitBy():sum:auto:sort(value(sum,descending)):limit(10) / 60",
                     "enabled": true
                 }
             ],
             "visualConfig": {
                 "type": "GRAPH_CHART",
                 "global": {
-                    "seriesType": "LINE",
                     "hideLegend": false
                 },
                 "rules": [
                     {
                         "matcher": "A:",
                         "properties": {
-                            "color": "DEFAULT",
+                            "color": "GREEN",
                             "seriesType": "LINE",
                             "alias": "Requests"
                         },
@@ -611,7 +607,7 @@
                     {
                         "matcher": "B:",
                         "properties": {
-                            "color": "DEFAULT",
+                            "color": "YELLOW",
                             "seriesType": "LINE",
                             "alias": "Inc Radix"
                         },
@@ -902,13 +898,13 @@
             "customName": "Data explorer results",
             "queries": [
                 {
-                    "id": "C",
+                    "id": "A",
                     "timeAggregation": "DEFAULT",
                     "metricSelector": "(\n    builtin:host.cpu.usage:filter(\n        and(\n            in(\n                \"dt.entity.host\",\n                entitySelector(\"\n                    type(host),\n                    toRelationships.isClusterOfHost(\n                        type(KUBERNETES_CLUSTER),\n                        entityName.equals(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                    )\n                \")\n            )\n        )\n    ):splitBy():avg:auto:sort(value(sum,descending)):limit(10)\n)",
                     "enabled": true
                 },
                 {
-                    "id": "D",
+                    "id": "B",
                     "timeAggregation": "DEFAULT",
                     "metricSelector": "(\n    builtin:containers.cpu.usageMilliCores:filter(\n        and(\n            in(\n                \"dt.entity.container_group_instance\",\n                entitySelector(\"\n                    type(container_group_instance),\n                    fromRelationships.isCgiOfCluster(\n                        type(KUBERNETES_CLUSTER),\n                        entityName.equals(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                    )\n                \")\n            )\n        )\n    ):splitBy():sum:auto:sort(value(sum,descending)):limit(10)\n)",
                     "enabled": true
@@ -922,7 +918,7 @@
                 },
                 "rules": [
                     {
-                        "matcher": "C:",
+                        "matcher": "A:",
                         "properties": {
                             "color": "DEFAULT",
                             "seriesType": "LINE"
@@ -930,7 +926,7 @@
                         "seriesOverrides": []
                     },
                     {
-                        "matcher": "D:",
+                        "matcher": "B:",
                         "properties": {
                             "color": "DEFAULT",
                             "seriesType": "LINE",
@@ -952,7 +948,7 @@
                             "max": "AUTO",
                             "position": "LEFT",
                             "queryIds": [
-                                "C"
+                                "A"
                             ],
                             "defaultAxis": true
                         },
@@ -961,9 +957,9 @@
                             "visible": true,
                             "min": "AUTO",
                             "max": "AUTO",
-                            "position": "RIGHT",
+                            "position": "LEFT",
                             "queryIds": [
-                                "D"
+                                "B"
                             ],
                             "defaultAxis": true
                         }
@@ -1197,13 +1193,13 @@
             "customName": "Data explorer results",
             "queries": [
                 {
-                    "id": "C",
+                    "id": "A",
                     "timeAggregation": "DEFAULT",
                     "metricSelector": "(\n    builtin:host.mem.usage:filter(\n        and(\n            in(\n                \"dt.entity.host\",\n                entitySelector(\"\n                    type(host),\n                    toRelationships.isClusterOfHost(\n                        type(KUBERNETES_CLUSTER),\n                        entityName.equals(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                    )\n                \")\n            )\n        )\n    ):splitBy():avg:auto:sort(value(sum,descending)):limit(10)\n)",
                     "enabled": true
                 },
                 {
-                    "id": "D",
+                    "id": "B",
                     "timeAggregation": "DEFAULT",
                     "metricSelector": "(\n    builtin:containers.memory.residentSetBytes:filter(\n        and(\n            in(\n                \"dt.entity.container_group_instance\",\n                entitySelector(\"\n                    type(container_group_instance),\n                    fromRelationships.isCgiOfCluster(\n                        type(KUBERNETES_CLUSTER),\n                        entityName.equals(~\"${DASHBOARD_CLUSTER_NAME}~\")\n                    )\n                \")\n            )\n        )\n    ):splitBy():sum:auto:sort(value(sum,descending)):limit(10)\n)",
                     "enabled": true
@@ -1217,7 +1213,7 @@
                 },
                 "rules": [
                     {
-                        "matcher": "C:",
+                        "matcher": "A:",
                         "properties": {
                             "color": "DEFAULT",
                             "seriesType": "LINE",
@@ -1226,7 +1222,7 @@
                         "seriesOverrides": []
                     },
                     {
-                        "matcher": "D:",
+                        "matcher": "B:",
                         "properties": {
                             "color": "DEFAULT",
                             "seriesType": "LINE",
@@ -1248,7 +1244,7 @@
                             "max": "AUTO",
                             "position": "LEFT",
                             "queryIds": [
-                                "C"
+                                "A"
                             ],
                             "defaultAxis": true
                         },
@@ -1257,9 +1253,9 @@
                             "visible": true,
                             "min": "AUTO",
                             "max": "AUTO",
-                            "position": "RIGHT",
+                            "position": "LEFT",
                             "queryIds": [
-                                "D"
+                                "B"
                             ],
                             "defaultAxis": true
                         }
