@@ -268,7 +268,7 @@ fi
 # if migrating active to active cluster (eg. dev to dev)
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Path to Public IP Prefix which contains the public outbound IPs
-    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
+    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
 
     # list of AVAILABLE public ips assigned to the Radix Zone
     echo "Getting list of available public ips in $RADIX_ZONE..."
@@ -278,7 +278,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$OUTBOUND_IP_COUNT']')"
 
     if [[ "$AVAILABLE_IPS" == "[]" ]]; then
-        echo "ERROR: Query returned no ips. Please check the variable IPPRE_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+        echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_OUTBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
         exit 1
     elif [[ -z $AVAILABLE_IPS ]]; then
         echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."

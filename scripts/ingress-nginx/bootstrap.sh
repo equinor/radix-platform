@@ -165,16 +165,16 @@ printf " OK\n"
 echo "Install secret ingress-ip in cluster"
 
 # Path to Public IP Prefix which contains the public inbound IPs
-IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_INBOUND_NAME"
+IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
 
 # list of AVAILABLE public ips assigned to the Radix Zone
 echo "Getting list of available public inbound ips in $RADIX_ZONE..."
-AVAILABLE_INBOUND_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INBOUND_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
+AVAILABLE_INBOUND_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$AZ_IPPRE_INBOUND_NAME'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
 
 SELECTED_IP="$(echo $AVAILABLE_INBOUND_IPS | jq '.[0:1]')"
 
 if [[ "$AVAILABLE_INBOUND_IPS" == "[]" ]]; then
-    echo "ERROR: Query returned no ips. Please check the variable IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+    echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
     exit 1
 elif [[ -z $AVAILABLE_INBOUND_IPS ]]; then
     echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."

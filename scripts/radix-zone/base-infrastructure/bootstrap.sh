@@ -2,14 +2,14 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Bootstrap radix environment infrastructure shared by all radix-zones
 
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -20,14 +20,14 @@
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix_zone_dev.env ./bootstrap.sh
 
 
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start bootstrap of base infrastructure... "
@@ -108,9 +108,13 @@ printf "\n   -  AZ_RESOURCE_GROUP_CLUSTERS                  : $AZ_RESOURCE_GROUP
 printf "\n   -  AZ_RESOURCE_GROUP_COMMON                    : $AZ_RESOURCE_GROUP_COMMON"
 printf "\n   -  AZ_RESOURCE_GROUP_MONITORING                : $AZ_RESOURCE_GROUP_MONITORING"
 printf "\n"
+printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
+printf "\n   -  AZ_IPPRE_OUTBOUND_NAME                      : $AZ_IPPRE_OUTBOUND_NAME"
+printf "\n   -  AZ_IPPRE_OUTBOUND_LENGTH                    : $AZ_IPPRE_OUTBOUND_LENGTH"
+printf "\n   -  AZ_IPPRE_INBOUND_NAME                       : $AZ_IPPRE_INBOUND_NAME"
+printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_LENGTH"
 printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
 printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
-printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
 printf "\n"
 printf "\n   -  AZ_RESOURCE_AAD_SERVER                      : $AZ_RESOURCE_AAD_SERVER"
 printf "\n   -  AZ_RESOURCE_AAD_CLIENT                      : $AZ_RESOURCE_AAD_CLIENT"
@@ -159,19 +163,15 @@ function create_resource_groups() {
 ### Common resources
 ###
 
-function create_common_resources() {    
+function create_common_resources() {
     printf "Creating key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
     az keyvault create --name "${AZ_RESOURCE_KEYVAULT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --output none
     printf "...Done\n"
-           
-    printf "Creating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
-    az acr create --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --sku "Standard" --output none
-    printf "...Done\n"
-   
+
     printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
     az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" --output none
     printf "...Done\n"
-    # DNS CAA    
+    # DNS CAA
     if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
         printf "Adding CAA records..."
         az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org" --output none
@@ -180,6 +180,100 @@ function create_common_resources() {
         printf "...Done\n"
     fi
     ../private-endpoint-infrastructure/bootstrap.sh
+}
+
+function create_outbound_public_ip_prefix() {
+    # Create public ip prefixes
+    if [[ -n $AZ_IPPRE_OUTBOUND_NAME ]]; then
+        if [[ -z $(az network public-ip prefix show --name "${AZ_IPPRE_OUTBOUND_NAME}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
+            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} does not exist.\n"
+            if [[ $USER_PROMPT == true ]]; then
+                while true; do
+                    read -p "Create Public IP Prefix: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                    case $yn in
+                        [Yy]* ) break;;
+                        [Nn]* ) echo ""; echo "Return."; return;;
+                        * ) echo "Please answer yes or no.";;
+                    esac
+                done
+                printf "Creating Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}...\n"
+                az network public-ip prefix create \
+                    --length "${AZ_IPPRE_OUTBOUND_LENGTH}" \
+                    --name "${AZ_IPPRE_OUTBOUND_NAME}" \
+                    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                    --subscription "${AZ_SUBSCRIPTION_ID}" \
+                    --output none
+                printf "...Done.\n"
+            fi
+        else
+            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} already exists."
+            return
+        fi
+    else
+        printf "Variable AZ_IPPRE_OUTBOUND_NAME not defined."
+    fi
+}
+
+function create_inbound_public_ip_prefix() {
+    if [[ -n $AZ_IPPRE_INBOUND_NAME ]]; then
+        if [[ -z $(az network public-ip prefix show --name "${AZ_IPPRE_INBOUND_NAME}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
+            printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} does not exist.\n"
+            if [[ $USER_PROMPT == true ]]; then
+                while true; do
+                    read -p "Create Public IP Prefix: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                    case $yn in
+                        [Yy]* ) break;;
+                        [Nn]* ) echo ""; echo "Return."; return;;
+                        * ) echo "Please answer yes or no.";;
+                    esac
+                done
+                printf "Creating Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}...\n"
+                az network public-ip prefix create \
+                    --length "${AZ_IPPRE_INBOUND_LENGTH}" \
+                    --name "${AZ_IPPRE_INBOUND_NAME}" \
+                    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                    --subscription "${AZ_SUBSCRIPTION_ID}" \
+                    --output none
+                printf "...Done.\n"
+            fi
+        else
+            printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} already exists."
+            return
+        fi
+    else
+        printf "Variable AZ_IPPRE_INBOUND_NAME not defined."
+    fi
+}
+
+function create_acr() {
+    # Create ACR
+    if [[ -z $(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
+        printf "Azure Container Registry ${AZ_RESOURCE_CONTAINER_REGISTRY} does not exist.\n"
+        if [[ $USER_PROMPT == true ]]; then
+            while true; do
+                read -p "Create Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                case $yn in
+                    [Yy]* ) break;;
+                    [Nn]* ) echo ""; echo "Return."; return;;
+                    * ) echo "Please answer yes or no.";;
+                esac
+            done
+        fi
+
+        printf "Creating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
+        az acr create \
+            --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --sku "Premium" \
+            --location "${AZ_RADIX_ZONE_LOCATION}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
+            --default-action "Deny" \
+            --public-network-enabled "true" \
+            --output none
+        printf "...Done\n"
+    else
+        printf "ACR ${AZ_RESOURCE_CONTAINER_REGISTRY} already exists.\n"
+    fi
 }
 
 function set_permissions_on_acr() {
@@ -215,7 +309,7 @@ function set_permissions_on_dns() {
     local scope
     local id
     local dns # Optional input 1
-    
+
     if [ -n "$1" ]; then
         dns="$1"
     else
@@ -223,7 +317,7 @@ function set_permissions_on_dns() {
     fi
 
     if [ "$RADIX_ENVIRONMENT" = "classic" ]; then
-        # Use Managed Identity. 
+        # Use Managed Identity.
         # https://cert-manager.io/docs/configuration/acme/dns01/azuredns/#managed-identity-using-aad-pod-identities
 
         printf "Azure dns zone: Setting permissions for \"${AZ_MANAGED_IDENTITY_NAME}\" on \"${dns}\"..."
@@ -283,10 +377,10 @@ function create_az_ad_server_app() {
         --reply-urls "${RBAC_SERVER_APP_URL}" \
         --homepage "${RBAC_SERVER_APP_URL}" \
         --required-resource-accesses @"$AD_APP_MANIFEST_PATH" \
-        --output none   
+        --output none
 
     # Update the application claims
-    local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"    
+    local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"
     az ad app update --id "${RBAC_SERVER_APP_ID}" --set groupMembershipClaims=All --output none
 
     # Create service principal for the server application
@@ -315,10 +409,10 @@ function create_az_ad_server_app() {
             echo "Granted user_impersonation"
         fi
     done
-    
+
     # Store app credentials in keyvault
     update_service_principal_credentials_in_az_keyvault "${rbac_server_app_name}" "${RBAC_SERVER_APP_ID}" "${RBAC_SERVER_APP_SECRET}" "AZ AD server app to enable AKS rbac. Display name is \"${rbac_server_app_name}\"."
-    
+
     # Notify user about manual steps to make permissions usable
     echo -e ""
     echo -e "The Azure Active Directory application \"${rbac_server_app_name}\" has been created."
@@ -366,16 +460,16 @@ EOF
         --reply-urls "${RBAC_CLIENT_APP_URL}" \
         --homepage "${RBAC_CLIENT_APP_URL}" \
         --required-resource-accesses @"$CLIENT_MANIFEST_PATH" \
-        --output none   
-    
-    # Finally remove manifest-client.json file as it is no longer needed
-    rm "$CLIENT_MANIFEST_PATH" 
+        --output none
 
-    # To be able to use the client app then we need a service principal for it    
+    # Finally remove manifest-client.json file as it is no longer needed
+    rm "$CLIENT_MANIFEST_PATH"
+
+    # To be able to use the client app then we need a service principal for it
     # Create service principal for the client application
     echo "Creating service principal for AAD client application..."
     local RBAC_CLIENT_APP_ID="$(az ad app list --display-name ${rbac_client_app_name} --query [].appId -o tsv)"
-    az ad sp create --id "${RBAC_CLIENT_APP_ID}" --output none  
+    az ad sp create --id "${RBAC_CLIENT_APP_ID}" --output none
 
     # Grant permissions to server application
     echo "Granting permissions to the AAD client application..."
@@ -387,7 +481,7 @@ EOF
     done
 
     # Store the client app credentials in the keyvault
-    update_service_principal_credentials_in_az_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."    
+    update_service_principal_credentials_in_az_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."
 
     # Notify user about manual steps to make permissions usable
     echo -e ""
@@ -403,6 +497,9 @@ EOF
 
 create_resource_groups
 create_common_resources
+create_outbound_public_ip_prefix
+create_inbound_public_ip_prefix
+create_acr
 create_base_system_users_and_store_credentials
 set_permissions_on_acr
 set_permissions_on_dns
