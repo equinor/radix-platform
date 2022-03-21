@@ -15,10 +15,13 @@
 #   WEB_COMPONENT           (Mandatory)
 #   RADIX_WEB_CONSOLE_ENV   (Mandatory)
 
-ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
+EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
+EGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
 
-echo ""
-echo "Updating \"$ENV_VAR_CONFIGMAP_NAME\" environment variable for Radix Web Console"
+INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_INGRESS_IPS"
+INGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+
+echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" environment variables for Radix Web Console"
 
 # Validate mandatory input
 
@@ -61,13 +64,17 @@ printf "Done.\n"
 ### Verify cluster access
 ###
 printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
+if [[ $(kubectl cluster-info --request-timeout "5s" 2>&1) == *"Unable to connect to the server"* ]]; then
     printf "ERROR: Could not access cluster. Quitting...\n"
     exit 1
 fi
 printf " OK\n"
 
-function updateEgressIpsEnvVars() {
+function updateIpsEnvVars() {
+
+    env_var_configmap_name=$1
+    ippre_id=$2
+
     # Get auth token for Radix API
     printf "Getting auth token for Radix API..."
     API_ACCESS_TOKEN_RESOURCE=$(echo $OAUTH2_PROXY_SCOPE | awk '{print $4}' | sed 's/\/.*//')
@@ -85,16 +92,15 @@ function updateEgressIpsEnvVars() {
 
     # Get list of IPs for all Public IP Prefixes assigned to Cluster Type
     printf "Getting list of IPs from all Public IP Prefixes assigned to $CLUSTER_TYPE clusters..."
-    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
-    RADIX_CLUSTER_EGRESS_IPS="$(az network public-ip list --query "[?publicIpPrefix.id=='$IPPRE_ID'].ipAddress" --output json)"
+    IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='$ippre_id'].ipAddress" --output json)"
 
-    if [[ "$RADIX_CLUSTER_EGRESS_IPS" == "[]" ]]; then
+    if [[ "$IP_PREFIXES" == "[]" ]]; then
         echo -e "\nERROR: Found no IPs assigned to the cluster."
         return
     fi
 
     # Loop through list of IPs and create a comma separated string. 
-    for ippre in $(echo $RADIX_CLUSTER_EGRESS_IPS | jq -c '.[]')
+    for ippre in $(echo $IP_PREFIXES | jq -c '.[]')
     do
         if [[ -z $IP_LIST ]]; then
             IP_LIST=$(echo $ippre | jq -r '.')
@@ -109,7 +115,7 @@ function updateEgressIpsEnvVars() {
         -H "accept: application/json" \
         -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
         -H "Content-Type: application/json" \
-        -d "[ { \"name\": \"${ENV_VAR_CONFIGMAP_NAME}\", \"value\": \"${IP_LIST}\" }]")
+        -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
 
     if [[ "$API_REQUEST" != "\"Success\"" ]]; then
         echo -e "\nERROR: API request failed."
@@ -118,13 +124,16 @@ function updateEgressIpsEnvVars() {
     printf " Done.\n"
 
     echo "Web component env variable updated with Public IP Prefix IPs."
-
-    # Restart deployment for web component
-    printf "Restarting web deployment..."
-    kubectl rollout restart deployment -n radix-web-console-$RADIX_WEB_CONSOLE_ENV $WEB_COMPONENT
-
-    echo "Done."
 }
 
+
 ### MAIN
-updateEgressIpsEnvVars
+updateIpsEnvVars "$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME" "$EGRESS_IPPRE_ID"
+
+updateIpsEnvVars "$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME" "$INGRESS_IPPRE_ID"
+
+# Restart deployment for web component
+printf "Restarting web deployment..."
+kubectl rollout restart deployment -n radix-web-console-$RADIX_WEB_CONSOLE_ENV $WEB_COMPONENT
+
+echo "Done."
