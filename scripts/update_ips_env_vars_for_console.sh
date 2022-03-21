@@ -15,14 +15,6 @@
 #   WEB_COMPONENT           (Mandatory)
 #   RADIX_WEB_CONSOLE_ENV   (Mandatory)
 
-EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
-EGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
-
-INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_INGRESS_IPS"
-INGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
-
-echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" environment variables for Radix Web Console"
-
 # Validate mandatory input
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
@@ -34,7 +26,7 @@ else
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
-fid
+fi
 
 if [[ -z "$WEB_COMPONENT" ]]; then
     echo "Please provide WEB_COMPONENT."
@@ -50,6 +42,14 @@ if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
     echo "Please provide OAUTH2_PROXY_SCOPE."
     exit 1
 fi
+
+EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
+EGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
+
+INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_INGRESS_IPS"
+INGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+
+echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" environment variables for Radix Web Console"
 
 #######################################################################################
 ### Prepare az session
@@ -69,6 +69,7 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
     exit 1
 fi
 printf " OK\n"
+
 
 function updateIpsEnvVars() {
 
@@ -124,6 +125,7 @@ function updateIpsEnvVars() {
     printf " Done.\n"
 
     echo "Web component env variable updated with Public IP Prefix IPs."
+    unset IP_LIST
 }
 
 
