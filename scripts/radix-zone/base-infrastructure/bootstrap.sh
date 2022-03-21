@@ -108,9 +108,9 @@ printf "\n   -  AZ_RESOURCE_GROUP_CLUSTERS                  : $AZ_RESOURCE_GROUP
 printf "\n   -  AZ_RESOURCE_GROUP_COMMON                    : $AZ_RESOURCE_GROUP_COMMON"
 printf "\n   -  AZ_RESOURCE_GROUP_MONITORING                : $AZ_RESOURCE_GROUP_MONITORING"
 printf "\n"
+printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
 printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
 printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
-printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
 printf "\n"
 printf "\n   -  AZ_RESOURCE_AAD_SERVER                      : $AZ_RESOURCE_AAD_SERVER"
 printf "\n   -  AZ_RESOURCE_AAD_CLIENT                      : $AZ_RESOURCE_AAD_CLIENT"
@@ -163,11 +163,7 @@ function create_common_resources() {
     printf "Creating key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
     az keyvault create --name "${AZ_RESOURCE_KEYVAULT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --output none
     printf "...Done\n"
-           
-    printf "Creating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
-    az acr create --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --sku "Standard" --output none
-    printf "...Done\n"
-   
+
     printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
     az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" --output none
     printf "...Done\n"
@@ -180,6 +176,37 @@ function create_common_resources() {
         printf "...Done\n"
     fi
     ../private-endpoint-infrastructure/bootstrap.sh
+}
+
+function create_acr() {
+    # Create ACR
+    if [[ -z $(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
+        printf "Azure Container Registry ${AZ_RESOURCE_CONTAINER_REGISTRY} does not exist.\n"
+        if [[ $USER_PROMPT == true ]]; then
+            while true; do
+                read -p "Create Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                case $yn in
+                    [Yy]* ) break;;
+                    [Nn]* ) echo ""; echo "Return."; return;;
+                    * ) echo "Please answer yes or no.";;
+                esac
+            done
+        fi
+
+        printf "Creating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
+        az acr create \
+            --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --sku "Premium" \
+            --location "${AZ_RADIX_ZONE_LOCATION}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
+            --default-action "Deny" \
+            --public-network-enabled "true" \
+            --output none
+        printf "...Done\n"
+    else
+        printf "ACR ${AZ_RESOURCE_CONTAINER_REGISTRY} already exists.\n"
+    fi
 }
 
 function set_permissions_on_acr() {
@@ -403,6 +430,7 @@ EOF
 
 create_resource_groups
 create_common_resources
+create_acr
 create_base_system_users_and_store_credentials
 set_permissions_on_acr
 set_permissions_on_dns
