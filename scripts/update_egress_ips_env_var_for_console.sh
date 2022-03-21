@@ -85,7 +85,7 @@ function updateEgressIpsEnvVars() {
 
     # Get list of IPs for all Public IP Prefixes assigned to Cluster Type
     printf "Getting list of IPs from all Public IP Prefixes assigned to $CLUSTER_TYPE clusters..."
-    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$IPPRE_NAME"
+    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
     RADIX_CLUSTER_EGRESS_IPS="$(az network public-ip list --query "[?publicIpPrefix.id=='$IPPRE_ID'].ipAddress" --output json)"
 
     if [[ "$RADIX_CLUSTER_EGRESS_IPS" == "[]" ]]; then
