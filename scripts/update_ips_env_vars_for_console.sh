@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # PURPOSE
-# Adds all Private IP Prefix IPs assigned to the Radix Zone to a secret in the web component of Radix Web Console.
+# Adds all Private IP Prefix IPs assigned to the Radix Zone to the environment variables of the web component of Radix Web Console.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_egress_ips_env_var_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_egress_ips_env_var_for_console.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh)
 #
 
 # INPUTS:
@@ -34,7 +34,7 @@ else
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
-fi
+fid
 
 if [[ -z "$WEB_COMPONENT" ]]; then
     echo "Please provide WEB_COMPONENT."
