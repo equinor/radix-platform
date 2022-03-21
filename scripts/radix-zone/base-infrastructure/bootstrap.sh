@@ -2,14 +2,14 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Bootstrap radix environment infrastructure shared by all radix-zones
 
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -20,14 +20,14 @@
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix_zone_dev.env ./bootstrap.sh
 
 
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start bootstrap of base infrastructure... "
@@ -159,7 +159,7 @@ function create_resource_groups() {
 ### Common resources
 ###
 
-function create_common_resources() {    
+function create_common_resources() {
     printf "Creating key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
     az keyvault create --name "${AZ_RESOURCE_KEYVAULT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --output none
     printf "...Done\n"
@@ -167,7 +167,7 @@ function create_common_resources() {
     printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
     az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" --output none
     printf "...Done\n"
-    # DNS CAA    
+    # DNS CAA
     if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
         printf "Adding CAA records..."
         az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org" --output none
@@ -242,7 +242,7 @@ function set_permissions_on_dns() {
     local scope
     local id
     local dns # Optional input 1
-    
+
     if [ -n "$1" ]; then
         dns="$1"
     else
@@ -250,7 +250,7 @@ function set_permissions_on_dns() {
     fi
 
     if [ "$RADIX_ENVIRONMENT" = "classic" ]; then
-        # Use Managed Identity. 
+        # Use Managed Identity.
         # https://cert-manager.io/docs/configuration/acme/dns01/azuredns/#managed-identity-using-aad-pod-identities
 
         printf "Azure dns zone: Setting permissions for \"${AZ_MANAGED_IDENTITY_NAME}\" on \"${dns}\"..."
@@ -310,10 +310,10 @@ function create_az_ad_server_app() {
         --reply-urls "${RBAC_SERVER_APP_URL}" \
         --homepage "${RBAC_SERVER_APP_URL}" \
         --required-resource-accesses @"$AD_APP_MANIFEST_PATH" \
-        --output none   
+        --output none
 
     # Update the application claims
-    local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"    
+    local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"
     az ad app update --id "${RBAC_SERVER_APP_ID}" --set groupMembershipClaims=All --output none
 
     # Create service principal for the server application
@@ -342,10 +342,10 @@ function create_az_ad_server_app() {
             echo "Granted user_impersonation"
         fi
     done
-    
+
     # Store app credentials in keyvault
     update_service_principal_credentials_in_az_keyvault "${rbac_server_app_name}" "${RBAC_SERVER_APP_ID}" "${RBAC_SERVER_APP_SECRET}" "AZ AD server app to enable AKS rbac. Display name is \"${rbac_server_app_name}\"."
-    
+
     # Notify user about manual steps to make permissions usable
     echo -e ""
     echo -e "The Azure Active Directory application \"${rbac_server_app_name}\" has been created."
@@ -393,16 +393,16 @@ EOF
         --reply-urls "${RBAC_CLIENT_APP_URL}" \
         --homepage "${RBAC_CLIENT_APP_URL}" \
         --required-resource-accesses @"$CLIENT_MANIFEST_PATH" \
-        --output none   
-    
-    # Finally remove manifest-client.json file as it is no longer needed
-    rm "$CLIENT_MANIFEST_PATH" 
+        --output none
 
-    # To be able to use the client app then we need a service principal for it    
+    # Finally remove manifest-client.json file as it is no longer needed
+    rm "$CLIENT_MANIFEST_PATH"
+
+    # To be able to use the client app then we need a service principal for it
     # Create service principal for the client application
     echo "Creating service principal for AAD client application..."
     local RBAC_CLIENT_APP_ID="$(az ad app list --display-name ${rbac_client_app_name} --query [].appId -o tsv)"
-    az ad sp create --id "${RBAC_CLIENT_APP_ID}" --output none  
+    az ad sp create --id "${RBAC_CLIENT_APP_ID}" --output none
 
     # Grant permissions to server application
     echo "Granting permissions to the AAD client application..."
@@ -414,7 +414,7 @@ EOF
     done
 
     # Store the client app credentials in the keyvault
-    update_service_principal_credentials_in_az_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."    
+    update_service_principal_credentials_in_az_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."
 
     # Notify user about manual steps to make permissions usable
     echo -e ""
