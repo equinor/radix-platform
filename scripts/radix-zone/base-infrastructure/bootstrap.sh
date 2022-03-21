@@ -109,6 +109,10 @@ printf "\n   -  AZ_RESOURCE_GROUP_COMMON                    : $AZ_RESOURCE_GROUP
 printf "\n   -  AZ_RESOURCE_GROUP_MONITORING                : $AZ_RESOURCE_GROUP_MONITORING"
 printf "\n"
 printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
+printf "\n   -  AZ_IPPRE_OUTBOUND_NAME                      : $AZ_IPPRE_OUTBOUND_NAME"
+printf "\n   -  AZ_IPPRE_OUTBOUND_LENGTH                    : $AZ_IPPRE_OUTBOUND_LENGTH"
+printf "\n   -  AZ_IPPRE_INBOUND_NAME                       : $AZ_IPPRE_INBOUND_NAME"
+printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_LENGTH"
 printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
 printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
 printf "\n"
@@ -176,6 +180,69 @@ function create_common_resources() {
         printf "...Done\n"
     fi
     ../private-endpoint-infrastructure/bootstrap.sh
+}
+
+function create_outbound_public_ip_prefix() {
+    # Create public ip prefixes
+    if [[ -n $AZ_IPPRE_OUTBOUND_NAME ]]; then
+        if [[ -z $(az network public-ip prefix show --name "${AZ_IPPRE_OUTBOUND_NAME}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
+            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} does not exist.\n"
+            if [[ $USER_PROMPT == true ]]; then
+                while true; do
+                    read -p "Create Public IP Prefix: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                    case $yn in
+                        [Yy]* ) break;;
+                        [Nn]* ) echo ""; echo "Return."; return;;
+                        * ) echo "Please answer yes or no.";;
+                    esac
+                done
+                printf "Creating Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}...\n"
+                az network public-ip prefix create \
+                    --length "${AZ_IPPRE_OUTBOUND_LENGTH}" \
+                    --name "${AZ_IPPRE_OUTBOUND_NAME}" \
+                    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                    --subscription "${AZ_SUBSCRIPTION_ID}" \
+                    --output none
+                printf "...Done.\n"
+            fi
+        else
+            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} already exists."
+            return
+        fi
+    else
+        printf "Variable AZ_IPPRE_OUTBOUND_NAME not defined."
+    fi
+}
+
+function create_inbound_public_ip_prefix() {
+    if [[ -n $AZ_IPPRE_INBOUND_NAME ]]; then
+        if [[ -z $(az network public-ip prefix show --name "${AZ_IPPRE_INBOUND_NAME}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
+            printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} does not exist.\n"
+            if [[ $USER_PROMPT == true ]]; then
+                while true; do
+                    read -p "Create Public IP Prefix: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                    case $yn in
+                        [Yy]* ) break;;
+                        [Nn]* ) echo ""; echo "Return."; return;;
+                        * ) echo "Please answer yes or no.";;
+                    esac
+                done
+                printf "Creating Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}...\n"
+                az network public-ip prefix create \
+                    --length "${AZ_IPPRE_INBOUND_LENGTH}" \
+                    --name "${AZ_IPPRE_INBOUND_NAME}" \
+                    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                    --subscription "${AZ_SUBSCRIPTION_ID}" \
+                    --output none
+                printf "...Done.\n"
+            fi
+        else
+            printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} already exists."
+            return
+        fi
+    else
+        printf "Variable AZ_IPPRE_INBOUND_NAME not defined."
+    fi
 }
 
 function create_acr() {
@@ -430,6 +497,8 @@ EOF
 
 create_resource_groups
 create_common_resources
+create_outbound_public_ip_prefix
+create_inbound_public_ip_prefix
 create_acr
 create_base_system_users_and_store_credentials
 set_permissions_on_acr
