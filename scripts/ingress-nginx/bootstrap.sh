@@ -169,7 +169,7 @@ IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/provi
 
 # list of AVAILABLE public ips assigned to the Radix Zone
 echo "Getting list of available public inbound ips in $RADIX_ZONE..."
-AVAILABLE_INBOUND_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$AZ_IPPRE_INBOUND_NAME'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
+AVAILABLE_INBOUND_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INBOUND_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
 
 SELECTED_IP="$(echo $AVAILABLE_INBOUND_IPS | jq '.[0:1]')"
 
