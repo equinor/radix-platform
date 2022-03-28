@@ -31,6 +31,10 @@
 #######################################################################################
 ### START
 ### 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
 
 echo ""
 echo "Start teardown of aks instance... "
@@ -101,6 +105,44 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+#######################################################################################
+### Check if cluster or network resources are locked
+###
+
+CLUSTERLOCK="$(az lock list --resource-group clusters --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME | jq '.[].name' | tr -d "\"" 2>&1)"
+VNETLOCK="$(az lock list --resource-group clusters --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.Network/virtualNetworks  --resource vnet-$CLUSTER_NAME | jq '.[].name' | tr -d "\"" 2>&1)"
+
+if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
+  echo -e ""
+  echo -e "Azure lock status:"
+  echo -e "   ------------------------------------------------------------------"
+  if [ -n "$CLUSTERLOCK" ]; then
+    printf "   -  AZ Cluster               : $CLUSTER_NAME               ${red}locked${normal}\n"
+  else
+    printf "   -  AZ Cluster               : $CLUSTER_NAME               ${grn}unlocked${normal}\n"
+  fi
+#echo -e "   -  AZ Cluster               : $CLUSTER_NAME"
+  if [ -n "$VNETLOCK" ]; then
+    printf "   -  AZ VirtualNetworks       : vnet-$CLUSTER_NAME          ${red}locked${normal}\n"
+  else
+    printf "   -  AZ VirtualNetworks       : vnet-$CLUSTER_NAME          ${grn}unlocked${normal}\n"
+  fi
+  echo -e "   -------------------------------------------------------------------"
+printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"; exit 0;
+fi
+
+# if [ -n "$CLUSTERLOCK" ]; then
+# printf "Cluster $CLUSTER_NAME is ${red}locked ${normal}in Azure.\n"
+# printf "   -  AZ Cluster               : $CLUSTER_NAME          ${red}locked ${normal}"
+# fi
+
+# if [ -n "$VNETLOCK" ]; then
+# printf "Virtual networks vnet-$CLUSTER_NAME is ${red}locked ${normal}in Azure.\n"
+# printf "   -  AZ VirtualNetworks       : vnet-$CLUSTER_NAME ${red}locked ${normal}"
+# fi
+
+#printf "$CLUSTERLOCK\n"
+#printf "$VNETLOCK\n"
 
 #######################################################################################
 ### Verify task at hand
@@ -124,7 +166,6 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
-
 echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
