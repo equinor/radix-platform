@@ -121,7 +121,6 @@ if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
   else
     printf "   -  AZ Cluster               : $CLUSTER_NAME               ${grn}unlocked${normal}\n"
   fi
-#echo -e "   -  AZ Cluster               : $CLUSTER_NAME"
   if [ -n "$VNETLOCK" ]; then
     printf "   -  AZ VirtualNetworks       : vnet-$CLUSTER_NAME          ${red}locked${normal}\n"
   else
@@ -130,19 +129,6 @@ if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
   echo -e "   -------------------------------------------------------------------"
 printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"; exit 0;
 fi
-
-# if [ -n "$CLUSTERLOCK" ]; then
-# printf "Cluster $CLUSTER_NAME is ${red}locked ${normal}in Azure.\n"
-# printf "   -  AZ Cluster               : $CLUSTER_NAME          ${red}locked ${normal}"
-# fi
-
-# if [ -n "$VNETLOCK" ]; then
-# printf "Virtual networks vnet-$CLUSTER_NAME is ${red}locked ${normal}in Azure.\n"
-# printf "   -  AZ VirtualNetworks       : vnet-$CLUSTER_NAME ${red}locked ${normal}"
-# fi
-
-#printf "$CLUSTERLOCK\n"
-#printf "$VNETLOCK\n"
 
 #######################################################################################
 ### Verify task at hand
