@@ -133,10 +133,20 @@ fi
 echo ""
 
 function create_acr_task() {
-    printf "Create ACR Task: ${AZ_RESOURCE_ACR_TASK_NAME} in ACR: ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    local NO_PUSH="$3"
     TASK_YAML="task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
-    cat <<EOF >>${TASK_YAML}
+    if [[ $NO_PUSH == "--no-push" ]]; then
+        PUSH=""
+        cat <<EOF >>${TASK_YAML}
+version: v1.1.0
+steps:
+  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} {{.Values.CONTEXT}}
+EOF
+    else
+        cat <<EOF >>${TASK_YAML}
 version: v1.1.0
 steps:
   - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} {{.Values.CONTEXT}}
@@ -145,13 +155,16 @@ steps:
     - {{.Values.CLUSTERTYPE_IMAGE}}
     - {{.Values.CLUSTERNAME_IMAGE}}
 EOF
+    fi
+    printf "Create ACR Task: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
-        --registry ${AZ_RESOURCE_CONTAINER_REGISTRY} \
-        --name ${AZ_RESOURCE_ACR_TASK_NAME} \
+        --registry ${ACR_NAME} \
+        --name ${TASK_NAME} \
         --context /dev/null \
         --file ${TASK_YAML} \
         --assign-identity [system] \
         --auth-mode None \
+        $NO_PUSH \
         --output none
 
     rm "$TASK_YAML"
@@ -159,12 +172,14 @@ EOF
 }
 
 function create_role_assignment(){
-    printf "Get ID of ACR: ${AZ_RESOURCE_CONTAINER_REGISTRY}..."
-    REGISTRY_ID=$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --query id --output tsv)
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    printf "Get ID of ACR: ${ACR_NAME}..."
+    REGISTRY_ID=$(az acr show --name ${ACR_NAME} --query id --output tsv)
     printf "Done.\n"
 
-    printf "Get ID of task: ${AZ_RESOURCE_ACR_TASK_NAME}..."
-    TASK_IDENTITY=$(az acr task show --name ${AZ_RESOURCE_ACR_TASK_NAME} --registry ${AZ_RESOURCE_CONTAINER_REGISTRY} --query identity.principalId --output tsv)
+    printf "Get ID of task: ${TASK_NAME}..."
+    TASK_IDENTITY=$(az acr task show --name ${TASK_NAME} --registry ${ACR_NAME} --query identity.principalId --output tsv)
     printf " Done.\n"
 
     printf "Create role assignment..."
@@ -178,16 +193,18 @@ function create_role_assignment(){
 }
 
 function add_task_credential() {
-    printf "Add credentials for system-assigned identity to task: ${AZ_RESOURCE_ACR_TASK_NAME}..."
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    printf "Add credentials for system-assigned identity to task: ${TASK_NAME}..."
     if [[ 
-        $(az acr task credential list --registry ${AZ_RESOURCE_CONTAINER_REGISTRY} --name ${AZ_RESOURCE_ACR_TASK_NAME} | jq '.["'${AZ_RESOURCE_CONTAINER_REGISTRY}'.azurecr.io"].identity') == null ||
-        -z $(az acr task credential list --registry ${AZ_RESOURCE_CONTAINER_REGISTRY} --name ${AZ_RESOURCE_ACR_TASK_NAME} | jq '.["'${AZ_RESOURCE_CONTAINER_REGISTRY}'.azurecr.io"].identity')
+        $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity') == null ||
+        -z $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity')
     ]]; then
         # Add credentials for user-assigned identity to the task
         az acr task credential add \
-            --name ${AZ_RESOURCE_ACR_TASK_NAME} \
-            --registry ${AZ_RESOURCE_CONTAINER_REGISTRY} \
-            --login-server ${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io \
+            --name ${TASK_NAME} \
+            --registry ${ACR_NAME} \
+            --login-server ${ACR_NAME}.azurecr.io \
             --use-identity [system] \
             &>/dev/null
         printf " Done.\n"
@@ -219,9 +236,14 @@ function run_task() {
 }
 
 
-create_acr_task
-create_role_assignment
-add_task_credential
+create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "--no-push"
+
+create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+
+add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
 echo ""
 echo "Done creating ACR Task."
