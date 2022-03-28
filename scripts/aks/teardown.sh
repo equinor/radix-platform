@@ -109,25 +109,25 @@ printf "Done.\n"
 ### Check if cluster or network resources are locked
 ###
 
-CLUSTERLOCK="$(az lock list --resource-group clusters --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME | jq '.[].name' | tr -d "\"" 2>&1)"
-VNETLOCK="$(az lock list --resource-group clusters --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.Network/virtualNetworks  --resource vnet-$CLUSTER_NAME | jq '.[].name' | tr -d "\"" 2>&1)"
+CLUSTERLOCK="$(az lock list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME | jq -r '.[].name' 2>&1)"
+VNETLOCK="$(az lock list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.Network/virtualNetworks  --resource $VNET_NAME | jq -r '.[].name' 2>&1)"
 
 if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
-  echo -e ""
-  echo -e "Azure lock status:"
-  echo -e "   ------------------------------------------------------------------"
-  if [ -n "$CLUSTERLOCK" ]; then
-    printf "   -  AZ Cluster               : $CLUSTER_NAME               ${red}locked${normal}\n"
-  else
-    printf "   -  AZ Cluster               : $CLUSTER_NAME               ${grn}unlocked${normal}\n"
-  fi
-  if [ -n "$VNETLOCK" ]; then
-    printf "   -  AZ VirtualNetworks       : vnet-$CLUSTER_NAME          ${red}locked${normal}\n"
-  else
-    printf "   -  AZ VirtualNetworks       : vnet-$CLUSTER_NAME          ${grn}unlocked${normal}\n"
-  fi
-  echo -e "   -------------------------------------------------------------------"
-printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"; exit 0;
+    echo -e ""
+    echo -e "Azure lock status:"
+    echo -e "   ------------------------------------------------------------------"
+    if [ -n "$CLUSTERLOCK" ]; then
+        printf "   -  AZ Cluster               : $CLUSTER_NAME               ${red}Locked${normal} by $CLUSTERLOCK\n"
+    else
+        printf "   -  AZ Cluster               : $CLUSTER_NAME               ${grn}unlocked${normal}\n"
+    fi
+    if [ -n "$VNETLOCK" ]; then
+        printf "   -  AZ VirtualNetworks       : $VNET_NAME          ${red}Locked${normal} by $VNETLOCK\n"
+    else
+    printf "   -  AZ VirtualNetworks       : $VNET_NAME          ${grn}unlocked${normal}\n"
+    fi
+    echo -e "   -------------------------------------------------------------------"
+    printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"; exit 0;
 fi
 
 #######################################################################################
