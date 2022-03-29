@@ -486,8 +486,8 @@ echo "Done."
 ### Lock cluster and network resources
 ###
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-az lock create --lock-type CanNotDelete --name $CLUSTER_NAME-lock --resource-group clusters --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME  2>&1 >/dev/null
-az lock create --lock-type CanNotDelete --name $VNET_NAME-lock --resource-group clusters --resource-type Microsoft.Network/virtualNetworks --resource $VNET_NAME  2>&1 >/dev/null
+    az lock create --lock-type CanNotDelete --name ${CLUSTER_NAME}-lock --resource-group clusters --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME  &>/dev/null
+    az lock create --lock-type CanNotDelete --name ${VNET_NAME}-lock --resource-group clusters --resource-type Microsoft.Network/virtualNetworks --resource $VNET_NAME  &>/dev/null
 fi
 
 #######################################################################################
