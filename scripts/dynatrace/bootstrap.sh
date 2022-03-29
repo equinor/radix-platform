@@ -134,17 +134,12 @@ DYNATRACE_PAAS_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAU
 SKIP_CERT_CHECK="true"
 
 # Store the secrets in a temporary .yaml file.
-echo "apiUrl: ${DYNATRACE_API_URL}
+echo "platform: kubernetes
+apiUrl: ${DYNATRACE_API_URL}
 apiToken: ${DYNATRACE_API_TOKEN}
 paasToken: ${DYNATRACE_PAAS_TOKEN}
 skipCertCheck: ${SKIP_CERT_CHECK}
 networkZone: ${CLUSTER_NAME}
-kubernetesMonitoring:
-  enabled: true
-  group: ${CLUSTER_NAME}
-routing:
-  enabled: true
-  group: ${CLUSTER_NAME}
 classicFullStack:
   enabled: true
   tolerations:
@@ -152,7 +147,10 @@ classicFullStack:
     key: node-role.kubernetes.io/master
     operator: Exists
   args:
-  - --set-host-group=${CLUSTER_NAME}" > dynatrace-values.yaml
+  - --set-host-group=${CLUSTER_NAME}
+activeGate:
+  capabilities:
+  - kubernetes-monitoring" > dynatrace-values.yaml
 
 # Create the dynatrace namespace.
 echo "Creating Dynatrace namespace..."
