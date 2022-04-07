@@ -129,25 +129,36 @@ fi
 ### Create private endpoint
 ###
 
-echo "Creating private endpoint..."
-CREATE_PRIVATE_ENDPOINT=$(az network private-endpoint create \
+PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
     --name ${PRIVATE_ENDPOINT_NAME} \
     --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
-    --connection-name ${PRIVATE_ENDPOINT_NAME} \
-    --private-connection-resource-id ${TARGET_RESOURCE_RESOURCE_ID} \
-    --group-id ${TARGET_SUBRESOURCE} \
-    --subnet ${AZ_VNET_HUB_SUBNET_NAME} \
-    --vnet-name ${AZ_VNET_HUB_NAME} \
-    --subscription ${AZ_SUBSCRIPTION_ID} \
-    --location ${AZ_INFRASTRUCTURE_REGION} \
-    --manual-request true \
-    --request-message "Radix Private Link")
+    --query id \
+    --output tsv \
+    2>/dev/null)
 
-if [[ $(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .provisioningState) != "Succeeded" ]]; then
-    echo "ERROR: Something went wrong when creating Private Endpoint:"
-    exit 1
+if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
+    echo "Creating private endpoint..."
+    CREATE_PRIVATE_ENDPOINT=$(az network private-endpoint create \
+        --name ${PRIVATE_ENDPOINT_NAME} \
+        --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
+        --connection-name ${PRIVATE_ENDPOINT_NAME} \
+        --private-connection-resource-id ${TARGET_RESOURCE_RESOURCE_ID} \
+        --group-id ${TARGET_SUBRESOURCE} \
+        --subnet ${AZ_VNET_HUB_SUBNET_NAME} \
+        --vnet-name ${AZ_VNET_HUB_NAME} \
+        --subscription ${AZ_SUBSCRIPTION_ID} \
+        --location ${AZ_INFRASTRUCTURE_REGION} \
+        --manual-request true \
+        --request-message "Radix Private Link")
+
+    if [[ $(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .provisioningState) != "Succeeded" ]]; then
+        echo "ERROR: Something went wrong when creating Private Endpoint:"
+        exit 1
+    else
+        echo "Done."
+    fi
 else
-    echo "Done."
+    echo "Private Endpoint already exists."
 fi
 
 #######################################################################################
