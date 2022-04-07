@@ -139,7 +139,7 @@ SECRET="$(az keyvault secret show \
 if [[ -n $(echo ${SECRET} | jq '.[] | select(.name=="'${PRIVATE_ENDPOINT_NAME}'" and .resourceGroup=="'${AZ_RESOURCE_GROUP_VNET_HUB}'").name') ]]; then
     NEW_SECRET=$(echo ${SECRET} | jq '. | del(.[] | select(.name=="'${PRIVATE_ENDPOINT_NAME}'" and .resourceGroup=="'${AZ_RESOURCE_GROUP_VNET_HUB}'"))')
     echo "Updating keyvault secret..."
-    az keyvault secret set --name ${RADIX_PE_KV_SECRET_NAME} --vault-name ${AZ_RESOURCE_KEYVAULT} --value "${NEW_SECRET}"
+    az keyvault secret set --name ${RADIX_PE_KV_SECRET_NAME} --vault-name ${AZ_RESOURCE_KEYVAULT} --value "${NEW_SECRET}" >/dev/null
     echo "Done."
 else
     echo "Private endpoint does not exist in keyvault secret."
