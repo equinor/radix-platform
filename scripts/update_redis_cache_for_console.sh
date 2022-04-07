@@ -100,14 +100,14 @@ function updateRedisCacheConfiguration() {
             done
         fi
 
-        printf "Creating new Redis Cache..."
-        REDIS_CACHE_INSTANCE=$(az redis create \
-            --location "$AZ_INFRASTRUCTURE_REGION" \
-            --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-            --name "$REDIS_CACHE_NAME" \
-            --sku Standard \
-            --vm-size c1 \
-            2>/dev/null)
+        echo "Creating new Redis Cache..."
+        #Docs https://azure.microsoft.com/en-us/pricing/details/cache/
+        if [[ $RADIX_ZONE == "dev" ]]; then
+            REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_INFRASTRUCTURE_REGION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Basic --vm-size c1)
+        else
+            REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_INFRASTRUCTURE_REGION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Standard --vm-size c1)
+        fi
+        
 
         if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
             echo ""
