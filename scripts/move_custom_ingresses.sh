@@ -225,19 +225,11 @@ kubectl scale deployment -n radix-cicd-canary radix-cicd-canary --replicas=0
 wait
 printf "Done.\n"
 
-echo ""
-printf "Scale down radix-acr-cleanup in $SOURCE_CLUSTER...\n"
-kubectl scale deployment radix-acr-cleanup --replicas=0
-wait
-printf "Done.\n"
-
 #######################################################################################
 ### Suspend source flux resources
 ###
 echo ""
-printf "Suspend radix-acr-cleanup and radix-cicd-canary kustomizations...\n"
-flux suspend kustomization radix-acr-cleanup
-wait
+printf "Suspend radix-cicd-canary kustomizations...\n"
 flux suspend kustomization radix-cicd-canary
 wait
 printf "Done.\n"
