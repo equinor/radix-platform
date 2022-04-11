@@ -70,7 +70,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap Private Endpoint infrastructure will use the following configuration:"
+echo -e "Delete Private Endpoint will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -108,7 +108,7 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
-### Create private endpoint
+### Delete Private Endpoint
 ###
 
 PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
@@ -127,8 +127,33 @@ else
 fi
 
 #######################################################################################
+### Delete Private DNS Record
+###
+
+PRIVATE_DNS_RECORD=$(az network private-dns record-set a list \
+    --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
+    --zone-name ${AZ_PRIVATE_DNS_ZONES[-1]} \
+    --query "[?name=='${PRIVATE_ENDPOINT_NAME}']")
+echo "${PRIVATE_DNS_RECORD}"
+PRIVATE_DNS_RECORD_NAME=$(echo ${PRIVATE_DNS_RECORD} | jq -r .[0].name)
+PRIVATE_DNS_RECORD_IP=$(echo ${PRIVATE_DNS_RECORD} | jq -r .[0].aRecords[0].ipv4Address)
+
+if [[ -n ${PRIVATE_DNS_RECORD_IP} ]]; then
+    echo "Deleting Private DNS Record..."
+    az network private-dns record-set a remove-record \
+        --ipv4-address ${PRIVATE_DNS_RECORD_IP} \
+        --record-set-name ${PRIVATE_DNS_RECORD_NAME} \
+        --zone-name ${AZ_PRIVATE_DNS_ZONES[-1]} \
+        --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB}
+    echo "Deleted Private DNS Record with name ${PRIVATE_DNS_RECORD_NAME}."
+else
+    echo "Private DNS Record for the Private Link ${PRIVATE_ENDPOINT_NAME} does not exist."
+fi
+
+#######################################################################################
 ### Delete information from keyvault secret
 ###
+
 # Get secret
 SECRET="$(az keyvault secret show \
         --vault-name ${AZ_RESOURCE_KEYVAULT} \
@@ -136,8 +161,8 @@ SECRET="$(az keyvault secret show \
         | jq '.value | fromjson')"
 
 # Check if PE exists in secret
-if [[ -n $(echo ${SECRET} | jq '.[] | select(.name=="'${PRIVATE_ENDPOINT_NAME}'" and .resourceGroup=="'${AZ_RESOURCE_GROUP_VNET_HUB}'").name') ]]; then
-    NEW_SECRET=$(echo ${SECRET} | jq '. | del(.[] | select(.name=="'${PRIVATE_ENDPOINT_NAME}'" and .resourceGroup=="'${AZ_RESOURCE_GROUP_VNET_HUB}'"))')
+if [[ -n $(echo ${SECRET} | jq '.[] | select(.private_endpoint_name=="'${PRIVATE_ENDPOINT_NAME}'" and .private_endpoint_resource_group=="'${AZ_RESOURCE_GROUP_VNET_HUB}'").name') ]]; then
+    NEW_SECRET=$(echo ${SECRET} | jq '. | del(.[] | select(.private_endpoint_name=="'${PRIVATE_ENDPOINT_NAME}'" and .private_endpoint_resource_group=="'${AZ_RESOURCE_GROUP_VNET_HUB}'"))')
     echo "Updating keyvault secret..."
     az keyvault secret set --name ${RADIX_PE_KV_SECRET_NAME} --vault-name ${AZ_RESOURCE_KEYVAULT} --value "${NEW_SECRET}" >/dev/null
     echo "Done."
