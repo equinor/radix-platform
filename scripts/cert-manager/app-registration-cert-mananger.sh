@@ -261,7 +261,7 @@ if [[ $ROLE_DEFINITION_ID == "" ]]; then
         done
     fi
 
-    printf "Creating app registration...\n"
+    printf "Creating Azure role definition...\n"
 
     if [[ $CRED_ROLE == true ]]; then
         CUSTOMDNSROLE_JSON="cert-mananger-custom-dns-role.json"
