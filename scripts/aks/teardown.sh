@@ -30,7 +30,7 @@
 
 #######################################################################################
 ### START
-### 
+###
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
@@ -152,6 +152,7 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
+
 echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
@@ -177,7 +178,18 @@ printf "Verifying that cluster exist and/or the user can access it... "
 # We use az aks get-credentials to test if both the cluster exist and if the user has access to it. 
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
     echo -e "Error: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
-    exit 0        
+    if [[ $USER_PROMPT == true ]]; then
+        while true; do
+            read -p "Do you want to continue? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    else
+        exit 0
+    fi
 fi
 printf "Done.\n"
 

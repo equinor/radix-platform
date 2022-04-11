@@ -134,7 +134,7 @@ PRIVATE_DNS_RECORD=$(az network private-dns record-set a list \
     --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
     --zone-name ${AZ_PRIVATE_DNS_ZONES[-1]} \
     --query "[?name=='${PRIVATE_ENDPOINT_NAME}']")
-echo "${PRIVATE_DNS_RECORD}"
+
 PRIVATE_DNS_RECORD_NAME=$(echo ${PRIVATE_DNS_RECORD} | jq -r .[0].name)
 PRIVATE_DNS_RECORD_IP=$(echo ${PRIVATE_DNS_RECORD} | jq -r .[0].aRecords[0].ipv4Address)
 

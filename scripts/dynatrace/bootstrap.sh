@@ -150,7 +150,8 @@ classicFullStack:
   - --set-host-group=${CLUSTER_NAME}
 activeGate:
   capabilities:
-  - kubernetes-monitoring" > dynatrace-values.yaml
+  - kubernetes-monitoring
+  group: ${CLUSTER_NAME}" > dynatrace-values.yaml
 
 # Create the dynatrace namespace.
 echo "Creating Dynatrace namespace..."
