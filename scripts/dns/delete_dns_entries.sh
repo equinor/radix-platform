@@ -127,7 +127,7 @@ echo "Find A records not bound to a TXT-record..."
 
 for record in $(echo $A_RECORD_LIST | jq -r '.[] | @base64'); do
     record_name=$(echo $record | base64 --decode | jq -r '.name')
-    if [[ $TXT_RECORD_LIST != *"$record_name"* && ${EXCLUDE_LIST[@]} != *"$record_name"* ]]; then
+    if [[ $(echo $TXT_RECORD_LIST | jq -r '.[] | select(.name=="'$record_name'").name') != "$record_name" && ${EXCLUDE_LIST[@]} != *"$record_name"* ]]; then
         printf "Deleting: $record_name..."
         az network dns record-set a delete --yes --resource-group ${RESOURCE_GROUP} --zone-name ${DNS_ZONE} --name $record_name
         printf " Done.\n"
