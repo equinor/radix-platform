@@ -152,11 +152,13 @@ if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
         --manual-request true \
         --request-message "Radix Private Link")
 
-    if [[ $(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .provisioningState) != "Succeeded" ]]; then
+    if [[ $(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .provisioningState 2>/dev/null) != "Succeeded" ]]; then
         echo "ERROR: Something went wrong when creating Private Endpoint:"
+        echo ${CREATE_PRIVATE_ENDPOINT}
         exit 1
     else
         echo "Done."
+        PRIVATE_ENDPOINT_ID=$(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .id 2>/dev/null)
     fi
 else
     echo "Private Endpoint already exists."
