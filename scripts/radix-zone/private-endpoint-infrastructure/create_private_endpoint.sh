@@ -168,6 +168,22 @@ fi
 ### Save information in keyvault
 ###
 
+# Make sure necessary variables are set.
+if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
+    echo "Missing varaiable PRIVATE_ENDPOINT_ID."
+    exit 1
+fi
+
+if [[ -z ${NIC_PRIVATE_IP} ]]; then
+    echo "Missing varaiable NIC_PRIVATE_IP."
+    exit 1
+fi
+
+if [[ -z ${PRIVATE_DNS_RECORD_NAME} ]]; then
+    echo "Missing varaiable PRIVATE_DNS_RECORD_NAME."
+    exit 1
+fi
+
 # Get secret
 SECRET="$(az keyvault secret show \
         --vault-name ${AZ_RESOURCE_KEYVAULT} \
