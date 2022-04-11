@@ -70,7 +70,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap Private Endpoint infrastructure will use the following configuration:"
+echo -e "Delete Private Endpoint will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -108,7 +108,7 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
-### Create private endpoint
+### Delete Private Endpoint
 ###
 
 PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
@@ -129,6 +129,7 @@ fi
 #######################################################################################
 ### Delete information from keyvault secret
 ###
+
 # Get secret
 SECRET="$(az keyvault secret show \
         --vault-name ${AZ_RESOURCE_KEYVAULT} \
