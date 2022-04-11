@@ -127,6 +127,30 @@ else
 fi
 
 #######################################################################################
+### Delete Private DNS Record
+###
+
+PRIVATE_DNS_RECORD=$(az network private-dns record-set a list \
+    --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
+    --zone-name ${AZ_PRIVATE_DNS_ZONES[-1]} \
+    --query "[?name=='${PRIVATE_ENDPOINT_NAME}']")
+echo "${PRIVATE_DNS_RECORD}"
+PRIVATE_DNS_RECORD_NAME=$(echo ${PRIVATE_DNS_RECORD} | jq -r .[0].name)
+PRIVATE_DNS_RECORD_IP=$(echo ${PRIVATE_DNS_RECORD} | jq -r .[0].aRecords[0].ipv4Address)
+
+if [[ -n ${PRIVATE_DNS_RECORD_IP} ]]; then
+    echo "Deleting Private DNS Record..."
+    az network private-dns record-set a remove-record \
+        --ipv4-address ${PRIVATE_DNS_RECORD_IP} \
+        --record-set-name ${PRIVATE_DNS_RECORD_NAME} \
+        --zone-name ${AZ_PRIVATE_DNS_ZONES[-1]} \
+        --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB}
+    echo "Deleted Private DNS Record with name ${PRIVATE_DNS_RECORD_NAME}."
+else
+    echo "Private DNS Record for the Private Link ${PRIVATE_ENDPOINT_NAME} does not exist."
+fi
+
+#######################################################################################
 ### Delete information from keyvault secret
 ###
 

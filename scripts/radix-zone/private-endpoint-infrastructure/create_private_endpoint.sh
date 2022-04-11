@@ -165,6 +165,46 @@ else
 fi
 
 #######################################################################################
+### Create Private DNS Record
+###
+
+PRIVATE_ENDPOINT_NIC_ID=$(az network private-endpoint show --ids ${PRIVATE_ENDPOINT_ID} --query networkInterfaces[0].id --output tsv)
+if [[ -n ${PRIVATE_ENDPOINT_NIC_ID} ]]; then
+    NIC_PRIVATE_IP=$(az network nic show --ids ${PRIVATE_ENDPOINT_NIC_ID} --query ipConfigurations[0].privateIpAddress --output tsv 2>/dev/null)
+
+    if [[ -n ${NIC_PRIVATE_IP} ]]; then
+        PRIVATE_DNS_RECORD_NAME=$(az network private-dns record-set a list \
+            --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
+            --zone-name ${AZ_PRIVATE_DNS_ZONES[-1]} \
+            --query "[?aRecords[?ipv4Address=='${NIC_PRIVATE_IP}']].name" |
+            jq -r .[0])
+
+        if [[ ${PRIVATE_DNS_RECORD_NAME} == "null" ]]; then
+            echo "Creating Private DNS Record..."
+            PRIVATE_DNS_RECORD_NAME=$(az network private-dns record-set a add-record \
+                --ipv4-address ${NIC_PRIVATE_IP} \
+                --record-set-name ${PRIVATE_ENDPOINT_NAME} \
+                --zone-name ${AZ_PRIVATE_DNS_ZONES[-1]} \
+                --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
+                --query name \
+                --output tsv)
+            if [[ -z ${PRIVATE_DNS_RECORD_NAME} ]]; then
+                echo "ERROR: Could not create Private DNS Record. Quitting..."
+                exit 1
+            else
+                echo "Created Private DNS Record with name ${PRIVATE_DNS_RECORD_NAME}."
+            fi
+        else
+            echo "Private DNS Record for the Private Link ${PRIVATE_ENDPOINT_NAME} already exists: ${PRIVATE_DNS_RECORD_NAME}."
+        fi
+    else
+        echo "Could not get Private IP of NIC ${PRIVATE_ENDPOINT_NIC_ID}."
+    fi
+else
+    echo "Could not get NIC ID of Private Endpoint ${PRIVATE_ENDPOINT_ID}."
+fi
+
+#######################################################################################
 ### Save information in keyvault
 ###
 
