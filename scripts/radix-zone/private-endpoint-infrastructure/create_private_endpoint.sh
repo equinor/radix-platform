@@ -231,9 +231,26 @@ SECRET="$(az keyvault secret show \
         | jq '.value | fromjson')"
 
 # Check if PE exists in secret
-if [[ -z $(echo ${SECRET} | jq '.[] | select(.id=="'$(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .id)'").name') ]]; then
+if [[ -z $(echo ${SECRET} | jq '.[] | select(.private_endpoint_id=="'${PRIVATE_ENDPOINT_ID}'").name') ]]; then
+    # Does not exist in secret
+    echo "Getting JSON"
+    PRIVATE_ENDPOINT=$(az network private-endpoint show \
+        --ids ${PRIVATE_ENDPOINT_ID} \
+        2>/dev/null)
+    JSON=$(echo ${PRIVATE_ENDPOINT} | jq '. |
+    {
+        private_endpoint_id: .id,
+        private_endpoint_name: .name,
+        private_endpoint_resource_group: .resourceGroup,
+        private_endpoint_location: .location,
+        private_endpoint_nic_ipv4: "'${NIC_PRIVATE_IP}'",
+        private_dns_zone_record_name: "'${PRIVATE_DNS_RECORD_NAME}'",
+        target_resource_id: .manualPrivateLinkServiceConnections[].privateLinkServiceId,
+        target_subresource: "'${TARGET_SUBRESOURCE}'",
+    }')
+    echo "$JSON"
     echo "Updating keyvault secret..."
-    NEW_SECRET=$(echo ${SECRET} | jq '. += ['"$(echo ${CREATE_PRIVATE_ENDPOINT} | jq -c)"']')
+    NEW_SECRET=$(echo ${SECRET} | jq '. += ['"$(echo ${JSON} | jq -c)"']')
     az keyvault secret set --name ${RADIX_PE_KV_SECRET_NAME} --vault-name ${AZ_RESOURCE_KEYVAULT} --value "${NEW_SECRET}" >/dev/null
     echo "Done."
 else
