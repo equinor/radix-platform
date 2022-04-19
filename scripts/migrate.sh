@@ -277,10 +277,6 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
         done
     fi
 
-    # Copy spec of source cluster
-    # NOTE: The normal spec of a cluster is determined by the (dev.env|prod.env in the AKS folder)
-    NUM_NODES_IN_SOURCE_CLUSTER="$(kubectl get nodes --no-headers | wc -l | tr -d '[:space:]')"
-
     echo ""
     echo "Creating destination cluster..."
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
@@ -511,6 +507,7 @@ while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1
   sleep 5
 done
 echo "Ingress is ready, adding replyUrl for radix web-console..."
+# Use client ID
 (AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 printf "Done."
