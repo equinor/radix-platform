@@ -234,10 +234,10 @@ printf "Reading credentials... "
 if [[ -z "$CREDENTIALS_FILE" ]]; then
     # No file found, default to read credentials from keyvault
     # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)
-    AAD_SERVER_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .id)"
-    AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
-    AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
-    AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
+    # AAD_SERVER_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .id)"
+    # AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
+    # AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
+    # AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
     ID_AKS="$(az identity show --name $MI_AKS --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
     ID_AKSKUBELET="$(az identity show --name $MI_AKSKUBELET --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
     ACR_ID="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
@@ -259,7 +259,10 @@ if [ -z "$ID_AKSKUBELET" ]; then
     echo "ERROR: Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..."
     exit 1
 fi
-
+if [ -z "$ACR_ID" ]; then
+    echo "ERROR: Azure Container Registry \"$ACR_ID\" does not exist. Exiting..."
+    exit 1
+fi
 #######################################################################################
 ### Specify static public outbound IPs
 ###
@@ -381,13 +384,6 @@ fi
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
-if [[ "$RADIX_ENVIRONMENT" != "prod" ]] && [ "$CLUSTER_TYPE" = "playground" ]; then
-    DNS_ZONE="playground.$DNS_ZONE"
-elif [[ "$RADIX_ENVIRONMENT" != "prod" ]]; then
-    DNS_ZONE="${RADIX_ENVIRONMENT}.${DNS_ZONE}"
-else
-    HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
-fi
 
 ###############################################################################
 
