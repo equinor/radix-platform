@@ -148,7 +148,7 @@ if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
         --subnet ${AZ_VNET_HUB_SUBNET_NAME} \
         --vnet-name ${AZ_VNET_HUB_NAME} \
         --subscription ${AZ_SUBSCRIPTION_ID} \
-        --location ${AZ_INFRASTRUCTURE_REGION} \
+        --location ${AZ_RADIX_ZONE_LOCATION} \
         --manual-request true \
         --request-message "Radix Private Link")
 

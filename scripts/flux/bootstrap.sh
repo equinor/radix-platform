@@ -276,7 +276,7 @@ echo "Creating \"radix-flux-config\"..."
 # list of public ips assigned to the cluster
 printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
 ASSIGNED_IPS="$(az network public-ip list \
-    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_INFRASTRUCTURE_REGION}'].ipAddress" \
+    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].ipAddress" \
     --output json)"
 
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then

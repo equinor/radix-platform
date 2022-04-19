@@ -152,9 +152,9 @@ function create_resource_groups() {
     local groupName
 
     printf "Creating all resource groups..."
-    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
-    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
-    az group create --location "${AZ_INFRASTRUCTURE_REGION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --output none
     printf "...Done\n"
 }
 
@@ -287,14 +287,14 @@ function set_permissions_on_acr() {
     local id
     printf "Working on container registry \"${AZ_RESOURCE_CONTAINER_REGISTRY}\": "
 
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..."
+    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..." # radix-cr-reader-dev
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
     az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
 
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..."
+    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..." # radix-cr-cicd-dev
     id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
