@@ -254,13 +254,13 @@ printf "...Done\n"
 printf "\nCreating k8s secret \"radix-docker\"..."
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
+    --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
     --file sp_credentials.json \
         2>&1 >/dev/null
 
 kubectl create secret docker-registry radix-docker \
     --namespace="flux-system" \
-    --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
+    --docker-server="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --docker-username="$(jq -r '.id' sp_credentials.json)" \
     --docker-password="$(jq -r '.password' sp_credentials.json)" \
     --docker-email=radix@statoilsrm.onmicrosoft.com \
