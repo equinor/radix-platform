@@ -57,7 +57,6 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 # Script variables
-APP_REGISTRATION_CERT_MANAGER="ar-radix-certmanager-${CLUSTER_TYPE}"
 APP_ID=$(az ad app list --display-name $APP_REGISTRATION_CERT_MANAGER --query '[].appId' -o tsv)
 
 #######################################################################################
