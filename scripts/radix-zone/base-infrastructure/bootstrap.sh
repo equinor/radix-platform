@@ -116,12 +116,8 @@ printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_
 printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
 printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
 printf "\n"
-printf "\n   -  AZ_RESOURCE_AAD_SERVER                      : $AZ_RESOURCE_AAD_SERVER"
-printf "\n   -  AZ_RESOURCE_AAD_CLIENT                      : $AZ_RESOURCE_AAD_CLIENT"
-printf "\n"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-printf "\n   -  AZ_SYSTEM_USER_CLUSTER                      : $AZ_SYSTEM_USER_CLUSTER"
 printf "\n   -  AZ_SYSTEM_USER_DNS                          : $AZ_SYSTEM_USER_DNS"
 printf "\n"
 printf "\n   > WHO:"
@@ -189,7 +185,7 @@ function create_outbound_public_ip_prefix() {
             printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} does not exist.\n"
             if [[ $USER_PROMPT == true ]]; then
                 while true; do
-                    read -p "Create Public IP Prefix: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                    read -p "Create Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}? (Y/n) " yn
                     case $yn in
                         [Yy]* ) break;;
                         [Nn]* ) echo ""; echo "Return."; return;;
@@ -220,7 +216,7 @@ function create_inbound_public_ip_prefix() {
             printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} does not exist.\n"
             if [[ $USER_PROMPT == true ]]; then
                 while true; do
-                    read -p "Create Public IP Prefix: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                    read -p "Create Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}? (Y/n) " yn
                     case $yn in
                         [Yy]* ) break;;
                         [Nn]* ) echo ""; echo "Return."; return;;
@@ -288,14 +284,14 @@ function set_permissions_on_acr() {
     printf "Working on container registry \"${AZ_RESOURCE_CONTAINER_REGISTRY}\": "
 
     printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..." # radix-cr-reader-dev
-    id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query appId --output tsv)"
+    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query [].appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
     az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
 
     printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..." # radix-cr-cicd-dev
-    id="$(az ad sp show --id http://${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query appId --output tsv)"
+    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query [].appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
@@ -339,7 +335,7 @@ function set_permissions_on_dns() {
         # Grant 'DNS Zone Contributor' permissions to a specific zone
         # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
         printf "Azure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
-        id="$(az ad sp show --id http://${AZ_SYSTEM_USER_DNS} --query appId --output tsv)"
+        id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_DNS} --query [].appId --output tsv)"
         az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
         printf "...Done\n"
     fi
@@ -358,140 +354,6 @@ function create_base_system_users_and_store_credentials() {
 
 
 #######################################################################################
-### AAD apps for k8s RBAC integration
-###
-
-function create_az_ad_server_app() {
-    # This function will create the AAD server app and related service principal,
-    # set permissions on the app,
-    # and store the app credentials in the keyvault.
-    local rbac_server_app_name="${AZ_RESOURCE_AAD_SERVER}"
-    local RBAC_SERVER_APP_URL="http://${rbac_server_app_name}"
-    local RBAC_SERVER_APP_SECRET="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)" # Temporary secret, we will reset the credentials when we create the sp for this app.
-
-    # Create the Azure Active Directory server application
-    echo "Creating AAD server application \"${rbac_server_app_name}\"..."
-    az ad app create --display-name "${rbac_server_app_name}" \
-        --password "${RBAC_SERVER_APP_SECRET}" \
-        --identifier-uris "${RBAC_SERVER_APP_URL}" \
-        --reply-urls "${RBAC_SERVER_APP_URL}" \
-        --homepage "${RBAC_SERVER_APP_URL}" \
-        --required-resource-accesses @"$AD_APP_MANIFEST_PATH" \
-        --output none
-
-    # Update the application claims
-    local RBAC_SERVER_APP_ID="$(az ad app list --identifier-uri ${RBAC_SERVER_APP_URL} --query [].appId -o tsv)"
-    az ad app update --id "${RBAC_SERVER_APP_ID}" --set groupMembershipClaims=All --output none
-
-    # Create service principal for the server application
-    echo "Creating service principal for server application..."
-    az ad sp create --id "${RBAC_SERVER_APP_ID}" --output none
-    # Reset password to something azure will give us
-    RBAC_SERVER_APP_SECRET="$(az ad app credential reset --id ${RBAC_SERVER_APP_ID} --query password --output tsv)"
-
-    # Grant permissions to server application
-    echo "Granting permissions to the server application..."
-    local RESOURCE_API_ID
-    local RBAC_SERVER_APP_RESOURCES_API_IDS="$(az ad app permission list --id ${RBAC_SERVER_APP_ID} --query [].resourceAppId --out tsv | xargs echo)"
-    for RESOURCE_API_ID in $RBAC_SERVER_APP_RESOURCES_API_IDS;
-    do
-        if [ "$RESOURCE_API_ID" == "00000002-0000-0000-c000-000000000000" ]
-        then
-            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "User.Read" --output none
-            echo "Granted User.Read"
-        elif [ "$RESOURCE_API_ID" == "00000003-0000-0000-c000-000000000000" ]
-        then
-            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "Directory.Read.All" --output none
-            echo "Granted Directory.Read.All"
-        else
-            # echo "RESOURCE_API_ID=$RESOURCE_API_ID"
-            az ad app permission grant --api "$RESOURCE_API_ID" --id "$RBAC_SERVER_APP_ID" --scope "user_impersonation" --output none
-            echo "Granted user_impersonation"
-        fi
-    done
-
-    # Store app credentials in keyvault
-    update_service_principal_credentials_in_az_keyvault "${rbac_server_app_name}" "${RBAC_SERVER_APP_ID}" "${RBAC_SERVER_APP_SECRET}" "AZ AD server app to enable AKS rbac. Display name is \"${rbac_server_app_name}\"."
-
-    # Notify user about manual steps to make permissions usable
-    echo -e ""
-    echo -e "The Azure Active Directory application \"${rbac_server_app_name}\" has been created."
-    echo -e "You need to ask an Azure AD Administrator to go the Azure portal an click the \"Grant permissions\" button for this app."
-    echo -e ""
-}
-
-function create_az_ad_client_app() {
-    local rbac_client_app_name="${AZ_RESOURCE_AAD_CLIENT}"
-    local RBAC_CLIENT_APP_URL="http://${rbac_client_app_name}"
-
-    local RBAC_SERVER_CREDENTIALS="KEYVAULT"
-    local RBAC_SERVER_APP_ID="KEYVAULT"
-    local RBAC_SERVER_APP_OAUTH2PERMISSIONS_ID="LOOKUP"
-    local RBAC_SERVER_APP_SECRET="KEYVAULT"
-    local CLIENT_MANIFEST_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/manifest-client.json"
-
-    echo "Creating AAD client application \"${rbac_client_app_name}\"..."
-
-    # Get AAD server info from keyvault and use it to lookup oauth2 permisssion id
-    RBAC_SERVER_CREDENTIALS="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name ${AZ_RESOURCE_AAD_SERVER} | jq -r .value)"
-    RBAC_SERVER_APP_ID="$(echo $RBAC_SERVER_CREDENTIALS | jq -r .id)"
-    RBAC_SERVER_APP_SECRET="$(echo $RBAC_SERVER_CREDENTIALS | jq -r .password)"
-    RBAC_SERVER_APP_OAUTH2PERMISSIONS_ID="$(az ad app show --id ${RBAC_SERVER_APP_ID} --query oauth2Permissions[0].id -o tsv)"
-
-    # Create client application
-    # First we need a manifest
-    cat > "$CLIENT_MANIFEST_PATH" << EOF
-[
-    {
-    "resourceAppId": "${RBAC_SERVER_APP_ID}",
-    "resourceAccess": [
-        {
-        "id": "${RBAC_SERVER_APP_OAUTH2PERMISSIONS_ID}",
-        "type": "Scope"
-        }
-    ]
-    }
-]
-EOF
-
-    # Then we create the client application and provide the manifest
-    az ad app create --display-name "${rbac_client_app_name}" \
-        --native-app \
-        --reply-urls "${RBAC_CLIENT_APP_URL}" \
-        --homepage "${RBAC_CLIENT_APP_URL}" \
-        --required-resource-accesses @"$CLIENT_MANIFEST_PATH" \
-        --output none
-
-    # Finally remove manifest-client.json file as it is no longer needed
-    rm "$CLIENT_MANIFEST_PATH"
-
-    # To be able to use the client app then we need a service principal for it
-    # Create service principal for the client application
-    echo "Creating service principal for AAD client application..."
-    local RBAC_CLIENT_APP_ID="$(az ad app list --display-name ${rbac_client_app_name} --query [].appId -o tsv)"
-    az ad sp create --id "${RBAC_CLIENT_APP_ID}" --output none
-
-    # Grant permissions to server application
-    echo "Granting permissions to the AAD client application..."
-    local RESOURCE_API_ID
-    local RBAC_CLIENT_APP_RESOURCES_API_IDS="$(az ad app permission list --id $RBAC_CLIENT_APP_ID --query [].resourceAppId --out tsv | xargs echo)"
-    for RESOURCE_API_ID in $RBAC_CLIENT_APP_RESOURCES_API_IDS;
-    do
-        az ad app permission grant --api $RESOURCE_API_ID --id $RBAC_CLIENT_APP_ID --output none
-    done
-
-    # Store the client app credentials in the keyvault
-    update_service_principal_credentials_in_az_keyvault "${rbac_client_app_name}" "${RBAC_CLIENT_APP_ID}" "native apps do not use secrets" "AZ AD client app to enable AKS authorization. Display name is \"${rbac_client_app_name}\"."
-
-    # Notify user about manual steps to make permissions usable
-    echo -e ""
-    echo -e "The Azure Active Directory application \"${rbac_client_app_name}\" has been created."
-    echo -e "You need to ask an Azure AD Administrator to go the Azure portal an click the \"Grant permissions\" button for this app."
-    echo -e ""
-}
-
-
-#######################################################################################
 ### MAIN
 ###
 
@@ -503,8 +365,6 @@ create_acr
 create_base_system_users_and_store_credentials
 set_permissions_on_acr
 set_permissions_on_dns
-create_az_ad_server_app
-create_az_ad_client_app
 
 
 #######################################################################################
