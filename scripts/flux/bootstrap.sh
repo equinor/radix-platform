@@ -295,7 +295,7 @@ else
 fi
 
 printf "\nGetting Slack Webhook URL..."
-SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-${RADIX_ZONE}-${RADIX_ENVIRONMENT} | jq -r .value)"
 printf "...Done\n"
 
 IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
