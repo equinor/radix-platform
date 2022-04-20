@@ -287,7 +287,8 @@ if [[ $ROLE_DEFINITION_ID == "" ]]; then
         "AssignableScopes": [
             "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/dnszones/dev.radix.equinor.com",
             "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/dnszones/playground.radix.equinor.com",
-            "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/dnszones/radix.equinor.com"
+            "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/dnszones/radix.equinor.com",
+            "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/dnszones/c2.radix.equinor.com"
         ]
     }
 EOF

@@ -180,6 +180,8 @@ echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
 echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
+echo -e "   -  AZ_RESOURCE_GROUP_COMMON         : $AZ_RESOURCE_GROUP_COMMON"
+echo -e "   -  AZ_RESOURCE_GROUP_CLUSTERS       : $AZ_RESOURCE_GROUP_CLUSTERS"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
@@ -271,7 +273,7 @@ fi
 # if migrating active to active cluster (eg. dev to dev)
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Path to Public IP Prefix which contains the public outbound IPs
-    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
+    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
 
     # list of AVAILABLE public ips assigned to the Radix Zone
     echo "Getting list of available public ips in $RADIX_ZONE..."
@@ -507,7 +509,7 @@ printf "Done.\n"
 echo "Adding GPU node pools to the cluster... "
 
 az aks nodepool add \
-    --resource-group clusters \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc6sv3 \
     --node-count 0 \
@@ -523,7 +525,7 @@ az aks nodepool add \
     2>&1 >/dev/null
 
 az aks nodepool add \
-    --resource-group clusters \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc12sv3 \
     --node-count 0 \
@@ -539,7 +541,7 @@ az aks nodepool add \
     2>&1 >/dev/null
 
 az aks nodepool add \
-    --resource-group clusters \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc24sv3 \
     --node-count 0 \

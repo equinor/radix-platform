@@ -165,7 +165,7 @@ printf " OK\n"
 echo "Install secret ingress-ip in cluster"
 
 # Path to Public IP Prefix which contains the public inbound IPs
-IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
 
 # list of AVAILABLE public ips assigned to the Radix Zone
 echo "Getting list of available public inbound ips in $RADIX_ZONE..."

@@ -93,7 +93,7 @@ printf " OK\n"
 
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
+    --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
     --file sp_credentials.json
 
 kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run=client -o yaml | kubectl apply -f -
