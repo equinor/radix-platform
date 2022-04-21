@@ -36,6 +36,15 @@
 ### START
 ###
 
+# Load dependencies
+LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
+if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
+   echo "The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+   exit 1
+else
+   source "$LIB_SERVICE_PRINCIPAL_PATH"
+fi
+
 # Script vars
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -167,6 +176,11 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
     exit 1
 fi
 printf " OK\n"
+
+
+
+create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Can make changes in the DNS zone"
+
 
 #######################################################################################
 ### Create secret required by Grafana

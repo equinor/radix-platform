@@ -8,3 +8,4 @@ deployKey: |
     -----END RSA PRIVATE KEY-----
 adGroups: 
  - "xx-xx-xx-xx-xx"
+configBranch: master

@@ -254,13 +254,13 @@ printf "...Done\n"
 printf "\nCreating k8s secret \"radix-docker\"..."
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "radix-cr-cicd-${RADIX_ENVIRONMENT}" \
+    --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
     --file sp_credentials.json \
         2>&1 >/dev/null
 
 kubectl create secret docker-registry radix-docker \
     --namespace="flux-system" \
-    --docker-server="radix$RADIX_ENVIRONMENT.azurecr.io" \
+    --docker-server="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --docker-username="$(jq -r '.id' sp_credentials.json)" \
     --docker-password="$(jq -r '.password' sp_credentials.json)" \
     --docker-email=radix@statoilsrm.onmicrosoft.com \
@@ -276,7 +276,7 @@ echo "Creating \"radix-flux-config\"..."
 # list of public ips assigned to the cluster
 printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
 ASSIGNED_IPS="$(az network public-ip list \
-    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_INFRASTRUCTURE_REGION}'].ipAddress" \
+    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].ipAddress" \
     --output json)"
 
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then
@@ -295,7 +295,7 @@ else
 fi
 
 printf "\nGetting Slack Webhook URL..."
-SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-$RADIX_ZONE | jq -r .value)"
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook-${RADIX_ZONE}-${RADIX_ENVIRONMENT} | jq -r .value)"
 printf "...Done\n"
 
 IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"

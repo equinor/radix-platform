@@ -15,3 +15,4 @@ spec:
   deployKey: {{ .Values.deployKey | toYaml | indent 4 | trim }}
   repository: {{ .Values.repository }}
   sharedSecret: {{ .Values.sharedSecret }}
+  configBranch: {{ .Values.configBranch }}

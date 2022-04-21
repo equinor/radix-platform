@@ -154,7 +154,7 @@ echo ""
 
 echo ""
 echo "Create resource group..."
-az group create -n "$AZ_VELERO_RESOURCE_GROUP" --location "$AZ_INFRASTRUCTURE_REGION" 2>&1 >/dev/null
+az group create -n "$AZ_VELERO_RESOURCE_GROUP" --location "$AZ_RADIX_ZONE_LOCATION" 2>&1 >/dev/null
 echo "Done."
 
 echo ""

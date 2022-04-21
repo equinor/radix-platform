@@ -80,14 +80,14 @@ function create_service_principal_and_store_credentials() {
 
     # Exit gracefully if the sp exist
     local testSP
-    testSP="$(az ad sp show --id http://${name} --query appDisplayName --output tsv 2> /dev/null)"
+    testSP="$(az ad sp list --display-name ${name} --query [].appId --output tsv 2> /dev/null)"
     if [ ! -z "$testSP" ]; then
         printf "${name} exist, skipping.\n"
         return
     fi
 
-    password="$(az ad sp create-for-rbac --skip-assignment --name http://${name} --query password --output tsv)"
-    id="$(az ad sp show --id http://${name} --query appId --output tsv)"
+    password="$(az ad sp create-for-rbac --name ${name} --query password --output tsv)"
+    id="$(az ad sp list --display-name ${name} --query [].appId --output tsv)"
 
     printf "Update credentials in keyvault..."
     update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}"

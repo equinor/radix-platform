@@ -144,7 +144,7 @@ done
 
 printf "Adding role assignment for \"${MI_AKSKUBELET}\"..."
 IDENTITY_ID="$(az identity show --resource-group $AZ_RESOURCE_GROUP_COMMON --name $MI_AKSKUBELET --query clientId -o tsv)"
-az role assignment create --role "AcrPull" --assignee $IDENTITY_ID --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/$AZ_RESOURCE_CONTAINER_REGISTRY >/dev/null
+az role assignment create --role "AcrPull" --assignee $IDENTITY_ID --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.ContainerRegistry/registries/$AZ_RESOURCE_CONTAINER_REGISTRY >/dev/null
 printf "Done.\n"
 
 # Role assignments for cert-manager

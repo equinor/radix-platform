@@ -126,7 +126,7 @@ fi
 function assignRoleForResourceToUser() {
     local ROLE="${1}"
     local ROLE_SCOPE="${2}"
-    local USER_ID="$(az ad sp show --id http://${3} --query appId --output tsv)"
+    local USER_ID="$(az ad sp list --display-name ${3} --query [].appId --output tsv)"
 
     # Delete any existing roles before creating new roles
     local CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
@@ -183,13 +183,13 @@ echo "Azure Private DNS Zones: Creating..."
 
 function createPrivateDNSZones(){
     dns_zone="${1}"
-    DNS_ZONE_EXIST="$(az network private-dns zone show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone --query "type" --output tsv)"
+    DNS_ZONE_EXIST="$(az network private-dns zone show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone --query "type" --output tsv 2>/dev/null)"
     if [[ $DNS_ZONE_EXIST != "Microsoft.Network/privateDnsZones" ]]; then
         echo "Private DNS Zone: Creating ${dns_zone}..."
         # throws error if run twice
         az network private-dns zone create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone
     fi
-    DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n hublink -z $dns_zone --query "type" --output tsv)"
+    DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n hublink -z $dns_zone --query "type" --output tsv 2>/dev/null)"
     if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
         echo "Linking private DNS Zone:  ${dns_zone} to HUB VNET ${AZ_VNET_HUB_NAME}"
         # throws error if run twice

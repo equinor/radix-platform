@@ -289,7 +289,7 @@ function transformManifests() {
     # Read secret, extract stringified json from property "value" and convert it into json
     local DNS_SP="$(az keyvault secret show \
         --vault-name $AZ_RESOURCE_KEYVAULT \
-        --name ar-radix-certmanager-$CLUSTER_TYPE \
+        --name $APP_REGISTRATION_CERT_MANAGER \
         | jq '.value | fromjson')"
 
     # Set variables used in the manifest templates

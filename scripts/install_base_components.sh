@@ -276,11 +276,9 @@ wait
 ### Deploy dynatrace
 ###
 
-if [ "$CLUSTER_TYPE" != "production" ]; then
-    echo ""
-    (./dynatrace/bootstrap.sh)
-    wait
-fi
+echo ""
+(./dynatrace/bootstrap.sh)
+wait
 
 #######################################################################################
 ### Install prerequisites for Velero
