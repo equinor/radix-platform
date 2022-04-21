@@ -28,8 +28,11 @@
 ### HOW TO USE
 ### 
 
-# NORMAL
+# Option #1 - migrate ingresses from source to destination cluster
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER="weekly-2" DEST_CLUSTER="weekly-3" ./move_custom_ingresses.sh
+
+# Option #2 - configure ingresses from destination cluster only. Useful when creating cluster form scratch
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-3" ./move_custom_ingresses.sh
 
 
 #######################################################################################
@@ -69,11 +72,6 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$SOURCE_CLUSTER" ]]; then
-    echo "Please provide SOURCE_CLUSTER" >&2
-    exit 1
-fi
-
 if [[ -z "$DEST_CLUSTER" ]]; then
     echo "Please provide DEST_CLUSTER" >&2
     exit 1
@@ -81,6 +79,21 @@ fi
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
+fi
+
+if [[ -z "$SOURCE_CLUSTER" ]]; then
+    echo "SOURCE_CLUSTER is not defined" >&2
+    if [[ $USER_PROMPT == true ]]; then
+        while true; do
+            read -p "Is this intentional? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
+    
 fi
 
 
@@ -179,64 +192,66 @@ printf " OK\n"
 ###
 echo ""
 printf "Enabling monitoring addon in the destination cluster... "
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name radix-container-logs-$RADIX_ZONE | jq -r .[0].id)
-az aks enable-addons -a monitoring -n $DEST_CLUSTER -g clusters --workspace-resource-id "$WORKSPACE_ID" --no-wait
+WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name $AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE | jq -r .[0].id)
+az aks enable-addons -a monitoring -n $DEST_CLUSTER -g $AZ_RESOURCE_GROUP_CLUSTERS --workspace-resource-id "$WORKSPACE_ID" --no-wait
 printf "Done.\n"
 
-echo ""
-printf "Disabling monitoring addon in the source cluster... "
-az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g clusters --no-wait
-printf "Done.\n"
+if [[ -n $SOURCE_CLUSTER ]]; then
+    echo ""
+    printf "Disabling monitoring addon in the source cluster... "
+    az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g $AZ_RESOURCE_GROUP_CLUSTERS --no-wait
+    printf "Done.\n"
 
-#######################################################################################
-### Change credentials to Source cluster
-###
+    #######################################################################################
+    ### Change credentials to Source cluster
+    ###
 
-echo ""
-printf "Point to source cluster... "
-az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
-    --overwrite-existing \
-    --admin \
-    2>&1 >/dev/null
-[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
-printf "Done.\n"
+    echo ""
+    printf "Point to source cluster... "
+    az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
+        --overwrite-existing \
+        --admin \
+        2>&1 >/dev/null
+    [[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
+    printf "Done.\n"
 
-echo ""
-printf "Delete custom ingresses... "
-while read -r line; do
-    if [[ "$line" ]]; then
-        helm delete ${line}
-    fi
-done <<<"$(helm list --short | grep radix-ingress)"
+    echo ""
+    printf "Delete custom ingresses... "
+    while read -r line; do
+        if [[ "$line" ]]; then
+            helm delete ${line}
+        fi
+    done <<<"$(helm list --short | grep radix-ingress)"
 
-#######################################################################################
-### 
-###
-# Point grafana to cluster specific ingress
-GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
+    #######################################################################################
+    ### 
+    ###
+    # Point grafana to cluster specific ingress
+    GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
+    kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
-#######################################################################################
-### Scale down source cluster resources
-###
-echo ""
-printf "Scale down radix-cicd-canary in $SOURCE_CLUSTER...\n"
-kubectl scale deployment -n radix-cicd-canary radix-cicd-canary --replicas=0
-wait
-printf "Done.\n"
+    #######################################################################################
+    ### Scale down source cluster resources
+    ###
+    echo ""
+    printf "Scale down radix-cicd-canary in $SOURCE_CLUSTER...\n"
+    kubectl scale deployment -n radix-cicd-canary radix-cicd-canary --replicas=0
+    wait
+    printf "Done.\n"
 
-#######################################################################################
-### Suspend source flux resources
-###
-echo ""
-printf "Suspend radix-cicd-canary kustomizations...\n"
-flux suspend kustomization radix-cicd-canary
-wait
-printf "Done.\n"
+    #######################################################################################
+    ### Suspend source flux resources
+    ###
+    echo ""
+    printf "Suspend radix-cicd-canary kustomizations...\n"
+    flux suspend kustomization radix-cicd-canary
+    wait
+    printf "Done.\n"
 
-printf "Update Auth proxy secret...\n"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
-printf "Done.\n"
+    printf "Update Auth proxy secret...\n"
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+    printf "Done.\n"
+fi
 
 #######################################################################################
 ### Change credentials to Destination cluster
