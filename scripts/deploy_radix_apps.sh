@@ -383,7 +383,7 @@ helm upgrade --install radix-pipeline-public-site-main \
     --set name="radix-platform" \
     --set cloneURL="git@github.com:equinor/radix-public-site.git" \
     --set cloneBranch="main" \
-    --set pipelineImageTag="main-latest" \
+    --set pipelineImageTag="release-latest" \
     --set containerRegistry="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
     --set imageTag="$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')"
 
