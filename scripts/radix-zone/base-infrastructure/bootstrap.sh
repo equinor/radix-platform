@@ -110,6 +110,7 @@ printf "\n   -  AZ_RESOURCE_GROUP_MONITORING                : $AZ_RESOURCE_GROUP
 printf "\n"
 printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
 printf "\n   -  AZ_IPPRE_OUTBOUND_NAME                      : $AZ_IPPRE_OUTBOUND_NAME"
+printf "\n   -  AZ_IPPRE_OUTBOUND_IP_PREFIX                 : $AZ_IPPRE_OUTBOUND_IP_PREFIX"
 printf "\n   -  AZ_IPPRE_OUTBOUND_LENGTH                    : $AZ_IPPRE_OUTBOUND_LENGTH"
 printf "\n   -  AZ_IPPRE_INBOUND_NAME                       : $AZ_IPPRE_INBOUND_NAME"
 printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_LENGTH"
@@ -145,8 +146,6 @@ fi
 ###
 
 function create_resource_groups() {
-    local groupName
-
     printf "Creating all resource groups..."
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
@@ -203,8 +202,34 @@ function create_outbound_public_ip_prefix() {
             fi
         else
             printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} already exists."
-            return
         fi
+        # Create IPs
+        echo "Creating IPs in Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME}..."
+        IPPRE_OUTBOUND_IP_NUMBER=$(az network public-ip prefix show \
+            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+            --name ${AZ_IPPRE_OUTBOUND_NAME} \
+            --subscription ${AZ_SUBSCRIPTION_ID} \
+            --query publicIpAddresses |
+            jq -r .[].id |
+            wc -l |
+            sed 's/^ *//g')
+        while true; do
+            # Get current number of IPs, add trailing 0s and increment by 1
+            IPPRE_OUTBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_OUTBOUND_IP_NUMBER + 1 )) )
+            IP_NAME="${AZ_IPPRE_OUTBOUND_IP_PREFIX}-${IPPRE_OUTBOUND_IP_NUMBER}"
+            if [[ $(az network public-ip create \
+                --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_OUTBOUND_NAME \
+                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+                --name ${IP_NAME} \
+                --subscription ${AZ_SUBSCRIPTION_ID} \
+                --sku Standard \
+                2>/dev/null) ]]; then
+                echo "Created ip $IP_NAME"
+            else
+                echo "IPs have been created."
+                break
+            fi
+        done
     else
         printf "Variable AZ_IPPRE_OUTBOUND_NAME not defined."
     fi
@@ -234,8 +259,34 @@ function create_inbound_public_ip_prefix() {
             fi
         else
             printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} already exists."
-            return
         fi
+        # Create IPs
+        echo "Creating IPs in Public IP Prefix ${AZ_IPPRE_INBOUND_NAME}..."
+        IPPRE_INBOUND_IP_NUMBER=$(az network public-ip prefix show \
+            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+            --name ${AZ_IPPRE_INBOUND_NAME} \
+            --subscription ${AZ_SUBSCRIPTION_ID} \
+            --query publicIpAddresses |
+            jq -r .[].id |
+            wc -l |
+            sed 's/^ *//g')
+        while true; do
+            # Get current number of IPs, add trailing 0s and increment by 1
+            IPPRE_INBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_INBOUND_IP_NUMBER + 1 )) )
+            IP_NAME="${AZ_IPPRE_INBOUND_IP_PREFIX}-${IPPRE_INBOUND_IP_NUMBER}"
+            if [[ $(az network public-ip create \
+                --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_INBOUND_NAME \
+                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+                --name ${IP_NAME} \
+                --subscription ${AZ_SUBSCRIPTION_ID} \
+                --sku Standard \
+                2>/dev/null) ]]; then
+                echo "Created ip $IP_NAME"
+            else
+                echo "IPs have been created."
+                break
+            fi
+        done
     else
         printf "Variable AZ_IPPRE_INBOUND_NAME not defined."
     fi
