@@ -274,32 +274,38 @@ fi
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Path to Public IP Prefix which contains the public outbound IPs
     IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
-
+    IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
     # list of AVAILABLE public ips assigned to the Radix Zone
     echo "Getting list of available public ips in $RADIX_ZONE..."
     AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
-
     # Select range of outbound ips based on OUTBOUND_IP_COUNT
     SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$OUTBOUND_IP_COUNT']')"
+    printf "Getting list of available Ingress ips in $RADIX_ZONE...\n"
+    AVAILABLE_INGRESS_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INGRESS_ID'" and .ipConfiguration==null)'  | jq -r '.name')"
 
-    if [[ "$AVAILABLE_IPS" == "[]" ]]; then
+    if [[ "$AVAILABLE_IPS" == "[]" || "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
         echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_OUTBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+        printf "Tip: You might need to do a teardown of an early clusters first.\n"
         exit 1
     elif [[ -z $AVAILABLE_IPS ]]; then
         echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
         exit 1
     else
+        echo ""
         echo "-----------------------------------------------------------"
         echo ""
         echo "The following public IP(s) are currently available:"
-        echo ""
         echo $AVAILABLE_IPS | jq -r '.[].name'
         echo ""
         echo "The following public IP(s) will be assigned to the cluster:"
-        echo ""
         echo $SELECTED_IPS | jq -r '.[].name'
+        echo "-----------------------------------------------------------"
+        echo ""
+        echo "The following Ingress IP(s) are currently available:"
+        echo $AVAILABLE_INGRESS_IPS
         echo ""
         echo "-----------------------------------------------------------"
+
     fi
 
     echo ""
