@@ -13,7 +13,6 @@
 # - AKS cluster is available
 # - User has role cluster-admin
 # - Helm RBAC is configured in cluster
-# - Tiller is installed in cluster (if using Helm version < 2)
 
 #######################################################################################
 ### INPUTS
