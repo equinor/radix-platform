@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-#
+
 #######################################################################################
 ### PURPOSE
 ###
 
-# delete records belonging to specific cluster
+# - Delete TXT Records not bound to a cluster.
+# - Delete A Records with no corresponding TXT Record.
 
 #######################################################################################
 ### INPUTS
@@ -21,13 +22,13 @@
 ###
 
 # To run this script from terminal:
-# RADIX_ZONE_ENV=aa.env ./delete_dns_entries_for_cluster.sh
+# RADIX_ZONE_ENV=aa.env ./delete_orphaned_dns_entries.sh
 
 # Example: Delete from dev
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./delete_dns_entries_for_cluster.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./delete_orphaned_dns_entries.sh
 
 # Example: Delete from playground
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_playground.env ./delete_dns_entries_for_cluster.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_playground.env ./delete_orphaned_dns_entries.sh
 
 #######################################################################################
 ### Validate mandatory input
@@ -59,11 +60,6 @@ if [[ -z "$AZ_RESOURCE_GROUP_COMMON" ]]; then
     exit 1
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please define CLUSTER_NAME."
-    exit 1
-fi
-
 #######################################################################################
 ### Set default values for optional input
 ###
@@ -92,7 +88,6 @@ echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e "   -  AZ_RESOURCE_GROUP_COMMON         : $AZ_RESOURCE_GROUP_COMMON"
-echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -100,44 +95,90 @@ echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
-while true; do
-    read -p "Is this correct? (Y/n) " yn
-    case $yn in
-        [Yy]* ) echo ""; break;;
-        [Nn]* ) echo ""; echo "Please use 'az login' command to login to the correct account. Quitting."; exit 0;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -p "Is this correct? (Y/n) " yn
+        case $yn in
+            [Yy]* ) echo ""; break;;
+            [Nn]* ) echo ""; echo "Please use 'az login' command to login to the correct account. Quitting."; exit 0;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
 
-# Get all txt records bound to the cluster.
-printf "Get TXT records bound to ${CLUSTER_NAME}..."
+printf "Getting list of aks clusters..."
+CLUSTERS="$(az aks list --subscription ${AZ_SUBSCRIPTION_ID} | jq --raw-output -r '.[].name')"
+printf " Done.\n"
 
-TXT_RECORDS=$(az network dns record-set txt list \
+printf "Get TXT records..."
+
+
+TXT_RECORD_LIST=$(az network dns record-set txt list \
     --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
     --zone-name ${AZ_RESOURCE_DNS} \
     --subscription ${AZ_SUBSCRIPTION_ID} \
-    --query "[?contains(to_string(txtRecords[].value[]),'external-dns/owner=${CLUSTER_NAME}')].name" \
+    --query "[].[name,to_string(txtRecords[].value[])]" -otsv)
+
+printf " Done.\n"
+
+while IFS=$'\t' read -r -a line; do
+    if [[ "$line" ]]; then
+        record_name=${line[0]}
+        record_value=${line[1]}
+        # Split the record value into an array and get the heritage.
+        IFS=',' read -r -a valueArray <<< "${line[1]}"
+        heritage=${valueArray[1]#*=}
+        if [[ ! "${CLUSTERS[*]}" =~ "${heritage}" || -z $heritage ]]; then
+            printf "Deleting: $record_name (heritage: $heritage)..."
+            az network dns record-set txt delete \
+                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+                --zone-name ${AZ_RESOURCE_DNS} \
+                --name ${record_name} \
+                --subscription ${AZ_SUBSCRIPTION_ID} \
+                --yes
+            printf " Done.\n"
+        fi
+    fi
+done <<< "${TXT_RECORD_LIST}"
+unset IFS
+
+echo "Deleted TXT-records not bound to a cluster."
+
+
+EXCLUDE_LIST=(
+    "@"
+    "*.ext-mon"
+)
+
+printf "Get A-records..."
+
+A_RECORD_LIST=$(az network dns record-set a list \
+    --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+    --zone-name ${AZ_RESOURCE_DNS} \
+    --subscription ${AZ_SUBSCRIPTION_ID} \
+    --query "[].[name]" \
     --output tsv)
 
 printf " Done.\n"
 
-# Delete TXT and A records bound to cluster.
-echo "Deleting TXT and A records"
+echo "Find A records not bound to a TXT-record..."
+
 while read -r line; do
     if [[ "$line" ]]; then
-        printf "Delete for $line..."
-        az network dns record-set txt delete \
-            --name $line \
-            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-            --zone-name ${AZ_RESOURCE_DNS} \
-            --yes
-        az network dns record-set a delete \
-            --name $line \
-            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-            --zone-name ${AZ_RESOURCE_DNS} \
-            --yes
-        printf " Deleted.\n"
+        if [[ ! "${TXT_RECORD_LIST[*]}" =~ "${line}" && ! ${EXCLUDE_LIST[*]} =~ "${line}" ]]; then
+            printf "Deleting: $line..."
+            az network dns record-set a delete \
+                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+                --zone-name ${AZ_RESOURCE_DNS} \
+                --name ${line} \
+                --subscription ${AZ_SUBSCRIPTION_ID} \
+                --yes
+            printf " Done.\n"
+        fi
     fi
-done <<< "${TXT_RECORDS}"
+done <<< "${A_RECORD_LIST}"
 
-echo "Deleted DNS records for cluster."
+echo "Deleted A-records not bound to a TXT-record."
+
+echo ""
+echo "Deleted orphaned DNS records."
