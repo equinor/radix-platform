@@ -296,18 +296,19 @@ function delete_ad_app_and_stored_credentials() {
 }
 
 function exit_if_user_does_not_have_required_ad_role(){
-    # Based on https://docs.microsoft.com/en-us/azure/active-directory/users-groups-roles/roles-view-assignments#view-role-assignments-using-microsoft-graph-api
+    # Based on https://docs.microsoft.com/en-us/graph/api/rbacapplication-list-roleassignments?view=graph-rest-1.0
     # There is no azcli way of doing this, just powershell or rest api, so we will have to query the graph api.
-    # The Azure PIM portal use a rest api dedicated to PIM and so can run a more fine grained request, but this is not recommended for third party use.
     local currentUserRoleAssignment
 
     printf "Checking if you have required AZ AD role active..."
-    currentUserRoleAssignment="$(curl -s -X GET --header "Authorization: Bearer $(az account get-access-token --resource https://graph.windows.net/ | jq -r .accessToken)" -H 'Content-Type: application/json' -H 'Cache-Control: no-cache' 'https://graph.windows.net/myorganization/roleAssignments?$filter=roleDefinitionId%20eq%20%27cf1c38e5-3621-4004-a7cb-879624dced7c%27%20and%20resourceScopes/any(x:x%20eq%20%27/%27)&$expand=principal&api-version=1.61-internal' \
-        | jq -r --arg principalId "$(az ad signed-in-user show --query objectId -otsv)" '.value[] | select(.roleDefinitionId=="cf1c38e5-3621-4004-a7cb-879624dced7c" and .principalId==$principalId)'//empty)"
+    currentUserRoleAssignment="$(az rest \
+        --method GET \
+        --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" \
+        | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query objectId -otsv)'")')"
 
     if [[ -z "$currentUserRoleAssignment" ]]; then
         echo "You must activate AZ AD role \"Application Developer\" in PIM before using this script. Exiting..."
-        exit 0
+        exit 1
     fi
 
     printf "Done.\n"
