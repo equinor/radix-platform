@@ -66,6 +66,55 @@ function update_service_principal_credentials_in_az_keyvault() {
     rm -rf "$tmp_file_path"
 }
 
+function update_ad_app_owners() {
+    local name              # Input 1
+    local ad_group          # Input 2, optional
+    local ad_group_users
+    local app_owners
+    local user_object_id
+    local user_email
+    local id
+
+    name="$1"
+    ad_group="$2"
+
+    if [[ -z ${ad_group} ]]; then
+        ad_group="Radix"
+    fi
+
+    id="$(az ad app list --display-name ${name} --query [].appId --output tsv)"
+
+    printf "Updating owners of app registration \"${name}\"..."
+
+    ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[objectId,userPrincipalName]" --output tsv)
+
+    app_owners=$(az ad app owner list --id ${id} --query "[?[].accountEnabled==true].[objectId,userPrincipalName]" --output tsv)
+
+    while IFS=$'\t' read -r -a line; do
+        user_object_id=${line[0]}
+        user_email=${line[1]}
+        if [[ ! ${app_owners[@]} =~ ${user_object_id} ]]; then
+            printf "Adding ${user_email} to ${name}..."
+            az ad app owner add --id "${id}" --owner-object-id "${user_object_id}" --output none
+            printf " Done.\n"
+        fi
+    done <<< "${ad_group_users}"
+    unset IFS
+
+    while IFS=$'\t' read -r -a line; do
+        user_object_id=${line[0]}
+        user_email=${line[1]}
+        if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
+            printf "Removing ${user_email} from ${name}"
+            az ad app owner remove --id "${id}" --owner-object-id "${user_object_id}" --output none
+            printf " Done.\n"
+        fi
+    done <<< "${app_owners}"
+    unset IFS
+
+    printf "Done.\n"
+}
+
 function create_service_principal_and_store_credentials() {
 
     local name          # Input 1
@@ -78,19 +127,24 @@ function create_service_principal_and_store_credentials() {
 
     printf "Working on \"${name}\": Creating service principal..."
 
-    # Exit gracefully if the sp exist
+    # Skip creation if the sp exist
     local testSP
     testSP="$(az ad sp list --display-name ${name} --query [].appId --output tsv 2> /dev/null)"
-    if [ ! -z "$testSP" ]; then
-        printf "${name} exist, skipping.\n"
-        return
+    if [ -z "$testSP" ]; then
+        printf "creating ${name}..."
+        password="$(az ad sp create-for-rbac --name ${name} --query password --output tsv)"
+        id="$(az ad sp list --display-name ${name} --query [].appId --output tsv)"
+
+        printf " Done.\n"
+
+        printf "Update credentials in keyvault..."
+        update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}"
+    else
+        printf "${name} exists.\n"
     fi
 
-    password="$(az ad sp create-for-rbac --name ${name} --query password --output tsv)"
-    id="$(az ad sp list --display-name ${name} --query [].appId --output tsv)"
-
-    printf "Update credentials in keyvault..."
-    update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}"
+    printf "Update owners of app registration..."
+    update_ad_app_owners "${name}"
 
     printf "Done.\n"
 }
