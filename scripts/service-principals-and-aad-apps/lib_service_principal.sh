@@ -115,6 +115,59 @@ function update_ad_app_owners() {
     printf "Done.\n"
 }
 
+function update_service_principal_owners() {
+    # As the Azure CLI does not support adding or removing owners to a service principal (enterprise application), it is possible to send a request to Microsoft Graph rest API.
+    # https://docs.microsoft.com/en-us/graph/api/serviceprincipal-post-owners?view=graph-rest-1.0
+    local name              # Input 1
+    local ad_group          # Input 2, optional
+    local ad_group_users
+    local sp_owners
+    local user_object_id
+    local user_email
+    local id
+
+    name="$1"
+    ad_group="$2"
+
+    if [[ -z ${ad_group} ]]; then
+        ad_group="Radix"
+    fi
+
+    sp_obj_id="$(az ad sp list --display-name ${name} --query [].objectId --output tsv)"
+
+    printf "Updating owners of service principal \"${name}\"..."
+
+    ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[objectId,userPrincipalName]" --output tsv)
+
+    sp_owners=$(az ad sp owner list --id ${sp_obj_id} --query "[?[].accountEnabled==true].[objectId,userPrincipalName]" --output tsv)
+
+    while IFS=$'\t' read -r -a line; do
+        user_object_id=${line[0]}
+        user_email=${line[1]}
+        if [[ ! ${sp_owners[@]} =~ ${user_object_id} ]]; then
+            printf "Adding ${user_email} to ${name}..."
+            az rest --method POST --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/\$ref \
+                --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
+            printf " Done.\n"
+        fi
+    done <<< "${ad_group_users}"
+    unset IFS
+
+    while IFS=$'\t' read -r -a line; do
+        user_object_id=${line[0]}
+        user_email=${line[1]}
+        if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
+            echo "Removing ${user_email} from ${name}..."
+            az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/\$ref \
+                --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
+            printf " Done.\n"
+        fi
+    done <<< "${sp_owners}"
+    unset IFS
+
+    printf "Done.\n"
+}
+
 function create_service_principal_and_store_credentials() {
 
     local name          # Input 1
@@ -145,6 +198,9 @@ function create_service_principal_and_store_credentials() {
 
     printf "Update owners of app registration..."
     update_ad_app_owners "${name}"
+
+    printf "Update owners of service principal..."
+    update_service_principal_owners "${name}"
 
     printf "Done.\n"
 }
