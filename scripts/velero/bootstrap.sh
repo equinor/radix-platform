@@ -80,9 +80,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Get velero env vars
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
-
 # Load dependencies
 LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
