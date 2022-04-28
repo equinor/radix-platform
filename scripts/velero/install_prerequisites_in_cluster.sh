@@ -100,10 +100,6 @@ if [[ ! -f "$CREDENTIALS_TEMPLATE_PATH" ]]; then
    exit 1
 fi
 
-# Get velero env vars
-#source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/velero.env"
-#Replaced by env variables in $RADIX_ZONE_ENV
-
 #######################################################################################
 ### Prepare az session
 ###
