@@ -60,7 +60,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     # cat "${tmp_file_path}"
 
     # Upload to keyvault
-    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" -f "${tmp_file_path}" 2>&1 >/dev/null
+    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --file "${tmp_file_path}" 2>&1 >/dev/null
 
     # Clean up
     rm -rf "$tmp_file_path"
@@ -218,8 +218,8 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
     # The --credential-description option is very prone to fail, unfortunately
-    password="$(az ad sp credential reset --name http://${name} --append --query password --output tsv)"
-    id="$(az ad sp show --id http://${name} --query appId --output tsv)"
+    id="$(az ad sp list --display-name ${name} --query [].appId --output tsv)"
+    password="$(az ad sp credential reset --name ${id} --append --query password --output tsv)"
 
     printf "Update credentials in keyvault..."
     update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}"
@@ -240,7 +240,7 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
     # The --credential-description option is very prone to fail, unfortunately
-    id="$(az ad app list --identifier-uri http://${name} --query '[].appId' -o tsv)" 
+    id="$(az ad app list --display-name ${name} --query '[].appId' --output tsv)"
     password="$(az ad app credential reset --id ${id} --append --query password --output tsv)"
 
     printf "Update credentials in keyvault..."
@@ -256,12 +256,11 @@ function delete_service_principal_and_stored_credentials() {
     printf "Working on service principal \"${name}\": "
 
     printf "deleting user in az ad..."
-    local az_sp_fullname="$name"
-    [ "$az_sp_fullname" != "http://"* ] && { az_sp_fullname="http://${name}"; }
-    az ad sp delete --id "${az_sp_fullname}" --output none
+    id="$(az ad sp list --display-name ${name} --query [].appId --output tsv)"
+    az ad sp delete --id "${id}" --output none
 
     printf "deleting credentials in keyvault..."
-    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" --output none
+    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --output none
     printf "Done.\n"
 }
 
@@ -278,7 +277,7 @@ function delete_ad_app_and_stored_credentials() {
     az ad app delete --id "${app_id}" --output none
 
     printf "deleting credentials in keyvault..."
-    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" --output none
+    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --output none
     printf "Done.\n"
 }
 
