@@ -111,7 +111,7 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
 echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+echo -e "   -  APP_REGISTRATION_VELERO          : $APP_REGISTRATION_VELERO"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -155,14 +155,14 @@ echo "Done."
 echo ""
 echo "Deleting service principal..."
 # More az weirdness, az sp name require "http://"...
-AZ_SP_WEIRD_NAME="$AZ_VELERO_SERVICE_PRINCIPAL_NAME"
-[ "$AZ_SP_WEIRD_NAME" != "http://"* ] && { AZ_SP_WEIRD_NAME="http://${AZ_VELERO_SERVICE_PRINCIPAL_NAME}"; }
+AZ_SP_WEIRD_NAME="$APP_REGISTRATION_VELERO"
+[ "$AZ_SP_WEIRD_NAME" != "http://"* ] && { AZ_SP_WEIRD_NAME="http://${APP_REGISTRATION_VELERO}"; }
 az ad sp delete --id "$AZ_SP_WEIRD_NAME" 2>&1 >/dev/null
 echo "Done."
 
 echo ""
 echo "Deleting service principal credentials..."
-az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" 2>&1 >/dev/null
+az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$APP_REGISTRATION_VELERO" 2>&1 >/dev/null
 echo "Done."
 
 

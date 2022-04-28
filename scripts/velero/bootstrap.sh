@@ -121,7 +121,7 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
 echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+echo -e "   -  APP_REGISTRATION_VELERO          : $APP_REGISTRATION_VELERO"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -183,14 +183,14 @@ echo "Done."
 ###
 
 
-printf "Working on \"${AZ_VELERO_SERVICE_PRINCIPAL_NAME}\": Creating service principal..."
+printf "Working on \"${APP_REGISTRATION_VELERO}\": Creating service principal..."
 AZ_VELERO_SERVICE_PRINCIPAL_SCOPE="$(az group show --name ${AZ_VELERO_RESOURCE_GROUP} | jq -r '.id')"
-AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD="$(az ad sp create-for-rbac --name "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" --scope="${AZ_VELERO_SERVICE_PRINCIPAL_SCOPE}" --role "Contributor" --query 'password' -o tsv)"
-AZ_VELERO_SERVICE_PRINCIPAL_ID="$(az ad sp list --display-name "$AZ_VELERO_SERVICE_PRINCIPAL_NAME" --query '[0].appId' -o tsv)"
+AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD="$(az ad sp create-for-rbac --name "$APP_REGISTRATION_VELERO" --scope="${AZ_VELERO_SERVICE_PRINCIPAL_SCOPE}" --role "Contributor" --query 'password' -o tsv)"
+AZ_VELERO_SERVICE_PRINCIPAL_ID="$(az ad sp list --display-name "$APP_REGISTRATION_VELERO" --query '[0].appId' -o tsv)"
 AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION="Used by Velero to access Azure resources"
 
 printf "Update credentials in keyvault..."
-update_service_principal_credentials_in_az_keyvault "${AZ_VELERO_SERVICE_PRINCIPAL_NAME}" "${AZ_VELERO_SERVICE_PRINCIPAL_ID}" "${AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD}" "${AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION}"
+update_service_principal_credentials_in_az_keyvault "${APP_REGISTRATION_VELERO}" "${AZ_VELERO_SERVICE_PRINCIPAL_ID}" "${AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD}" "${AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION}"
 printf "Done.\n"
 
 # Clean up
@@ -198,7 +198,7 @@ unset AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD # Clear credentials from memory
 
 echo ""
 echo "WARNING!"
-echo "You _must_ manually set team members as owners for the service principal \"$AZ_VELERO_SERVICE_PRINCIPAL_NAME\","
+echo "You _must_ manually set team members as owners for the service principal \"$APP_REGISTRATION_VELERO\","
 echo "as this is not possible to do by script (yet)."
 echo ""
 
