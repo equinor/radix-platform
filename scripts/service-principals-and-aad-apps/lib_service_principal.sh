@@ -3,10 +3,10 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Library for often used service principal functions.
-# - 
+# -
 
 
 #######################################################################################
@@ -21,7 +21,7 @@ printf "Done.\n"
 
 #######################################################################################
 ### FUNCTIONS
-### 
+###
 
 
 function update_service_principal_credentials_in_az_keyvault() {
@@ -36,7 +36,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     name="$1"
     id="$2"
     password="$3"
-    description="$4"    
+    description="$4"
     tenantId="$(az ad sp show --id ${id} --query appOwnerTenantId --output tsv)"
     script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     template_path="${script_dir_path}/template-credentials.json"
@@ -44,7 +44,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     if [ ! -e "$template_path" ]; then
         echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}"
         exit 1
-    fi    
+    fi
 
     # Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
     tmp_file_path="${script_dir_path}/${name}.json"
@@ -55,7 +55,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     --arg description "${description}" \
     --arg tenantId "${tenantId}" \
     '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId' > "$tmp_file_path"
-    
+
     # show result
     # cat "${tmp_file_path}"
 
@@ -63,9 +63,9 @@ function update_service_principal_credentials_in_az_keyvault() {
     az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" -f "${tmp_file_path}" 2>&1 >/dev/null
 
     # Clean up
-    rm -rf "$tmp_file_path"    
+    rm -rf "$tmp_file_path"
 }
- 
+
 function create_service_principal_and_store_credentials() {
 
     local name          # Input 1
@@ -94,7 +94,7 @@ function create_service_principal_and_store_credentials() {
 
     printf "Done.\n"
 }
- 
+
 function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 
     local name          # Input 1
@@ -116,7 +116,7 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 
     printf "Done.\n"
 }
- 
+
 function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
     local name          # Input 1
@@ -142,14 +142,14 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 function delete_service_principal_and_stored_credentials() {
     local name # Input 1
     name="${1}"
-    
+
     printf "Working on service principal \"${name}\": "
-    
+
     printf "deleting user in az ad..."
     local az_sp_fullname="$name"
     [ "$az_sp_fullname" != "http://"* ] && { az_sp_fullname="http://${name}"; }
     az ad sp delete --id "${az_sp_fullname}" --output none
-    
+
     printf "deleting credentials in keyvault..."
     az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" --output none
     printf "Done.\n"
@@ -163,10 +163,10 @@ function delete_ad_app_and_stored_credentials() {
 
     # Get id from key vault as trying to use the name is just hopeless for client apps when using cli
     app_id="$(az keyvault secret show --vault-name ${AZ_RESOURCE_KEYVAULT} --name ${name} | jq -r .value | jq -r .id)"
-    
+
     printf "deleting app in az ad..."
     az ad app delete --id "${app_id}" --output none
-    
+
     printf "deleting credentials in keyvault..."
     az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" --output none
     printf "Done.\n"
