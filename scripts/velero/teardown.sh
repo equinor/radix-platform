@@ -154,15 +154,7 @@ echo "Done."
 
 echo ""
 echo "Deleting service principal..."
-# More az weirdness, az sp name require "http://"...
-AZ_SP_WEIRD_NAME="$APP_REGISTRATION_VELERO"
-[ "$AZ_SP_WEIRD_NAME" != "http://"* ] && { AZ_SP_WEIRD_NAME="http://${APP_REGISTRATION_VELERO}"; }
-az ad sp delete --id "$AZ_SP_WEIRD_NAME" 2>&1 >/dev/null
-echo "Done."
-
-echo ""
-echo "Deleting service principal credentials..."
-az keyvault secret delete --vault-name "$AZ_RESOURCE_KEYVAULT" -n "$APP_REGISTRATION_VELERO" 2>&1 >/dev/null
+delete_ad_app_and_stored_credentials "${APP_REGISTRATION_VELERO}"
 echo "Done."
 
 
