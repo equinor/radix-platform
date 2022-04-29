@@ -402,6 +402,7 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
+    create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
 }
 
 
