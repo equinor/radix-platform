@@ -178,10 +178,6 @@ fi
 printf " OK\n"
 
 
-
-create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Can make changes in the DNS zone"
-
-
 #######################################################################################
 ### Create secret required by Grafana
 ###
