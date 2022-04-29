@@ -215,22 +215,32 @@ function add_task_credential() {
 
 function run_task() {
     echo "run task..."
+    CONTEXT="https://github.com/equinor/radix-app.git#main:frontend" # https://github.com/organization/repo.git#branch:directory - Can be path to local git repo directory
+
+    DOCKER_FILE_NAME="Dockerfile"
+    ACR_TASK_NAME="radix-image-builder-no-push"
     REGISTRY_URL="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
-    IMAGE_NAME="edc2021-olmt-demo1-frontend"
+    IMAGE_NAME="test-acr-task-notused-deleteme"
+    CLUSTER_NAME="weekly-00"
     TAG="gaebu"
     IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${TAG}"
     CLUSTERTYPE_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${CLUSTER_TYPE}-${TAG}"
     CLUSTERNAME_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${CLUSTER_NAME}-${TAG}"
-    DOCKER_FILE_NAME="Dockerfile"
+    TARGET_ENVIRONMENTS="dev"
+    BUILD_ARGS="--build-arg TARGET_ENVIRONMENTS=\"${TARGET_ENVIRONMENTS}\" "
 
     az acr task run \
-        --name ${ACR_TASK_NAME} \
-        --registry ${AZ_RESOURCE_CONTAINER_REGISTRY} \
-        --set IMAGE=${IMAGE} \
-        --set CLUSTERTYPE_IMAGE=${CLUSTERTYPE_IMAGE} \
-        --set CLUSTERNAME_IMAGE=${CLUSTERNAME_IMAGE} \
-        --set DOCKER_FILE_NAME=${DOCKER_FILE_NAME} \
-        --set CONTEXT=${CONTEXT}
+        --name "${ACR_TASK_NAME}" \
+        --registry "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+        --context "${CONTEXT}" \
+        --file "${CONTEXT}${DOCKER_FILE_NAME}" \
+        --set IMAGE="${IMAGE}" \
+        --set CLUSTERTYPE_IMAGE="${CLUSTERTYPE_IMAGE}" \
+        --set CLUSTERNAME_IMAGE="${CLUSTERNAME_IMAGE}" \
+        --set DOCKER_FILE_NAME="${DOCKER_FILE_NAME}" \
+        --set BUILD_ARGS="${BUILD_ARGS}"
+
+    echo $? # Exit code of last executed command.
 
     echo "Done."
 }
