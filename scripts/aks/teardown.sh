@@ -270,7 +270,7 @@ wait # wait for subshell to finish
 
 echo ""
 echo "Delete orphaned DNS records"
-(RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" ../dns/delete_dns_entries.sh)
+(RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" ../dns/delete_orphaned_dns_entries.sh)
 wait # wait for subshell to finish
 
 

@@ -129,7 +129,7 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  VELERO_NAMESPACE                 : $VELERO_NAMESPACE"
-echo -e "   -  AZ_VELERO_SERVICE_PRINCIPAL_NAME : $AZ_VELERO_SERVICE_PRINCIPAL_NAME"
+echo -e "   -  APP_REGISTRATION_VELERO          : $APP_REGISTRATION_VELERO"
 echo -e "   -  CREDENTIALS_TEMPLATE_PATH        : $CREDENTIALS_TEMPLATE_PATH"
 echo -e "   -  BACKUP_STORAGE_CONTAINER         : $CLUSTER_NAME"
 echo -e ""
@@ -196,7 +196,7 @@ function cleanup() {
 function generateCredentialsFile() {
     local SP_JSON="$(az keyvault secret show \
         --vault-name $AZ_RESOURCE_KEYVAULT \
-        --name $AZ_VELERO_SERVICE_PRINCIPAL_NAME \
+        --name $APP_REGISTRATION_VELERO \
         | jq '.value | fromjson')"
 
     # Set variables used in the manifest templates
