@@ -143,13 +143,13 @@ function create_acr_task() {
         cat <<EOF >>${TASK_YAML}
 version: v1.1.0
 steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} .
+  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
 EOF
     else
         cat <<EOF >>${TASK_YAML}
 version: v1.1.0
 steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} .
+  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
   - push:
     - {{.Values.IMAGE}}
     - {{.Values.CLUSTERTYPE_IMAGE}}
@@ -237,12 +237,11 @@ function run_task() {
 
 
 create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
-create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "--no-push"
-
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
-create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
-
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+
+create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "--no-push"
+create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
 echo ""
