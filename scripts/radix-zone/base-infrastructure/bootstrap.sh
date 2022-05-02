@@ -70,6 +70,13 @@ if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
 else
    source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
+LIB_MANAGED_IDENTITY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_managed_identity.sh"
+if [[ ! -f "$LIB_MANAGED_IDENTITY_PATH" ]]; then
+   echo "The dependency LIB_MANAGED_IDENTITY_PATH=$LIB_MANAGED_IDENTITY_PATH is invalid, the file does not exist." >&2
+   exit 1
+else
+   source "$LIB_MANAGED_IDENTITY_PATH"
+fi
 AD_APP_MANIFEST_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/manifest-server.json"
 if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
    echo "The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
@@ -113,6 +120,7 @@ printf "\n   -  AZ_IPPRE_OUTBOUND_NAME                      : $AZ_IPPRE_OUTBOUND
 printf "\n   -  AZ_IPPRE_OUTBOUND_IP_PREFIX                 : $AZ_IPPRE_OUTBOUND_IP_PREFIX"
 printf "\n   -  AZ_IPPRE_OUTBOUND_LENGTH                    : $AZ_IPPRE_OUTBOUND_LENGTH"
 printf "\n   -  AZ_IPPRE_INBOUND_NAME                       : $AZ_IPPRE_INBOUND_NAME"
+printf "\n   -  AZ_IPPRE_INBOUND_IP_PREFIX                  : $AZ_IPPRE_INBOUND_IP_PREFIX"
 printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_LENGTH"
 printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
 printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
@@ -120,6 +128,12 @@ printf "\n"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 printf "\n   -  AZ_SYSTEM_USER_DNS                          : $AZ_SYSTEM_USER_DNS"
+printf "\n   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
+printf "\n   -  APP_REGISTRATION_CERT_MANAGER               : $APP_REGISTRATION_CERT_MANAGER"
+printf "\n   -  APP_REGISTRATION_VELERO                     : $APP_REGISTRATION_VELERO"
+printf "\n"
+printf "\n   -  MI_AKS                                      : $MI_AKS"
+printf "\n   -  MI_AKSKUBELET                               : $MI_AKSKUBELET"
 printf "\n"
 printf "\n   > WHO:"
 printf "\n   -------------------------------------------------------------------"
@@ -449,6 +463,7 @@ EOF
 ### System users
 ###
 
+# Create service principals
 function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Service principal that provide read-only access to container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
@@ -458,6 +473,22 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
 }
 
+# Create managed identities
+function create_managed_identities_and_role_assignments() {
+    # Control plane managed identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-control-plane-mi
+    create_managed_identity "${MI_AKS}"
+    create_role_assignment_for_identity \
+        "${MI_AKS}" \
+        "Managed Identity Operator" \
+        "$(az identity show --name ${MI_AKS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query id 2>/dev/null)"
+
+    # Kubelet identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-kubelet-mi
+    create_managed_identity "${MI_AKSKUBELET}"
+    create_role_assignment_for_identity \
+        "${MI_AKSKUBELET}" \
+        "AcrPull" \
+        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ContainerRegistry/registries/${AZ_RESOURCE_CONTAINER_REGISTRY}"
+}
 
 #######################################################################################
 ### MAIN
@@ -469,6 +500,7 @@ create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
 create_base_system_users_and_store_credentials
+create_managed_identities_and_role_assignments
 set_permissions_on_acr
 set_permissions_on_dns
 create_dns_role_definition_for_cert_manager
