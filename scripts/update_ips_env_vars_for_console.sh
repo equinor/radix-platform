@@ -44,10 +44,7 @@ if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
 fi
 
 EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
-EGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
-
 INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_INGRESS_IPS"
-INGRESS_IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
 
 echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" environment variables for Radix Web Console"
 
@@ -73,40 +70,42 @@ printf " OK\n"
 
 function updateIpsEnvVars() {
 
-    env_var_configmap_name=$1
-    ippre_id=$2
+    env_var_configmap_name="${1}"
+    ippre_name="${2}"
+
+    IPPRE_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
 
     # Get auth token for Radix API
     printf "Getting auth token for Radix API..."
-    API_ACCESS_TOKEN_RESOURCE=$(echo $OAUTH2_PROXY_SCOPE | awk '{print $4}' | sed 's/\/.*//')
-    if [[ -z $API_ACCESS_TOKEN_RESOURCE ]]; then
+    API_ACCESS_TOKEN_RESOURCE=$(echo ${OAUTH2_PROXY_SCOPE} | awk '{print $4}' | sed 's/\/.*//')
+    if [[ -z ${API_ACCESS_TOKEN_RESOURCE} ]]; then
         echo "ERROR: Could not get Radix API access token resource."
         return
     fi
 
-    API_ACCESS_TOKEN=$(az account get-access-token --resource $API_ACCESS_TOKEN_RESOURCE | jq -r '.accessToken')
-    if [[ -z $API_ACCESS_TOKEN ]]; then
+    API_ACCESS_TOKEN=$(az account get-access-token --resource ${API_ACCESS_TOKEN_RESOURCE} | jq -r '.accessToken')
+    if [[ -z ${API_ACCESS_TOKEN} ]]; then
         echo "ERROR: Could not get Radix API access token."
         return
     fi
     printf " Done.\n"
 
-    # Get list of IPs for all Public IP Prefixes assigned to Cluster Type
-    printf "Getting list of IPs from all Public IP Prefixes assigned to $CLUSTER_TYPE clusters..."
-    IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='$ippre_id'].ipAddress" --output json)"
+    # Get list of IPs for Public IPs assigned to Cluster Type
+    printf "Getting list of IPs from Public IP Prefix ${ippre_name}..."
+    IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
-    if [[ "$IP_PREFIXES" == "[]" ]]; then
+    if [[ "${IP_PREFIXES}" == "[]" ]]; then
         echo -e "\nERROR: Found no IPs assigned to the cluster."
         return
     fi
 
     # Loop through list of IPs and create a comma separated string. 
-    for ippre in $(echo $IP_PREFIXES | jq -c '.[]')
+    for ippre in $(echo ${IP_PREFIXES} | jq -c '.[]')
     do
         if [[ -z $IP_LIST ]]; then
-            IP_LIST=$(echo $ippre | jq -r '.')
+            IP_LIST=$(echo ${ippre} | jq -r '.')
         else
-            IP_LIST="$IP_LIST,$(echo $ippre | jq -r '.')"
+            IP_LIST="${IP_LIST},$(echo ${ippre} | jq -r '.')"
         fi
     done
     printf " Done.\n"
@@ -118,7 +117,7 @@ function updateIpsEnvVars() {
         -H "Content-Type: application/json" \
         -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
 
-    if [[ "$API_REQUEST" != "\"Success\"" ]]; then
+    if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
         echo -e "\nERROR: API request failed."
         return
     fi
@@ -130,12 +129,12 @@ function updateIpsEnvVars() {
 
 
 ### MAIN
-updateIpsEnvVars "$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME" "$EGRESS_IPPRE_ID"
+updateIpsEnvVars "${EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_OUTBOUND_NAME}"
 
-updateIpsEnvVars "$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME" "$INGRESS_IPPRE_ID"
+updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAME}"
 
 # Restart deployment for web component
 printf "Restarting web deployment..."
-kubectl rollout restart deployment -n radix-web-console-$RADIX_WEB_CONSOLE_ENV $WEB_COMPONENT
+kubectl rollout restart deployment -n radix-web-console-${RADIX_WEB_CONSOLE_ENV} ${WEB_COMPONENT}
 
 echo "Done."
