@@ -182,6 +182,20 @@ function create_common_resources() {
         --output none
     printf "...Done\n"
 
+    printf "Set access policy for group \"Radix Platform Operators\" in key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
+    az keyvault set-policy \
+        --object-id "$(az ad group show --group "Radix Platform Operators" --query objectId --output tsv --only-show-errors)" \
+        --name "${AZ_RESOURCE_KEYVAULT}" \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --certificate-permissions get list update create import delete recover backup restore managecontacts manageissuers getissuers listissuers setissuers deleteissuers \
+        --key-permissions get list update create import delete recover backup restore \
+        --secret-permissions get list set delete recover backup restore \
+        --storage-permissions \
+        --output none \
+        --only-show-errors
+    printf "...Done\n"
+
     printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
     az network dns zone create --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     printf "...Done\n"
