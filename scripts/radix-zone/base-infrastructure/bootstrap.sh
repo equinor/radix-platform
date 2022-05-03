@@ -174,7 +174,12 @@ function create_resource_groups() {
 
 function create_common_resources() {
     printf "Creating key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
-    az keyvault create --name "${AZ_RESOURCE_KEYVAULT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --output none
+    az keyvault create \
+        --name "${AZ_RESOURCE_KEYVAULT}" \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --enable-purge-protection \
+        --output none
     printf "...Done\n"
 
     printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
