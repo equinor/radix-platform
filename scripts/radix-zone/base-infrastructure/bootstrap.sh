@@ -161,9 +161,9 @@ fi
 
 function create_resource_groups() {
     printf "Creating all resource groups..."
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}"--subscription "${AZ_SUBSCRIPTION_ID}"  --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     printf "...Done\n"
 }
 
@@ -178,14 +178,14 @@ function create_common_resources() {
     printf "...Done\n"
 
     printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
-    az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" --output none
+    az network dns zone create --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     printf "...Done\n"
     # DNS CAA
     if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
         printf "Adding CAA records..."
-        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org" --output none
-        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "digicert.com" --output none
-        az network dns record-set caa add-record -g "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --record-set-name @ --flags 0 --tag "issue" --value "godaddy.com" --output none
+        az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org" --output none
+        az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "digicert.com" --output none
+        az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "godaddy.com" --output none
         printf "...Done\n"
     fi
     ../private-endpoint-infrastructure/bootstrap.sh
