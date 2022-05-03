@@ -164,6 +164,7 @@ function create_resource_groups() {
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}"--subscription "${AZ_SUBSCRIPTION_ID}"  --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_LOGS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     printf "...Done\n"
 }
 
@@ -510,6 +511,21 @@ function create_managed_identities_and_role_assignments() {
 }
 
 #######################################################################################
+### Log analytics workspace
+###
+function create_log_analytics_workspace() {
+    printf "Creating log-analytics workspace..."
+    az monitor log-analytics workspace create \
+        --workspace-name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" \
+        --resource-group "${AZ_RESOURCE_GROUP_LOGS}" \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none \
+        --only-show-errors
+    printf "...Done\n"
+}
+
+#######################################################################################
 ### MAIN
 ###
 
@@ -523,6 +539,7 @@ create_managed_identities_and_role_assignments
 set_permissions_on_acr
 set_permissions_on_dns
 create_dns_role_definition_for_cert_manager
+create_log_analytics_workspace
 
 
 #######################################################################################
