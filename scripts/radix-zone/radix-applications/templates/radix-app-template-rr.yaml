@@ -1,0 +1,15 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixRegistration
+metadata:
+  name: ${NAME}
+spec:
+  adGroups: ${AD_GROUPS}
+  cloneURL: ${CLONE_URL}
+  configBranch: ${CONFIG_BRANCH}
+  creator: ${OWNER}
+  deployKey: ${DEPLOY_KEY}
+  deployKeyPublic: ${DEPLOY_KEY_PUBLIC}
+  machineUser: ${MACHINE_USER}
+  owner: ${OWNER}
+  sharedSecret: ${SHARED_SECRET}
+  wbs: ${WBS}
