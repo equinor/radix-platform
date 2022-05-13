@@ -14,7 +14,6 @@
 # 1. cluster is installed using the aks/bootstrap.sh script,
 # 2. that the base components exists (install_base_components.sh has been run)
 # 3. az, jq, sha256sum, base64, date/gdate should be installed
-# 4. Your GITHUB_PAT is a GitHub Personal Access token with 'repo', 'admin:repo_hook', 'admin:org_hook' and 'admin:org' scopes, and it is SSO authorized to the organization.
 
 #######################################################################################
 ### INPUTS
@@ -23,7 +22,7 @@
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
-# - GITHUB_PAT          : GitHub Personal Access Token with "repo" scope.
+# - GITHUB_PAT          : GitHub Personal Access Token with 'repo', 'admin:repo_hook', 'admin:org_hook' and 'admin:org' scopes.
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
@@ -639,7 +638,7 @@ create_and_register_deploy_key_and_store_credentials \
     "Radix@StatoilSRM.onmicrosoft.com" \
     "main" \
     "true" \
-    "C.ITD.15.001" \
+    "" \
     "${DEPLOY_KEY_NAME}"
 
 create_github_webhook_in_repository "radix-networkpolicy-canary" "${GITHUB_PAT}"
