@@ -13,7 +13,7 @@
 # It is assumed that:
 # 1. cluster is installed using the aks/bootstrap.sh script,
 # 2. that the base components exists (install_base_components.sh has been run)
-# 3. az, jq, sha256sum, base64, gdate should be installed
+# 3. az, jq, sha256sum, base64, date/gdate should be installed
 
 #######################################################################################
 ### INPUTS
@@ -49,6 +49,16 @@ function assert_dep() {
         }
         shift
     done
+}
+
+# Function to ensure same functionality on linux and mac
+function date () 
+{ 
+    if type -p gdate > /dev/null; then
+        gdate "$@";
+    else
+        date "$@";
+    fi
 }
 
 function wait_for_app_namespace() {
@@ -122,7 +132,7 @@ function create_and_register_deploy_key_and_store_credentials() {
 
     # Generate shared secret
     if [ -z "${shared_secret}" ]; then
-        shared_secret=$(gdate +%s%N | sha256sum | base64 | head -c 16)
+        shared_secret=$(date +%s%N | sha256sum | base64 | head -c 16)
     fi
 
     template_path="${script_dir_path}/templates/radix-app-secret-template.json"
@@ -138,7 +148,7 @@ function create_and_register_deploy_key_and_store_credentials() {
 
     if [ ${check_token} ]; then
         # Check if token is older than one year.
-        if [ "$(gdate -d "${check_token}" +%s)" -gt "$(gdate -d "-1 year" +%s)" ]; then
+        if [ "$(date -d "${check_token}" +%s)" -gt "$(date -d "-1 year" +%s)" ]; then
             echo "Token exists and has not expired."
             return
         else
@@ -202,7 +212,7 @@ function create_and_register_deploy_key_and_store_credentials() {
         .wbs=$wbs' > "$tmp_file_path"
 
     # 1 year from now, zulu format
-    expires=$(gdate --utc --date "+1 year" +%FT%TZ)
+    expires=$(date --utc --date "+1 year" +%FT%TZ)
 
     printf "Store token in keyvault..."
     az keyvault secret set \
@@ -355,9 +365,9 @@ function create_build_deploy_job() {
     printf " Done.\n"
 
     # Generate timestamp
-    timestamp=$(gdate --utc +%Y%m%d%H%M%S)
+    timestamp=$(date --utc +%Y%m%d%H%M%S)
     # Generate image tag
-    image_tag=$(gdate +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')
+    image_tag=$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')
 
     printf "Create radixJob..."
 
@@ -379,7 +389,7 @@ function create_build_deploy_job() {
 ### Check for prerequisites binaries
 ###
 
-assert_dep az helm jq sha256sum base64 python3 gdate awk
+assert_dep az helm jq sha256sum base64 python3 date awk
 
 #######################################################################################
 ### Read inputs and configs
