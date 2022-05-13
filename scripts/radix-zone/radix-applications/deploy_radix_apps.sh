@@ -132,7 +132,7 @@ function create_and_register_deploy_key_and_store_credentials() {
 
     # Generate shared secret
     if [ -z "${shared_secret}" ]; then
-        shared_secret=$(date +%s%N | sha256sum | base64 | head -c 16)
+        shared_secret=$(python3 -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())')
     fi
 
     template_path="${script_dir_path}/templates/radix-app-secret-template.json"
