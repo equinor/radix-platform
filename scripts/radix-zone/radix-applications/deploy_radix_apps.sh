@@ -14,6 +14,7 @@
 # 1. cluster is installed using the aks/bootstrap.sh script,
 # 2. that the base components exists (install_base_components.sh has been run)
 # 3. az, jq, sha256sum, base64, date/gdate should be installed
+# 4. Your GITHUB_PAT is a GitHub Personal Access token with 'repo', 'admin:repo_hook', 'admin:org_hook' and 'admin:org' scopes, and it is SSO authorized to the organization.
 
 #######################################################################################
 ### INPUTS
@@ -57,7 +58,7 @@ function date ()
     if type -p gdate > /dev/null; then
         gdate "$@";
     else
-        date "$@";
+        command date "$@";
     fi
 }
 
@@ -67,7 +68,7 @@ function wait_for_app_namespace() {
     list_ns_command="kubectl get ns --selector="radix-app=$name" --output=name"
     echo "Waiting for app namespace..."
 
-    while [ $($list_ns_command) == "" ]; do
+    while [[ $($list_ns_command) == "" ]]; do
         printf "."
         sleep 2
     done
@@ -79,7 +80,7 @@ function wait_for_app_namespace_component_secret() {
     namespace="${1}"
     component="${2}"
     echo "Waiting for app $namespace $component secret..."
-    while [ $(kubectl get secrets -n "$namespace" | grep "$component"-) == "" ]; do
+    while [[ $(kubectl get secrets -n "$namespace" | grep "$component"-) == "" ]]; do
         printf "."
         sleep 2
     done
@@ -102,7 +103,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     local wbs               # Input 10, optional
     local deploy_key_name   # Input 11, optional
     local template_path
-    local check_token
+    local check_key
     local private_key
     local public_key
     local key_fingerprint
@@ -137,8 +138,8 @@ function create_and_register_deploy_key_and_store_credentials() {
 
     template_path="${script_dir_path}/templates/radix-app-secret-template.json"
 
-    # List tokens in repository
-    check_token=$(curl \
+    # List deploy keys in repository
+    check_key=$(curl \
         --silent \
         --request GET \
         --header "Accept: application/vnd.github.v3+json" \
@@ -146,20 +147,20 @@ function create_and_register_deploy_key_and_store_credentials() {
         "https://api.github.com/repos/${repo_organization}/${repo_name}/keys" \
         | jq -r '.[] | select(.title=="'${deploy_key_name}'").created_at')
 
-    if [ ${check_token} ]; then
-        # Check if token is older than one year.
-        if [ "$(date -d "${check_token}" +%s)" -gt "$(date -d "-1 year" +%s)" ]; then
-            echo "Token exists and has not expired."
+    if [ ${check_key} ]; then
+        # Check if deploy key is older than one year.
+        if [ "$(date -d "${check_key}" +%s)" -gt "$(date -d "-1 year" +%s)" ]; then
+            echo "Deploy key exists and has not expired."
             return
         else
-            echo "Token has expired."
+            echo "Deploy key has expired."
         fi
     else
-        echo "Token does not exist."
+        echo "Deploy key does not exist."
     fi
 
-    # Generate token
-    printf "Generating new token..."
+    # Generate deploy key
+    printf "Generating new deploy key..."
     rm -f "${script_dir_path}/id_ed25519" "${script_dir_path}/id_ed25519.pub"
 
     ssh-keygen -t ed25519 -C "${owner_email}" -f "id_ed25519" -P "" -q
@@ -171,7 +172,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     rm -f "${script_dir_path}/id_ed25519" "${script_dir_path}/id_ed25519.pub"
     printf " Done.\n"
 
-    printf "Post token to GitHub..."
+    printf "Post deploy key to GitHub..."
     curl \
         --silent \
         --request POST \
@@ -214,7 +215,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     # 1 year from now, zulu format
     expires=$(date --utc --date "+1 year" +%FT%TZ)
 
-    printf "Store token in keyvault..."
+    printf "Store RadixRegistration in keyvault..."
     az keyvault secret set \
         --vault-name "${AZ_RESOURCE_KEYVAULT}" \
         --name "${app_name}-radixregistration-values" \
@@ -231,13 +232,21 @@ function create_and_register_deploy_key_and_store_credentials() {
 function create_github_webhook_in_repository() {
     # This function will create a webhook in the repository.
     local app_name          # Input 1
+    local github_pat        # Input 2
     local secret_file
     local repo_organization
     local repo_name
     local shared_secret
 
     app_name="${1}"
-    [ -z "$app_name" ] && { printf "Missing app_name."; return; }
+    github_pat="${2}"
+    if [ -z "$app_name" ] || [ -z "${github_pat}" ]; then
+      printf "Missing arguments: "
+      [ -z "${app_name}" ] && printf "app_name "
+      [ -z "${github_pat}" ] && printf "github_pat "
+      printf "\n"
+      return
+    fi
 
     # Get secret from keyvault
     printf "Get secret from keyvault..."
@@ -509,7 +518,7 @@ create_and_register_deploy_key_and_store_credentials \
     "" \
     "${DEPLOY_KEY_NAME}"
 
-create_github_webhook_in_repository "radix-github-webhook"
+create_github_webhook_in_repository "radix-github-webhook" "${GITHUB_PAT}"
 
 create_radix_application "radix-github-webhook"
 
@@ -527,7 +536,7 @@ fi
 echo ""
 echo "Deploy radix-api..."
 
-create_and_register_deploy_key \
+create_and_register_deploy_key_and_store_credentials \
     "radix-api" \
     "radix-api" \
     "equinor" \
@@ -540,7 +549,7 @@ create_and_register_deploy_key \
     "" \
     "${DEPLOY_KEY_NAME}"
 
-create_github_webhook_in_repository "radix-api"
+create_github_webhook_in_repository "radix-api" "${GITHUB_PAT}"
 
 create_radix_application "radix-api"
 
@@ -558,7 +567,7 @@ fi
 echo ""
 echo "Deploy radix-cost-allocation-api..."
 
-create_and_register_deploy_key \
+create_and_register_deploy_key_and_store_credentials \
     "radix-cost-allocation-api" \
     "radix-cost-allocation-api" \
     "equinor" \
@@ -571,7 +580,7 @@ create_and_register_deploy_key \
     "" \
     "${DEPLOY_KEY_NAME}"
 
-create_github_webhook_in_repository "radix-cost-allocation-api"
+create_github_webhook_in_repository "radix-cost-allocation-api" "${GITHUB_PAT}"
 
 create_radix_application "radix-cost-allocation-api"
 
@@ -589,7 +598,7 @@ fi
 echo ""
 echo "Deploy radix-canary-golang..."
 
-create_and_register_deploy_key \
+create_and_register_deploy_key_and_store_credentials \
     "radix-canary-golang" \
     "radix-canary-golang" \
     "equinor" \
@@ -602,7 +611,7 @@ create_and_register_deploy_key \
     "" \
     "${DEPLOY_KEY_NAME}"
 
-create_github_webhook_in_repository "radix-canary-golang"
+create_github_webhook_in_repository "radix-canary-golang" "${GITHUB_PAT}"
 
 create_radix_application "radix-canary-golang"
 
@@ -615,12 +624,41 @@ if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     create_build_deploy_job "radix-canary-golang" "release"
 fi
 
+# Radix Network Policy Canary app
+
+echo ""
+echo "Deploy radix-networkpolicy-canary..."
+
+create_and_register_deploy_key_and_store_credentials \
+    "radix-networkpolicy-canary" \
+    "radix-networkpolicy-canary" \
+    "equinor" \
+    "${GITHUB_PAT}" \
+    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
+    "" \
+    "Radix@StatoilSRM.onmicrosoft.com" \
+    "main" \
+    "true" \
+    "C.ITD.15.001" \
+    "${DEPLOY_KEY_NAME}"
+
+create_github_webhook_in_repository "radix-networkpolicy-canary" "${GITHUB_PAT}"
+
+create_radix_application "radix-networkpolicy-canary"
+
+if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
+    # Wait a few seconds until radix-operator can process the RadixRegistration
+    wait_for_app_namespace "radix-networkpolicy-canary"
+
+    create_build_deploy_job "radix-networkpolicy-canary" "main"
+fi
+
 # Radix Web Console
 
 echo ""
 echo "Deploy radix-web-console..."
 
-create_and_register_deploy_key \
+create_and_register_deploy_key_and_store_credentials \
     "radix-web-console" \
     "radix-web-console" \
     "equinor" \
@@ -633,7 +671,7 @@ create_and_register_deploy_key \
     "" \
     "${DEPLOY_KEY_NAME}"
 
-create_github_webhook_in_repository "radix-web-console"
+create_github_webhook_in_repository "radix-web-console" "${GITHUB_PAT}"
 
 create_radix_application "radix-web-console"
 
@@ -651,7 +689,7 @@ fi
 echo ""
 echo "Deploy radix-platform..."
 
-create_and_register_deploy_key \
+create_and_register_deploy_key_and_store_credentials \
     "radix-platform" \
     "radix-public-site" \
     "equinor" \
@@ -664,7 +702,7 @@ create_and_register_deploy_key \
     "" \
     "${DEPLOY_KEY_NAME}"
 
-create_github_webhook_in_repository "radix-platform"
+create_github_webhook_in_repository "radix-platform" "${GITHUB_PAT}"
 
 create_radix_application "radix-platform"
 
