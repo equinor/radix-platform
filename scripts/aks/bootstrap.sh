@@ -194,6 +194,7 @@ echo -e ""
 echo -e "   -  VNET_NAME                        : $VNET_NAME"
 echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
 echo -e "   -  VNET_SUBNET_PREFIX               : $VNET_SUBNET_PREFIX"
+echo -e "   -  NSG_NAME                         : $NSG_NAME"
 echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
 echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
 echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
@@ -217,7 +218,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -312,7 +313,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     USER_PROMPT="true"
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Is this correct? (Y/n) " yn
+            read -r -p "Is this correct? (Y/n) " yn
             case $yn in
                 [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
                 [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -340,18 +341,26 @@ fi
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
-    printf "   Creating azure VNET ${VNET_NAME}... "
+    # Create network security group
+    printf "    Creating azure NSG %s..." "${NSG_NAME}"
+    az network nsg create \
+        -n "$NSG_NAME" \
+        -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        -l "$AZ_RADIX_ZONE_LOCATION"
+
+    printf "   Creating azure VNET %s... " "${VNET_NAME}"
     az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
         -n "$VNET_NAME" \
         --address-prefix "$VNET_ADDRESS_PREFIX" \
         --subnet-name "$SUBNET_NAME" \
         --subnet-prefix "$VNET_SUBNET_PREFIX" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
+        --nsg "$NSG_NAME"
         2>&1 >/dev/null
     printf "Done.\n"
 
-    SUBNET_ID=$(az network vnet subnet list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --vnet-name $VNET_NAME --query [].id --output tsv)
-    VNET_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_NAME --query "id" --output tsv)"
+    SUBNET_ID=$(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)
+    VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" --query "id" --output tsv)"
 
     # peering VNET to hub-vnet
     HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $AZ_VNET_HUB_NAME --query "id" --output tsv)"
