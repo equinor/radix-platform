@@ -244,10 +244,8 @@ function create_github_webhook_in_repository() {
     printf " Done.\n"
 
     # Extract repo_organization and repo_name from repository url.
-    while IFS='/' read -ra line; do
-        repo_organization="${line[3]}"
-        repo_name="${line[4]}"
-    done <<< "$(cat ${secret_file} | jq -r .repository)"
+    repo_organization="$(cat ${secret_file} | jq -r .repository | awk -F/ '{print $4}')"
+    repo_name="$(cat ${secret_file} | jq -r .repository | awk -F/ '{print $5}')"
 
     shared_secret=$(cat ${secret_file} | jq -r .sharedSecret)
 
@@ -381,7 +379,7 @@ function create_build_deploy_job() {
 ### Check for prerequisites binaries
 ###
 
-assert_dep az helm jq sha256sum base64 python3 gdate
+assert_dep az helm jq sha256sum base64 python3 gdate awk
 
 #######################################################################################
 ### Read inputs and configs
