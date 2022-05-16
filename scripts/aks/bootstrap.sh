@@ -206,7 +206,7 @@ echo -e "   -  HUB_VNET_NAME                    : $AZ_VNET_HUB_NAME"
 echo -e "   -  OUTBOUND_IP_COUNT                : $OUTBOUND_IP_COUNT"
 echo -e "   -  K8S_API_IP_WHITELIST             : $K8S_API_IP_WHITELIST"
 echo -e ""
-echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf $AZ_RESOURCE_KEYVAULT; else printf $CREDENTIALS_FILE; fi)"
+echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf "$AZ_RESOURCE_KEYVAULT"; else printf "$CREDENTIALS_FILE"; fi)"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -241,9 +241,9 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     # AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     # AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     # AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
-    ID_AKS="$(az identity show --name $MI_AKS --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
-    ID_AKSKUBELET="$(az identity show --name $MI_AKSKUBELET --resource-group $AZ_RESOURCE_GROUP_COMMON --query 'id' --output tsv 2> /dev/null)"
-    ACR_ID="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
+    ID_AKS="$(az identity show --name "$MI_AKS" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2> /dev/null)"
+    ID_AKSKUBELET="$(az identity show --name "$MI_AKSKUBELET" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2> /dev/null)"
+    ACR_ID="$(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --query "id" --output tsv)"
 else
     # Credentials are provided from input.
     # Source the file to make the key/value pairs readable as script vars
@@ -280,8 +280,8 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     echo "Getting list of available public ips in $RADIX_ZONE..."
     AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
     # Select range of outbound ips based on OUTBOUND_IP_COUNT
-    SELECTED_IPS="$(echo $AVAILABLE_IPS | jq '.[0:'$OUTBOUND_IP_COUNT']')"
-    printf "Getting list of available Ingress ips in $RADIX_ZONE...\n"
+    SELECTED_IPS="$(echo "$AVAILABLE_IPS" | jq '.[0:'$OUTBOUND_IP_COUNT']')"
+    printf "Getting list of available Ingress ips in %s...\n" "$RADIX_ZONE"
     AVAILABLE_INGRESS_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INGRESS_ID'" and .ipConfiguration==null)'  | jq -r '.name')"
 
     if [[ "$AVAILABLE_IPS" == "[]" || "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
@@ -296,14 +296,14 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         echo "-----------------------------------------------------------"
         echo ""
         echo "The following public IP(s) are currently available:"
-        echo $AVAILABLE_IPS | jq -r '.[].name'
+        echo "$AVAILABLE_IPS" | jq -r '.[].name'
         echo ""
         echo "The following public IP(s) will be assigned to the cluster:"
-        echo $SELECTED_IPS | jq -r '.[].name'
+        echo "$SELECTED_IPS" | jq -r '.[].name'
         echo "-----------------------------------------------------------"
         echo ""
         echo "The following Ingress IP(s) are currently available:"
-        echo $AVAILABLE_INGRESS_IPS
+        echo "$AVAILABLE_INGRESS_IPS"
         echo ""
         echo "-----------------------------------------------------------"
 
@@ -324,12 +324,12 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     echo ""
 
     # Create the string to pass in as --load-balancer-outbound-ips
-    for ippre in $(echo $SELECTED_IPS | jq -c '.[]')
+    for ippre in $(echo "$SELECTED_IPS" | jq -c '.[]')
     do
         if [[ -z $OUTBOUND_IPS ]]; then
-            OUTBOUND_IPS="$(echo $ippre | jq -r '.id')"
+            OUTBOUND_IPS="$(echo "$ippre" | jq -r '.id')"
         else
-            OUTBOUND_IPS+=",$(echo $ippre | jq -r '.id')"
+            OUTBOUND_IPS+=",$(echo "$ippre" | jq -r '.id')"
         fi
     done
 fi
@@ -338,15 +338,39 @@ fi
 ### Network
 ###
 
+IP_PREFIX=$(az network public-ip prefix show --name "$AZ_IPPRE_INBOUND_NAME" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --subscription "$AZ_SUBSCRIPTION_ID" | jq -r .ipPrefix)
+
+if [[ -z "$IP_PREFIX" ]]; then
+    echo "ERROR: Could not find public-ip prefix. Exiting..."
+    exit 1
+fi
+
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
     # Create network security group
     printf "    Creating azure NSG %s..." "${NSG_NAME}"
     az network nsg create \
-        -n "$NSG_NAME" \
         -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        -l "$AZ_RADIX_ZONE_LOCATION"
+        -l "$AZ_RADIX_ZONE_LOCATION" \
+        -n "$NSG_NAME"
+    printf "Done.\n"
+
+    # Create network security group rule
+    printf "    Creating azure NSG rule %s..." "${NSG_NAME}-rule"
+    az network nsg rule create \
+        --access "Allow" \
+        --destination-address-prefixes "$IP_PREFIX" \
+        --destination-port-ranges 80 443 \
+        --direction "Inbound" \
+        --nsg-name "$NSG_NAME" \
+        --priority 100 \
+        --protocol Tcp \
+        --source-address-prefixes "*" \
+        --source-port-ranges "*" \
+        -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        -n "$NSG_NAME-rule"
+    printf "Done.\n"
 
     printf "   Creating azure VNET %s... " "${VNET_NAME}"
     az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -363,28 +387,28 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" --query "id" --output tsv)"
 
     # peering VNET to hub-vnet
-    HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $AZ_VNET_HUB_NAME --query "id" --output tsv)"
+    HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$AZ_VNET_HUB_NAME" --query "id" --output tsv)"
     echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-    az network vnet peering create -g $AZ_RESOURCE_GROUP_CLUSTERS -n $VNET_PEERING_NAME --vnet-name $VNET_NAME --remote-vnet $HUB_VNET_RESOURCE_ID --allow-vnet-access 2>&1
-    az network vnet peering create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $HUB_PEERING_NAME --vnet-name $AZ_VNET_HUB_NAME --remote-vnet $VNET_ID --allow-vnet-access 2>&1
+    az network vnet peering create -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME" --remote-vnet "$HUB_VNET_RESOURCE_ID" --allow-vnet-access 2>&1
+    az network vnet peering create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME" --remote-vnet "$VNET_ID" --allow-vnet-access 2>&1
 
     function linkPrivateDnsZoneToVNET() {
         local dns_zone=${1}
-        local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone --query "id" --output tsv 2>&1)"
-        local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv 2>&1)"
+        local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$dns_zone" --query "id" --output tsv 2>&1)"
+        local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" --query "type" --output tsv 2>&1)"
         if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
             echo "ERROR: Private DNS Zone ${dns_zone} not found."
         elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
             echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
             # throws error if run twice
-            az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone -v $VNET_ID -e False 2>&1
+            az network private-dns link vnet create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" -v "$VNET_ID" -e False 2>&1
         fi
     }
 
     # linking private dns zones to vnet
     echo "Linking private DNS Zones to vnet $VNET_NAME... "
     for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
-        linkPrivateDnsZoneToVNET $dns_zone &
+        linkPrivateDnsZoneToVNET "$dns_zone" &
     done
     wait
 
@@ -499,8 +523,8 @@ echo "Done."
 ### Lock cluster and network resources
 ###
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    az lock create --lock-type CanNotDelete --name ${CLUSTER_NAME}-lock --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME  &>/dev/null
-    az lock create --lock-type CanNotDelete --name ${VNET_NAME}-lock --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --resource-type Microsoft.Network/virtualNetworks --resource $VNET_NAME  &>/dev/null
+    az lock create --lock-type CanNotDelete --name "${CLUSTER_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME  &>/dev/null
+    az lock create --lock-type CanNotDelete --name "${VNET_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.Network/virtualNetworks --resource $VNET_NAME  &>/dev/null
 fi
 
 #######################################################################################
