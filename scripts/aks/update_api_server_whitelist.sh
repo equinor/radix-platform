@@ -194,7 +194,7 @@ if [[ -n $CLUSTER_NAME ]]; then
         # Update cluster
         printf "Updating cluster with whitelist IPs..."
         if [[ $(az aks update --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $CLUSTER_NAME --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST") == *"ERROR"* ]]; then
-            printf "ERROR: Could not update cluster. Quitting..."
+            printf "ERROR: Could not update cluster. Quitting...\n" >&2
             exit 1
         fi
         printf " Done.\n"

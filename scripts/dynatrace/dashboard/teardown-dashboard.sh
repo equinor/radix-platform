@@ -68,7 +68,7 @@ function delete_dashboard(){
         -H "Content-Type: application/json; charset=utf-8")"
 
     if ! echo "$response" | grep -Fq "\"name\":\"${DASHBOARD_NAME}\""; then
-        echo "ERROR: Dashboard does not exist. Quitting..."
+        echo "ERROR: Dashboard does not exist. Quitting..." >&2
         return
     fi
 

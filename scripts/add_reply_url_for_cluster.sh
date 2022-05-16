@@ -60,7 +60,7 @@ function updateReplyUrls() {
 
     aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
     if [[ -z $aadAppId ]]; then
-        echo "ERROR: Could not find app registration. Quitting..."
+        echo "ERROR: Could not find app registration. Quitting..." >&2
         exit 1
     fi
     # Convert list to string where urls are separated by space
