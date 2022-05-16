@@ -59,7 +59,7 @@ printf "All is good."
 echo ""
 
 hash helm 2>/dev/null || {
-  echo -e "\nError: helm not found in PATH. Exiting..."
+  echo -e "\nError: helm not found in PATH. Exiting..." >&2
   exit 1
 }
 

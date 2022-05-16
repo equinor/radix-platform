@@ -59,7 +59,7 @@ hash jq 2>/dev/null || {
     exit 1
 }
 hash htpasswd 2>/dev/null || {
-  echo -e "\nError: htpasswd not found in PATH. Exiting..."
+  echo -e "\nError: htpasswd not found in PATH. Exiting..." >&2
   exit 1
 }
 hash flux 2>/dev/null || {
