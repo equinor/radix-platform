@@ -463,7 +463,7 @@ EOF
         done
         printf "...Done.\n"
     elif [[ ! ${ROLE_DEFINITION[@]} =~ ${AZ_SUBSCRIPTION_ID} ]]; then
-        echo "ERROR: Role definition exists, but subscription ${AZ_SUBSCRIPTION_ID} is not an assignable scope. This script does not update it, so it must be done manually."
+        echo "ERROR: Role definition exists, but subscription ${AZ_SUBSCRIPTION_ID} is not an assignable scope. This script does not update it, so it must be done manually." >&2
         return
     else
         echo "DNS TXT Contributor role definition exists."

@@ -55,7 +55,7 @@ if [[ -z "$TARGET_RESOURCE_RESOURCE_ID" ]]; then
     echo "Please provide TARGET_RESOURCE_RESOURCE_ID" >&2
     exit 1
 elif [[ ${TARGET_RESOURCE_RESOURCE_ID:0:15} != "/subscriptions/" ]]; then
-    echo "Error: Resource ID is invalid. Quitting..."
+    echo "Error: Resource ID is invalid. Quitting..." >&2
     exit 1
 fi
 
@@ -153,8 +153,8 @@ if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
         --request-message "Radix Private Link")
 
     if [[ $(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .provisioningState 2>/dev/null) != "Succeeded" ]]; then
-        echo "ERROR: Something went wrong when creating Private Endpoint:"
-        echo ${CREATE_PRIVATE_ENDPOINT}
+        echo "ERROR: Something went wrong when creating Private Endpoint:" >&2
+        echo ${CREATE_PRIVATE_ENDPOINT} >&2
         exit 1
     else
         echo "Done."
@@ -189,7 +189,7 @@ if [[ -n ${PRIVATE_ENDPOINT_NIC_ID} ]]; then
                 --query name \
                 --output tsv)
             if [[ -z ${PRIVATE_DNS_RECORD_NAME} ]]; then
-                echo "ERROR: Could not create Private DNS Record. Quitting..."
+                echo "ERROR: Could not create Private DNS Record. Quitting..." >&2
                 exit 1
             else
                 echo "Created Private DNS Record with name ${PRIVATE_DNS_RECORD_NAME}."

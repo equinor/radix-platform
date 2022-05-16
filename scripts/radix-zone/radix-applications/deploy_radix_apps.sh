@@ -257,7 +257,7 @@ function create_github_webhook_in_repository() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault."; return; }
+        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
 
     printf " Done.\n"
 
@@ -302,7 +302,7 @@ function create_radix_application() {
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --file "${secret_file}" \
             --output none \
-            --only-show-errors || { echo "ERROR: Could not get secret from keyvault."; return; }
+            --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
 
         printf " Done.\n"
 
@@ -368,7 +368,7 @@ function create_build_deploy_job() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault."; return; }
+        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
 
     printf " Done.\n"
 
@@ -487,7 +487,7 @@ echo ""
 
 # Connect kubectl so we have the correct context
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
-[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"; exit 1; }
+[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2; exit 1; }
 
 # Wait for operator to be deployed from flux
 echo ""

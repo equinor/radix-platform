@@ -130,7 +130,7 @@ EOF
     rm "$MANIFEST_JSON"
 
     if [[ $CREATE_APP_REGISTRATION == *"ERROR"* ]]; then
-        printf " ERROR: Could not create app registration. Make sure you activated the \"Application Developer\" role in PIM.\n"
+        printf " ERROR: Could not create app registration. Make sure you activated the \"Application Developer\" role in PIM.\n" >&2
         exit 1
     else
         printf " Done.\n"
@@ -166,7 +166,7 @@ if [[ $ADD_OWNERS == true ]]; then
         ADD_APP_OWNERS=$(az ad app owner add --id $APP_ID --owner-object-id $USER_OBJECT_ID 2>&1)
 
         if [[ $ADD_APP_OWNERS == *"ERROR"* ]]; then
-            printf " ERROR: Could not add user \"$USER_PRINCIPAL_NAME\" as owner of app registration.\n"
+            printf " ERROR: Could not add user \"$USER_PRINCIPAL_NAME\" as owner of app registration.\n" >&2
         fi
 
     done
@@ -195,7 +195,7 @@ if [[ $CRED_SECRETS == true ]]; then
     UPDATED_CLIENT_SECRET=$(az ad app credential reset --id "$APP_ID" --credential-description "$APP_DESCRIPTION" 2>/dev/null) # For some reason, description can not be too long.
 
     if [[ $UPDATED_CLIENT_SECRET == "" ]]; then
-        printf " ERROR: Could not refresh client secret for App Registration \"$APP_REGISTRATION_CERT_MANAGER\". Exiting...\n"
+        printf " ERROR: Could not refresh client secret for App Registration \"$APP_REGISTRATION_CERT_MANAGER\". Exiting...\n" >&2
         exit 1
     fi
     printf " Done.\n"
@@ -226,7 +226,7 @@ EOF
     printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
     if [[ $(az keyvault secret set --name "$APP_REGISTRATION_CERT_MANAGER" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE" 2>&1) == *"ERROR"* ]]; then
         az keyvault secret set --name "$APP_REGISTRATION_CERT_MANAGER" --vault-name "$AZ_RESOURCE_KEYVAULT" --file "$UPDATED_SECRET_VALUES_FILE" --expires "$EXPIRATION_DATE"
-        echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..."
+        echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..." >&2
         exit 1
     fi
     printf " Done\n"

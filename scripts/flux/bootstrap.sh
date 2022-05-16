@@ -62,19 +62,19 @@ echo "Start installing Flux..."
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..."
+    echo -e "\nError: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..."
+    echo -e "\nError: helm not found in PATH. Exiting..." >&2
     exit 1
 }
 hash flux 2>/dev/null || {
-    echo -e "\nError: flux not found in PATH. Exiting..."
+    echo -e "\nError: flux not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -210,7 +210,7 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -280,7 +280,7 @@ ASSIGNED_IPS="$(az network public-ip list \
     --output json)"
 
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then
-    echo "ERROR: Could not find Public IP of cluster."
+    echo "ERROR: Could not find Public IP of cluster." >&2
 else
     # Loop through list of IPs and create a comma separated string. 
     for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]')

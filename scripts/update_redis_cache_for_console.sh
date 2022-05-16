@@ -66,7 +66,7 @@ kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
     echo "kubectl is ready..."
 else
-    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"
+    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
     exit 1
 fi
 
@@ -75,7 +75,7 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -111,7 +111,7 @@ function updateRedisCacheConfiguration() {
 
         if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
             echo ""
-            echo "Error: Could not create Redis Cache. Quitting."
+            echo "Error: Could not create Redis Cache. Quitting." >&2
             exit 1
         fi
         printf " Done.\n"
