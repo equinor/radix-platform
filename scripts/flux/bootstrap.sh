@@ -337,7 +337,12 @@ flux bootstrap git \
     --components-extra=image-reflector-controller,image-automation-controller \
     --version="$FLUX_VERSION" \
     --silent
-echo "done."
+if [[ "$?" != "0" ]]
+then
+  printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+else
+  echo "done."
+fi
 
 rm "$FLUX_PRIVATE_KEY_NAME"
 
