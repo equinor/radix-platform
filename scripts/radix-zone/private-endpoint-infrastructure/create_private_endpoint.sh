@@ -36,32 +36,32 @@
 ###
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$PRIVATE_ENDPOINT_NAME" ]]; then
-    echo "Please provide PRIVATE_ENDPOINT_NAME" >&2
+    echo "ERROR: Please provide PRIVATE_ENDPOINT_NAME" >&2
     exit 1
 fi
 
 if [[ -z "$TARGET_RESOURCE_RESOURCE_ID" ]]; then
-    echo "Please provide TARGET_RESOURCE_RESOURCE_ID" >&2
+    echo "ERROR: Please provide TARGET_RESOURCE_RESOURCE_ID" >&2
     exit 1
 elif [[ ${TARGET_RESOURCE_RESOURCE_ID:0:15} != "/subscriptions/" ]]; then
-    echo "Error: Resource ID is invalid. Quitting..." >&2
+    echo "ERROR: Resource ID is invalid. Quitting..." >&2
     exit 1
 fi
 
 if [[ -z ${TARGET_SUBRESOURCE} && -z $(echo ${TARGET_RESOURCE_RESOURCE_ID} | grep "/providers/Microsoft.Network/privateLinkServices") ]]; then
-    echo "A target subresource is required for any target resources other than Private Link Services: https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource."
-    echo "Quitting..."
+    echo "ERROR: A target subresource is required for any target resources other than Private Link Services: https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource." >&2
+    echo "Quitting..." >&2
     exit 1
 fi
 
@@ -198,10 +198,10 @@ if [[ -n ${PRIVATE_ENDPOINT_NIC_ID} ]]; then
             echo "Private DNS Record for the Private Link ${PRIVATE_ENDPOINT_NAME} already exists: ${PRIVATE_DNS_RECORD_NAME}."
         fi
     else
-        echo "Could not get Private IP of NIC ${PRIVATE_ENDPOINT_NIC_ID}."
+        echo "ERROR: Could not get Private IP of NIC ${PRIVATE_ENDPOINT_NIC_ID}." >&2
     fi
 else
-    echo "Could not get NIC ID of Private Endpoint ${PRIVATE_ENDPOINT_ID}."
+    echo "ERROR: Could not get NIC ID of Private Endpoint ${PRIVATE_ENDPOINT_ID}." >&2
 fi
 
 #######################################################################################
@@ -210,17 +210,17 @@ fi
 
 # Make sure necessary variables are set.
 if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
-    echo "Missing varaiable PRIVATE_ENDPOINT_ID."
+    echo "ERROR: Missing variable PRIVATE_ENDPOINT_ID." >&2
     exit 1
 fi
 
 if [[ -z ${NIC_PRIVATE_IP} ]]; then
-    echo "Missing varaiable NIC_PRIVATE_IP."
+    echo "ERROR: Missing variable NIC_PRIVATE_IP." >&2
     exit 1
 fi
 
 if [[ -z ${PRIVATE_DNS_RECORD_NAME} ]]; then
-    echo "Missing varaiable PRIVATE_DNS_RECORD_NAME."
+    echo "ERROR: Missing variable PRIVATE_DNS_RECORD_NAME." >&2
     exit 1
 fi
 

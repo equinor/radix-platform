@@ -29,12 +29,12 @@ else
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME."
+    echo "ERROR: Please provide CLUSTER_NAME." >&2
     exit 1
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
-    echo "Please provide RADIX_WEB_CONSOLE_ENV."
+    echo "ERROR: Please provide RADIX_WEB_CONSOLE_ENV." >&2
     exit 1
 fi
 
@@ -46,7 +46,7 @@ function deleteRedisCache() {
     # check if redis cache exist, else exit
     REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
     if [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>/dev/null) == "" ]]; then
-        echo "Redis Cache \"$REDIS_CACHE_NAME\" not found."
+        echo "Redis Cache \"$REDIS_CACHE_NAME\" not found." >&2
         exit 1 # redis cache not found, exit
     fi
 
@@ -63,7 +63,7 @@ function deleteRedisCache() {
 
     printf "Deleting Redis Cache \"$REDIS_CACHE_NAME\"..."
     if [[ $(az redis delete --yes --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>&1) == *"ERROR"* ]]; then
-        printf " ERROR: Could not delete Redis Cache \"$REDIS_CACHE_NAME\".\n"
+        printf " ERROR: Could not delete Redis Cache \"$REDIS_CACHE_NAME\".\n" >&2
     else
         printf " Done.\n"
     fi
