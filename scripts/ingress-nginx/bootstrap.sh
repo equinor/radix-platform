@@ -174,10 +174,10 @@ AVAILABLE_INBOUND_IPS="$(az network public-ip list | jq '.[] | select(.publicIpP
 SELECTED_IP="$(echo $AVAILABLE_INBOUND_IPS | jq '.[0:1]')"
 
 if [[ "$AVAILABLE_INBOUND_IPS" == "[]" ]]; then
-    echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+    echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
     exit 1
 elif [[ -z $AVAILABLE_INBOUND_IPS ]]; then
-    echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
+    echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..." >&2
     exit 1
 else
     echo "-----------------------------------------------------------"

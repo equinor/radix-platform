@@ -29,17 +29,17 @@ else
 fi
 
 if [[ -z "$WEB_COMPONENT" ]]; then
-    echo "Please provide WEB_COMPONENT."
+    echo "Please provide WEB_COMPONENT." >&2
     exit 1
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
-    echo "Please provide RADIX_WEB_CONSOLE_ENV."
+    echo "Please provide RADIX_WEB_CONSOLE_ENV." >&2
     exit 1
 fi
 
 if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
-    echo "Please provide OAUTH2_PROXY_SCOPE."
+    echo "Please provide OAUTH2_PROXY_SCOPE." >&2
     exit 1
 fi
 
@@ -79,13 +79,13 @@ function updateIpsEnvVars() {
     printf "Getting auth token for Radix API..."
     API_ACCESS_TOKEN_RESOURCE=$(echo ${OAUTH2_PROXY_SCOPE} | awk '{print $4}' | sed 's/\/.*//')
     if [[ -z ${API_ACCESS_TOKEN_RESOURCE} ]]; then
-        echo "ERROR: Could not get Radix API access token resource."
+        echo "ERROR: Could not get Radix API access token resource." >&2
         return
     fi
 
     API_ACCESS_TOKEN=$(az account get-access-token --resource ${API_ACCESS_TOKEN_RESOURCE} | jq -r '.accessToken')
     if [[ -z ${API_ACCESS_TOKEN} ]]; then
-        echo "ERROR: Could not get Radix API access token."
+        echo "ERROR: Could not get Radix API access token." >&2
         return
     fi
     printf " Done.\n"
@@ -95,7 +95,7 @@ function updateIpsEnvVars() {
     IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
     if [[ "${IP_PREFIXES}" == "[]" ]]; then
-        echo -e "\nERROR: Found no IPs assigned to the cluster."
+        echo -e "\nERROR: Found no IPs assigned to the cluster." >&2
         return
     fi
 
@@ -118,7 +118,7 @@ function updateIpsEnvVars() {
         -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
 
     if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
-        echo -e "\nERROR: API request failed."
+        echo -e "\nERROR: API request failed." >&2
         return
     fi
     printf " Done.\n"
