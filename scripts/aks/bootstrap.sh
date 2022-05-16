@@ -254,15 +254,15 @@ printf "Done.\n"
 ### Verify credentials
 ###
 if [ -z "$ID_AKS" ]; then
-    echo "ERROR: Managed identity \"$MI_AKS\" does not exist. Exiting..."
+    echo "ERROR: Managed identity \"$MI_AKS\" does not exist. Exiting..." >&2
     exit 1
 fi
 if [ -z "$ID_AKSKUBELET" ]; then
-    echo "ERROR: Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..."
+    echo "ERROR: Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..." >&2
     exit 1
 fi
 if [ -z "$ACR_ID" ]; then
-    echo "ERROR: Azure Container Registry \"$ACR_ID\" does not exist. Exiting..."
+    echo "ERROR: Azure Container Registry \"$ACR_ID\" does not exist. Exiting..." >&2
     exit 1
 fi
 #######################################################################################
