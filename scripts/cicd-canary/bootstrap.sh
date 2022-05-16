@@ -144,6 +144,9 @@ deployKeyCanary4:
 privateImageHub:
   password: $(echo $SECRET_VALUES | jq -r '.privateImageHub.password')
 
+networkPolicyCanary:
+  password: $(echo $SECRET_VALUES | jq -r '.networkPolicyCanary.password')
+
 clusterType: $CLUSTER_TYPE
 clusterFqdn: $CLUSTER_NAME.$AZ_RESOURCE_DNS
 " >> $YAML_SECRET_FILE
