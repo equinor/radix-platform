@@ -73,7 +73,7 @@ function updateIpsEnvVars() {
     env_var_configmap_name="${1}"
     ippre_name="${2}"
 
-    ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
+    ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
 
     # Get auth token for Radix API
     printf "Getting auth token for Radix API..."
@@ -92,6 +92,7 @@ function updateIpsEnvVars() {
 
     # Get list of IPs for Public IPs assigned to Cluster Type
     printf "Getting list of IPs from Public IP Prefix ${ippre_name}..."
+    echo az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json
     IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
     if [[ "${IP_PREFIXES}" == "[]" ]]; then
