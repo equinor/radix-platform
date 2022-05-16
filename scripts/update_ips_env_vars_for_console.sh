@@ -73,7 +73,7 @@ function updateIpsEnvVars() {
     env_var_configmap_name="${1}"
     ippre_name="${2}"
 
-    IPPRE_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
+    ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
 
     # Get auth token for Radix API
     printf "Getting auth token for Radix API..."
