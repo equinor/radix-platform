@@ -95,7 +95,7 @@ function create_dashboard_json (){
         
         # success response: {"id":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx","name":"xxxxx"}
         if echo "$response" | grep -Fq "\"error\""; then
-            printf "ERROR: Could not create dashboard. Quitting...\n"
+            printf "ERROR: Could not create dashboard. Quitting...\n" >&2
             return
         fi
         printf " done.\n"
@@ -116,7 +116,7 @@ function create_dashboard_json (){
             -d "${JSON}")"
 
         if echo "$response" | grep -Fq "\"error\""; then
-            printf "ERROR: Could not update dashboard. Quitting...\n"
+            printf "ERROR: Could not update dashboard. Quitting...\n" >&2
             echo "$response"
             return
         fi
@@ -139,7 +139,7 @@ function create_dashboard_json (){
         -d "${JSON}")"
     # Check response
     if echo "$response" | grep -Fq "\"error\""; then
-        printf "ERROR: Could not update share settings. Quitting...\n"
+        printf "ERROR: Could not update share settings. Quitting...\n" >&2
         return
     fi
     printf " done.\n"

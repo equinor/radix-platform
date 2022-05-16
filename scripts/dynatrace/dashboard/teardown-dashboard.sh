@@ -92,7 +92,7 @@ function delete_dashboard(){
         -H "Content-Type: application/json; charset=utf-8")"
 
     if echo "$response" | grep -Fq "\"error\""; then
-        printf "ERROR: Could not delete dashboard. Quitting...\n"
+        printf "ERROR: Could not delete dashboard. Quitting...\n" >&2
         return
     fi
     printf " done.\n"

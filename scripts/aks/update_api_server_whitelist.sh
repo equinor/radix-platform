@@ -152,7 +152,7 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
         UPDATE_KEYVAULT=false
         K8S_API_IP_WHITELIST=$EXISTING_K8S_API_IP_WHITELIST
         if [[ -z $K8S_API_IP_WHITELIST ]]; then
-            printf " ERROR: Could not get secret \"$SECRET_NAME\" from keyvault \"$AZ_RESOURCE_KEYVAULT\". Quitting...\n"
+            printf " ERROR: Could not get secret \"$SECRET_NAME\" from keyvault \"$AZ_RESOURCE_KEYVAULT\". Quitting...\n" >&2
             exit 1
         fi
     fi
