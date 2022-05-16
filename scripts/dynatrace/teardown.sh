@@ -145,7 +145,7 @@ getClusterId() {
     if echo "$response" | grep -Fq "\"name\":\"${CLUSTER_NAME}\""; then
         CREDENTIAL_ID="$(echo $response | jq '.values' | jq -r '.[] | select(.name=="'$CLUSTER_NAME'").id')"
     else
-        echo "Error: Credential with cluster name \"${CLUSTER_NAME}\" not found in Dynatrace."
+        echo "Error: Credential with cluster name \"${CLUSTER_NAME}\" not found in Dynatrace." >&2
         exit 1
     fi
 }
@@ -156,7 +156,7 @@ deleteK8sConfiguration() {
     if [[ -z "$response" ]]; then
         echo "Successfully deleted Kubernetes Configuration."
     else
-        echo "Error deleting Kubernetes cluster from Dynatrace: $response"
+        echo "Error deleting Kubernetes cluster from Dynatrace: $response" >&2
     fi
 }
 

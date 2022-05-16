@@ -199,6 +199,7 @@ if [[ -n $CLUSTER_NAME ]]; then
         fi
         printf " Done.\n"
     else
-        echo "ERROR: Could not find the cluster. Make sure you have access to it."
+        echo "ERROR: Could not find the cluster. Make sure you have access to it." >&2
+        exit 1
     fi
 fi

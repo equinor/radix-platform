@@ -65,7 +65,7 @@ function updateSecret() {
     COST_ALLOCATION_API_SECRET_NAME_QA=$(kubectl get secret --namespace "radix-cost-allocation-api-qa" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$COST_ALLOCATION_API_SECRET_NAME_QA" ]]; then
-        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa."
+        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa." >&2
     else
         kubectl create secret generic "$COST_ALLOCATION_API_SECRET_NAME_QA" --namespace radix-cost-allocation-api-qa \
             --from-env-file=./radix-cost-allocation-api-secrets.env \
@@ -76,7 +76,7 @@ function updateSecret() {
     COST_ALLOCATION_API_SECRET_NAME_PROD=$(kubectl get secret --namespace "radix-cost-allocation-api-prod" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$COST_ALLOCATION_API_SECRET_NAME_PROD" ]]; then
-        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa."
+        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa." >&2
     else
         kubectl create secret generic "$COST_ALLOCATION_API_SECRET_NAME_PROD" --namespace radix-cost-allocation-api-prod \
             --from-env-file=./radix-cost-allocation-api-secrets.env \

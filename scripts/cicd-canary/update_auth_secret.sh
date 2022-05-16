@@ -126,7 +126,7 @@ IFS=","
 for KEYVAULT_NAME in $KEYVAULT_LIST; do
     printf "Updating keyvault \"$KEYVAULT_NAME\"..."
     if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" 2>&1)"" == *"ERROR"* ]]; then
-        echo -e "\nERROR: Could not update secret in keyvault \"$KEYVAULT_NAME\"."
+        echo -e "\nERROR: Could not update secret in keyvault \"$KEYVAULT_NAME\"." >&2
         script_errors=true
         continue
     fi
@@ -135,7 +135,7 @@ done
 IFS=$oldIFS
 
 if [[ $script_errors == true ]]; then
-    echo "Script completed with errors."
+    echo "Script completed with errors." >&2
 else
     echo "Script completed successfully."
 fi

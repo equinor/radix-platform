@@ -46,7 +46,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     template_path="${script_dir_path}/template-credentials.json"
 
     if [ ! -e "$template_path" ]; then
-        echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}"
+        echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}" >&2
         exit 1
     fi
 
