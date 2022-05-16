@@ -45,17 +45,17 @@ else
 fi
 
 if [[ -z "$AZ_SUBSCRIPTION_ID" ]]; then
-    echo "AZ_SUBSCRIPTION_ID is not defined. Please check the .env file."
+    echo "ERROR: AZ_SUBSCRIPTION_ID is not defined. Please check the .env file." >&2
     exit 1
 fi
 
 if [[ -z "$AZ_RESOURCE_DNS" ]]; then
-    echo "AZ_RESOURCE_DNS is not defined. Please check the .env file."
+    echo "ERROR: AZ_RESOURCE_DNS is not defined. Please check the .env file." >&2
     exit 1
 fi
 
 if [[ -z "$AZ_RESOURCE_GROUP_COMMON" ]]; then
-    echo "AZ_RESOURCE_GROUP_COMMON is not defined. Please check the .env file."
+    echo "ERROR: AZ_RESOURCE_GROUP_COMMON is not defined. Please check the .env file." >&2
     exit 1
 fi
 
