@@ -48,7 +48,7 @@ echo "Start teardown of Dynatrace..."
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 

@@ -48,10 +48,10 @@ echo "Start moving custom ingresses..."
 
 echo ""
 printf "Check for necessary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting...";  exit 1; }
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
+hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting..." >&2;  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 
