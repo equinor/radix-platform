@@ -580,8 +580,8 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
-    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIP (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
-    source $MOVE_CUSTOM_INGRESSES_SCRIP
+    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIPT (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
+    source $MOVE_CUSTOM_INGRESSES_SCRIPT
 else
     echo ""
     echo "Chicken!"
