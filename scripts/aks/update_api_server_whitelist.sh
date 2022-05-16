@@ -166,7 +166,7 @@ if [[ $UPDATE_KEYVAULT == true ]];then
     # Update keyvault
     printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
     if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$K8S_API_IP_WHITELIST" 2>&1)"" == *"ERROR"* ]]; then
-        echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..."
+        echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..." >&2
         exit 1
     fi
     printf " Done.\n"

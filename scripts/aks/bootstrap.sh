@@ -284,11 +284,11 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     AVAILABLE_INGRESS_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INGRESS_ID'" and .ipConfiguration==null)'  | jq -r '.name')"
 
     if [[ "$AVAILABLE_IPS" == "[]" || "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
-        echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_OUTBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+        echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_OUTBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
         printf "Tip: You might need to do a teardown of an early clusters first.\n"
         exit 1
     elif [[ -z $AVAILABLE_IPS ]]; then
-        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
+        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..." >&2
         exit 1
     else
         echo ""

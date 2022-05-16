@@ -97,7 +97,7 @@ APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NA
 
 UPDATED_PRIVATE_IMAGE_HUB_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --credential-description "rdx-cicd-canary" 2>/dev/null | jq -r '.password') # For some reason, description can not be too long.
 if [[ -z "$UPDATED_PRIVATE_IMAGE_HUB_PASSWORD" ]]; then
-    echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\". Exiting..."
+    echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\". Exiting..." >&2
     exit 1
 fi
 printf " Done.\n"
@@ -115,7 +115,7 @@ SECRET_VALUES=$(az keyvault secret show \
     '.value | fromjson | .privateImageHub.password=$password')
 
 if [[ -z "$SECRET_VALUES" ]]; then
-    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..."
+    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..." >&2
     exit 1
 fi
 printf " Done.\n"

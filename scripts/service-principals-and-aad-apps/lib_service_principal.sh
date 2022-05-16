@@ -309,7 +309,7 @@ function exit_if_user_does_not_have_required_ad_role(){
         | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query objectId -otsv)'")')"
 
     if [[ -z "$currentUserRoleAssignment" ]]; then
-        echo "You must activate AZ AD role \"Application Developer\" in PIM before using this script. Exiting..."
+        echo "You must activate AZ AD role \"Application Developer\" in PIM before using this script. Exiting..." >&2
         exit 1
     fi
 
