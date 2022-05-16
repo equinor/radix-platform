@@ -33,17 +33,17 @@ else
 fi
 
 if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
-    echo "Please provide AUTH_PROXY_COMPONENT."
+    echo "Please provide AUTH_PROXY_COMPONENT." >&2
     exit 1
 fi
 
 if [[ -z "$WEB_CONSOLE_NAMESPACE" ]]; then
-    echo "Please provide WEB_CONSOLE_NAMESPACE."
+    echo "Please provide WEB_CONSOLE_NAMESPACE." >&2
     exit 1
 fi
 
 if [[ -z "$AUTH_PROXY_REPLY_PATH" ]]; then
-    echo "Please provide AUTH_PROXY_REPLY_PATH."
+    echo "Please provide AUTH_PROXY_REPLY_PATH." >&2
     exit 1
 fi
 

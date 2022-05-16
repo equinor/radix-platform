@@ -30,17 +30,17 @@ else
 fi
 
 if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
-    echo "Please provide AUTH_PROXY_COMPONENT."
+    echo "Please provide AUTH_PROXY_COMPONENT." >&2
     exit 1
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME."
+    echo "Please provide CLUSTER_NAME." >&2
     exit 1
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
-    echo "Please provide RADIX_WEB_CONSOLE_ENV."
+    echo "Please provide RADIX_WEB_CONSOLE_ENV." >&2
     exit 1
 fi
 

@@ -60,7 +60,7 @@ if [[ -z "$AZ_RESOURCE_GROUP_COMMON" ]]; then
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please define CLUSTER_NAME."
+    echo "Please define CLUSTER_NAME." >&2
     exit 1
 fi
 

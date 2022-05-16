@@ -22,19 +22,19 @@ echo "Updating replyUrls for AAD app \"${AAD_APP_NAME}\"..."
 
 # Validate mandatory input
 if [[ -z "$AAD_APP_NAME" ]]; then
-    echo "Please provide AAD_APP_NAME."
+    echo "Please provide AAD_APP_NAME." >&2
     exit 1
 fi
 if [[ -z "$K8S_NAMESPACE" ]]; then
-    echo "Please provide K8S_NAMESPACE."
+    echo "Please provide K8S_NAMESPACE." >&2
     exit 1
 fi
 if [[ -z "$K8S_INGRESS_NAME" ]]; then
-    echo "Please provide K8S_INGRESS_NAME."
+    echo "Please provide K8S_INGRESS_NAME." >&2
     exit 1
 fi
 if [[ -z "$REPLY_PATH" ]]; then
-    echo "Please provide REPLY_PATH."
+    echo "Please provide REPLY_PATH." >&2
     exit 1
 fi
 
