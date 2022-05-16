@@ -60,18 +60,18 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 else
     # Set cluster name variable for dynatrace integration
@@ -130,12 +130,12 @@ echo ""
 # Get secrets: api-url and tenant-token from keyvault
 API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 if [[ -z "$API_URL" ]]; then
-    echo "Please provide API_URL" >&2
+    echo "ERROR: Please provide API_URL" >&2
     exit 1
 fi
 API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
 if [[ -z "$API_TOKEN" ]]; then
-    echo "Please provide API_TOKEN" >&2
+    echo "ERROR: Please provide API_TOKEN" >&2
     exit 1
 fi
 

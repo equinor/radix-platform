@@ -61,7 +61,7 @@ fi
 
 if [[ -z ${TARGET_SUBRESOURCE} && -z $(echo ${TARGET_RESOURCE_RESOURCE_ID} | grep "/providers/Microsoft.Network/privateLinkServices") ]]; then
     echo "ERROR: A target subresource is required for any target resources other than Private Link Services: https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource." >&2
-    echo "Quitting..." >&2
+    echo "ERROR: Quitting..." >&2
     exit 1
 fi
 

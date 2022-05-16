@@ -105,23 +105,23 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-  echo "Please provide RADIX_ZONE_ENV" >&2
+  echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
   exit 1
 else
   if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-    echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+    echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
     exit 1
   fi
   source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
-  echo "Please provide SOURCE_CLUSTER." >&2
+  echo "ERROR: Please provide SOURCE_CLUSTER." >&2
   exit 1
 fi
 
 if [[ -z "$BACKUP_NAME" ]]; then
-  echo "Please provide BACKUP_NAME." >&2
+  echo "ERROR: Please provide BACKUP_NAME." >&2
   exit 1
 fi
 

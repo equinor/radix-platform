@@ -18,28 +18,28 @@
 # Validate mandatory input
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$WEB_COMPONENT" ]]; then
-    echo "Please provide WEB_COMPONENT." >&2
+    echo "ERROR: Please provide WEB_COMPONENT." >&2
     exit 1
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
-    echo "Please provide RADIX_WEB_CONSOLE_ENV." >&2
+    echo "ERROR: Please provide RADIX_WEB_CONSOLE_ENV." >&2
     exit 1
 fi
 
 if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
-    echo "Please provide OAUTH2_PROXY_SCOPE." >&2
+    echo "ERROR: Please provide OAUTH2_PROXY_SCOPE." >&2
     exit 1
 fi
 

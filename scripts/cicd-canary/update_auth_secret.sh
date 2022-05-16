@@ -33,7 +33,7 @@
 # Required inputs
 
 if [[ -z "$KEYVAULT_LIST" ]]; then
-    echo "Please provide KEYVAULT_LIST" >&2
+    echo "ERROR: Please provide KEYVAULT_LIST" >&2
     exit 1
 fi
 
@@ -135,7 +135,7 @@ done
 IFS=$oldIFS
 
 if [[ $script_errors == true ]]; then
-    echo "Script completed with errors." >&2
+    echo "ERROR: Script completed with errors." >&2
 else
     echo "Script completed successfully."
 fi

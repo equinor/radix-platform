@@ -72,18 +72,18 @@ echo ""
 
 # Required inputs
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-  echo "Please provide CLUSTER_NAME" >&2
+  echo "ERROR: Please provide CLUSTER_NAME" >&2
   exit 1
 fi
 
@@ -96,7 +96,7 @@ fi
 CREDENTIALS_GENERATED_PATH="$(mktemp)"
 CREDENTIALS_TEMPLATE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/template_credentials.env"
 if [[ ! -f "$CREDENTIALS_TEMPLATE_PATH" ]]; then
-   echo "The dependency CREDENTIALS_TEMPLATE_PATH=$CREDENTIALS_TEMPLATE_PATH is invalid, the file does not exist." >&2
+   echo "ERROR: The dependency CREDENTIALS_TEMPLATE_PATH=$CREDENTIALS_TEMPLATE_PATH is invalid, the file does not exist." >&2
    exit 1
 fi
 
@@ -163,7 +163,7 @@ kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
     echo "kubectl is ready..."
 else
-    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
+    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
     exit 1
 fi
 

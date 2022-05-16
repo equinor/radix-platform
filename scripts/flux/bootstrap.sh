@@ -87,11 +87,11 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
@@ -106,27 +106,27 @@ if [[ ! -z "$OVERRIDE_GIT_DIR" ]]; then
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
 if [[ -z "$GIT_REPO" ]]; then
-    echo "Please provide GIT_REPO" >&2
+    echo "ERROR: Please provide GIT_REPO" >&2
     exit 1
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
-    echo "Please provide GIT_BRANCH" >&2
+    echo "ERROR: Please provide GIT_BRANCH" >&2
     exit 1
 fi
 
 if [[ -z "$GIT_DIR" ]]; then
-    echo "Please provide GIT_DIR" >&2
+    echo "ERROR: Please provide GIT_DIR" >&2
     exit 1
 fi
 
 if [[ -z "$FLUX_VERSION" ]]; then
-    echo "Please provide FLUX_VERSION" >&2
+    echo "ERROR: Please provide FLUX_VERSION" >&2
     exit 1
 fi
 
@@ -201,7 +201,7 @@ kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
     echo "kubectl is ready..."
 else
-    echo "Please set your kubectl current-context to be $CLUSTER_NAME" >&2
+    echo "ERROR: Please set your kubectl current-context to be $CLUSTER_NAME" >&2
     exit 1
 fi
 

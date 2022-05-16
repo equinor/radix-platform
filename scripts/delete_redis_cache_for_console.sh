@@ -18,11 +18,11 @@
 # - USER_PROMPT             : Enable/disable user prompt, ex: "true" [default], "false"
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
@@ -46,7 +46,7 @@ function deleteRedisCache() {
     # check if redis cache exist, else exit
     REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
     if [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>/dev/null) == "" ]]; then
-        echo "Redis Cache \"$REDIS_CACHE_NAME\" not found." >&2
+        echo "ERROR: Redis Cache \"$REDIS_CACHE_NAME\" not found." >&2
         exit 1 # redis cache not found, exit
     fi
 

@@ -17,11 +17,11 @@
 
 # Validate mandatory input
 if [[ -z "$APP_REGISTRATION_ID" ]]; then
-    echo "Please provide APP_REGISTRATION_ID." >&2
+    echo "ERROR: Please provide APP_REGISTRATION_ID." >&2
     exit 1
 fi
 if [[ -z "$REPLY_URL" ]]; then
-    echo "Please provide REPLY_URL." >&2
+    echo "ERROR: Please provide REPLY_URL." >&2
     exit 1
 fi
 
@@ -50,7 +50,7 @@ for ((i=0; i<$length; i++)); do
 done
 
 if [[ -z $index ]]; then
-    echo "ReplyUrl \"${REPLY_URL}\" not found in App Registration \"${APP_REGISTRATION_NAME}\"." >&2
+    echo "ERROR: ReplyUrl \"${REPLY_URL}\" not found in App Registration \"${APP_REGISTRATION_NAME}\"." >&2
 else
     if [[ $USER_PROMPT == true ]]; then
         while true; do

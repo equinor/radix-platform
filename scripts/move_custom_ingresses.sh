@@ -62,18 +62,18 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$DEST_CLUSTER" ]]; then
-    echo "Please provide DEST_CLUSTER" >&2
+    echo "ERROR: Please provide DEST_CLUSTER" >&2
     exit 1
 fi
 
@@ -82,7 +82,7 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
-    echo "SOURCE_CLUSTER is not defined" >&2
+    echo "ERROR: SOURCE_CLUSTER is not defined" >&2
     if [[ $USER_PROMPT == true ]]; then
         while true; do
             read -p "Is this intentional? (Y/n) " yn
@@ -106,7 +106,7 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOOTSTRAP_APP_ALIAS_SCRIPT="$WORKDIR_PATH/app_alias/bootstrap.sh"
 if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
     # Print to stderror
-    echo "The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
+    echo "ERROR: The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
 fi
 
 #######################################################################################
