@@ -1,0 +1,29 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixJob
+metadata:
+  annotations:
+    radix-branch: ${CLONE_BRANCH}
+  labels:
+    radix-app: ${NAME}
+  name: ${NAME}-${CLONE_BRANCH}-init-deploy-${TIMESTAMP}-${IMAGE_TAG}
+  namespace: ${NAME}-app
+spec:
+  appName: ${NAME}
+  build:
+    branch: ${CLONE_BRANCH}
+    commitID: ""
+    imageTag: ${IMAGE_TAG}
+    pushImage: true
+    radixFileName: /workspace/radixconfig.yaml
+  cloneURL: ${CLONE_URL}
+  deploy:
+    toEnvironment: ""
+  dockerRegistry: ${CONTAINER_REGISTRY}
+  pipeLineType: build-deploy
+  pipelineImage: ${CLONE_BRANCH}-latest
+  promote:
+    deploymentName: ""
+    fromEnvironment: ""
+    toEnvironment: ""
+  stop: false
+  triggeredBy: ${OWNER}
