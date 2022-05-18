@@ -74,19 +74,19 @@ echo "Start restore apps... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-  echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2
+  echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
   exit 1
 }
 hash kubectl 2>/dev/null || {
-  echo -e "\nError: kubectl not found in PATH. Exiting..." >&2
+  echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
   exit 1
 }
 hash envsubst 2>/dev/null || {
-  echo -e "\nError: envsubst not found in PATH. Exiting..." >&2
+  echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
   exit 1
 }
 hash velero 2>/dev/null || {
-  echo -e "\nError: velero not found in PATH. Exiting..." >&2
+  echo -e "\nERROR: velero not found in PATH. Exiting..." >&2
   exit 1
 }
 printf "Done."
@@ -343,7 +343,7 @@ echo ""
 echo "Connecting kubectl to velero-destination..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then
   # Send message to stderr
-  echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
+  echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
   exit 0
 fi
 

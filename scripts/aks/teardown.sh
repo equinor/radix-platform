@@ -46,8 +46,8 @@ echo "Start teardown of aks instance... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
 
@@ -177,7 +177,7 @@ echo ""
 printf "Verifying that cluster exist and/or the user can access it... "
 # We use az aks get-credentials to test if both the cluster exist and if the user has access to it. 
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
-    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
         while true; do
             read -p "Do you want to continue? (Y/n) " yn

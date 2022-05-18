@@ -111,7 +111,7 @@ function updateRedisCacheConfiguration() {
 
         if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
             echo ""
-            echo "Error: Could not create Redis Cache. Quitting." >&2
+            echo "ERROR: Could not create Redis Cache. Quitting." >&2
             exit 1
         fi
         printf " Done.\n"

@@ -41,15 +41,15 @@ echo "Start bootstrap of radix-sp-acr-azure secret and radix-docker secret"
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
