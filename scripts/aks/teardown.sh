@@ -261,6 +261,10 @@ az network vnet peering delete -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n $HUB_PEERING_
 az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n $VNET_NAME 2>&1 >/dev/null
 echo "Done."
 
+echo "Deleting Network Security Group..."
+az network nsg delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME"
+echo "Done."
+
 # TODO: Clean up velero blob dialog (yes/no)
 
 echo ""
