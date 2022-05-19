@@ -93,7 +93,6 @@ if [[ -z "$SOURCE_CLUSTER" ]]; then
             esac
         done
     fi
-    
 fi
 
 
@@ -173,7 +172,7 @@ printf "\nConnecting kubectl..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
     # Send message to stderr
     echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
-    exit 1        
+    exit 1
 fi
 printf "...Done.\n"
 
@@ -192,14 +191,14 @@ printf " OK\n"
 ###
 echo ""
 printf "Enabling monitoring addon in the destination cluster... "
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name $AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE | jq -r .[0].id)
-az aks enable-addons -a monitoring -n $DEST_CLUSTER -g $AZ_RESOURCE_GROUP_CLUSTERS --workspace-resource-id "$WORKSPACE_ID" --no-wait
+WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription ${AZ_SUBSCRIPTION_ID} --query "[].id" --output tsv)
+az aks enable-addons --addons monitoring --name "${DEST_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --workspace-resource-id "${WORKSPACE_ID}" --no-wait
 printf "Done.\n"
 
-if [[ -n $SOURCE_CLUSTER ]]; then
+if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""
     printf "Disabling monitoring addon in the source cluster... "
-    az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g $AZ_RESOURCE_GROUP_CLUSTERS --no-wait
+    az aks disable-addons --addons monitoring --name "${SOURCE_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --no-wait
     printf "Done.\n"
 
     #######################################################################################
@@ -208,11 +207,11 @@ if [[ -n $SOURCE_CLUSTER ]]; then
 
     echo ""
     printf "Point to source cluster... "
-    az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
+    az aks get-credentials --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${SOURCE_CLUSTER}" \
         --overwrite-existing \
         --admin \
         2>&1 >/dev/null
-    [[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
+    [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}-admin" ]] && exit 1
     printf "Done.\n"
 
     echo ""
@@ -235,7 +234,7 @@ if [[ -n $SOURCE_CLUSTER ]]; then
     ###
     echo ""
     printf "Scale down radix-cicd-canary in $SOURCE_CLUSTER...\n"
-    kubectl scale deployment -n radix-cicd-canary radix-cicd-canary --replicas=0
+    kubectl scale deployment --name radix-cicd-canary radix-cicd-canary --replicas=0
     wait
     printf "Done.\n"
 
