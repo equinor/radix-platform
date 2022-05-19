@@ -12,6 +12,18 @@ Each environment (`prod`, `dev`) has multiple clusters that use shared infrastru
 - `cd scripts`
 - `az login` into the correct subscription
 
+The following applications tools/applications are required to run the platform scripts:
+
+* [az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+* [kubectl](https://kubernetes.io/docs/tasks/tools/)
+* [helm](https://helm.sh/docs/intro/install/)
+* [jq](https://stedolan.github.io/jq/)
+* htpasswd
+* envsubst
+* [velero](https://velero.io/docs/v1.8/basic-install/)
+* [flux](https://fluxcd.io/docs/cmd/)
+* [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility?view=sql-server-ver15)
+
 ## 1. Install and update shared infrastructure
 
 **NB: You only need to do this once per Azure subscription!** Multiple clusters will share the same base infrastructure.

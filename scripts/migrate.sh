@@ -66,6 +66,10 @@ hash flux 2>/dev/null || {
     echo -e "\nError: flux not found in PATH. Exiting... " >&2
     exit 1
 }
+hash sqlcmd 2>/dev/null || {
+    echo -e "\nError: sqlcmd not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
 
 #######################################################################################
