@@ -52,15 +52,15 @@ echo "Start bootstrap of ingress-nginx... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..."
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..."
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -73,18 +73,18 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
@@ -155,7 +155,7 @@ kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
     echo "kubectl is ready..."
 else
-    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"
+    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
     exit 1
 fi
 
@@ -164,7 +164,7 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -188,10 +188,10 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     SELECTED_IP="$(echo $AVAILABLE_INBOUND_IPS | jq '.[0:1]')"
 
     if [[ "$AVAILABLE_INBOUND_IPS" == "[]" ]]; then
-        echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+        echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
         exit 1
     elif [[ -z $AVAILABLE_INBOUND_IPS ]]; then
-        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
+        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..." >&2
         exit 1
     else
         echo "-----------------------------------------------------------"

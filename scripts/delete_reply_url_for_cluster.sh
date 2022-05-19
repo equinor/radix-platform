@@ -17,11 +17,11 @@
 
 # Validate mandatory input
 if [[ -z "$APP_REGISTRATION_ID" ]]; then
-    echo "Please provide APP_REGISTRATION_ID."
+    echo "ERROR: Please provide APP_REGISTRATION_ID." >&2
     exit 1
 fi
 if [[ -z "$REPLY_URL" ]]; then
-    echo "Please provide REPLY_URL."
+    echo "ERROR: Please provide REPLY_URL." >&2
     exit 1
 fi
 
@@ -31,7 +31,7 @@ fi
 
 APP_REGISTRATION_NAME=$(az ad app show --id "${APP_REGISTRATION_ID}" --query displayName -o tsv)
 if [[ -z $APP_REGISTRATION_NAME ]]; then
-    echo "ERROR: Could not get app registration name. Quitting..."
+    echo "ERROR: Could not get app registration name. Quitting..." >&2
     exit 1
 fi
 
@@ -50,7 +50,7 @@ for ((i=0; i<$length; i++)); do
 done
 
 if [[ -z $index ]]; then
-    echo "ReplyUrl \"${REPLY_URL}\" not found in App Registration \"${APP_REGISTRATION_NAME}\"."
+    echo "ERROR: ReplyUrl \"${REPLY_URL}\" not found in App Registration \"${APP_REGISTRATION_NAME}\"." >&2
 else
     if [[ $USER_PROMPT == true ]]; then
         while true; do

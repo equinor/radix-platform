@@ -49,11 +49,11 @@
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
@@ -152,7 +152,7 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
         UPDATE_KEYVAULT=false
         K8S_API_IP_WHITELIST=$EXISTING_K8S_API_IP_WHITELIST
         if [[ -z $K8S_API_IP_WHITELIST ]]; then
-            printf " ERROR: Could not get secret \"$SECRET_NAME\" from keyvault \"$AZ_RESOURCE_KEYVAULT\". Quitting...\n"
+            printf " ERROR: Could not get secret \"$SECRET_NAME\" from keyvault \"$AZ_RESOURCE_KEYVAULT\". Quitting...\n" >&2
             exit 1
         fi
     fi
@@ -166,7 +166,7 @@ if [[ $UPDATE_KEYVAULT == true ]];then
     # Update keyvault
     printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
     if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$K8S_API_IP_WHITELIST" 2>&1)"" == *"ERROR"* ]]; then
-        echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..."
+        echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..." >&2
         exit 1
     fi
     printf " Done.\n"
@@ -194,11 +194,12 @@ if [[ -n $CLUSTER_NAME ]]; then
         # Update cluster
         printf "Updating cluster with whitelist IPs..."
         if [[ $(az aks update --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $CLUSTER_NAME --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST") == *"ERROR"* ]]; then
-            printf "ERROR: Could not update cluster. Quitting..."
+            printf "ERROR: Could not update cluster. Quitting...\n" >&2
             exit 1
         fi
         printf " Done.\n"
     else
-        echo "ERROR: Could not find the cluster. Make sure you have access to it."
+        echo "ERROR: Could not find the cluster. Make sure you have access to it." >&2
+        exit 1
     fi
 fi

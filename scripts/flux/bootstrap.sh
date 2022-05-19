@@ -62,19 +62,19 @@ echo "Start installing Flux..."
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..."
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..."
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
 hash flux 2>/dev/null || {
-    echo -e "\nError: flux not found in PATH. Exiting..."
+    echo -e "\nERROR: flux not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -87,11 +87,11 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
@@ -106,27 +106,27 @@ if [[ ! -z "$OVERRIDE_GIT_DIR" ]]; then
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
 if [[ -z "$GIT_REPO" ]]; then
-    echo "Please provide GIT_REPO" >&2
+    echo "ERROR: Please provide GIT_REPO" >&2
     exit 1
 fi
 
 if [[ -z "$GIT_BRANCH" ]]; then
-    echo "Please provide GIT_BRANCH" >&2
+    echo "ERROR: Please provide GIT_BRANCH" >&2
     exit 1
 fi
 
 if [[ -z "$GIT_DIR" ]]; then
-    echo "Please provide GIT_DIR" >&2
+    echo "ERROR: Please provide GIT_DIR" >&2
     exit 1
 fi
 
 if [[ -z "$FLUX_VERSION" ]]; then
-    echo "Please provide FLUX_VERSION" >&2
+    echo "ERROR: Please provide FLUX_VERSION" >&2
     exit 1
 fi
 
@@ -201,7 +201,7 @@ kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
     echo "kubectl is ready..."
 else
-    echo "Please set your kubectl current-context to be $CLUSTER_NAME"
+    echo "ERROR: Please set your kubectl current-context to be $CLUSTER_NAME" >&2
     exit 1
 fi
 
@@ -210,7 +210,7 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -280,7 +280,7 @@ ASSIGNED_IPS="$(az network public-ip list \
     --output json)"
 
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then
-    echo "ERROR: Could not find Public IP of cluster."
+    echo "ERROR: Could not find Public IP of cluster." >&2
 else
     # Loop through list of IPs and create a comma separated string. 
     for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]')
@@ -329,6 +329,7 @@ printf "...Done.\n"
 echo ""
 echo "Starting installation of Flux..."
 
+flux --version
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
     --url="$GIT_REPO" \
@@ -337,9 +338,15 @@ flux bootstrap git \
     --components-extra=image-reflector-controller,image-automation-controller \
     --version="$FLUX_VERSION" \
     --silent
-echo "done."
-
-rm "$FLUX_PRIVATE_KEY_NAME"
+if [[ "$?" != "0" ]]
+then
+  printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+  rm "$FLUX_PRIVATE_KEY_NAME"
+  exit 1
+else
+  rm "$FLUX_PRIVATE_KEY_NAME"
+  echo "done."
+fi
 
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."

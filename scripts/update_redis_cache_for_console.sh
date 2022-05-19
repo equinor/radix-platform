@@ -19,28 +19,28 @@
 # - USER_PROMPT             : Enable/disable user prompt, ex: "true" [default], "false"
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
-    echo "Please provide AUTH_PROXY_COMPONENT."
+    echo "ERROR: Please provide AUTH_PROXY_COMPONENT." >&2
     exit 1
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME."
+    echo "ERROR: Please provide CLUSTER_NAME." >&2
     exit 1
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
-    echo "Please provide RADIX_WEB_CONSOLE_ENV."
+    echo "ERROR: Please provide RADIX_WEB_CONSOLE_ENV." >&2
     exit 1
 fi
 
@@ -66,7 +66,7 @@ kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
     echo "kubectl is ready..."
 else
-    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"
+    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
     exit 1
 fi
 
@@ -75,7 +75,7 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -111,7 +111,7 @@ function updateRedisCacheConfiguration() {
 
         if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
             echo ""
-            echo "Error: Could not create Redis Cache. Quitting."
+            echo "ERROR: Could not create Redis Cache. Quitting." >&2
             exit 1
         fi
         printf " Done.\n"

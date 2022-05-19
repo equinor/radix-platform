@@ -49,19 +49,19 @@ echo "Start bootstrap of snyk-monitor... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..."
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..."
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..."
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -74,18 +74,18 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
@@ -152,7 +152,7 @@ kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
     echo "kubectl is ready..."
 else
-    echo "Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"
+    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
     exit 1
 fi
 
@@ -161,7 +161,7 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -179,14 +179,14 @@ kubectl create namespace snyk-monitor \
 
 SNYK_INTEGRATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-integration-token 2>/dev/null | jq -r .value)"
 if [[ -z $SNYK_INTEGRATION_ID ]]; then
-    echo "Error: Could not find secret \"radix-snyk-integration-token\" in keyvault. Quitting.."
+    echo "ERROR: Could not find secret \"radix-snyk-integration-token\" in keyvault. Quitting.." >&2
     exit 1
 fi
 
 # Create new dockercfg.json file to provide access to ACR.
 test -f "dockercfg.json" && rm "dockercfg.json"
 if [[ $(kubectl get secret radix-docker 2>&1) == *"Error"* ]]; then
-    echo "Error: Could not find secret \"radix-docker\" in cluster. Quitting.."
+    echo "ERROR: Could not find secret \"radix-docker\" in cluster. Quitting.." >&2
     exit 1
 else
     echo $(kubectl get secret radix-docker -ojsonpath='{.data.\.dockerconfigjson}') | base64 -d | jq . >> dockercfg.json
@@ -207,7 +207,7 @@ echo "Install secret \"snyk-helm-secret\" in cluster..."
 
 SNYK_ORGANIZATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-organization-token 2>/dev/null | jq -r .value)"
 if [[ -z $SNYK_ORGANIZATION_ID ]]; then
-    echo "Error: Could not find secret \"radix-snyk-organization-token\" in keyvault. Quitting.."
+    echo "ERROR: Could not find secret \"radix-snyk-organization-token\" in keyvault. Quitting.." >&2
     exit 1
 fi
 
