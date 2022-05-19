@@ -43,15 +43,15 @@ echo "Start bootstrap aks instance... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
 }
 printf "Done.\n"
@@ -63,23 +63,23 @@ printf "Done.\n"
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
 if [[ -z "$MIGRATION_STRATEGY" ]]; then
-    echo "Please provide MIGRATION_STRATEGY" >&2
+    echo "ERROR: Please provide MIGRATION_STRATEGY" >&2
     exit 1
 fi
 
@@ -92,7 +92,7 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     CREDENTIALS_FILE=""
 else
     if [[ ! -f "$CREDENTIALS_FILE" ]]; then
-        echo "CREDENTIALS_FILE=\"${CREDENTIALS_FILE}\" is not a valid file path." >&2
+        echo "ERROR: CREDENTIALS_FILE=\"${CREDENTIALS_FILE}\" is not a valid file path." >&2
         exit 1
     fi
 fi
@@ -254,15 +254,15 @@ printf "Done.\n"
 ### Verify credentials
 ###
 if [ -z "$ID_AKS" ]; then
-    echo "ERROR: Managed identity \"$MI_AKS\" does not exist. Exiting..."
+    echo "ERROR: Managed identity \"$MI_AKS\" does not exist. Exiting..." >&2
     exit 1
 fi
 if [ -z "$ID_AKSKUBELET" ]; then
-    echo "ERROR: Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..."
+    echo "ERROR: Managed identity \"$ID_AKSKUBELET\" does not exist. Exiting..." >&2
     exit 1
 fi
 if [ -z "$ACR_ID" ]; then
-    echo "ERROR: Azure Container Registry \"$ACR_ID\" does not exist. Exiting..."
+    echo "ERROR: Azure Container Registry \"$ACR_ID\" does not exist. Exiting..." >&2
     exit 1
 fi
 #######################################################################################
@@ -284,11 +284,11 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     AVAILABLE_INGRESS_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INGRESS_ID'" and .ipConfiguration==null)'  | jq -r '.name')"
 
     if [[ "$AVAILABLE_IPS" == "[]" || "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
-        echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_OUTBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..."
+        echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_OUTBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
         printf "Tip: You might need to do a teardown of an early clusters first.\n"
         exit 1
     elif [[ -z $AVAILABLE_IPS ]]; then
-        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..."
+        echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..." >&2
         exit 1
     else
         echo ""
@@ -364,7 +364,7 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
         local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone --query "id" --output tsv 2>&1)"
         local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $VNET_DNS_LINK -z $dns_zone --query "type" --output tsv 2>&1)"
         if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
-            echo "ERROR: Private DNS Zone ${dns_zone} not found."
+            echo "ERROR: Private DNS Zone ${dns_zone} not found." >&2
         elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
             echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
             # throws error if run twice

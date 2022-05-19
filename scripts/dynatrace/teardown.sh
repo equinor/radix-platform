@@ -48,7 +48,7 @@ echo "Start teardown of Dynatrace..."
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
+hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 
@@ -60,18 +60,18 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 else
     # Set cluster name variable for dynatrace integration
@@ -130,12 +130,12 @@ echo ""
 # Get secrets: api-url and tenant-token from keyvault
 API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
 if [[ -z "$API_URL" ]]; then
-    echo "Please provide API_URL" >&2
+    echo "ERROR: Please provide API_URL" >&2
     exit 1
 fi
 API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
 if [[ -z "$API_TOKEN" ]]; then
-    echo "Please provide API_TOKEN" >&2
+    echo "ERROR: Please provide API_TOKEN" >&2
     exit 1
 fi
 
@@ -145,7 +145,7 @@ getClusterId() {
     if echo "$response" | grep -Fq "\"name\":\"${CLUSTER_NAME}\""; then
         CREDENTIAL_ID="$(echo $response | jq '.values' | jq -r '.[] | select(.name=="'$CLUSTER_NAME'").id')"
     else
-        echo "Error: Credential with cluster name \"${CLUSTER_NAME}\" not found in Dynatrace."
+        echo "ERROR: Credential with cluster name \"${CLUSTER_NAME}\" not found in Dynatrace." >&2
         exit 1
     fi
 }
@@ -156,7 +156,7 @@ deleteK8sConfiguration() {
     if [[ -z "$response" ]]; then
         echo "Successfully deleted Kubernetes Configuration."
     else
-        echo "Error deleting Kubernetes cluster from Dynatrace: $response"
+        echo "Error deleting Kubernetes cluster from Dynatrace: $response" >&2
     fi
 }
 

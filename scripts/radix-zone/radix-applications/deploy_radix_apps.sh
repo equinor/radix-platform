@@ -257,7 +257,7 @@ function create_github_webhook_in_repository() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault."; return; }
+        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
 
     printf " Done.\n"
 
@@ -302,7 +302,7 @@ function create_radix_application() {
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --file "${secret_file}" \
             --output none \
-            --only-show-errors || { echo "ERROR: Could not get secret from keyvault."; return; }
+            --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
 
         printf " Done.\n"
 
@@ -368,7 +368,7 @@ function create_build_deploy_job() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault."; return; }
+        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
 
     printf " Done.\n"
 
@@ -406,18 +406,18 @@ assert_dep az helm jq sha256sum base64 python3 date awk
 # Required inputs
 
 if [ -z "$RADIX_ZONE_ENV" ]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [ ! -f "$RADIX_ZONE_ENV" ]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
@@ -487,7 +487,7 @@ echo ""
 
 # Connect kubectl so we have the correct context
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
-[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin"; exit 1; }
+[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2; exit 1; }
 
 # Wait for operator to be deployed from flux
 echo ""

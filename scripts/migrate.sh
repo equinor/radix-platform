@@ -35,35 +35,35 @@ normal=$(tput sgr0)
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
 }
 hash envsubst 2>/dev/null || {
-    echo -e "\nError: envsubst not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
     exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
 hash velero 2>/dev/null || {
-    echo -e "\nError: velero not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: velero not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 hash htpasswd 2>/dev/null || {
-  echo -e "\nError: htpasswd not found in PATH. Exiting..."
+  echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
   exit 1
 }
 hash flux 2>/dev/null || {
-    echo -e "\nError: flux not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
     exit 1
 }
 printf "Done.\n"
@@ -75,23 +75,23 @@ printf "Done.\n"
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
-    echo "Please provide SOURCE_CLUSTER" >&2
+    echo "ERROR: Please provide SOURCE_CLUSTER" >&2
     exit 1
 fi
 
 if [[ -z "$DEST_CLUSTER" ]]; then
-    echo "Please provide DEST_CLUSTER" >&2
+    echo "ERROR: Please provide DEST_CLUSTER" >&2
     exit 1
 fi
 
@@ -116,73 +116,73 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOOTSTRAP_AKS_SCRIPT="$WORKDIR_PATH/aks/bootstrap.sh"
 if ! [[ -x "$BOOTSTRAP_AKS_SCRIPT" ]]; then
     # Print to stderror
-    echo "The bootstrap script is not found or it is not executable in path $BOOTSTRAP_AKS_SCRIPT" >&2
+    echo "ERROR: The bootstrap script is not found or it is not executable in path $BOOTSTRAP_AKS_SCRIPT" >&2
 fi
 
 INSTALL_BASE_COMPONENTS_SCRIPT="$WORKDIR_PATH/install_base_components.sh"
 if ! [[ -x "$INSTALL_BASE_COMPONENTS_SCRIPT" ]]; then
     # Print to stderror
-    echo "The install base components script is not found or it is not executable in path $INSTALL_BASE_COMPONENTS_SCRIPT" >&2
+    echo "ERROR: The install base components script is not found or it is not executable in path $INSTALL_BASE_COMPONENTS_SCRIPT" >&2
 fi
 
 CERT_MANAGER_CONFIGURATION_SCRIPT="$WORKDIR_PATH/cert-manager/configure.sh"
 if ! [[ -x "$CERT_MANAGER_CONFIGURATION_SCRIPT" ]]; then
     # Print to stderror
-    echo "The cert-manager configuration script is not found or it is not executable in path $CERT_MANAGER_CONFIGURATION_SCRIPT" >&2
+    echo "ERROR: The cert-manager configuration script is not found or it is not executable in path $CERT_MANAGER_CONFIGURATION_SCRIPT" >&2
 fi
 
 PROMETHEUS_CONFIGURATION_SCRIPT="$WORKDIR_PATH/prometheus-operator/configure.sh"
 if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
     # Print to stderror
-    echo "The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
+    echo "ERROR: The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
 fi
 
 DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
 if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
     # Print to stderror
-    echo "The dynatrace integration script is not found or it is not executable in path $DYNATRACE_INTEGRATION_SCRIPT" >&2
+    echo "ERROR: The dynatrace integration script is not found or it is not executable in path $DYNATRACE_INTEGRATION_SCRIPT" >&2
 fi
 
 DYNATRACE_DASHBOARD_SCRIPT="$WORKDIR_PATH/dynatrace/dashboard/create-dashboard.sh"
 if ! [[ -x "$DYNATRACE_DASHBOARD_SCRIPT" ]]; then
     # Print to stderror
-    echo "The dynatrace dashboard script is not found or it is not executable in path $DYNATRACE_DASHBOARD_SCRIPT" >&2
+    echo "ERROR: The dynatrace dashboard script is not found or it is not executable in path $DYNATRACE_DASHBOARD_SCRIPT" >&2
 fi
 
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
-    echo "The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
+    echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
 ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/add_reply_url_for_cluster.sh"
 if ! [[ -x "$ADD_REPLY_URL_SCRIPT" ]]; then
   # Print to stderror
-  echo "The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2
+  echo "ERROR: The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2
 fi
 
 WEB_CONSOLE_EGRESS_IP_SCRIPT="$WORKDIR_PATH/update_ips_env_vars_for_console.sh"
 if ! [[ -x "$WEB_CONSOLE_EGRESS_IP_SCRIPT" ]]; then
   # Print to stderror
-  echo "The web console egress ip script is not found or it is not executable in path $WEB_CONSOLE_EGRESS_IP_SCRIPT" >&2
+  echo "ERROR: The web console egress ip script is not found or it is not executable in path $WEB_CONSOLE_EGRESS_IP_SCRIPT" >&2
 fi
 
 MOVE_CUSTOM_INGRESSES_SCRIPT="$WORKDIR_PATH/move_custom_ingresses.sh"
 if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
   # Print to stderror
-  echo "The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
+  echo "ERROR: The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
 fi
 
 UPDATE_AUTH_PROXY_SECRET_SCRIPT="$WORKDIR_PATH/update_auth_proxy_secret_for_console.sh"
 if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
   # Print to stderror
-  echo "The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
+  echo "ERROR: The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
 fi
 
 UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/update_redis_cache_for_console.sh"
 if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
   # Print to stderror
-  echo "The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
+  echo "ERROR: The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
 fi
 
 #######################################################################################
@@ -259,7 +259,7 @@ echo ""
 echo "Verifying source cluster existence..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
     # Send message to stderr
-    echo -e "Error: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
+    echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
     exit 0
 fi
 
@@ -412,7 +412,7 @@ az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$S
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -580,8 +580,8 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
-    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIP (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
-    source $MOVE_CUSTOM_INGRESSES_SCRIP
+    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIPT (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
+    source $MOVE_CUSTOM_INGRESSES_SCRIPT
 else
     echo ""
     echo "Chicken!"

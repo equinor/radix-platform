@@ -19,11 +19,11 @@ function checkPermissions(){
 
     # Exist if user do not have required roles
     if  [ -z "$hasContributor" ] && [ -z "$hasOwner" ]; then
-        echo "The user \"${username}\" require one of these roles"
-        echo "- \"Contributor\""
-        echo "- \"Owner\""
-        echo "in the subscription \"$subName\" to perform this operation."
-        echo "Exiting script."
+        echo "ERROR: The user \"${username}\" require one of these roles" 2>&1
+        echo "- \"Contributor\"" 2>&1
+        echo "- \"Owner\"" 2>&1
+        echo "in the subscription \"$subName\" to perform this operation." 2>&1
+        echo "Exiting script." 2>&1
         exit 1
     fi
 }
