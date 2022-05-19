@@ -22,7 +22,13 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-01 DEST_CLUSTER=weekly-02 ./migrate.sh
+
+### DISASTER RECOVERY
+###
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c AZ_LOCATION="northeurope" ./migrate.sh
+
+
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -190,7 +196,7 @@ fi
 ###
 
 while true; do
-    read -p "Are you migrating active to active or active to test? (aa/at) " yn
+    read -r -e -p "Are you migrating active to active or active to test? (aa/at) " -i "at" yn
     case $yn in
         "aa" ) MIGRATION_STRATEGY="aa"; break;;
         "at" ) MIGRATION_STRATEGY="at"; break;;
@@ -225,6 +231,7 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  SOURCE_CLUSTER                   : $SOURCE_CLUSTER"
+echo -e "   -  BACKUP_NAME                      : $BACKUP_NAME"
 echo -e "   -  DEST_CLUSTER                     : $DEST_CLUSTER"
 echo -e ""
 echo -e "   > WHO:"
@@ -254,13 +261,15 @@ echo ""
 ### Connect kubectl
 ###
 
+if [[ ${BACKUP_NAME} == "migration-"* ]];then
 # Exit if source cluster does not exist
-echo ""
-echo "Verifying source cluster existence..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
-    # Send message to stderr
-    echo -e "Error: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
-    exit 0
+    echo ""
+    echo "Verifying source cluster existence..."
+    if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
+        # Send message to stderr
+        echo -e "Error: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
+        exit 0
+    fi
 fi
 
 # Give option to create dest cluster if it does not exist
@@ -485,6 +494,7 @@ fi
 echo ""
 printf "Restore into destination cluster...\n"
 printf "${grn}► Execute $RESTORE_APPS_SCRIPT${normal}\n"
+
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
@@ -580,8 +590,8 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
-    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIP (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
-    source $MOVE_CUSTOM_INGRESSES_SCRIP
+    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIPT (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
+    source $MOVE_CUSTOM_INGRESSES_SCRIPT
 else
     echo ""
     echo "Chicken!"

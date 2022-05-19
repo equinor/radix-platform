@@ -156,8 +156,6 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
     VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
     VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
-elif [[ "$OMNIA_ZONE" = "classic" ]]; then
-    continue
 else
    echo "Unknown parameter"
 fi
