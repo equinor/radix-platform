@@ -340,12 +340,12 @@ flux bootstrap git \
     --silent
 if [[ "$?" != "0" ]]
 then
+  rm "$FLUX_PRIVATE_KEY_NAME"
   printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+  exit 1
 else
   echo "done."
 fi
-
-rm "$FLUX_PRIVATE_KEY_NAME"
 
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."

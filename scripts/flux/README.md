@@ -40,7 +40,7 @@ Teardown will
 
 ## Issues bootstrapping Flux
 
-If you get an error saying `unable to clone 'ssh://git@github.com/equinor/radix-flux', ERROR: ssh: handshake failed: knownhosts: key mismatch` this means that the file `~/.ssh/known_hosts` is missing a `ecdsa-sha2-nistp256` key for `github.com`
+If you get an error saying `unable to clone 'ssh://git@github.com/equinor/radix-flux', error: ssh: handshake failed: knownhosts: key mismatch` this means that the file `~/.ssh/known_hosts` is missing a `ecdsa-sha2-nistp256` key for `github.com`
 
 Run the following commands to fix this issue:
 1. `ssh-keyscan -t ecdsa github.com >> ~/.ssh/known_hosts` adds the new github.com key
