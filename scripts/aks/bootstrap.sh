@@ -116,8 +116,8 @@ fi
 
 function getAddressSpaceForVNET() {
     
-    local HUB_PEERED_VNET_JSON="$(az network vnet peering list -g $AZ_RESOURCE_GROUP_VNET_HUB --vnet-name $AZ_VNET_HUB_NAME)"
-    local HUB_PEERED_VNET_EXISTING="$(echo $HUB_PEERED_VNET_JSON | jq --arg HUB_PEERING_NAME "${HUB_PEERING_NAME}" '.[] | select(.name==$HUB_PEERING_NAME)' | jq -r '.remoteAddressSpace.addressPrefixes[0]')"
+    local HUB_PEERED_VNET_JSON="$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_VNET_HUB" --vnet-name "$AZ_VNET_HUB_NAME")"
+    local HUB_PEERED_VNET_EXISTING="$(echo "$HUB_PEERED_VNET_JSON" | jq --arg HUB_PEERING_NAME "${HUB_PEERING_NAME}" '.[] | select(.name==$HUB_PEERING_NAME)' | jq -r '.remoteAddressSpace.addressPrefixes[0]')"
     if [[ ! -z "$HUB_PEERED_VNET_EXISTING" ]]; then
         # vnet peering exist from before - use same IP
         local withoutCIDR=${HUB_PEERED_VNET_EXISTING%"/16"}
@@ -125,7 +125,7 @@ function getAddressSpaceForVNET() {
         return
     fi
 
-    local HUB_PEERED_VNET_IP="$(echo $HUB_PEERED_VNET_JSON | jq '.[].remoteAddressSpace.addressPrefixes')"
+    local HUB_PEERED_VNET_IP="$(echo "$HUB_PEERED_VNET_JSON" | jq '.[].remoteAddressSpace.addressPrefixes')"
 
     for i in {3..255}; do
         # 10.0.0.0/16 is reserved by HUB, 10.2.0.0/16 is reserved for AKS owned services (e.g. internal k8s DNS service).  
@@ -156,8 +156,6 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
     VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
     VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
-elif [[ "$OMNIA_ZONE" = "classic" ]]; then
-    continue
 else
    echo "Unknown parameter"
 fi
@@ -206,7 +204,7 @@ echo -e "   -  HUB_VNET_NAME                    : $AZ_VNET_HUB_NAME"
 echo -e "   -  OUTBOUND_IP_COUNT                : $OUTBOUND_IP_COUNT"
 echo -e "   -  K8S_API_IP_WHITELIST             : $K8S_API_IP_WHITELIST"
 echo -e ""
-echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf "$AZ_RESOURCE_KEYVAULT"; else printf "$CREDENTIALS_FILE"; fi)"
+echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]]; then printf "%s" "$AZ_RESOURCE_KEYVAULT"; else printf "%s" "$CREDENTIALS_FILE"; fi)"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -413,8 +411,6 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     wait
 
     echo "Bootstrap of advanced network done."
-elif [[ "$OMNIA_ZONE" = "classic" ]]; then
-    continue
 else
    echo "Unknown parameter"
 fi
@@ -523,8 +519,8 @@ echo "Done."
 ### Lock cluster and network resources
 ###
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    az lock create --lock-type CanNotDelete --name "${CLUSTER_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME  &>/dev/null
-    az lock create --lock-type CanNotDelete --name "${VNET_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.Network/virtualNetworks --resource $VNET_NAME  &>/dev/null
+    az lock create --lock-type CanNotDelete --name "${CLUSTER_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.ContainerService/managedClusters --resource "$CLUSTER_NAME"  &>/dev/null
+    az lock create --lock-type CanNotDelete --name "${VNET_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.Network/virtualNetworks --resource "$VNET_NAME"  &>/dev/null
 fi
 
 #######################################################################################
