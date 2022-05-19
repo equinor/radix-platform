@@ -21,13 +21,11 @@
 #######################################################################################
 ### HOW TO USE
 ###
-
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-01 DEST_CLUSTER=weekly-02 ./migrate.sh
 
 ### DISASTER RECOVERY
 ###
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c AZ_LOCATION="northeurope" ./migrate.sh
-
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
 
 
 #######################################################################################
