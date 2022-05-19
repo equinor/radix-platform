@@ -23,11 +23,11 @@ echo "Updating secret for the radix network policy canary"
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
