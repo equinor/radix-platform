@@ -48,10 +48,10 @@ echo "Start moving custom ingresses..."
 
 echo ""
 printf "Check for necessary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nERROR: helm not found in PATH. Exiting..." >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting..." >&2;  exit 1; }
+hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
+hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting...";  exit 1; }
 printf "All is good."
 echo ""
 
@@ -62,18 +62,18 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+    echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$DEST_CLUSTER" ]]; then
-    echo "ERROR: Please provide DEST_CLUSTER" >&2
+    echo "Please provide DEST_CLUSTER" >&2
     exit 1
 fi
 
@@ -82,7 +82,7 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
-    echo "ERROR: SOURCE_CLUSTER is not defined" >&2
+    echo "SOURCE_CLUSTER is not defined" >&2
     if [[ $USER_PROMPT == true ]]; then
         while true; do
             read -p "Is this intentional? (Y/n) " yn
@@ -93,7 +93,6 @@ if [[ -z "$SOURCE_CLUSTER" ]]; then
             esac
         done
     fi
-    
 fi
 
 
@@ -106,7 +105,7 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOOTSTRAP_APP_ALIAS_SCRIPT="$WORKDIR_PATH/app_alias/bootstrap.sh"
 if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
     # Print to stderror
-    echo "ERROR: The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
+    echo "The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
 fi
 
 #######################################################################################
@@ -172,8 +171,8 @@ echo ""
 printf "\nConnecting kubectl..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
     # Send message to stderr
-    echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
-    exit 1        
+    echo -e "Error: Cluster \"$DEST_CLUSTER\" not found." >&2
+    exit 1
 fi
 printf "...Done.\n"
 
@@ -182,7 +181,7 @@ printf "...Done.\n"
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n" >&2
+    printf "ERROR: Could not access cluster. Quitting...\n"
     exit 1
 fi
 printf " OK\n"
@@ -192,14 +191,14 @@ printf " OK\n"
 ###
 echo ""
 printf "Enabling monitoring addon in the destination cluster... "
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name $AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE | jq -r .[0].id)
-az aks enable-addons -a monitoring -n $DEST_CLUSTER -g $AZ_RESOURCE_GROUP_CLUSTERS --workspace-resource-id "$WORKSPACE_ID" --no-wait
+WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription ${AZ_SUBSCRIPTION_ID} --query "[].id" --output tsv)
+az aks enable-addons --addons monitoring --name "${DEST_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --workspace-resource-id "${WORKSPACE_ID}" --no-wait
 printf "Done.\n"
 
-if [[ -n $SOURCE_CLUSTER ]]; then
+if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""
     printf "Disabling monitoring addon in the source cluster... "
-    az aks disable-addons -a monitoring -n $SOURCE_CLUSTER -g $AZ_RESOURCE_GROUP_CLUSTERS --no-wait
+    az aks disable-addons --addons monitoring --name "${SOURCE_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --no-wait
     printf "Done.\n"
 
     #######################################################################################
@@ -208,11 +207,11 @@ if [[ -n $SOURCE_CLUSTER ]]; then
 
     echo ""
     printf "Point to source cluster... "
-    az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
+    az aks get-credentials --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${SOURCE_CLUSTER}" \
         --overwrite-existing \
         --admin \
         2>&1 >/dev/null
-    [[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
+    [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}-admin" ]] && exit 1
     printf "Done.\n"
 
     echo ""
@@ -235,7 +234,7 @@ if [[ -n $SOURCE_CLUSTER ]]; then
     ###
     echo ""
     printf "Scale down radix-cicd-canary in $SOURCE_CLUSTER...\n"
-    kubectl scale deployment -n radix-cicd-canary radix-cicd-canary --replicas=0
+    kubectl scale deployment --name radix-cicd-canary radix-cicd-canary --replicas=0
     wait
     printf "Done.\n"
 

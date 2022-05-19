@@ -36,32 +36,32 @@
 ###
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+    echo "Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$PRIVATE_ENDPOINT_NAME" ]]; then
-    echo "ERROR: Please provide PRIVATE_ENDPOINT_NAME" >&2
+    echo "Please provide PRIVATE_ENDPOINT_NAME" >&2
     exit 1
 fi
 
 if [[ -z "$TARGET_RESOURCE_RESOURCE_ID" ]]; then
-    echo "ERROR: Please provide TARGET_RESOURCE_RESOURCE_ID" >&2
+    echo "Please provide TARGET_RESOURCE_RESOURCE_ID" >&2
     exit 1
 elif [[ ${TARGET_RESOURCE_RESOURCE_ID:0:15} != "/subscriptions/" ]]; then
-    echo "ERROR: Resource ID is invalid. Quitting..." >&2
+    echo "Error: Resource ID is invalid. Quitting..."
     exit 1
 fi
 
 if [[ -z ${TARGET_SUBRESOURCE} && -z $(echo ${TARGET_RESOURCE_RESOURCE_ID} | grep "/providers/Microsoft.Network/privateLinkServices") ]]; then
-    echo "ERROR: A target subresource is required for any target resources other than Private Link Services: https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource." >&2
-    echo "ERROR: Quitting..." >&2
+    echo "A target subresource is required for any target resources other than Private Link Services: https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource."
+    echo "Quitting..."
     exit 1
 fi
 
@@ -105,7 +105,7 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  PRIVATE_ENDPOINT_NAME            : $PRIVATE_ENDPOINT_NAME"
 echo -e "   -  TARGET_RESOURCE_RESOURCE_ID      : $TARGET_RESOURCE_RESOURCE_ID"
-echo -e "   -  TARGET_SUBRESOURCE               : $TARGET_SUBRESOURCE"
+echo -e "   -  TARGET_SUBRESOURCE               : ${TARGET_SUBRESOURCE:-empty (Private Link service)}"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -131,35 +131,34 @@ fi
 ###
 
 PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
-    --name ${PRIVATE_ENDPOINT_NAME} \
-    --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
+    --name "${PRIVATE_ENDPOINT_NAME}" \
+    --resource-group "${AZ_RESOURCE_GROUP_VNET_HUB}" \
     --query id \
     --output tsv \
     2>/dev/null)
 
 if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
     echo "Creating private endpoint..."
-    CREATE_PRIVATE_ENDPOINT=$(az network private-endpoint create \
-        --name ${PRIVATE_ENDPOINT_NAME} \
-        --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
-        --connection-name ${PRIVATE_ENDPOINT_NAME} \
-        --private-connection-resource-id ${TARGET_RESOURCE_RESOURCE_ID} \
-        --group-id ${TARGET_SUBRESOURCE} \
-        --subnet ${AZ_VNET_HUB_SUBNET_NAME} \
-        --vnet-name ${AZ_VNET_HUB_NAME} \
-        --subscription ${AZ_SUBSCRIPTION_ID} \
-        --location ${AZ_RADIX_ZONE_LOCATION} \
-        --manual-request true \
-        --request-message "Radix Private Link")
-
-    if [[ $(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .provisioningState 2>/dev/null) != "Succeeded" ]]; then
-        echo "ERROR: Something went wrong when creating Private Endpoint:" >&2
-        echo ${CREATE_PRIVATE_ENDPOINT} >&2
-        exit 1
-    else
-        echo "Done."
-        PRIVATE_ENDPOINT_ID=$(echo ${CREATE_PRIVATE_ENDPOINT} | jq -r .id 2>/dev/null)
+    if [[ -n "${TARGET_SUBRESOURCE}" ]]; then
+        # Argument can not be empty.
+        GROUP_ID="--group-id "${TARGET_SUBRESOURCE}""
     fi
+
+    PRIVATE_ENDPOINT_ID=$(az network private-endpoint create \
+        --name "${PRIVATE_ENDPOINT_NAME}" \
+        --resource-group "${AZ_RESOURCE_GROUP_VNET_HUB}" \
+        --connection-name "${PRIVATE_ENDPOINT_NAME}" \
+        --private-connection-resource-id "${TARGET_RESOURCE_RESOURCE_ID}" \
+        ${GROUP_ID} \
+        --subnet "${AZ_VNET_HUB_SUBNET_NAME}" \
+        --vnet-name "${AZ_VNET_HUB_NAME}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --manual-request true \
+        --request-message "Radix Private Link" \
+        --query id \
+        --output tsv \
+        --only-show-errors) || { echo "ERROR: Something went wrong when creating Private Endpoint."; exit 1; }
 else
     echo "Private Endpoint already exists."
 fi
@@ -189,7 +188,7 @@ if [[ -n ${PRIVATE_ENDPOINT_NIC_ID} ]]; then
                 --query name \
                 --output tsv)
             if [[ -z ${PRIVATE_DNS_RECORD_NAME} ]]; then
-                echo "ERROR: Could not create Private DNS Record. Quitting..." >&2
+                echo "ERROR: Could not create Private DNS Record. Quitting..."
                 exit 1
             else
                 echo "Created Private DNS Record with name ${PRIVATE_DNS_RECORD_NAME}."
@@ -198,10 +197,10 @@ if [[ -n ${PRIVATE_ENDPOINT_NIC_ID} ]]; then
             echo "Private DNS Record for the Private Link ${PRIVATE_ENDPOINT_NAME} already exists: ${PRIVATE_DNS_RECORD_NAME}."
         fi
     else
-        echo "ERROR: Could not get Private IP of NIC ${PRIVATE_ENDPOINT_NIC_ID}." >&2
+        echo "Could not get Private IP of NIC ${PRIVATE_ENDPOINT_NIC_ID}."
     fi
 else
-    echo "ERROR: Could not get NIC ID of Private Endpoint ${PRIVATE_ENDPOINT_ID}." >&2
+    echo "Could not get NIC ID of Private Endpoint ${PRIVATE_ENDPOINT_ID}."
 fi
 
 #######################################################################################
@@ -210,17 +209,17 @@ fi
 
 # Make sure necessary variables are set.
 if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
-    echo "ERROR: Missing variable PRIVATE_ENDPOINT_ID." >&2
+    echo "Missing varaiable PRIVATE_ENDPOINT_ID."
     exit 1
 fi
 
 if [[ -z ${NIC_PRIVATE_IP} ]]; then
-    echo "ERROR: Missing variable NIC_PRIVATE_IP." >&2
+    echo "Missing varaiable NIC_PRIVATE_IP."
     exit 1
 fi
 
 if [[ -z ${PRIVATE_DNS_RECORD_NAME} ]]; then
-    echo "ERROR: Missing variable PRIVATE_DNS_RECORD_NAME." >&2
+    echo "Missing varaiable PRIVATE_DNS_RECORD_NAME."
     exit 1
 fi
 
