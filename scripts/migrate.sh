@@ -283,7 +283,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     printf "${grn}► Execute $BOOTSTRAP_AKS_SCRIPT${normal}\n"
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
     wait # wait for subshell to finish
-    
+
     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
 fi
 printf "Done creating cluster."
@@ -304,8 +304,8 @@ fi
 if [[ $install_base_components == true ]]; then
     echo ""
     echo "Installing base components..."
-    printf "${grn}► Execute $INSTALL_BASE_COMPONENTS_SCRIPT${normal}\n"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$INSTALL_BASE_COMPONENTS_SCRIPT")
+    printf "${grn}► Execute ${INSTALL_BASE_COMPONENTS_SCRIPT}${normal}\n"
+    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="${USER_PROMPT}" source "${INSTALL_BASE_COMPONENTS_SCRIPT}")
     wait # wait for subshell to finish
     printf "Done installing base components."
 fi
