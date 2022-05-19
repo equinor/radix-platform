@@ -62,19 +62,19 @@ echo "Start installing Flux..."
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
 hash flux 2>/dev/null || {
-    echo -e "\nError: flux not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: flux not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -341,11 +341,12 @@ flux bootstrap git \
 if [[ "$?" != "0" ]]
 then
   printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+  rm "$FLUX_PRIVATE_KEY_NAME"
+  exit 1
 else
+  rm "$FLUX_PRIVATE_KEY_NAME"
   echo "done."
 fi
-
-rm "$FLUX_PRIVATE_KEY_NAME"
 
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."

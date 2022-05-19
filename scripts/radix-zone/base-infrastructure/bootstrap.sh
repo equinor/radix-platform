@@ -39,7 +39,7 @@ echo "Start bootstrap of base infrastructure... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { printf "\n\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2> /dev/null || { printf "\n\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
 

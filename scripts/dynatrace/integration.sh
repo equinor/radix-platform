@@ -54,15 +54,15 @@ echo "Start update of Kubernetes credentials in Dynatrace..."
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -117,29 +117,29 @@ CLUSTER_NAME_LENGTH=256
 ENABLE_PROMETHEUS_INTEGRATION="true"
 
 if [ -z "$API_URL" ]; then
-  echo "Error: api-url not set!" >&2
+  echo "ERROR: api-url not set!" >&2
   exit 1
 fi
 
 if [ -z "$API_TOKEN" ]; then
-  echo "Error: api-token not set!" >&2
+  echo "ERROR: api-token not set!" >&2
   exit 1
 fi
 
 K8S_ENDPOINT="$("${CLI}" config view --minify -o jsonpath='{.clusters[0].cluster.server}')"
 if [ -z "$K8S_ENDPOINT" ]; then
-  echo "Error: failed to get kubernetes endpoint!" >&2
+  echo "ERROR: failed to get kubernetes endpoint!" >&2
   exit 1
 fi
 
 if [ -n "$CLUSTER_NAME" ]; then
   if ! echo "$CLUSTER_NAME" | grep -Eq "$CLUSTER_NAME_REGEX"; then
-    echo "Error: cluster name \"$CLUSTER_NAME\" does not match regex: \"$CLUSTER_NAME_REGEX\"" >&2
+    echo "ERROR: cluster name \"$CLUSTER_NAME\" does not match regex: \"$CLUSTER_NAME_REGEX\"" >&2
     exit 1
   fi
 
   if [ "${#CLUSTER_NAME}" -ge $CLUSTER_NAME_LENGTH ]; then
-    echo "Error: cluster name too long: ${#CLUSTER_NAME} >= $CLUSTER_NAME_LENGTH" >&2
+    echo "ERROR: cluster name too long: ${#CLUSTER_NAME} >= $CLUSTER_NAME_LENGTH" >&2
     exit 1
   fi
   CONNECTION_NAME="$CLUSTER_NAME"
@@ -153,13 +153,13 @@ addK8sConfiguration() {
 
   K8S_SECRET_NAME="$(for token in $("${CLI}" get sa dynatrace-kubernetes-monitoring -o jsonpath='{.secrets[*].name}' -n dynatrace); do echo "$token"; done | grep -F token)"
   if [ -z "$K8S_SECRET_NAME" ]; then
-    echo "Error: failed to get kubernetes-monitoring secret!" >&2
+    echo "ERROR: failed to get kubernetes-monitoring secret!" >&2
     exit 1
   fi
 
   K8S_BEARER="$("${CLI}" get secret "${K8S_SECRET_NAME}" -o jsonpath='{.data.token}' -n dynatrace | base64 --decode)"
   if [ -z "$K8S_BEARER" ]; then
-    echo "Error: failed to get bearer token!" >&2
+    echo "ERROR: failed to get bearer token!" >&2
     exit 1
   fi
 
@@ -209,12 +209,12 @@ checkForExistingCluster() {
 
   # To check the exact name we need to include the `\` at the end
   if echo "$response" | grep -Fq "\"name\":\"${CONNECTION_NAME}\""; then
-    echo "Error: Cluster already exists: ${CONNECTION_NAME}" >&2
+    echo "ERROR: Cluster already exists: ${CONNECTION_NAME}" >&2
     exit 1
   fi
   # To check the endpoint URL we must not include the `\` at the end
   if echo "$response" | grep -Fq "\"endpointUrl\":\"${K8S_ENDPOINT}"; then
-    echo "Error: Cluster endpoint already exists: ${K8S_ENDPOINT}" >&2
+    echo "ERROR: Cluster endpoint already exists: ${K8S_ENDPOINT}" >&2
     exit 1
   fi
 }
@@ -225,22 +225,22 @@ checkTokenScopes() {
   responseAPI=$(apiRequest "POST" "/v1/tokens/lookup" "${jsonAPI}")
 
   if echo "$responseAPI" | grep -Fq "Authentication failed"; then
-    echo "Error: API token authentication failed!" >&2
+    echo "ERROR: API token authentication failed!" >&2
     exit 1
   fi
 
   if ! echo "$responseAPI" | grep -Fq "WriteConfig"; then
-    echo "Error: API token does not have config write permission!" >&2
+    echo "ERROR: API token does not have config write permission!" >&2
     exit 1
   fi
 
   if ! echo "$responseAPI" | grep -Fq "ReadConfig"; then
-    echo "Error: API token does not have config read permission!" >&2
+    echo "ERROR: API token does not have config read permission!" >&2
     exit 1
   fi
 
   if echo "$responseAPI" | grep -Fq '"revoked": true'; then
-    echo "Error: API token has been revoked!" >&2
+    echo "ERROR: API token has been revoked!" >&2
     exit 1
   fi
 }

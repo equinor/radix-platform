@@ -49,19 +49,19 @@ echo "Start bootstrap of snyk-monitor... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -179,14 +179,14 @@ kubectl create namespace snyk-monitor \
 
 SNYK_INTEGRATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-integration-token 2>/dev/null | jq -r .value)"
 if [[ -z $SNYK_INTEGRATION_ID ]]; then
-    echo "Error: Could not find secret \"radix-snyk-integration-token\" in keyvault. Quitting.." >&2
+    echo "ERROR: Could not find secret \"radix-snyk-integration-token\" in keyvault. Quitting.." >&2
     exit 1
 fi
 
 # Create new dockercfg.json file to provide access to ACR.
 test -f "dockercfg.json" && rm "dockercfg.json"
 if [[ $(kubectl get secret radix-docker 2>&1) == *"Error"* ]]; then
-    echo "Error: Could not find secret \"radix-docker\" in cluster. Quitting.." >&2
+    echo "ERROR: Could not find secret \"radix-docker\" in cluster. Quitting.." >&2
     exit 1
 else
     echo $(kubectl get secret radix-docker -ojsonpath='{.data.\.dockerconfigjson}') | base64 -d | jq . >> dockercfg.json
@@ -207,7 +207,7 @@ echo "Install secret \"snyk-helm-secret\" in cluster..."
 
 SNYK_ORGANIZATION_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name radix-snyk-organization-token 2>/dev/null | jq -r .value)"
 if [[ -z $SNYK_ORGANIZATION_ID ]]; then
-    echo "Error: Could not find secret \"radix-snyk-organization-token\" in keyvault. Quitting.." >&2
+    echo "ERROR: Could not find secret \"radix-snyk-organization-token\" in keyvault. Quitting.." >&2
     exit 1
 fi
 

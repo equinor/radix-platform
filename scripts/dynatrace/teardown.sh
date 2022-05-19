@@ -48,7 +48,7 @@ echo "Start teardown of Dynatrace..."
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
+hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 
@@ -145,7 +145,7 @@ getClusterId() {
     if echo "$response" | grep -Fq "\"name\":\"${CLUSTER_NAME}\""; then
         CREDENTIAL_ID="$(echo $response | jq '.values' | jq -r '.[] | select(.name=="'$CLUSTER_NAME'").id')"
     else
-        echo "Error: Credential with cluster name \"${CLUSTER_NAME}\" not found in Dynatrace." >&2
+        echo "ERROR: Credential with cluster name \"${CLUSTER_NAME}\" not found in Dynatrace." >&2
         exit 1
     fi
 }

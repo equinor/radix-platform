@@ -35,35 +35,35 @@ normal=$(tput sgr0)
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
 hash kubectl 2>/dev/null || {
-    echo -e "\nError: kubectl not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
 }
 hash envsubst 2>/dev/null || {
-    echo -e "\nError: envsubst not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
     exit 1
 }
 hash helm 2>/dev/null || {
-    echo -e "\nError: helm not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
 hash velero 2>/dev/null || {
-    echo -e "\nError: velero not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: velero not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 hash htpasswd 2>/dev/null || {
-  echo -e "\nError: htpasswd not found in PATH. Exiting..." >&2
+  echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
   exit 1
 }
 hash flux 2>/dev/null || {
-    echo -e "\nError: flux not found in PATH. Exiting... " >&2
+    echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
     exit 1
 }
 printf "Done.\n"
@@ -259,7 +259,7 @@ echo ""
 echo "Verifying source cluster existence..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
     # Send message to stderr
-    echo -e "Error: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
+    echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
     exit 0
 fi
 
@@ -580,8 +580,8 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
-    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIP (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
-    source $MOVE_CUSTOM_INGRESSES_SCRIP
+    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIPT (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
+    source $MOVE_CUSTOM_INGRESSES_SCRIPT
 else
     echo ""
     echo "Chicken!"
