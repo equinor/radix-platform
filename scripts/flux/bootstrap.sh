@@ -340,10 +340,11 @@ flux bootstrap git \
     --silent
 if [[ "$?" != "0" ]]
 then
-  rm "$FLUX_PRIVATE_KEY_NAME"
   printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+  rm "$FLUX_PRIVATE_KEY_NAME"
   exit 1
 else
+  rm "$FLUX_PRIVATE_KEY_NAME"
   echo "done."
 fi
 
