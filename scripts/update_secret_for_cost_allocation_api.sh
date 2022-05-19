@@ -19,11 +19,11 @@ echo "Updating secret for the radix cost allocation API"
 # Validate mandatory input
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
@@ -43,7 +43,7 @@ printf "Done.\n"
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -65,7 +65,7 @@ function updateSecret() {
     COST_ALLOCATION_API_SECRET_NAME_QA=$(kubectl get secret --namespace "radix-cost-allocation-api-qa" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$COST_ALLOCATION_API_SECRET_NAME_QA" ]]; then
-        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa."
+        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa." >&2
     else
         kubectl create secret generic "$COST_ALLOCATION_API_SECRET_NAME_QA" --namespace radix-cost-allocation-api-qa \
             --from-env-file=./radix-cost-allocation-api-secrets.env \
@@ -76,7 +76,7 @@ function updateSecret() {
     COST_ALLOCATION_API_SECRET_NAME_PROD=$(kubectl get secret --namespace "radix-cost-allocation-api-prod" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$COST_ALLOCATION_API_SECRET_NAME_PROD" ]]; then
-        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa."
+        echo "ERROR: Could not get secret for server component in radix-cost-allocation-api-qa." >&2
     else
         kubectl create secret generic "$COST_ALLOCATION_API_SECRET_NAME_PROD" --namespace radix-cost-allocation-api-prod \
             --from-env-file=./radix-cost-allocation-api-secrets.env \

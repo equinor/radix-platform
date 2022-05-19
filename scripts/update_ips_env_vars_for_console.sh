@@ -18,28 +18,28 @@
 # Validate mandatory input
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$WEB_COMPONENT" ]]; then
-    echo "Please provide WEB_COMPONENT."
+    echo "ERROR: Please provide WEB_COMPONENT." >&2
     exit 1
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
-    echo "Please provide RADIX_WEB_CONSOLE_ENV."
+    echo "ERROR: Please provide RADIX_WEB_CONSOLE_ENV." >&2
     exit 1
 fi
 
 if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
-    echo "Please provide OAUTH2_PROXY_SCOPE."
+    echo "ERROR: Please provide OAUTH2_PROXY_SCOPE." >&2
     exit 1
 fi
 
@@ -62,7 +62,7 @@ printf "Done.\n"
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -73,19 +73,19 @@ function updateIpsEnvVars() {
     env_var_configmap_name="${1}"
     ippre_name="${2}"
 
-    IPPRE_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/common/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
+    ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
 
     # Get auth token for Radix API
     printf "Getting auth token for Radix API..."
     API_ACCESS_TOKEN_RESOURCE=$(echo ${OAUTH2_PROXY_SCOPE} | awk '{print $4}' | sed 's/\/.*//')
     if [[ -z ${API_ACCESS_TOKEN_RESOURCE} ]]; then
-        echo "ERROR: Could not get Radix API access token resource."
+        echo "ERROR: Could not get Radix API access token resource." >&2
         return
     fi
 
     API_ACCESS_TOKEN=$(az account get-access-token --resource ${API_ACCESS_TOKEN_RESOURCE} | jq -r '.accessToken')
     if [[ -z ${API_ACCESS_TOKEN} ]]; then
-        echo "ERROR: Could not get Radix API access token."
+        echo "ERROR: Could not get Radix API access token." >&2
         return
     fi
     printf " Done.\n"
@@ -95,7 +95,7 @@ function updateIpsEnvVars() {
     IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
     if [[ "${IP_PREFIXES}" == "[]" ]]; then
-        echo -e "\nERROR: Found no IPs assigned to the cluster."
+        echo -e "\nERROR: Found no IPs assigned to the cluster." >&2
         return
     fi
 
@@ -118,7 +118,7 @@ function updateIpsEnvVars() {
         -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
 
     if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
-        echo -e "\nERROR: API request failed."
+        echo -e "\nERROR: API request failed." >&2
         return
     fi
     printf " Done.\n"

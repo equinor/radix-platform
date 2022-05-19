@@ -39,7 +39,7 @@ echo "Start bootstrap of base infrastructure... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { printf "\n\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2> /dev/null || { printf "\n\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
 
@@ -48,11 +48,11 @@ printf "Done.\n"
 ###
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
@@ -65,21 +65,21 @@ fi
 # Load dependencies
 LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
    exit 1
 else
    source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
 LIB_MANAGED_IDENTITY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_managed_identity.sh"
 if [[ ! -f "$LIB_MANAGED_IDENTITY_PATH" ]]; then
-   echo "The dependency LIB_MANAGED_IDENTITY_PATH=$LIB_MANAGED_IDENTITY_PATH is invalid, the file does not exist." >&2
+   echo "ERROR: The dependency LIB_MANAGED_IDENTITY_PATH=$LIB_MANAGED_IDENTITY_PATH is invalid, the file does not exist." >&2
    exit 1
 else
    source "$LIB_MANAGED_IDENTITY_PATH"
 fi
 AD_APP_MANIFEST_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/manifest-server.json"
 if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
-   echo "The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
+   echo "ERROR: The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
    exit 1
 fi
 
@@ -463,7 +463,7 @@ EOF
         done
         printf "...Done.\n"
     elif [[ ! ${ROLE_DEFINITION[@]} =~ ${AZ_SUBSCRIPTION_ID} ]]; then
-        echo "ERROR: Role definition exists, but subscription ${AZ_SUBSCRIPTION_ID} is not an assignable scope. This script does not update it, so it must be done manually."
+        echo "ERROR: Role definition exists, but subscription ${AZ_SUBSCRIPTION_ID} is not an assignable scope. This script does not update it, so it must be done manually." >&2
         return
     else
         echo "DNS TXT Contributor role definition exists."
