@@ -84,6 +84,8 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Optional inputs
 
 #######################################################################################
@@ -162,4 +164,8 @@ kubectl create secret generic canary-secrets --namespace radix-cicd-canary \
     kubectl apply -f -
 
 rm -f $YAML_SECRET_FILE
+
+echo "Updating radix-networkpolicy-canary HTTP password..."
+(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} ${script_dir_path}/update_secret_for_networkpolicy_canary.sh)
+
 echo "Done."
