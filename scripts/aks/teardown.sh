@@ -243,6 +243,7 @@ wait # wait for subshell to finish
 ### Delete related stuff
 ###
 
+#To be deleted
 echo "Deleting Dynatrace integration..."
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
