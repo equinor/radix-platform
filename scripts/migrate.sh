@@ -148,17 +148,6 @@ if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
     echo "ERROR: The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
 fi
 
-DYNATRACE_INTEGRATION_SCRIPT="$WORKDIR_PATH/dynatrace/integration.sh"
-if ! [[ -x "$DYNATRACE_INTEGRATION_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The dynatrace integration script is not found or it is not executable in path $DYNATRACE_INTEGRATION_SCRIPT" >&2
-fi
-
-DYNATRACE_DASHBOARD_SCRIPT="$WORKDIR_PATH/dynatrace/dashboard/create-dashboard.sh"
-if ! [[ -x "$DYNATRACE_DASHBOARD_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The dynatrace dashboard script is not found or it is not executable in path $DYNATRACE_DASHBOARD_SCRIPT" >&2
-fi
 
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
@@ -382,28 +371,6 @@ echo ""
 printf "${grn}► Execute $ADD_REPLY_URL_SCRIPT${normal}\n"
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
-
-# Wait for dynatrace to be deployed from flux
-echo ""
-echo "Waiting for dynatrace to be deployed by flux-operator so that it can be integrated"
-echo "If this lasts forever, are you migrating to a cluster without base components installed?"
-while [[ "$(kubectl get deploy dynatrace-operator -n dynatrace 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-echo ""
-printf "Update Dynatrace integration...\n"
-printf "${grn}► Execute $DYNATRACE_INTEGRATION_SCRIPT${normal}\n"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_INTEGRATION_SCRIPT")
-wait # wait for subshell to finish
-printf "Done updating Dynatrace integration."
-
-echo ""
-printf "Create Dynatrace dashboard for $DEST_CLUSTER...\n"
-printf "${grn}► Execute $DYNATRACE_DASHBOARD_SCRIPT${normal}\n"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$DYNATRACE_DASHBOARD_SCRIPT")
-wait # wait for subshell to finish
-printf "Done creating Dynatrace dashboard."
 
 # Wait for velero to be deployed from flux
 echo ""

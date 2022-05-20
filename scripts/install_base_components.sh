@@ -292,9 +292,9 @@ wait
 ### Deploy dynatrace
 ###
 
-echo ""
-(./dynatrace/bootstrap.sh)
-wait
+#echo ""
+#(./dynatrace/bootstrap.sh)
+#wait
 
 #######################################################################################
 ### Install prerequisites for Velero
