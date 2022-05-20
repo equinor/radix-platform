@@ -33,7 +33,7 @@
 # Required inputs
 
 if [[ -z "$KEYVAULT_LIST" ]]; then
-    echo "Please provide KEYVAULT_LIST" >&2
+    echo "ERROR: Please provide KEYVAULT_LIST" >&2
     exit 1
 fi
 
@@ -97,7 +97,7 @@ APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NA
 
 UPDATED_PRIVATE_IMAGE_HUB_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --credential-description "rdx-cicd-canary" 2>/dev/null | jq -r '.password') # For some reason, description can not be too long.
 if [[ -z "$UPDATED_PRIVATE_IMAGE_HUB_PASSWORD" ]]; then
-    echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\". Exiting..."
+    echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\". Exiting..." >&2
     exit 1
 fi
 printf " Done.\n"
@@ -115,7 +115,7 @@ SECRET_VALUES=$(az keyvault secret show \
     '.value | fromjson | .privateImageHub.password=$password')
 
 if [[ -z "$SECRET_VALUES" ]]; then
-    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..."
+    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..." >&2
     exit 1
 fi
 printf " Done.\n"
@@ -126,7 +126,7 @@ IFS=","
 for KEYVAULT_NAME in $KEYVAULT_LIST; do
     printf "Updating keyvault \"$KEYVAULT_NAME\"..."
     if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" 2>&1)"" == *"ERROR"* ]]; then
-        echo -e "\nERROR: Could not update secret in keyvault \"$KEYVAULT_NAME\"."
+        echo -e "\nERROR: Could not update secret in keyvault \"$KEYVAULT_NAME\"." >&2
         script_errors=true
         continue
     fi
@@ -135,7 +135,7 @@ done
 IFS=$oldIFS
 
 if [[ $script_errors == true ]]; then
-    echo "Script completed with errors."
+    echo "ERROR: Script completed with errors." >&2
 else
     echo "Script completed successfully."
 fi

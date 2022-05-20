@@ -42,9 +42,9 @@ echo "Start refreshing credentials for radix service principals... "
 ###
 
 printf "Check for neccesary executables for \"$(basename ${BASH_SOURCE[0]})\"... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting... " >&2;  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
 
@@ -55,18 +55,18 @@ printf "Done.\n"
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$SP_NAME" ]]; then
-    echo "Please provide SP_NAME" >&2
+    echo "ERROR: Please provide SP_NAME" >&2
     exit 1
 fi
 
@@ -77,7 +77,7 @@ fi
 # Load dependencies
 LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
    exit 1
 else
    source "$LIB_SERVICE_PRINCIPAL_PATH"

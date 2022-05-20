@@ -22,19 +22,19 @@ echo "Updating replyUrls for AAD app \"${AAD_APP_NAME}\"..."
 
 # Validate mandatory input
 if [[ -z "$AAD_APP_NAME" ]]; then
-    echo "Please provide AAD_APP_NAME."
+    echo "ERROR: Please provide AAD_APP_NAME." >&2
     exit 1
 fi
 if [[ -z "$K8S_NAMESPACE" ]]; then
-    echo "Please provide K8S_NAMESPACE."
+    echo "ERROR: Please provide K8S_NAMESPACE." >&2
     exit 1
 fi
 if [[ -z "$K8S_INGRESS_NAME" ]]; then
-    echo "Please provide K8S_INGRESS_NAME."
+    echo "ERROR: Please provide K8S_INGRESS_NAME." >&2
     exit 1
 fi
 if [[ -z "$REPLY_PATH" ]]; then
-    echo "Please provide REPLY_PATH."
+    echo "ERROR: Please provide REPLY_PATH." >&2
     exit 1
 fi
 
@@ -47,7 +47,7 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -60,7 +60,7 @@ function updateReplyUrls() {
 
     aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
     if [[ -z $aadAppId ]]; then
-        echo "ERROR: Could not find app registration. Quitting..."
+        echo "ERROR: Could not find app registration. Quitting..." >&2
         exit 1
     fi
     # Convert list to string where urls are separated by space

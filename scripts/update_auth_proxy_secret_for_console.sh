@@ -22,28 +22,28 @@ echo "Updating auth-proxy secret for the radix web console"
 # Validate mandatory input
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
-    echo "Please provide AUTH_PROXY_COMPONENT."
+    echo "ERROR: Please provide AUTH_PROXY_COMPONENT." >&2
     exit 1
 fi
 
 if [[ -z "$WEB_CONSOLE_NAMESPACE" ]]; then
-    echo "Please provide WEB_CONSOLE_NAMESPACE."
+    echo "ERROR: Please provide WEB_CONSOLE_NAMESPACE." >&2
     exit 1
 fi
 
 if [[ -z "$AUTH_PROXY_REPLY_PATH" ]]; then
-    echo "Please provide AUTH_PROXY_REPLY_PATH."
+    echo "ERROR: Please provide AUTH_PROXY_REPLY_PATH." >&2
     exit 1
 fi
 
@@ -61,7 +61,7 @@ printf "Done.\n"
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"

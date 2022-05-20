@@ -50,10 +50,10 @@ echo "Start bootstrap radix app aliases... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting...";  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nError: kubectl not found in PATH. Exiting...";  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nError: helm not found in PATH. Exiting...";  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting...";  exit 1; }
+hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
+hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
+hash helm 2> /dev/null  || { echo -e "\nERROR: helm not found in PATH. Exiting..." >&2;  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 
@@ -65,18 +65,18 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "Please provide CLUSTER_NAME" >&2
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
@@ -152,7 +152,7 @@ echo ""
 echo "Connecting kubectl..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
     # Send message to stderr
-    echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 1        
 fi
 

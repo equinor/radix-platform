@@ -33,18 +33,18 @@
 ###
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$PRIVATE_ENDPOINT_NAME" ]]; then
-    echo "Please provide PRIVATE_ENDPOINT_NAME" >&2
+    echo "ERROR: Please provide PRIVATE_ENDPOINT_NAME" >&2
     exit 1
 fi
 

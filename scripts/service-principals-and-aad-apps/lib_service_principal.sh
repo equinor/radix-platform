@@ -14,8 +14,8 @@
 ###
 
 printf "Check for neccesary executables for \"$(basename ${BASH_SOURCE[0]})\"... "
-hash az 2> /dev/null || { echo -e "\nError: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nError: jq not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
 
@@ -46,7 +46,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     template_path="${script_dir_path}/template-credentials.json"
 
     if [ ! -e "$template_path" ]; then
-        echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}"
+        echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}" >&2
         exit 1
     fi
 
@@ -309,7 +309,7 @@ function exit_if_user_does_not_have_required_ad_role(){
         | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query objectId -otsv)'")')"
 
     if [[ -z "$currentUserRoleAssignment" ]]; then
-        echo "You must activate AZ AD role \"Application Developer\" in PIM before using this script. Exiting..."
+        echo "You must activate AZ AD role \"Application Developer\" in PIM before using this script. Exiting..." >&2
         exit 1
     fi
 

@@ -48,11 +48,11 @@
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-    echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
 hash jq 2>/dev/null || {
-    echo -e "\nError: jq not found in PATH. Exiting..."
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -65,23 +65,23 @@ echo ""
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "Please provide RADIX_ZONE_ENV" >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$AZ_RESOURCE_CONTAINER_REGISTRY" ]]; then
-    echo "AZ_RESOURCE_CONTAINER_REGISTRY not defined. Exiting..."
+    echo "ERROR: AZ_RESOURCE_CONTAINER_REGISTRY not defined. Exiting..." >&2
     exit 1
 fi
 
 if [[ -z "$AZ_RESOURCE_ACR_TASK_NAME" ]]; then
-    echo "AZ_RESOURCE_ACR_TASK_NAME not defined. Exiting..."
+    echo "ERROR: AZ_RESOURCE_ACR_TASK_NAME not defined. Exiting..." >&2
     exit 1
 fi
 

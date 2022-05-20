@@ -22,12 +22,13 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
-# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
+# - RADIX_ZONE_ENV              : Path to *.env file
+# - CLUSTER_NAME                : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - OVERRIDE_GIT_BRANCH
-# - OVERRIDE_GIT_DIR
+# - MIGRATION_STRATEGY          : Relevant for ingress-nginx bootstrap. Ex: "aa", "at".
+# - OVERRIDE_GIT_BRANCH         : Relevant for Flux bootstrap. Ex: "testing-branch"
+# - OVERRIDE_GIT_DIR            : Relevant for Flux bootstrap. Ex: "clusters/testing-dir"
 # - USER_PROMPT                 : Is human interaction is required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -36,6 +37,9 @@
 
 # Normal usage
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./install_base_components.sh
+
+# Specify migration strategy.
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" MIGRATION_STRATEGY="aa" ./install_base_components.sh
 
 # Configure a dev cluster to use custom configs
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="please-work-4" FLUX_OVERRIDE_GIT_BRANCH=testing-something FLUX_OVERRIDE_GIT_DIR=clusters/test-overlay ./install_base_components.sh
@@ -54,23 +58,23 @@ echo "Start install of base components... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-  echo -e "\nError: Azure-CLI not found in PATH. Exiting..."
+  echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
   exit 1
 }
 hash kubectl 2>/dev/null || {
-  echo -e "\nError: kubectl not found in PATH. Exiting..."
+  echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
   exit 1
 }
 hash helm 2>/dev/null || {
-  echo -e "\nError: helm not found in PATH. Exiting..."
+  echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
   exit 1
 }
 hash jq 2>/dev/null || {
-  echo -e "\nError: jq not found in PATH. Exiting..."
+  echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
   exit 1
 }
 hash htpasswd 2>/dev/null || {
-  echo -e "\nError: htpasswd not found in PATH. Exiting..."
+  echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
   exit 1
 }
 printf "All is good."
@@ -87,18 +91,18 @@ FLUX_GITOPS_DIR_OVERRIDE=$FLUX_GITOPS_DIR
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-  echo "Please provide RADIX_ZONE_ENV" >&2
+  echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
   exit 1
 else
   if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-    echo "RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+    echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
     exit 1
   fi
   source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-  echo "Please provide CLUSTER_NAME" >&2
+  echo "ERROR: Please provide CLUSTER_NAME" >&2
   exit 1
 fi
 
@@ -169,7 +173,7 @@ echo ""
 printf "\nConnecting kubectl..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then
   # Send message to stderr
-  echo -e "Error: Cluster \"$CLUSTER_NAME\" not found." >&2
+  echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
   exit 0
 fi
 printf "...Done.\n"
@@ -179,7 +183,7 @@ printf "...Done.\n"
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
+    printf "ERROR: Could not access cluster. Quitting...\n" >&2
     exit 1
 fi
 printf " OK\n"
@@ -196,7 +200,7 @@ wait
 ### Install ingress-nginx
 ###
 
-(USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
+(MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
 wait
 
 #######################################################################################
