@@ -697,7 +697,7 @@ create_and_register_deploy_key_and_store_credentials \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d,ec8c30af-ffb6-4928-9c5c-4abf6ae6f82e" \
     "" \
     "Radix@StatoilSRM.onmicrosoft.com" \
-    "master" \
+    "main" \
     "true" \
     "" \
     "${DEPLOY_KEY_NAME}"

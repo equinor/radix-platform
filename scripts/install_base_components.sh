@@ -22,12 +22,13 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
-# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
+# - RADIX_ZONE_ENV              : Path to *.env file
+# - CLUSTER_NAME                : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - OVERRIDE_GIT_BRANCH
-# - OVERRIDE_GIT_DIR
+# - MIGRATION_STRATEGY          : Relevant for ingress-nginx bootstrap. Ex: "aa", "at".
+# - OVERRIDE_GIT_BRANCH         : Relevant for Flux bootstrap. Ex: "testing-branch"
+# - OVERRIDE_GIT_DIR            : Relevant for Flux bootstrap. Ex: "clusters/testing-dir"
 # - USER_PROMPT                 : Is human interaction is required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -36,6 +37,9 @@
 
 # Normal usage
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./install_base_components.sh
+
+# Specify migration strategy.
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" MIGRATION_STRATEGY="aa" ./install_base_components.sh
 
 # Configure a dev cluster to use custom configs
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="please-work-4" FLUX_OVERRIDE_GIT_BRANCH=testing-something FLUX_OVERRIDE_GIT_DIR=clusters/test-overlay ./install_base_components.sh
@@ -200,7 +204,7 @@ wait
 ### Install ingress-nginx
 ###
 
-(USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
+(MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
 wait
 
 #######################################################################################

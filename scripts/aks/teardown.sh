@@ -109,22 +109,22 @@ printf "Done.\n"
 ### Check if cluster or network resources are locked
 ###
 
-CLUSTERLOCK="$(az lock list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.ContainerService/managedClusters --resource $CLUSTER_NAME | jq -r '.[].name' 2>&1)"
-VNETLOCK="$(az lock list --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --subscription $AZ_SUBSCRIPTION_ID --resource-type Microsoft.Network/virtualNetworks  --resource $VNET_NAME | jq -r '.[].name' 2>&1)"
+CLUSTERLOCK="$(az lock list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "$AZ_SUBSCRIPTION_ID" --resource-type Microsoft.ContainerService/managedClusters --resource "$CLUSTER_NAME" | jq -r '.[].name' 2>&1)"
+VNETLOCK="$(az lock list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "$AZ_SUBSCRIPTION_ID" --resource-type Microsoft.Network/virtualNetworks  --resource "$VNET_NAME" | jq -r '.[].name' 2>&1)"
 
 if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
     echo -e ""
     echo -e "Azure lock status:"
     echo -e "   ------------------------------------------------------------------"
     if [ -n "$CLUSTERLOCK" ]; then
-        printf "   -  AZ Cluster               : $CLUSTER_NAME               ${red}Locked${normal} by $CLUSTERLOCK\n"
+        printf "   -  AZ Cluster               : %s               ${red}Locked${normal} by %s\n" "$CLUSTER_NAME" "$CLUSTERLOCK"
     else
-        printf "   -  AZ Cluster               : $CLUSTER_NAME               ${grn}unlocked${normal}\n"
+        printf "   -  AZ Cluster               : %s               ${grn}unlocked${normal}\n" "$CLUSTER_NAME"
     fi
     if [ -n "$VNETLOCK" ]; then
-        printf "   -  AZ VirtualNetworks       : $VNET_NAME          ${red}Locked${normal} by $VNETLOCK\n"
+        printf "   -  AZ VirtualNetworks       : %s          ${red}Locked${normal} by %s\n" "$VNET_NAME" "$VNETLOCK"
     else
-    printf "   -  AZ VirtualNetworks       : $VNET_NAME          ${grn}unlocked${normal}\n"
+    printf "   -  AZ VirtualNetworks       : %s          ${grn}unlocked${normal}\n" "$VNET_NAME"
     fi
     echo -e "   -------------------------------------------------------------------"
     printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"; exit 0;
@@ -157,7 +157,7 @@ echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -180,7 +180,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Do you want to continue? (Y/n) " yn
+            read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -256,9 +256,13 @@ kubectl config delete-cluster "${CLUSTER_NAME}" 2>&1 >/dev/null
 echo "Done."
 
 echo "Deleting vnet... "
-az network vnet peering delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n $VNET_PEERING_NAME --vnet-name $VNET_NAME
-az network vnet peering delete -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n $HUB_PEERING_NAME --vnet-name $AZ_VNET_HUB_NAME
-az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n $VNET_NAME 2>&1 >/dev/null
+az network vnet peering delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME"
+az network vnet peering delete -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME"
+az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" 2>&1 >/dev/null
+echo "Done."
+
+echo "Deleting Network Security Group..."
+az network nsg delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME"
 echo "Done."
 
 # TODO: Clean up velero blob dialog (yes/no)
