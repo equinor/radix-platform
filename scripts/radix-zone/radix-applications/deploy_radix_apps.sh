@@ -257,7 +257,7 @@ function create_github_webhook_in_repository() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
+        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; rm -f "${secret_file}" return; }
 
     printf " Done.\n"
 
@@ -275,6 +275,9 @@ function create_github_webhook_in_repository() {
         --header "Authorization: token ${github_pat}" \
         --data "{\"name\":\"web\",\"active\":true,\"events\":[\"push\"],\"config\":{\"url\":\"https://webhook.${AZ_RESOURCE_DNS}/events/github\",\"secret\":\"${shared_secret}\",\"content_type\":\"json\",\"insecure_ssl\":\"0\"}}" \
         "https://api.github.com/repos/${repo_organization}/${repo_name}/hooks"
+    
+    rm -f "${secret_file}"
+    
     printf " Done.\n"
 }
 
@@ -302,7 +305,7 @@ function create_radix_application() {
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --file "${secret_file}" \
             --output none \
-            --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
+            --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; rm -f "${secret_file}"; return; }
 
         printf " Done.\n"
 
@@ -360,15 +363,13 @@ function create_build_deploy_job() {
     printf "Get secret from keyvault..."
     secret_file="${script_dir_path}/${app_name}-radixregistration-values.json"
 
-    rm -f "${secret_file}"
-
     az keyvault secret download \
         --vault-name "$AZ_RESOURCE_KEYVAULT" \
         --name "${app_name}-radixregistration-values" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; return; }
+        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; rm -f "${secret_file}"; return; }
 
     printf " Done.\n"
 
@@ -712,6 +713,36 @@ if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     create_build_deploy_job "radix-platform" "main"
 fi
 
+# Radix Vulnerability Scanner API
+
+echo ""
+echo "Deploy radix-vulnerability-scanner-api..."
+
+create_and_register_deploy_key_and_store_credentials \
+    "radix-vulnerability-scanner-api" \
+    "radix-vulnerability-scanner-api" \
+    "equinor" \
+    "${GITHUB_PAT}" \
+    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
+    "" \
+    "Radix@StatoilSRM.onmicrosoft.com" \
+    "master" \
+    "false" \
+    "" \
+    "${DEPLOY_KEY_NAME}"
+
+create_github_webhook_in_repository "radix-vulnerability-scanner-api" "${GITHUB_PAT}"
+
+create_radix_application "radix-vulnerability-scanner-api"
+
+if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
+    # Wait a few seconds until radix-operator can process the RadixRegistration
+    wait_for_app_namespace "radix-vulnerability-scanner-api"
+
+    create_build_deploy_job "radix-vulnerability-scanner-api" "master"
+
+    create_build_deploy_job "radix-vulnerability-scanner-api" "release"
+fi
 
 #######################################################################################
 ### Applications have been deployed. Start configuration.
@@ -760,6 +791,12 @@ while [ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]; do
 done
 
 echo ""
+echo "Radix API-s ingress is ready, restarting web console... "
+kubectl delete pods $(kubectl get pods -n "${WEB_CONSOLE_NAMESPACE}" -o custom-columns=':metadata.name' --no-headers | grep web) -n "${WEB_CONSOLE_NAMESPACE}"
+
+### Set Radix Cost Allocation API secrets
+
+echo ""
 echo "Waiting for radix-cost-allocation-api ingress to be ready so that the API can work properly..."
 while [[ "$(kubectl get ing server -n radix-cost-allocation-api-prod 2>&1)" == *"Error"* ]]; do
     printf "."
@@ -773,13 +810,32 @@ wait_for_app_namespace_component_secret "radix-cost-allocation-api-prod" "server
 (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" "${script_dir_path}/../../update_secret_for_cost_allocation_api.sh")
 wait # wait for subshell to finish
 
-echo ""
-echo "Radix API-s ingress is ready, restarting web console... "
-kubectl delete pods $(kubectl get pods -n "${WEB_CONSOLE_NAMESPACE}" -o custom-columns=':metadata.name' --no-headers | grep web) -n "${WEB_CONSOLE_NAMESPACE}"
+### Set Radix Vulnerability Scanner API secrets
 
+echo ""
+echo "Waiting for radix-vulnerability-scanner-api ingress to be ready so that the API can work properly..."
+while [[ "$(kubectl get ing server -n radix-vulnerability-scanner-api-prod 2>&1)" == *"Error"* ]]; do
+    printf "."
+    sleep 5
+done
+
+echo ""
+echo "For the vulnerability scanner api to work we need to apply secrets"
+wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-qa" "server"
+wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-prod" "server"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" "${script_dir_path}/../../update_secret_for_vulnerability_scanner_api.sh")
+wait # wait for subshell to finish
+echo ""
+echo "Restarting radix-vulnerability-scanner-api... "
+kubectl rollout restart deployment -n radix-vulnerability-scanner-api-qa
+kubectl rollout restart deployment -n radix-vulnerability-scanner-api-prod
+
+
+### All done
 echo ""
 echo "Roses are red, violets are blue"
 echo "the deployment of radix apps has come to an end"
 echo "but maybe not so"
 echo "for all the remaining tasks assigned to you"
 echo ""
+

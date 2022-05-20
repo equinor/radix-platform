@@ -5,7 +5,7 @@ metadata:
     radix-branch: ${CLONE_BRANCH}
   labels:
     radix-app: ${NAME}
-  name: ${NAME}-${CLONE_BRANCH}-init-deploy-${TIMESTAMP}-${IMAGE_TAG}
+  name: init-deploy-${TIMESTAMP}-${IMAGE_TAG}
   namespace: ${NAME}-app
 spec:
   appName: ${NAME}
