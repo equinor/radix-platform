@@ -24,6 +24,9 @@
 
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh
 
+# If you want to filter stdout and stderr to separate log files, run like this. All "error messages" will appear in /tmp/stderr.log
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
