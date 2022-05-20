@@ -209,17 +209,17 @@ fi
 
 # Make sure necessary variables are set.
 if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
-    echo "ERROR: Missing varaiable PRIVATE_ENDPOINT_ID." >&2
+    echo "ERROR: Missing variable PRIVATE_ENDPOINT_ID." >&2
     exit 1
 fi
 
 if [[ -z ${NIC_PRIVATE_IP} ]]; then
-    echo "ERROR: Missing varaiable NIC_PRIVATE_IP." >&2
+    echo "ERROR: Missing variable NIC_PRIVATE_IP." >&2
     exit 1
 fi
 
 if [[ -z ${PRIVATE_DNS_RECORD_NAME} ]]; then
-    echo "ERROR: Missing varaiable PRIVATE_DNS_RECORD_NAME." >&2
+    echo "ERROR: Missing variable PRIVATE_DNS_RECORD_NAME." >&2
     exit 1
 fi
 
