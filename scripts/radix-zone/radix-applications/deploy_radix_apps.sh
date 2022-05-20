@@ -784,6 +784,11 @@ wait # wait for subshell to finish
 wait # wait for subshell to finish
 
 echo ""
+echo "For the networkpolicy-canary to work, we need to apply the HTTP password"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../cicd-canary/update_secret_for_networkpolicy_canary.sh")
+wait # wait for subshell to finish
+
+echo ""
 echo "Waiting for radix-api ingress to be ready so that the web console can work properly..."
 while [ "$(kubectl get ing server -n radix-api-prod 2>&1)" == *"Error"* ]; do
     printf "."
