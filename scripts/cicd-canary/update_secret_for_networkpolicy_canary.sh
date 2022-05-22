@@ -67,7 +67,7 @@ printf " OK\n"
 
 function getApiToken() {
     # Get auth token for Radix API
-    printf "Getting auth token for Radix API..."
+    printf "Getting auth token for Radix API...\n"
     API_ACCESS_TOKEN_RESOURCE=$(echo ${OAUTH2_PROXY_SCOPE} | awk '{print $4}' | sed 's/\/.*//')
     if [[ -z ${API_ACCESS_TOKEN_RESOURCE} ]]; then
         echo "ERROR: Could not get Radix API access token resource." >&2
@@ -112,15 +112,18 @@ function getAppEnvironments() {
 
 function updateSecret() {
     app_env=$1
-    printf "Updating NETWORKPOLICY_CANARY_PASSWORD for environment $app_env \n"
+    secret_name=$2
+    secret_value=$3
+    radix_component=$4
+    printf "Updating ${secret_name} for environment ${app_env} in ${radix_component} component \n"
     API_REQUEST=$(curl \
          --silent \
          -X PUT \
-         "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-networkpolicy-canary/environments/${app_env}/components/web/secrets/NETWORKPOLICY_CANARY_PASSWORD" \
+         "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-networkpolicy-canary/environments/${app_env}/components/${radix_component}/secrets/${secret_name}" \
          -H "accept: application/json" \
          -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
          -H "Content-Type: application/json" \
-         -d "{ \"secretValue\": \"${NETWORKPOLICY_CANARY_PASSWORD}\"}")
+         -d "{ \"secretValue\": \"${secret_value}\"}")
     if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
         echo -e "\nERROR: API request failed."  >&2
         exit 1
@@ -128,11 +131,89 @@ function updateSecret() {
     printf "Secret updated\n"
 }
 
+function resetAppRegistrationPassword() {
+    # Generate new secret for App Registration.
+    printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"...\n"
+    APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NETWORKPOLICY_CANARY" | jq -r '.[].appId')
+
+    UPDATED_APP_REGISTRATION_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --credential-description "${RADIX_ZONE}-${RADIX_ENVIRONMENT}" --append 2>/dev/null | jq -r '.password') # For some reason, description can not be too long.
+    if [[ -z "$UPDATED_APP_REGISTRATION_PASSWORD" ]]; then
+        echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\". Exiting..." >&2
+        exit 1
+    fi
+    printf " Done.\n"
+}
+
+function environmentIsOauthEnvironment() {
+    env=$1
+    SECRETS=$(curl \
+        --silent \
+        -X GET \
+        "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-networkpolicy-canary/environments/${env}" \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H "Authorization: Bearer ${API_ACCESS_TOKEN}" \
+        | jq .secrets[].name --raw-output)
+    if [[ -z "$SECRETS" ]]; then
+        echo "ERROR: Could not get the app secrets of the ${env} environment in radix-networkpolicy-canary."  >&2
+        exit 1
+    fi
+    for secret in $SECRETS
+    do
+      if [[ "$secret" == "web-oauth2proxy-clientsecret" ]]
+      then
+        return 0
+      fi
+    done
+    false
+}
+
+function getOauthAppEnvironments(){
+    OAUTH_APP_ENVIRONMENTS=""
+    for app_env in $APP_ENVIRONMENTS
+    do
+    if environmentIsOauthEnvironment $app_env;
+    then
+      printf "$app_env is OAuth2-enabled app environment. Updating \n"
+      OAUTH_APP_ENVIRONMENTS="${OAUTH_APP_ENVIRONMENTS} $app_env"
+    else
+      printf "$app_env is not OAuth2-enabled app environment\n"
+    fi
+    done
+    if [[ "$OAUTH_APP_ENVIRONMENTS" == "" ]]
+    then
+      printf "ERROR: No OAuth2-enabled app environments.\n" >&2
+      exit 1
+    fi
+}
+
+function updateNetworkPolicyCanaryHttpPassword(){
+    printf "Updating NETWORKPOLICY_CANARY_PASSWORD...\n"
+    getApiToken
+    getAppEnvironments
+    getSecret
+    for app_env in $APP_ENVIRONMENTS
+    do
+      updateSecret $app_env NETWORKPOLICY_CANARY_PASSWORD ${NETWORKPOLICY_CANARY_PASSWORD} web
+    done
+}
+
+
+function updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret(){
+    printf "Resetting ${APP_REGISTRATION_NETWORKPOLICY_CANARY} credentials and updating radixapp secrets...\n"
+    getApiToken
+    getAppEnvironments
+    getOauthAppEnvironments
+    resetAppRegistrationPassword
+    for app_env in $OAUTH_APP_ENVIRONMENTS
+    do
+      updateSecret $app_env web-oauth2proxy-clientsecret ${UPDATED_APP_REGISTRATION_PASSWORD} web
+      redis_password=$(openssl rand -base64 32 | tr -- '+/' '-_')
+      updateSecret $app_env web-oauth2proxy-redispassword $redis_password web
+      updateSecret $app_env REDIS_PASSWORD $redis_password redis
+    done
+}
+
 ### MAIN
-getApiToken
-getAppEnvironments
-getSecret
-for app_env in $APP_ENVIRONMENTS
-do
-  updateSecret $app_env
-done
+updateNetworkPolicyCanaryHttpPassword
+updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret
