@@ -65,19 +65,21 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
 fi
 printf " OK\n"
 
-function getApiToken() {
+function getApiTokenResource() {
     # Get auth token for Radix API
     printf "Getting auth token for Radix API...\n"
     API_ACCESS_TOKEN_RESOURCE=$(echo ${OAUTH2_PROXY_SCOPE} | awk '{print $4}' | sed 's/\/.*//')
     if [[ -z ${API_ACCESS_TOKEN_RESOURCE} ]]; then
         echo "ERROR: Could not get Radix API access token resource." >&2
-        exit 1
+        return 1
     fi
+}
 
+function getApiToken() {
     API_ACCESS_TOKEN=$(az account get-access-token --resource ${API_ACCESS_TOKEN_RESOURCE} | jq -r '.accessToken')
     if [[ -z ${API_ACCESS_TOKEN} ]]; then
         echo "ERROR: Could not get Radix API access token." >&2
-        exit 1
+        return 1
     fi
     printf " Done.\n"
 }
@@ -90,7 +92,7 @@ function getSecret() {
     NETWORKPOLICY_CANARY_PASSWORD=$(echo $SECRET_VALUES | jq -r '.networkPolicyCanary.password')
     if [[ -z "$NETWORKPOLICY_CANARY_PASSWORD" ]]; then
         echo "ERROR: Could not get networkPolicyCanary.password from radix-cicd-canary-values in ${AZ_RESOURCE_KEYVAULT}." >&2
-        exit 1
+        return 1
     fi
 }
 
@@ -105,7 +107,7 @@ function getAppEnvironments() {
         | jq .[].name --raw-output)
     if [[ -z "$APP_ENVIRONMENTS" ]]; then
         echo "ERROR: Could not get the app environments of radix-networkpolicy-canary."  >&2
-        exit 1
+        return 1
     fi
     printf " Retrieved app environments $(echo $APP_ENVIRONMENTS | tr '\n' ' ')\n\n"
 }
@@ -126,7 +128,7 @@ function updateSecret() {
          -d "{ \"secretValue\": \"${secret_value}\"}")
     if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
         echo -e "\nERROR: API request failed."  >&2
-        exit 1
+        return 1
     fi
     printf "Secret updated\n"
 }
@@ -187,29 +189,28 @@ function getOauthAppEnvironments(){
 
 function updateNetworkPolicyCanaryHttpPassword(){
     printf "Updating NETWORKPOLICY_CANARY_PASSWORD...\n"
-    getApiToken
-    getAppEnvironments
-    getSecret
+    getApiTokenResource || return 1
+    getApiToken || return 1
+    getAppEnvironments && getSecret
     for app_env in $APP_ENVIRONMENTS; do
-        updateSecret $app_env NETWORKPOLICY_CANARY_PASSWORD ${NETWORKPOLICY_CANARY_PASSWORD} web
+        updateSecret $app_env NETWORKPOLICY_CANARY_PASSWORD ${NETWORKPOLICY_CANARY_PASSWORD} web || return 1
     done
 }
 
 
 function updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret(){
     printf "Resetting ${APP_REGISTRATION_NETWORKPOLICY_CANARY} credentials and updating radixapp secrets...\n"
-    getApiToken
-    getAppEnvironments
-    getOauthAppEnvironments
-    resetAppRegistrationPassword
+    getApiTokenResource || return 1
+    getApiToken || return 1
+    getAppEnvironments && getOauthAppEnvironments && resetAppRegistrationPassword
     for app_env in $OAUTH_APP_ENVIRONMENTS; do
-        updateSecret $app_env web-oauth2proxy-clientsecret ${UPDATED_APP_REGISTRATION_PASSWORD} web
+        updateSecret $app_env web-oauth2proxy-clientsecret ${UPDATED_APP_REGISTRATION_PASSWORD} web || return 1
         redis_password=$(openssl rand -base64 32 | tr -- '+/' '-_')
-        updateSecret $app_env web-oauth2proxy-redispassword $redis_password web
-        updateSecret $app_env REDIS_PASSWORD $redis_password redis
+        updateSecret $app_env web-oauth2proxy-redispassword $redis_password web  || return 1
+        updateSecret $app_env REDIS_PASSWORD $redis_password redis  || return 1
     done
 }
 
 ### MAIN
-updateNetworkPolicyCanaryHttpPassword
-updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret
+updateNetworkPolicyCanaryHttpPassword || exit 1
+updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret || exit 1
