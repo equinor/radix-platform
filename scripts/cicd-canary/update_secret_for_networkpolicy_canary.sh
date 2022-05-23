@@ -167,20 +167,18 @@ function environmentIsOauthEnvironment() {
 
 function getOauthAppEnvironments(){
     OAUTH_APP_ENVIRONMENTS=""
-    for app_env in $APP_ENVIRONMENTS
-    do
-    if environmentIsOauthEnvironment $app_env;
-    then
-      printf "$app_env is OAuth2-enabled app environment. Updating \n"
-      OAUTH_APP_ENVIRONMENTS="${OAUTH_APP_ENVIRONMENTS} $app_env"
-    else
-      printf "$app_env is not OAuth2-enabled app environment\n"
-    fi
+    for app_env in $APP_ENVIRONMENTS; do
+        if environmentIsOauthEnvironment $app_env; then
+            printf "$app_env is OAuth2-enabled app environment. Updating \n"
+            OAUTH_APP_ENVIRONMENTS="${OAUTH_APP_ENVIRONMENTS} $app_env"
+        else
+            printf "$app_env is not OAuth2-enabled app environment\n"
+        fi
     done
-    if [[ "$OAUTH_APP_ENVIRONMENTS" == "" ]]
-    then
-      printf "ERROR: No OAuth2-enabled app environments.\n" >&2
-      exit 1
+
+    if [[ "$OAUTH_APP_ENVIRONMENTS" == "" ]]; then
+        printf "ERROR: No OAuth2-enabled app environments.\n" >&2
+        return 1
     fi
 }
 
@@ -189,9 +187,8 @@ function updateNetworkPolicyCanaryHttpPassword(){
     getApiToken
     getAppEnvironments
     getSecret
-    for app_env in $APP_ENVIRONMENTS
-    do
-      updateSecret $app_env NETWORKPOLICY_CANARY_PASSWORD ${NETWORKPOLICY_CANARY_PASSWORD} web
+    for app_env in $APP_ENVIRONMENTS; do
+        updateSecret $app_env NETWORKPOLICY_CANARY_PASSWORD ${NETWORKPOLICY_CANARY_PASSWORD} web
     done
 }
 
@@ -202,12 +199,11 @@ function updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret(){
     getAppEnvironments
     getOauthAppEnvironments
     resetAppRegistrationPassword
-    for app_env in $OAUTH_APP_ENVIRONMENTS
-    do
-      updateSecret $app_env web-oauth2proxy-clientsecret ${UPDATED_APP_REGISTRATION_PASSWORD} web
-      redis_password=$(openssl rand -base64 32 | tr -- '+/' '-_')
-      updateSecret $app_env web-oauth2proxy-redispassword $redis_password web
-      updateSecret $app_env REDIS_PASSWORD $redis_password redis
+    for app_env in $OAUTH_APP_ENVIRONMENTS; do
+        updateSecret $app_env web-oauth2proxy-clientsecret ${UPDATED_APP_REGISTRATION_PASSWORD} web
+        redis_password=$(openssl rand -base64 32 | tr -- '+/' '-_')
+        updateSecret $app_env web-oauth2proxy-redispassword $redis_password web
+        updateSecret $app_env REDIS_PASSWORD $redis_password redis
     done
 }
 
