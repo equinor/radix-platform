@@ -146,26 +146,23 @@ function resetAppRegistrationPassword() {
 
 function environmentIsOauthEnvironment() {
     env=$1
-    SECRETS=$(curl \
+    GET_ENV=$(curl \
         --silent \
-        -X GET \
+        --request GET \
         "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-networkpolicy-canary/environments/${env}" \
-        -H 'accept: application/json' \
-        -H 'Content-Type: application/json' \
-        -H "Authorization: Bearer ${API_ACCESS_TOKEN}" \
-        | jq .secrets[].name --raw-output)
-    if [[ -z "$SECRETS" ]]; then
-        echo "ERROR: Could not get the app secrets of the ${env} environment in radix-networkpolicy-canary."  >&2
-        exit 1
-    fi
-    for secret in $SECRETS
-    do
-      if [[ "$secret" == "web-oauth2proxy-clientsecret" ]]
-      then
+        --header 'accept: application/json' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${API_ACCESS_TOKEN}")
+
+    if [[ $(echo ${GET_ENV} | jq -r .error) != null ]]; then
+        echo "${GET_ENV}" | jq . >&2
+        echo "ERROR: Could not get the app secrets of the ${env} environment in radix-networkpolicy-canary." >&2
+        return 1
+    elif [[ $(echo ${GET_ENV} | jq --raw-output '.secrets[] | select(.name=="web-oauth2proxy-clientsecret")') ]]; then
         return 0
-      fi
-    done
-    false
+    else
+        return 1
+    fi
 }
 
 function getOauthAppEnvironments(){
