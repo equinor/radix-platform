@@ -136,11 +136,14 @@ function resetAppRegistrationPassword() {
     printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"...\n"
     APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NETWORKPOLICY_CANARY" | jq -r '.[].appId')
 
-    UPDATED_APP_REGISTRATION_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --credential-description "${RADIX_ZONE}-${RADIX_ENVIRONMENT}" --append 2>/dev/null | jq -r '.password') # For some reason, description can not be too long.
-    if [[ -z "$UPDATED_APP_REGISTRATION_PASSWORD" ]]; then
-        echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\". Exiting..." >&2
-        exit 1
-    fi
+    # For some reason, description can not be too long.
+    UPDATED_APP_REGISTRATION_PASSWORD=$(az ad app credential reset \
+        --id "$APP_REGISTRATION_CLIENT_ID" \
+        --credential-description "${RADIX_ZONE}-${RADIX_ENVIRONMENT}" \
+        --append \
+        --query password \
+        --output tsv \
+        --only-show-errors) || { echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"." >&2; return 1; }
     printf " Done.\n"
 }
 
