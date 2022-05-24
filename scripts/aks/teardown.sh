@@ -109,8 +109,45 @@ printf "Done.\n"
 ### Check if cluster or network resources are locked
 ###
 
-CLUSTERLOCK="$(az lock list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "$AZ_SUBSCRIPTION_ID" --resource-type Microsoft.ContainerService/managedClusters --resource "$CLUSTER_NAME" | jq -r '.[].name' 2>&1)"
-VNETLOCK="$(az lock list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "$AZ_SUBSCRIPTION_ID" --resource-type Microsoft.Network/virtualNetworks  --resource "$VNET_NAME" | jq -r '.[].name' 2>&1)"
+printf "Checking for resource locks..."
+
+CLUSTER=$(az aks list \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='"${CLUSTER_NAME}"'].name" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ "${CLUSTER}" ]]; then
+    CLUSTERLOCK="$(az lock list \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --resource-type Microsoft.ContainerService/managedClusters \
+        --resource "$CLUSTER_NAME" \
+        --query [].name \
+        --output tsv \
+        --only-show-errors)"
+fi
+
+VNET=$(az network vnet list \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='"${VNET_NAME}"'].name" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ "${VNET}" ]]; then
+    VNETLOCK="$(az lock list \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --resource-type Microsoft.Network/virtualNetworks  \
+        --resource "$VNET_NAME" \
+        --query [].name \
+        --output tsv \
+        --only-show-errors)"
+fi
+
+printf " Done.\n"
 
 if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
     echo -e ""
@@ -195,7 +232,13 @@ printf "Done.\n"
 
 # Delete the cluster
 echo "Deleting cluster... "
-az aks delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --yes 2>&1 >/dev/null
+az aks delete \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$CLUSTER_NAME" \
+    --subscription "$AZ_SUBSCRIPTION_ID" \
+    --yes \
+    --output none \
+    --only-show-errors
 echo "Done."
 
 
@@ -223,7 +266,7 @@ echo "Delete replyUrls"
 # Delete replyUrl for Radix web-console
 WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" # "Development", "Playground", "Production"
-APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId -o tsv)"
+APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId --output tsv --only-show-errors)"
 HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
 
@@ -231,7 +274,7 @@ REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
 wait # wait for subshell to finish
 
 # Delete replyUrl for grafana
-APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA}" --query [].appId -o tsv)"
+APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA}" --query [].appId --output tsv --only-show-errors)"
 HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
 
@@ -249,21 +292,45 @@ echo "Deleting Dynatrace integration..."
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
 
 echo "Cleaning up local kube config... "
-kubectl config delete-context "${CLUSTER_NAME}-admin" 2>&1 >/dev/null
+kubectl config delete-context "${CLUSTER_NAME}-admin" &>/dev/null
 if [[ "$(kubectl config get-contexts -o name)" == *"${CLUSTER_NAME}"* ]]; then
-    kubectl config delete-context "${CLUSTER_NAME}" 2>&1 >/dev/null
+    kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
 fi
-kubectl config delete-cluster "${CLUSTER_NAME}" 2>&1 >/dev/null
+kubectl config delete-cluster "${CLUSTER_NAME}" &>/dev/null
 echo "Done."
 
-echo "Deleting vnet... "
-az network vnet peering delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME"
-az network vnet peering delete -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME"
-az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" 2>&1 >/dev/null
-echo "Done."
+if [[ "${VNET}" ]]; then
+    echo "Deleting vnet... "
+    az network vnet peering delete \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$VNET_PEERING_NAME" \
+        --vnet-name "$VNET_NAME" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --output none \
+        --only-show-errors
+
+    az network vnet peering delete \
+        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+        --name "$HUB_PEERING_NAME" \
+        --vnet-name "$AZ_VNET_HUB_NAME" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --output none \
+        --only-show-errors
+
+    az network vnet delete \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$VNET_NAME" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --output none \
+        --only-show-errors
+    echo "Done."
+fi
 
 echo "Deleting Network Security Group..."
-az network nsg delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME"
+az network nsg delete \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$NSG_NAME" \
+    --subscription "$AZ_SUBSCRIPTION_ID"
 echo "Done."
 
 # TODO: Clean up velero blob dialog (yes/no)
