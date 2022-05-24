@@ -232,7 +232,13 @@ printf "Done.\n"
 
 # Delete the cluster
 echo "Deleting cluster... "
-az aks delete --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --yes 2>&1 >/dev/null
+az aks delete \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$CLUSTER_NAME" \
+    --subscription "$AZ_SUBSCRIPTION_ID" \
+    --yes \
+    --output none \
+    --only-show-errors
 echo "Done."
 
 
