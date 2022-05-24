@@ -109,8 +109,45 @@ printf "Done.\n"
 ### Check if cluster or network resources are locked
 ###
 
-CLUSTERLOCK="$(az lock list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "$AZ_SUBSCRIPTION_ID" --resource-type Microsoft.ContainerService/managedClusters --resource "$CLUSTER_NAME" | jq -r '.[].name' 2>&1)"
-VNETLOCK="$(az lock list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "$AZ_SUBSCRIPTION_ID" --resource-type Microsoft.Network/virtualNetworks  --resource "$VNET_NAME" | jq -r '.[].name' 2>&1)"
+printf "Checking for resource locks..."
+
+CLUSTER=$(az aks list \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='"${CLUSTER_NAME}"'].name" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ "${CLUSTER}" ]]; then
+    CLUSTERLOCK="$(az lock list \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --resource-type Microsoft.ContainerService/managedClusters \
+        --resource "$CLUSTER_NAME" \
+        --query [].name \
+        --output tsv \
+        --only-show-errors)"
+fi
+
+VNET=$(az network vnet list \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='"${VNET_NAME}"'].name" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ "${VNET}" ]]; then
+    VNETLOCK="$(az lock list \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --resource-type Microsoft.Network/virtualNetworks  \
+        --resource "$VNET_NAME" \
+        --query [].name \
+        --output tsv \
+        --only-show-errors)"
+fi
+
+printf " Done.\n"
 
 if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
     echo -e ""
