@@ -29,7 +29,7 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-APP_REGISTRATION_NAME=$(az ad app show --id "${APP_REGISTRATION_ID}" --query displayName -o tsv)
+APP_REGISTRATION_NAME=$(az ad app show --id "${APP_REGISTRATION_ID}" --query displayName --output tsv --only-show-errors)
 if [[ -z $APP_REGISTRATION_NAME ]]; then
     echo "ERROR: Could not get app registration name. Quitting..." >&2
     exit 1
@@ -39,7 +39,7 @@ echo ""
 echo "Deleting replyUrl for App Registration \"${APP_REGISTRATION_NAME}\"..."
 
 # Get a list of all replyUrls in the App Registration
-array=($(az ad app show --id ${APP_REGISTRATION_ID} --query replyUrls --output json | jq -r '.[]'))
+array=($(az ad app show --id ${APP_REGISTRATION_ID} --query replyUrls --output tsv --only-show-errors))
 length=${#array[@]}
 
 # Get the index number of the replyUrl we want to delete
