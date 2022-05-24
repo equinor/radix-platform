@@ -327,7 +327,10 @@ if [[ "${VNET}" ]]; then
 fi
 
 echo "Deleting Network Security Group..."
-az network nsg delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME"
+az network nsg delete \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$NSG_NAME" \
+    --subscription "$AZ_SUBSCRIPTION_ID"
 echo "Done."
 
 # TODO: Clean up velero blob dialog (yes/no)
