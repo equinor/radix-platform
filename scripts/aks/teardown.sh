@@ -299,11 +299,32 @@ fi
 kubectl config delete-cluster "${CLUSTER_NAME}" &>/dev/null
 echo "Done."
 
-echo "Deleting vnet... "
-az network vnet peering delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME"
-az network vnet peering delete -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME"
-az network vnet delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" 2>&1 >/dev/null
-echo "Done."
+if [[ "${VNET}" ]]; then
+    echo "Deleting vnet... "
+    az network vnet peering delete \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$VNET_PEERING_NAME" \
+        --vnet-name "$VNET_NAME" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --output none \
+        --only-show-errors
+
+    az network vnet peering delete \
+        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+        --name "$HUB_PEERING_NAME" \
+        --vnet-name "$AZ_VNET_HUB_NAME" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --output none \
+        --only-show-errors
+
+    az network vnet delete \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$VNET_NAME" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --output none \
+        --only-show-errors
+    echo "Done."
+fi
 
 echo "Deleting Network Security Group..."
 az network nsg delete -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME"
