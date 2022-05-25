@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # upsert_password_secret generates a new cryptographically random secret/password
 # and stores it in a Azure Key Vault secret
@@ -49,12 +50,12 @@ generate_password_and_store() {
         return 1
     fi
 
-    rm -f error.txt 
+    rm -f error.txt
 
     local password=$(python3 -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())') ||
         { echo "ERROR: Could not generate password." >&2; return 1; }
 
-    az keyvault secret set --vault-name $keyvault --name $secretName --value $password --output none --only-show-errors || 
+    az keyvault secret set --vault-name $keyvault --name $secretName --value $password --output none --only-show-errors ||
         { echo "ERROR: Could not get secret '$secretName' in '${keyvault}'." >&2; return 1; }
 
     printf "Successfully updated secret '${secretName}' in '${keyvault}'.\n"
@@ -99,39 +100,6 @@ create_or_update_sql_user() {
         -d $databaseName \
         -U $connectLoginName \
         -P $connectPassword \
-        -i "create_or_update_user.sql" \
+        -i "${script_dir_path}/create_or_update_user.sql" \
         || { echo "ERROR: Could not update SQL user." >&2; return 1; }
-}
-
-add_local_computer_sql_firewall_rule() {
-    server=$1
-    resourceGroup=$2
-    ruleName=$3
-
-    myip=$(curl http://ifconfig.me/ip) || 
-    { echo "ERROR: Failed to get IP address." >&2; return 1; }
-
-    az sql server firewall-rule create \
-        --end-ip-address $myip \
-        --start-ip-address $myip \
-        --name ${ruleName} \
-        --resource-group $resourceGroup \
-        --server $server \
-        --output none \
-        --only-show-errors ||
-        { echo "ERROR: Failed to create firewall rule $ruleName." >&2; return 1; }
-}
-
-delete_sql_firewall_rule() {
-    server=$1
-    resourceGroup=$2
-    ruleName=$3
-
-    az sql server firewall-rule delete \
-        --name ${ruleName} \
-        --resource-group $resourceGroup \
-        --server $server \
-        --output none \
-        --only-show-errors ||
-        { echo "ERROR: Failed to delete firewall rule $ruleName." >&2; return 1; }
 }
