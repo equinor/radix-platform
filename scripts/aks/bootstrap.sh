@@ -115,7 +115,7 @@ fi
 ###
 
 function getAddressSpaceForVNET() {
-    
+
     local HUB_PEERED_VNET_JSON="$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_VNET_HUB" --vnet-name "$AZ_VNET_HUB_NAME")"
     local HUB_PEERED_VNET_EXISTING="$(echo "$HUB_PEERED_VNET_JSON" | jq --arg HUB_PEERING_NAME "${HUB_PEERING_NAME}" '.[] | select(.name==$HUB_PEERING_NAME)' | jq -r '.remoteAddressSpace.addressPrefixes[0]')"
     if [[ ! -z "$HUB_PEERED_VNET_EXISTING" ]]; then
@@ -128,7 +128,7 @@ function getAddressSpaceForVNET() {
     local HUB_PEERED_VNET_IP="$(echo "$HUB_PEERED_VNET_JSON" | jq '.[].remoteAddressSpace.addressPrefixes')"
 
     for i in {3..255}; do
-        # 10.0.0.0/16 is reserved by HUB, 10.2.0.0/16 is reserved for AKS owned services (e.g. internal k8s DNS service).  
+        # 10.0.0.0/16 is reserved by HUB, 10.2.0.0/16 is reserved for AKS owned services (e.g. internal k8s DNS service).
         local PROPOSED_VNET_ADDRESS="10.$i.0.0"
         if [[ $HUB_PEERED_VNET_IP != *$PROPOSED_VNET_ADDRESS* ]]; then
             echo "$PROPOSED_VNET_ADDRESS"
