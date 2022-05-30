@@ -49,17 +49,31 @@ fi
 printf " OK\n"
 
 function updateSecret() {
-    COST_ALLOCATION_API_SECRET=$(az keyvault secret show -n radix-cost-allocation-api-secrets-$RADIX_ZONE --vault-name $AZ_RESOURCE_KEYVAULT | jq -r '.value' | sed 's/"{/{/g' | sed 's/}"/}/g')
+    whitelist='{"whiteList":[]}'
+    for appName in ${COST_ALLOCATION_APP_WHITELIST[@]}; do
+        whitelist=$(echo $whitelist | jq -c --arg appName "$appName" '.whiteList[.whiteList | length] = $appName ')
+    done
 
-    echo "SQL_SERVER=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.server')
-    SQL_DATABASE=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.database')
-    SQL_USER=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.user')
-    SQL_PASSWORD=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.db.password')
-    SUBSCRIPTION_COST_VALUE=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.subscriptionCost.value')
-    SUBSCRIPTION_COST_CURRENCY=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.subscriptionCost.currency')
-    WHITELIST=$(echo $COST_ALLOCATION_API_SECRET | jq -c '.subscriptionCost.whiteList')
-    AD_REPORT_READERS=$(echo $COST_ALLOCATION_API_SECRET | jq -c '.auth.reportReaders')
-    TOKEN_ISSUER=$(echo $COST_ALLOCATION_API_SECRET | jq -r '.auth.tokenIssuer')
+    readers='{"groups":[]}'
+    for group in ${COST_ALLOCATION_REPORT_READER_AD_GROUPS[@]}; do
+        readers=$(echo $readers | jq -c --arg group "$group" '.groups[.groups | length] = $group ')
+    done
+
+    COST_ALLOCATION_SQL_API_PASSWORD=$(az keyvault secret show -n $KV_SECRET_COST_ALLOCATION_DB_API --vault-name $AZ_RESOURCE_KEYVAULT | jq -r '.value')
+    if [[ -z $COST_ALLOCATION_SQL_API_PASSWORD ]]; then
+        echo "ERROR: Could not find secret $KV_SECRET_COST_ALLOCATION_DB_API in keyvault. Quitting.." >&2
+        return 1
+    fi
+
+    echo "SQL_SERVER=$COST_ALLOCATION_SQL_SERVER_FQDN
+    SQL_DATABASE=$COST_ALLOCATION_SQL_DATABASE_NAME
+    SQL_USER=$COST_ALLOCATION_SQL_API_USER
+    SQL_PASSWORD=$COST_ALLOCATION_SQL_API_PASSWORD
+    SUBSCRIPTION_COST_VALUE=0
+    SUBSCRIPTION_COST_CURRENCY=NOK
+    WHITELIST=$whitelist
+    AD_REPORT_READERS=$readers
+    TOKEN_ISSUER=https://sts.windows.net/$(az account show --query tenantId -otsv)/
     " > radix-cost-allocation-api-secrets.env
 
     COST_ALLOCATION_API_SECRET_NAME_QA=$(kubectl get secret --namespace "radix-cost-allocation-api-qa" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
