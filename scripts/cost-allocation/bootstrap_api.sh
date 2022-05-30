@@ -3,7 +3,7 @@
 ### PURPOSE
 ###
 
-# Bootstrap requirements for radix-cost-allocation in a Radix cluster
+# Bootstrap requirements for radix-cost-allocation-api in a radix cluster
 
 #######################################################################################
 ### PRECONDITIONS
@@ -18,7 +18,6 @@
 
 # Required:
 # - RADIX_ZONE_ENV               : Path to *.env file
-# - CLUSTER_NAME                 : Ex: "test-2", "weekly-93"
 
 # Optional:
 # - USER_PROMPT                  : Is human interaction required to run script? true/false. Default is true.
@@ -29,17 +28,18 @@
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap_colletor.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap_api.sh
 
 # Generate and store new SQL user password - new password is stored in KV and updated for SQL user
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" REGENERATE_SQL_PASSWORD=true ./bootstrap_colletor.sh
+# The SQL_PASSWORD secret for radix-cost-allocation-api app in Radix must be updated and restarted
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env REGENERATE_SQL_PASSWORD=true ./bootstrap_api.sh
 
 #######################################################################################
 ### START
 ###
 
 echo ""
-echo "Start bootstrap of radix-cost-allocation... "
+echo "Start bootstrap of radix-cost-allocation-api... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -51,16 +51,12 @@ hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
-hash kubectl 2>/dev/null || {
-    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
-    exit 1
-}
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 hash sqlcmd 2>/dev/null || {
-    echo -e "\nERROR: sqlcmd not found in PATH. Exiting..." >&2
+    echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
     exit 1
 }
 printf "All is good."
@@ -89,11 +85,6 @@ else
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
-fi
-
-if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "ERROR: Please provide CLUSTER_NAME" >&2
-    exit 1
 fi
 
 case $REGENERATE_SQL_PASSWORD in
@@ -135,21 +126,22 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap Radix Cost Allocation with the following configuration:"
+echo -e "Bootstrap Radix Cost Allocation API with the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
-echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  AZ_RESOURCE_KEYVAULT              : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  COST_ALLOCATION_SQL_SERVER_NAME   : $COST_ALLOCATION_SQL_SERVER_NAME"
+echo -e "   -  COST_ALLOCATION_SQL_DATABASE_NAME : $COST_ALLOCATION_SQL_DATABASE_NAME"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  REGENERATE_SQL_PASSWORD          : $REGENERATE_SQL_PASSWORD"
+echo -e "   -  REGENERATE_SQL_PASSWORD           : $REGENERATE_SQL_PASSWORD"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e "   -  AZ_SUBSCRIPTION                   : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                           : $(az account show --query user.name -o tsv)"
 echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
@@ -164,38 +156,18 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
-### CLUSTER?
+### Get/generate password for database user and create/update user in Azure SQL Database
 ###
 
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
-kubectl_context="$(kubectl config current-context)"
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
-    echo "kubectl is ready..."
-else
-    echo "Please set your kubectl current-context to be $CLUSTER_NAME"
-    exit 1
-fi
+echo "Generate password for API SQL user and store in KV"
 
-#######################################################################################
-### Verify cluster access
-###
-printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
-    exit 1
-fi
-printf " OK\n"
+generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_COST_ALLOCATION_DB_API $REGENERATE_SQL_PASSWORD || exit
 
-echo "Generate password for Radix Cost Allocation Writer SQL user and store in KV"
-
-generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_COST_ALLOCATION_DB_WRITER $REGENERATE_SQL_PASSWORD || exit
-
-# Create/update SQL user and roles
-COLLECTOR_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_WRITER | jq -r .value)
+API_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_API | jq -r .value)
 ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_SQL_ADMIN | jq -r .value) 
 
 if [[ -z $ADMIN_SQL_PASSWORD ]]; then
-    printf "ERROR: SQL admin password not set"
+    printf "ERROR: SQL admin password not set" >&2
     exit 1
 fi
 
@@ -208,15 +180,15 @@ add_local_computer_sql_firewall_rule \
     $whitelistRuleName \
     || exit
 
-echo "Creating/updating SQL user for Radix Cost Allocation"
+echo "Creating/updating SQL user for Radix Cost Allocation API"
 create_or_update_sql_user \
     $COST_ALLOCATION_SQL_SERVER_FQDN \
     $COST_ALLOCATION_SQL_ADMIN_LOGIN \
     $ADMIN_SQL_PASSWORD \
     $COST_ALLOCATION_SQL_DATABASE_NAME \
-    $COST_ALLOCATION_SQL_COLLECTOR_USER \
-    $COLLECTOR_SQL_PASSWORD \
-    "datawriter"
+    $COST_ALLOCATION_SQL_API_USER \
+    $API_SQL_PASSWORD \
+    "datareader"
 
 echo "Remove IP in firewall rule for SQL Server"
 delete_sql_firewall_rule \
@@ -224,27 +196,5 @@ delete_sql_firewall_rule \
     $AZ_RESOURCE_GROUP_COST_ALLOCATION_SQL \
     $whitelistRuleName \
     || exit
-
-
-echo "Install Radix Cost Allocation resources for flux"
-
-SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_WRITER | jq -r .value) ||
-    { echo "ERROR: Could not get secret '${KV_SECRET_COST_ALLOCATION_DB_WRITER}' in '${AZ_RESOURCE_KEYVAULT}'." >&2; exit; }
-
-echo "db:                                                                                                                           
-  server: ${COST_ALLOCATION_SQL_SERVER_FQDN}
-  database: ${COST_ALLOCATION_SQL_DATABASE_NAME}
-  user: ${COST_ALLOCATION_SQL_COLLECTOR_USER}
-  password: ${SQL_DB_PASSWORD}" > radix-cost-allocation-values.yaml
-
-kubectl create ns radix-cost-allocation --dry-run=client --save-config -o yaml |
-    kubectl apply -f -
-    
-kubectl create secret generic cost-db-secret --namespace radix-cost-allocation \
-    --from-file=./radix-cost-allocation-values.yaml \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
-
-rm -f radix-cost-allocation-values.yaml
 
 echo "Done."

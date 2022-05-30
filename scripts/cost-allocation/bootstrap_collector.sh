@@ -3,7 +3,7 @@
 ### PURPOSE
 ###
 
-# Bootstrap requirements for radix-vulnerability-scanner in a radix cluster
+# Bootstrap requirements for radix-cost-allocation in a Radix cluster
 
 #######################################################################################
 ### PRECONDITIONS
@@ -29,17 +29,17 @@
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap_scanner.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap_collector.sh
 
 # Generate and store new SQL user password - new password is stored in KV and updated for SQL user
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" REGENERATE_SQL_PASSWORD=true ./bootstrap_scanner.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" REGENERATE_SQL_PASSWORD=true ./bootstrap_collector.sh
 
 #######################################################################################
 ### START
 ###
 
 echo ""
-echo "Start bootstrap of radix-vulnerability-scanner... "
+echo "Start bootstrap of radix-cost-allocation... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -135,23 +135,23 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap Radix Vulnerability Scanner with the following configuration:"
+echo -e "Bootstrap Radix Cost Allocation with the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_KEYVAULT                 : $AZ_RESOURCE_KEYVAULT"
-echo -e "   -  CLUSTER_NAME                         : $CLUSTER_NAME"
-echo -e "   -  VULNERABILITY_SCAN_SQL_SERVER_NAME   : $VULNERABILITY_SCAN_SQL_SERVER_NAME"
-echo -e "   -  VULNERABILITY_SCAN_SQL_DATABASE_NAME : $VULNERABILITY_SCAN_SQL_DATABASE_NAME"
+echo -e "   -  AZ_RESOURCE_KEYVAULT              : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  CLUSTER_NAME                      : $CLUSTER_NAME"
+echo -e "   -  COST_ALLOCATION_SQL_SERVER_NAME   : $COST_ALLOCATION_SQL_SERVER_NAME"
+echo -e "   -  COST_ALLOCATION_SQL_DATABASE_NAME : $COST_ALLOCATION_SQL_DATABASE_NAME"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  REGENERATE_SQL_PASSWORD              : $REGENERATE_SQL_PASSWORD"
+echo -e "   -  REGENERATE_SQL_PASSWORD           : $REGENERATE_SQL_PASSWORD"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                      : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                              : $(az account show --query user.name -o tsv)"
+echo -e "   -  AZ_SUBSCRIPTION                   : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                           : $(az account show --query user.name -o tsv)"
 echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
@@ -188,13 +188,13 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
 fi
 printf " OK\n"
 
-echo "Generate password for Scanner SQL user and store in KV"
+echo "Generate password for Radix Cost Allocation Writer SQL user and store in KV"
 
-generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_VULNERABILITY_SCAN_DB_WRITER $REGENERATE_SQL_PASSWORD || exit
+generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_COST_ALLOCATION_DB_WRITER $REGENERATE_SQL_PASSWORD || exit
 
 # Create/update SQL user and roles
-SCANNER_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_VULNERABILITY_SCAN_DB_WRITER | jq -r .value)
-ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_VULNERABILITY_SCAN_SQL_ADMIN | jq -r .value) 
+COLLECTOR_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_WRITER | jq -r .value)
+ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_SQL_ADMIN | jq -r .value) 
 
 if [[ -z $ADMIN_SQL_PASSWORD ]]; then
     printf "ERROR: SQL admin password not set"
@@ -205,63 +205,48 @@ echo "Whitelist IP in firewall rule for SQL Server"
 whitelistRuleName="ClientIpAddress_$(date +%Y%m%d%H%M%S)"
 
 add_local_computer_sql_firewall_rule \
-    $VULNERABILITY_SCAN_SQL_SERVER_NAME \
-    $AZ_RESOURCE_GROUP_VULNERABILITY_SCAN_SQL \
+    $COST_ALLOCATION_SQL_SERVER_NAME \
+    $AZ_RESOURCE_GROUP_COST_ALLOCATION_SQL \
     $whitelistRuleName \
     || exit
 
-echo "Creating/updating SQL user for Radix Vulnerability Scanner"
+echo "Creating/updating SQL user for Radix Cost Allocation"
 create_or_update_sql_user \
-    $VULNERABILITY_SCAN_SQL_SERVER_FQDN \
-    $VULNERABILITY_SCAN_SQL_ADMIN_LOGIN \
+    $COST_ALLOCATION_SQL_SERVER_FQDN \
+    $COST_ALLOCATION_SQL_ADMIN_LOGIN \
     $ADMIN_SQL_PASSWORD \
-    $VULNERABILITY_SCAN_SQL_DATABASE_NAME \
-    $VULNERABILITY_SCAN_SQL_SCANNER_USER \
-    $SCANNER_SQL_PASSWORD \
-    "radixwriter"
+    $COST_ALLOCATION_SQL_DATABASE_NAME \
+    $COST_ALLOCATION_SQL_COLLECTOR_USER \
+    $COLLECTOR_SQL_PASSWORD \
+    "datawriter"
 
 echo "Remove IP in firewall rule for SQL Server"
 delete_sql_firewall_rule \
-    $VULNERABILITY_SCAN_SQL_SERVER_NAME \
-    $AZ_RESOURCE_GROUP_VULNERABILITY_SCAN_SQL \
+    $COST_ALLOCATION_SQL_SERVER_NAME \
+    $AZ_RESOURCE_GROUP_COST_ALLOCATION_SQL \
     $whitelistRuleName \
     || exit
 
 
-echo "Install Radix Vulnerability Scanner resources for flux"
+echo "Install Radix Cost Allocation resources for flux"
 
-az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}" \
-    --file acr_sp_credentials.json \
-    || { echo "ERROR: Could not get secret '${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}' in '${AZ_RESOURCE_KEYVAULT}'." >&2; exit; }
+SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_WRITER | jq -r .value) ||
+    { echo "ERROR: Could not get secret '${KV_SECRET_COST_ALLOCATION_DB_WRITER}' in '${AZ_RESOURCE_KEYVAULT}'." >&2; exit; }
 
-SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_VULNERABILITY_SCAN_DB_WRITER | jq -r .value) ||
-    { echo "ERROR: Could not get secret '${KV_SECRET_VULNERABILITY_SCAN_DB_WRITER}' in '${AZ_RESOURCE_KEYVAULT}'." >&2; exit; }
+echo "db:                                                                                                                           
+  server: ${COST_ALLOCATION_SQL_SERVER_FQDN}
+  database: ${COST_ALLOCATION_SQL_DATABASE_NAME}
+  user: ${COST_ALLOCATION_SQL_COLLECTOR_USER}
+  password: ${SQL_DB_PASSWORD}" > radix-cost-allocation-values.yaml
 
-snykAccessTokenSecret=radix-snyk-sa-access-token-$RADIX_ZONE
-SNYK_SA_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $snykAccessTokenSecret | jq -r .value) ||
-    { echo "ERROR: Could not get secret '${snykAccessTokenSecret}' in '${AZ_RESOURCE_KEYVAULT}'." >&2; exit; }
-
-echo "sql:
-  password: ${SQL_DB_PASSWORD}
-  serverName: ${VULNERABILITY_SCAN_SQL_SERVER_FQDN}
-  databaseName: ${VULNERABILITY_SCAN_SQL_DATABASE_NAME}
-  userName: ${VULNERABILITY_SCAN_SQL_SCANNER_USER}
-dockerAuths:
-  - registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io
-    username: $(jq -r '.id' acr_sp_credentials.json)
-    password: $(jq -r '.password' acr_sp_credentials.json)
-snykToken: ${SNYK_SA_TOKEN}" > vulnerability-scanner-chart-values.yaml
-
-kubectl create ns radix-vulnerability-scanner --dry-run=client --save-config -o yaml |
+kubectl create ns radix-cost-allocation --dry-run=client --save-config -o yaml |
     kubectl apply -f -
-
-kubectl create secret generic vulnerability-scanner-chart-values --namespace radix-vulnerability-scanner \
-    --from-file=./vulnerability-scanner-chart-values.yaml \
+    
+kubectl create secret generic cost-db-secret --namespace radix-cost-allocation \
+    --from-file=./radix-cost-allocation-values.yaml \
     --dry-run=client -o yaml |
     kubectl apply -f -
 
-rm -f vulnerability-scanner-chart-values.yaml
-rm -f acr_sp_credentials.json
+rm -f radix-cost-allocation-values.yaml
+
 echo "Done."
