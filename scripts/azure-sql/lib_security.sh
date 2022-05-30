@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 # upsert_password_secret generates a new cryptographically random secret/password
 # and stores it in a Azure Key Vault secret
 #
