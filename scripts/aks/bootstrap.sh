@@ -336,12 +336,12 @@ fi
 ### Network
 ###
 
-IP_PREFIX=$(az network public-ip prefix show --name "$AZ_IPPRE_INBOUND_NAME" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --subscription "$AZ_SUBSCRIPTION_ID" | jq -r .ipPrefix)
-
-if [[ -z "$IP_PREFIX" ]]; then
-    echo "ERROR: Could not find public-ip prefix. Exiting..."
-    exit 1
-fi
+LOAD_BALANCER_IP=$(az aks show \
+    --name "${CLUSTER_NAME}" \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}"
+    --query networkProfile.loadBalancerProfile.effectiveOutboundIPs[].id \
+    --output tsv)
 
 if [ "$OMNIA_ZONE" = "standalone" ]; then
     echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
@@ -359,7 +359,7 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     printf "    Creating azure NSG rule %s..." "${NSG_NAME}-rule"
     az network nsg rule create \
         --access "Allow" \
-        --destination-address-prefixes "$IP_PREFIX" \
+        --destination-address-prefixes "$LOAD_BALANCER_IP" \
         --destination-port-ranges 80 443 \
         --direction "Inbound" \
         --nsg-name "$NSG_NAME" \
