@@ -12,29 +12,33 @@
 
 # - AKS cluster is available
 # - User has role cluster-admin
-# - Helm RBAC is configured in cluster
 
 #######################################################################################
 ### INPUTS
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
-# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
+# - RADIX_ZONE_ENV                : Path to *.env file
+# - CLUSTER_NAME                  : Ex: "test-2", "weekly-93"
+
+# Optional:
+# - USER_PROMPT                   : Is human interaction required to run script? true/false. Default is true.
+# - REGENERATE_COLLECTOR_PASSWORD : Should existing password for radix-cost-allocation be regenerated and stored in KV? true/false. default is false
+# - REGENERATE_API_PASSWORD       : Should existing password for radix-cost-allocation-api be regenerated and stored in KV? true/false. default is false
 
 #######################################################################################
 ### HOW TO USE
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 #######################################################################################
 ### START
 ###
 
 echo ""
-echo "Start bootstrap of radix-cost-allocation... "
+echo "Start bootstrap of radix-cost-allocation and radix-cost-allocation-api... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -50,16 +54,26 @@ hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
-hash helm 2>/dev/null || {
-    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
-    exit 1
-}
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
+hash sqlcmd 2>/dev/null || {
+    echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "All is good."
 echo ""
+
+#######################################################################################
+### Set default values for optional input
+###
+
+USER_PROMPT=${USER_PROMPT:=true}
+
+REGENERATE_COLLECTOR_PASSWORD=${REGENERATE_COLLECTOR_PASSWORD:-false}
+
+REGENERATE_API_PASSWORD=${REGENERATE_API_PASSWORD:-false}
 
 #######################################################################################
 ### Read inputs and configs
@@ -83,6 +97,22 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+case $REGENERATE_COLLECTOR_PASSWORD in
+    true|false) ;;
+    *)
+        echo 'REGENERATE_COLLECTOR_PASSWORD must be true or false' >&2
+        exit 1
+        ;;
+esac
+
+case $REGENERATE_API_PASSWORD in
+    true|false) ;;
+    *)
+        echo 'REGENERATE_API_PASSWORD must be true or false' >&2
+        exit 1
+        ;;
+esac
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -92,18 +122,55 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 #######################################################################################
-### Connect kubectl
+### Ask user to verify inputs and az login
 ###
 
-# Exit if cluster does not exist
-printf "\nConnecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
-    # Send message to stderr
-    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 1        
+echo -e ""
+echo -e "Bootstrap Radix Cost Allocation and API with the following configuration:"
+echo -e ""
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  REGENERATE_COLLECTOR_PASSWORD    : $REGENERATE_COLLECTOR_PASSWORD"
+echo -e "   -  REGENERATE_API_PASSWORD          : $REGENERATE_API_PASSWORD"
+echo -e ""
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e ""
+
+if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -p "Is this correct? (Y/n) " yn
+        case $yn in
+            [Yy]* ) echo ""; break;;
+            [Nn]* ) echo ""; echo "Quitting."; exit 1;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 fi
-printf "...Done.\n"
+
+#######################################################################################
+### CLUSTER?
+###
+
+az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
+kubectl_context="$(kubectl config current-context)"
+
+if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
+    echo "kubectl is ready..."
+else
+    echo "ERROR: Please set your kubectl current-context to be $CLUSTER_NAME" >&2
+    exit 1
+fi
 
 #######################################################################################
 ### Verify cluster access
@@ -115,18 +182,10 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
 fi
 printf " OK\n"
 
-echo "Install Radix cost allocator"
-SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name radix-cost-allocation-db-writer-$RADIX_ZONE | jq -r .value)
-echo "db:                                                                                                                           
-  password: ${SQL_DB_PASSWORD}" > radix-cost-allocation-values.yaml
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" USER_PROMPT="$USER_PROMPT" REGENERATE_SQL_PASSWORD="$REGENERATE_COLLECTOR_PASSWORD" "${script_dir_path}/bootstrap_collector.sh")
+wait # wait for subshell to finish
+printf "Done bootstrapping Radix Cost Allocation prerequisites.\n"
 
-kubectl create ns radix-cost-allocation --dry-run=client --save-config -o yaml |
-    kubectl apply -f -
-    
-kubectl create secret generic cost-db-secret --namespace radix-cost-allocation \
-    --from-file=./radix-cost-allocation-values.yaml \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
-
-rm -f radix-cost-allocation-values.yaml
-echo "Done."
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" REGENERATE_SQL_PASSWORD="$REGENERATE_API_PASSWORD" "${script_dir_path}/bootstrap_api.sh")
+wait # wait for subshell to finish
+printf "Done bootstrapping Radix Cost Allocation API prerequisites.\n"

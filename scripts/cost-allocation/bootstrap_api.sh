@@ -1,9 +1,10 @@
+#!/usr/bin/env bash
 
 #######################################################################################
 ### PURPOSE
 ###
 
-# Bootstrap requirements for radix-vulnerability-scanner-api in a radix cluster
+# Bootstrap requirements for radix-cost-allocation-api in a radix cluster
 
 #######################################################################################
 ### PRECONDITIONS
@@ -31,7 +32,7 @@
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap_api.sh
 
 # Generate and store new SQL user password - new password is stored in KV and updated for SQL user
-# The SQL_PASSWORD secret for radix-vulnerability-scanner-api app in Radix must be updated and restarted
+# The SQL_PASSWORD secret for radix-cost-allocation-api app in Radix must be updated and restarted
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env REGENERATE_SQL_PASSWORD=true ./bootstrap_api.sh
 
 #######################################################################################
@@ -39,7 +40,7 @@
 ###
 
 echo ""
-echo "Start bootstrap of radix-vulnerability-scanner-api... "
+echo "Start bootstrap of radix-cost-allocation-api... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -121,29 +122,27 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
 
 echo -e ""
-echo -e "Bootstrap Radix Vulnerability Scanner API with the following configuration:"
+echo -e "Bootstrap Radix Cost Allocation API with the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_KEYVAULT                 : $AZ_RESOURCE_KEYVAULT"
-echo -e "   -  VULNERABILITY_SCAN_SQL_SERVER_NAME   : $VULNERABILITY_SCAN_SQL_SERVER_NAME"
-echo -e "   -  VULNERABILITY_SCAN_SQL_DATABASE_NAME : $VULNERABILITY_SCAN_SQL_DATABASE_NAME"
+echo -e "   -  AZ_RESOURCE_KEYVAULT              : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  COST_ALLOCATION_SQL_SERVER_NAME   : $COST_ALLOCATION_SQL_SERVER_NAME"
+echo -e "   -  COST_ALLOCATION_SQL_DATABASE_NAME : $COST_ALLOCATION_SQL_DATABASE_NAME"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  REGENERATE_SQL_PASSWORD              : $REGENERATE_SQL_PASSWORD"
+echo -e "   -  REGENERATE_SQL_PASSWORD           : $REGENERATE_SQL_PASSWORD"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                      : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                              : $(az account show --query user.name -o tsv)"
+echo -e "   -  AZ_SUBSCRIPTION                   : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                           : $(az account show --query user.name -o tsv)"
 echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
@@ -163,10 +162,10 @@ fi
 
 echo "Generate password for API SQL user and store in KV"
 
-generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_VULNERABILITY_SCAN_DB_API $REGENERATE_SQL_PASSWORD || exit
+generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_COST_ALLOCATION_DB_API $REGENERATE_SQL_PASSWORD || exit
 
-API_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_VULNERABILITY_SCAN_DB_API | jq -r .value)
-ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_VULNERABILITY_SCAN_SQL_ADMIN | jq -r .value)
+API_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_API | jq -r .value)
+ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_SQL_ADMIN | jq -r .value) 
 
 if [[ -z $ADMIN_SQL_PASSWORD ]]; then
     printf "ERROR: SQL admin password not set" >&2
@@ -177,25 +176,25 @@ echo "Whitelist IP in firewall rule for SQL Server"
 whitelistRuleName="ClientIpAddress_$(date +%Y%m%d%H%M%S)"
 
 add_local_computer_sql_firewall_rule \
-    $VULNERABILITY_SCAN_SQL_SERVER_NAME \
-    $AZ_RESOURCE_GROUP_VULNERABILITY_SCAN_SQL \
+    $COST_ALLOCATION_SQL_SERVER_NAME \
+    $AZ_RESOURCE_GROUP_COST_ALLOCATION_SQL \
     $whitelistRuleName \
     || exit
 
-echo "Creating/updating SQL user for Radix Vulnerability Scanner API"
+echo "Creating/updating SQL user for Radix Cost Allocation API"
 create_or_update_sql_user \
-    $VULNERABILITY_SCAN_SQL_SERVER_FQDN \
-    $VULNERABILITY_SCAN_SQL_ADMIN_LOGIN \
+    $COST_ALLOCATION_SQL_SERVER_FQDN \
+    $COST_ALLOCATION_SQL_ADMIN_LOGIN \
     $ADMIN_SQL_PASSWORD \
-    $VULNERABILITY_SCAN_SQL_DATABASE_NAME \
-    $VULNERABILITY_SCAN_SQL_API_USER \
+    $COST_ALLOCATION_SQL_DATABASE_NAME \
+    $COST_ALLOCATION_SQL_API_USER \
     $API_SQL_PASSWORD \
-    "radixreader"
+    "datareader"
 
 echo "Remove IP in firewall rule for SQL Server"
 delete_sql_firewall_rule \
-    $VULNERABILITY_SCAN_SQL_SERVER_NAME \
-    $AZ_RESOURCE_GROUP_VULNERABILITY_SCAN_SQL \
+    $COST_ALLOCATION_SQL_SERVER_NAME \
+    $AZ_RESOURCE_GROUP_COST_ALLOCATION_SQL \
     $whitelistRuleName \
     || exit
 
