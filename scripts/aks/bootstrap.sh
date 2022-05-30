@@ -343,79 +343,75 @@ LOAD_BALANCER_IP=$(az aks show \
     --query networkProfile.loadBalancerProfile.effectiveOutboundIPs[].id \
     --output tsv)
 
-if [ "$OMNIA_ZONE" = "standalone" ]; then
-    echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
+echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
-    # Create network security group
-    printf "    Creating azure NSG %s..." "${NSG_NAME}"
-    az network nsg create \
-        --name "$NSG_NAME"
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --subscription "${AZ_SUBSCRIPTION_ID}"
-    printf "Done.\n"
+# Create network security group
+printf "    Creating azure NSG %s..." "${NSG_NAME}"
+az network nsg create \
+    --name "$NSG_NAME"
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --location "$AZ_RADIX_ZONE_LOCATION" \
+    --subscription "${AZ_SUBSCRIPTION_ID}"
+printf "Done.\n"
 
-    # Create network security group rule
-    printf "    Creating azure NSG rule %s..." "${NSG_NAME}-rule"
-    az network nsg rule create \
-        --access "Allow" \
-        --destination-address-prefixes "$LOAD_BALANCER_IP" \
-        --destination-port-ranges 80 443 \
-        --direction "Inbound" \
-        --nsg-name "$NSG_NAME" \
-        --priority 100 \
-        --protocol Tcp \
-        --source-address-prefixes "*" \
-        --source-port-ranges "*" \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$NSG_NAME-rule"
-    printf "Done.\n"
+# Create network security group rule
+printf "    Creating azure NSG rule %s..." "${NSG_NAME}-rule"
+az network nsg rule create \
+    --access "Allow" \
+    --destination-address-prefixes "$LOAD_BALANCER_IP" \
+    --destination-port-ranges 80 443 \
+    --direction "Inbound" \
+    --nsg-name "$NSG_NAME" \
+    --priority 100 \
+    --protocol Tcp \
+    --source-address-prefixes "*" \
+    --source-port-ranges "*" \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$NSG_NAME-rule"
+printf "Done.\n"
 
-    printf "   Creating azure VNET %s... " "${VNET_NAME}"
-    az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        -n "$VNET_NAME" \
-        --address-prefix "$VNET_ADDRESS_PREFIX" \
-        --subnet-name "$SUBNET_NAME" \
-        --subnet-prefix "$VNET_SUBNET_PREFIX" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --nsg "$NSG_NAME" \
-        --output none \
-        --only-show-errors
-    printf "Done.\n"
+printf "   Creating azure VNET %s... " "${VNET_NAME}"
+az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    -n "$VNET_NAME" \
+    --address-prefix "$VNET_ADDRESS_PREFIX" \
+    --subnet-name "$SUBNET_NAME" \
+    --subnet-prefix "$VNET_SUBNET_PREFIX" \
+    --location "$AZ_RADIX_ZONE_LOCATION" \
+    --nsg "$NSG_NAME" \
+    --output none \
+    --only-show-errors
+printf "Done.\n"
 
-    SUBNET_ID=$(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)
-    VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" --query "id" --output tsv)"
+SUBNET_ID=$(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)
+VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" --query "id" --output tsv)"
 
-    # peering VNET to hub-vnet
-    HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$AZ_VNET_HUB_NAME" --query "id" --output tsv)"
-    echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-    az network vnet peering create -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME" --remote-vnet "$HUB_VNET_RESOURCE_ID" --allow-vnet-access 2>&1
-    az network vnet peering create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME" --remote-vnet "$VNET_ID" --allow-vnet-access 2>&1
+# peering VNET to hub-vnet
+HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$AZ_VNET_HUB_NAME" --query "id" --output tsv)"
+echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
+az network vnet peering create -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME" --remote-vnet "$HUB_VNET_RESOURCE_ID" --allow-vnet-access 2>&1
+az network vnet peering create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME" --remote-vnet "$VNET_ID" --allow-vnet-access 2>&1
 
-    function linkPrivateDnsZoneToVNET() {
-        local dns_zone=${1}
-        local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$dns_zone" --query "id" --output tsv 2>&1)"
-        local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" --query "type" --output tsv 2>&1)"
-        if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
-            echo "ERROR: Private DNS Zone ${dns_zone} not found." >&2
-        elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
-            echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
-            # throws error if run twice
-            az network private-dns link vnet create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" -v "$VNET_ID" -e False 2>&1
-        fi
-    }
+function linkPrivateDnsZoneToVNET() {
+    local dns_zone=${1}
+    local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$dns_zone" --query "id" --output tsv 2>&1)"
+    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" --query "type" --output tsv 2>&1)"
+    if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
+        echo "ERROR: Private DNS Zone ${dns_zone} not found." >&2
+    elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
+        echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
+        # throws error if run twice
+        az network private-dns link vnet create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" -v "$VNET_ID" -e False 2>&1
+    fi
+}
 
-    # linking private dns zones to vnet
-    echo "Linking private DNS Zones to vnet $VNET_NAME... "
-    for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
-        linkPrivateDnsZoneToVNET "$dns_zone" &
-    done
-    wait
+# linking private dns zones to vnet
+echo "Linking private DNS Zones to vnet $VNET_NAME... "
+for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
+    linkPrivateDnsZoneToVNET "$dns_zone" &
+done
+wait
 
-    echo "Bootstrap of advanced network done."
-else
-   echo "Unknown parameter"
-fi
+echo "Bootstrap of advanced network done."
 
 #######################################################################################
 ### Create cluster
