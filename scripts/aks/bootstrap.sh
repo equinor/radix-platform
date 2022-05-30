@@ -336,48 +336,16 @@ fi
 ### Network
 ###
 
-LOAD_BALANCER_IP=$(az aks show \
-    --name "${CLUSTER_NAME}" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --query networkProfile.loadBalancerProfile.effectiveOutboundIPs[].id \
-    --output tsv)
 
 echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
-# Create network security group
-printf "    Creating azure NSG %s..." "${NSG_NAME}"
-az network nsg create \
-    --name "$NSG_NAME" \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --location "$AZ_RADIX_ZONE_LOCATION" \
-    --subscription "${AZ_SUBSCRIPTION_ID}"
-printf "Done.\n"
-
-# Create network security group rule
-printf "    Creating azure NSG rule %s..." "${NSG_NAME}-rule"
-az network nsg rule create \
-    --access "Allow" \
-    --destination-address-prefixes "$LOAD_BALANCER_IP" \
-    --destination-port-ranges 80 443 \
-    --direction "Inbound" \
-    --nsg-name "$NSG_NAME" \
-    --priority 100 \
-    --protocol Tcp \
-    --source-address-prefixes "*" \
-    --source-port-ranges "*" \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$NSG_NAME-rule"
-printf "Done.\n"
-
 printf "   Creating azure VNET %s... " "${VNET_NAME}"
-az network vnet create -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    -n "$VNET_NAME" \
+az network vnet create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$VNET_NAME" \
     --address-prefix "$VNET_ADDRESS_PREFIX" \
     --subnet-name "$SUBNET_NAME" \
     --subnet-prefix "$VNET_SUBNET_PREFIX" \
     --location "$AZ_RADIX_ZONE_LOCATION" \
-    --nsg "$NSG_NAME" \
     --output none \
     --only-show-errors
 printf "Done.\n"
@@ -512,6 +480,76 @@ fi
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 echo "Done."
+
+#######################################################################################
+### Create NSG and update subnet
+###
+
+NSG_ID=$(az network nsg list --resource-group clusters --query "[?name=='${NSG_NAME}'].id" --subscription "${AZ_SUBSCRIPTION_ID}" --output tsv --only-show-errors)
+
+if [[ ! ${NSG_ID} ]]; then
+    echo "NSG does not exist."
+
+    # Create network security group
+    printf "    Creating azure NSG %s..." "${NSG_NAME}"
+    NSG_ID=$(az network nsg create \
+        --name "$NSG_NAME" \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --location "$AZ_RADIX_ZONE_LOCATION" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --query id \
+        --output tsv \
+        --only-show-errors)
+    printf "Done.\n"
+else
+    echo "NSG exists."
+fi
+
+# Get loadbalancer IP
+LOAD_BALANCER_IP=$(az network public-ip show \
+    --ids "$(az aks show \
+    --name "${CLUSTER_NAME}" \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query networkProfile.loadBalancerProfile.effectiveOutboundIPs[].id \
+    --output tsv \
+    --only-show-errors)" \
+    --query "ipAddress" \
+    --output tsv \
+    --only-show-errors) || { echo "ERROR: Could not get loadbalancer IP." >&2; exit 1; }
+
+# Create network security group rule
+printf "    Creating azure NSG rule %s..." "${NSG_NAME}-rule"
+az network nsg rule create \
+    --nsg-name "$NSG_NAME" \
+    --name "$NSG_NAME-rule" \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --destination-address-prefixes "$LOAD_BALANCER_IP" \
+    --destination-port-ranges 80 443 \
+    --access "Allow" \
+    --direction "Inbound" \
+    --priority 100 \
+    --protocol Tcp \
+    --source-address-prefixes "*" \
+    --source-port-ranges "*" \
+    --output none \
+    --only-show-errors
+
+printf "Done.\n"
+
+if [[ ${NSG_ID} ]]; then
+    printf "    Updating subnet ${SUBNET_NAME} to associate NSG..."
+    az network vnet subnet update \
+        --vnet-name "${VNET_NAME}" \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --name "${SUBNET_NAME}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --network-security-group "${NSG_ID}" \
+        --output none \
+        --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
+    printf "Done.\n"
+fi
 
 #######################################################################################
 ### Lock cluster and network resources
