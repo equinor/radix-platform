@@ -349,9 +349,10 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     # Create network security group
     printf "    Creating azure NSG %s..." "${NSG_NAME}"
     az network nsg create \
-        -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        -l "$AZ_RADIX_ZONE_LOCATION" \
-        -n "$NSG_NAME"
+        --name "$NSG_NAME"
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --location "$AZ_RADIX_ZONE_LOCATION" \
+        --subscription "${AZ_SUBSCRIPTION_ID}"
     printf "Done.\n"
 
     # Create network security group rule
@@ -366,8 +367,8 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
         --protocol Tcp \
         --source-address-prefixes "*" \
         --source-port-ranges "*" \
-        -g "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        -n "$NSG_NAME-rule"
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$NSG_NAME-rule"
     printf "Done.\n"
 
     printf "   Creating azure VNET %s... " "${VNET_NAME}"
@@ -377,8 +378,9 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
         --subnet-name "$SUBNET_NAME" \
         --subnet-prefix "$VNET_SUBNET_PREFIX" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
-        --nsg "$NSG_NAME"
-        2>&1 >/dev/null
+        --nsg "$NSG_NAME" \
+        --output none \
+        --only-show-errors
     printf "Done.\n"
 
     SUBNET_ID=$(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)
