@@ -339,7 +339,7 @@ fi
 LOAD_BALANCER_IP=$(az aks show \
     --name "${CLUSTER_NAME}" \
     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}"
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
     --query networkProfile.loadBalancerProfile.effectiveOutboundIPs[].id \
     --output tsv)
 
@@ -348,7 +348,7 @@ echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 # Create network security group
 printf "    Creating azure NSG %s..." "${NSG_NAME}"
 az network nsg create \
-    --name "$NSG_NAME"
+    --name "$NSG_NAME" \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --location "$AZ_RADIX_ZONE_LOCATION" \
     --subscription "${AZ_SUBSCRIPTION_ID}"
