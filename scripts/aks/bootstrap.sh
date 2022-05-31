@@ -372,7 +372,7 @@ FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list --resource-group "$AZ_R
 FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
 
 if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
-    echo "Flow logs storage account does not exists."
+    printf "Flow logs storage account does not exists.\n"
 
     printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
         az storage account create \
@@ -383,15 +383,15 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
         --subscription "$AZ_SUBSCRIPTION_ID"
     printf "Done.\n"
 else
-    printf "Storage account exists"
+    printf "    Storage account exists.\n"
 fi
 
 if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     NSG_FLOW_LOGS="$(az network nsg show -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME" | jq -r .flowLogs)"
 
     # Check if NSG has assigned Flow log
-    if [[ -z $NSG_FLOW_LOGS ]]; then
-        printf "There is an existing Flow Log on %s" "$NSG_NAME"
+    if [[ $NSG_FLOW_LOGS != "null" ]]; then
+        printf "    There is an existing Flow Log on %s\n" "$NSG_NAME"
     else
         # Create network watcher flow log and assign to NSG
         printf "    Creating azure Flow-log %s..." "${NSG_NAME}-rule"
