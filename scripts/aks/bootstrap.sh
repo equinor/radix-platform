@@ -367,6 +367,47 @@ else
     echo "    NSG exists."
 fi
 
+# NSG Flow Logs
+FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list --resource-group "$AZ_RESOURCE_GROUP_LOGS" --query "[0].name=='$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS'")
+FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
+
+if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
+    echo "Flow logs storage account does not exists."
+
+    printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
+        az storage account create \
+        --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
+        --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+        --location "$AZ_RADIX_ZONE_LOCATION" \
+        --sku "Standard_LRS" \
+        --subscription "$AZ_SUBSCRIPTION_ID"
+    printf "Done.\n"
+else
+    printf "Storage account exists"
+fi
+
+if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
+    NSG_FLOW_LOGS="$(az network nsg show -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME" | jq -r .flowLogs)"
+
+    # Check if NSG has assigned Flow log
+    if [[ -z $NSG_FLOW_LOGS ]]; then
+        printf "There is an existing Flow Log on %s" "$NSG_NAME"
+    else
+        # Create network watcher flow log and assign to NSG
+        printf "    Creating azure Flow-log %s..." "${NSG_NAME}-rule"
+        az network watcher flow-log create \
+            --name "${NSG_NAME}-flow-log" \
+            --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+            --nsg "$NSG_NAME" \
+            --location "$AZ_RADIX_ZONE_LOCATION" \
+            --storage-account "$FLOW_LOGS_STORAGEACCOUNT_ID" \
+            --subscription "$AZ_SUBSCRIPTION_ID" \
+            --retention "90" \
+            --enable true
+        printf "Done.\n"
+    fi
+fi
+
 # Create VNET and associate NSG
 VNET_EXISTS=$(az network vnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --query "[?name=='${VNET_NAME}'].id" --output tsv --only-show-errors)
 
