@@ -593,7 +593,8 @@ az aks nodepool add \
     --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
     --node-taints radix-node-gpu-count=1:NoSchedule \
     --no-wait \
-    2>&1 >/dev/null
+    --output none \
+    --only-show-errors
 
 az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -609,7 +610,8 @@ az aks nodepool add \
     --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
     --node-taints radix-node-gpu-count=2:NoSchedule \
     --no-wait \
-    2>&1 >/dev/null
+    --output none \
+    --only-show-errors
 
 az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -625,7 +627,8 @@ az aks nodepool add \
     --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
     --node-taints radix-node-gpu-count=4:NoSchedule \
     --no-wait \
-    2>&1 >/dev/null
+    --output none \
+    --only-show-errors
 
 echo "Done."
 
