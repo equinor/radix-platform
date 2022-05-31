@@ -272,36 +272,46 @@ fi
 # if migrating active to active cluster (eg. dev to dev)
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Path to Public IP Prefix which contains the public outbound IPs
-    IPPRE_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
+    IPPRE_EGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
     IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
-    # list of AVAILABLE public ips assigned to the Radix Zone
-    echo "Getting list of available public ips in $RADIX_ZONE..."
-    AVAILABLE_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
-    # Select range of outbound ips based on OUTBOUND_IP_COUNT
-    SELECTED_IPS="$(echo "$AVAILABLE_IPS" | jq '.[0:'$OUTBOUND_IP_COUNT']')"
-    printf "Getting list of available Ingress ips in %s...\n" "$RADIX_ZONE"
-    AVAILABLE_INGRESS_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INGRESS_ID'" and .ipConfiguration==null)'  | jq -r '.name')"
 
-    if [[ "$AVAILABLE_IPS" == "[]" || "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
+    # list of AVAILABLE public EGRESS ips assigned to the Radix Zone
+    echo "Getting list of available public egress ips in $RADIX_ZONE..."
+    AVAILABLE_EGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_EGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
+
+    # Select range of egress ips based on OUTBOUND_IP_COUNT
+    SELECTED_EGRESS_IPS="$(echo "$AVAILABLE_EGRESS_IPS" | jq '.[0:'$OUTBOUND_IP_COUNT']')"
+
+    # list of AVAILABLE public INGRESS ips assigned to the Radix Zone
+    printf "Getting list of available public ingress ips in $RADIX_ZONE..."
+    AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
+
+    # Select first available ingress ip
+    SELECTED_INGRESS_IPS="$(echo "$AVAILABLE_INGRESS_IPS" | jq '.[0]')"
+
+    if [[ "$AVAILABLE_EGRESS_IPS" == "[]" || "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
         echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_OUTBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
         printf "Tip: You might need to do a teardown of an early clusters first.\n"
         exit 1
-    elif [[ -z $AVAILABLE_IPS ]]; then
+    elif [[ -z $AVAILABLE_EGRESS_IPS ]]; then
         echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..." >&2
         exit 1
     else
         echo ""
         echo "-----------------------------------------------------------"
         echo ""
-        echo "The following public IP(s) are currently available:"
-        echo "$AVAILABLE_IPS" | jq -r '.[].name'
+        echo "The following public egress IP(s) are currently available:"
+        echo "$AVAILABLE_EGRESS_IPS" | jq -r '.[].name'
         echo ""
-        echo "The following public IP(s) will be assigned to the cluster:"
-        echo "$SELECTED_IPS" | jq -r '.[].name'
+        echo "The following public egress IP(s) will be assigned to the cluster:"
+        echo "$SELECTED_EGRESS_IPS" | jq -r '.[].name'
         echo "-----------------------------------------------------------"
         echo ""
-        echo "The following Ingress IP(s) are currently available:"
-        echo "$AVAILABLE_INGRESS_IPS"
+        echo "The following public ingress IP(s) are currently available:"
+        echo "$AVAILABLE_INGRESS_IPS" | jq -r '.[].name'
+        echo ""
+        echo "The following public ingress IP(s) will be assigned to the cluster:"
+        echo "$SELECTED_INGRESS_IPS" | jq -r '.[].name'
         echo ""
         echo "-----------------------------------------------------------"
 
@@ -321,15 +331,11 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     fi
     echo ""
 
-    # Create the string to pass in as --load-balancer-outbound-ips
-    for ippre in $(echo "$SELECTED_IPS" | jq -c '.[]')
-    do
-        if [[ -z $OUTBOUND_IPS ]]; then
-            OUTBOUND_IPS="$(echo "$ippre" | jq -r '.id')"
-        else
-            OUTBOUND_IPS+=",$(echo "$ippre" | jq -r '.id')"
-        fi
-    done
+    # Create the comma separated string of egress ip resource ids to pass in as --load-balancer-outbound-ips for aks
+    while read -r line; do
+        EGRESS_IP_ID_LIST+="${line},"
+    done <<< "$(echo ${SELECTED_EGRESS_IPS} | jq -r '.[].id')"
+    EGRESS_IP_ID_LIST=${EGRESS_IP_ID_LIST%,} # Remove trailing comma
 fi
 
 #######################################################################################
@@ -339,16 +345,44 @@ fi
 
 echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
-printf "   Creating azure VNET %s... " "${VNET_NAME}"
-az network vnet create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$VNET_NAME" \
-    --address-prefix "$VNET_ADDRESS_PREFIX" \
-    --subnet-name "$SUBNET_NAME" \
-    --subnet-prefix "$VNET_SUBNET_PREFIX" \
-    --location "$AZ_RADIX_ZONE_LOCATION" \
-    --output none \
-    --only-show-errors
-printf "Done.\n"
+#######################################################################################
+### Create NSG and update subnet
+###
+
+NSG_ID=$(az network nsg list --resource-group clusters --query "[?name=='${NSG_NAME}'].id" --subscription "${AZ_SUBSCRIPTION_ID}" --output tsv --only-show-errors)
+
+if [[ ! ${NSG_ID} ]]; then
+    # Create network security group
+    printf "    Creating azure NSG %s..." "${NSG_NAME}"
+    NSG_ID=$(az network nsg create \
+        --name "$NSG_NAME" \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --location "$AZ_RADIX_ZONE_LOCATION" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --query id \
+        --output tsv \
+        --only-show-errors)
+    printf "Done.\n"
+else
+    echo "    NSG exists."
+fi
+
+# Create VNET and associate NSG
+VNET_EXISTS=$(az network vnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --query "[?name=='${VNET_NAME}'].id" --output tsv --only-show-errors)
+
+if [[ ! ${VNET_EXISTS} ]]; then
+    printf "    Creating azure VNET %s... " "${VNET_NAME}"
+    az network vnet create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$VNET_NAME" \
+        --address-prefix "$VNET_ADDRESS_PREFIX" \
+        --subnet-name "$SUBNET_NAME" \
+        --subnet-prefix "$VNET_SUBNET_PREFIX" \
+        --location "$AZ_RADIX_ZONE_LOCATION" \
+        --nsg "$NSG_NAME" \
+        --output none \
+        --only-show-errors
+    printf "Done.\n"
+fi
 
 SUBNET_ID=$(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)
 VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" --query "id" --output tsv)"
@@ -462,76 +496,6 @@ fi
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 echo "Done."
-
-#######################################################################################
-### Create NSG and update subnet
-###
-
-NSG_ID=$(az network nsg list --resource-group clusters --query "[?name=='${NSG_NAME}'].id" --subscription "${AZ_SUBSCRIPTION_ID}" --output tsv --only-show-errors)
-
-if [[ ! ${NSG_ID} ]]; then
-    echo "NSG does not exist."
-
-    # Create network security group
-    printf "    Creating azure NSG %s..." "${NSG_NAME}"
-    NSG_ID=$(az network nsg create \
-        --name "$NSG_NAME" \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --query id \
-        --output tsv \
-        --only-show-errors)
-    printf "Done.\n"
-else
-    echo "NSG exists."
-fi
-
-# Get loadbalancer IP
-LOAD_BALANCER_IP=$(az network public-ip show \
-    --ids "$(az aks show \
-    --name "${CLUSTER_NAME}" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --query networkProfile.loadBalancerProfile.effectiveOutboundIPs[].id \
-    --output tsv \
-    --only-show-errors)" \
-    --query "ipAddress" \
-    --output tsv \
-    --only-show-errors) || { echo "ERROR: Could not get loadbalancer IP." >&2; exit 1; }
-
-# Create network security group rule
-printf "    Creating azure NSG rule %s..." "${NSG_NAME}-rule"
-az network nsg rule create \
-    --nsg-name "$NSG_NAME" \
-    --name "$NSG_NAME-rule" \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --destination-address-prefixes "$LOAD_BALANCER_IP" \
-    --destination-port-ranges 80 443 \
-    --access "Allow" \
-    --direction "Inbound" \
-    --priority 100 \
-    --protocol Tcp \
-    --source-address-prefixes "*" \
-    --source-port-ranges "*" \
-    --output none \
-    --only-show-errors
-
-printf "Done.\n"
-
-if [[ ${NSG_ID} ]]; then
-    printf "    Updating subnet ${SUBNET_NAME} to associate NSG..."
-    az network vnet subnet update \
-        --vnet-name "${VNET_NAME}" \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-        --name "${SUBNET_NAME}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --network-security-group "${NSG_ID}" \
-        --output none \
-        --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
-    printf "Done.\n"
-fi
 
 #######################################################################################
 ### Lock cluster and network resources
