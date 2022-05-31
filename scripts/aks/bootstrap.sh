@@ -411,33 +411,15 @@ AKS_BASE_OPTIONS=(
     --assign-kubelet-identity "$ID_AKSKUBELET"
     --attach-acr "$ACR_ID"
     --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST"
+    --vnet-subnet-id "$SUBNET_ID"
 )
 
-if [ "$OMNIA_ZONE" = "standalone" ]; then
-    AKS_OMNIA_OPTIONS=(
-        --vnet-subnet-id "$SUBNET_ID"
-    )
 
-    # MIGRATION_STRATEGY PIP assignment
-    # if migrating active to active cluster (eg. dev to dev)
-    if [ "$MIGRATION_STRATEGY" = "aa" ]; then
-        MIGRATION_STRATEGY_OPTIONS=(
-            --load-balancer-outbound-ips "$OUTBOUND_IPS"
-            --load-balancer-outbound-ports "4000"
-        )
-    # if migrating active to test cluster (eg. dev to test cluster)
-    elif [[ "$MIGRATION_STRATEGY" = "at" ]]; then
-        MIGRATION_STRATEGY_OPTIONS=()
-    # if only bootstraping AKS
-    else
-        MIGRATION_STRATEGY_OPTIONS=()
-    fi
-elif [[ "$OMNIA_ZONE" = "classic" ]]; then
-    AKS_OMNIA_OPTIONS=(
-        --enable-private-cluster
+if [ "$MIGRATION_STRATEGY" = "aa" ]; then
+    MIGRATION_STRATEGY_OPTIONS=(
+        --load-balancer-outbound-ips "$EGRESS_IP_ID_LIST"
+        --load-balancer-outbound-ports "4000"
     )
-else
-   echo "Unknown parameter"
 fi
 
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
@@ -477,7 +459,7 @@ else
    echo "Unknown parameter"
 fi
 
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_OMNIA_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 echo "Done."
 
