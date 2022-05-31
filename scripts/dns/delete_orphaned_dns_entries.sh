@@ -121,6 +121,19 @@ TXT_RECORD_LIST=$(az network dns record-set txt list \
 
 printf " Done.\n"
 
+function delete_txt_record() {
+    local record_name=${1}
+    local heritage=${2}
+    echo "Deleting: $record_name (heritage: $heritage)..."
+    az network dns record-set txt delete \
+        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --zone-name ${AZ_RESOURCE_DNS} \
+        --name ${record_name} \
+        --subscription ${AZ_SUBSCRIPTION_ID} \
+        --yes
+    echo "Deleted $record_name."
+}
+
 while IFS=$'\t' read -r -a line; do
     if [[ "$line" ]]; then
         record_name=${line[0]}
@@ -128,18 +141,12 @@ while IFS=$'\t' read -r -a line; do
         # Split the record value into an array and get the heritage.
         IFS=',' read -r -a valueArray <<< "${line[1]}"
         heritage=${valueArray[1]#*=}
-        if [[ ! "${CLUSTERS[*]}" =~ "${heritage}" || -z $heritage ]]; then
-            printf "Deleting: $record_name (heritage: $heritage)..."
-            az network dns record-set txt delete \
-                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-                --zone-name ${AZ_RESOURCE_DNS} \
-                --name ${record_name} \
-                --subscription ${AZ_SUBSCRIPTION_ID} \
-                --yes
-            printf " Done.\n"
+        if [[ ! "${CLUSTERS[*]}" =~ "${heritage}" || -z "${heritage}" ]]; then
+            delete_txt_record "${record_name}" "${heritage}" &
         fi
     fi
 done <<< "${TXT_RECORD_LIST}"
+wait
 unset IFS
 
 echo "Deleted TXT-records not bound to a cluster."
@@ -163,20 +170,26 @@ printf " Done.\n"
 
 echo "Find A records not bound to a TXT-record..."
 
+function delete_a_record() {
+    local record_name=${1}
+    echo "Deleting: $record_name..."
+    az network dns record-set a delete \
+        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --zone-name ${AZ_RESOURCE_DNS} \
+        --name ${record_name} \
+        --subscription ${AZ_SUBSCRIPTION_ID} \
+        --yes
+    echo "Deleted ${record_name}."
+}
+
 while read -r line; do
     if [[ "$line" ]]; then
         if [[ ! "${TXT_RECORD_LIST[*]}" =~ "${line}" && ! ${EXCLUDE_LIST[*]} =~ "${line}" ]]; then
-            printf "Deleting: $line..."
-            az network dns record-set a delete \
-                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-                --zone-name ${AZ_RESOURCE_DNS} \
-                --name ${line} \
-                --subscription ${AZ_SUBSCRIPTION_ID} \
-                --yes
-            printf " Done.\n"
+            delete_a_record "${line}" &
         fi
     fi
 done <<< "${A_RECORD_LIST}"
+wait
 
 echo "Deleted A-records not bound to a TXT-record."
 

@@ -123,21 +123,28 @@ printf " Done.\n"
 
 # Delete TXT and A records bound to cluster.
 echo "Deleting TXT and A records"
+
+function delete_dns_entries() {
+    local dns_record=${1}
+    echo "Delete for ${dns_record}..."
+    az network dns record-set txt delete \
+        --name $dns_record \
+        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --zone-name ${AZ_RESOURCE_DNS} \
+        --yes
+    az network dns record-set a delete \
+        --name $dns_record \
+        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --zone-name ${AZ_RESOURCE_DNS} \
+        --yes
+    echo "Deleted ${dns_record}."
+}
+
 while read -r line; do
     if [[ "$line" ]]; then
-        printf "Delete for $line..."
-        az network dns record-set txt delete \
-            --name $line \
-            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-            --zone-name ${AZ_RESOURCE_DNS} \
-            --yes
-        az network dns record-set a delete \
-            --name $line \
-            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-            --zone-name ${AZ_RESOURCE_DNS} \
-            --yes
-        printf " Deleted.\n"
+        delete_dns_entries "${line}" &
     fi
 done <<< "${TXT_RECORDS}"
+wait
 
 echo "Deleted DNS records for cluster."

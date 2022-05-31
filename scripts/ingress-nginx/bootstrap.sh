@@ -42,6 +42,9 @@
 # Script vars
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Import networking variables for AKS
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../aks/network.env"
+
 echo ""
 echo "Start bootstrap of ingress-nginx... "
 
@@ -120,6 +123,9 @@ echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  NSG_NAME                         : $NSG_NAME"
+echo -e "   -  VNET_NAME                        : $VNET_NAME"
+echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
 echo -e ""
 echo -e "   > OPTIONS:"
 echo -e "   -  MIGRATION_STRATEGY               : $MIGRATION_STRATEGY"
@@ -179,18 +185,19 @@ echo "Install secret ingress-ip in cluster"
 if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
 
     # Path to Public IP Prefix which contains the public inbound IPs
-    IPPRE_INBOUND_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+    IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
 
     # list of AVAILABLE public ips assigned to the Radix Zone
-    echo "Getting list of available public inbound ips in $RADIX_ZONE..."
-    AVAILABLE_INBOUND_IPS="$(az network public-ip list | jq '.[] | select(.publicIpPrefix.id=="'$IPPRE_INBOUND_ID'" and .ipConfiguration.resourceGroup==null)' | jq '{name: .name, id: .id}' | jq -s '.')"
+    echo "Getting list of available public ingress ips in $RADIX_ZONE..."
+    AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
 
-    SELECTED_IP="$(echo $AVAILABLE_INBOUND_IPS | jq '.[0:1]')"
+    # Select first available ingress ip
+    SELECTED_INGRESS_IP="$(echo $AVAILABLE_INGRESS_IPS | jq '.[0]')"
 
-    if [[ "$AVAILABLE_INBOUND_IPS" == "[]" ]]; then
+    if [[ "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
         echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
         exit 1
-    elif [[ -z $AVAILABLE_INBOUND_IPS ]]; then
+    elif [[ -z $AVAILABLE_INGRESS_IPS ]]; then
         echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..." >&2
         exit 1
     else
@@ -198,11 +205,11 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
         echo ""
         echo "The following public IP(s) are currently available:"
         echo ""
-        echo $AVAILABLE_INBOUND_IPS | jq -r '.[].name'
+        echo $AVAILABLE_INGRESS_IPS | jq -r '.[].name'
         echo ""
         echo "The following public IP will be assigned as inbound IP to the cluster:"
         echo ""
-        echo $SELECTED_IP | jq -r '.[].name'
+        echo $SELECTED_INGRESS_IP | jq -r '.[].name'
         echo ""
         echo "-----------------------------------------------------------"
     fi
@@ -221,17 +228,72 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     fi
     echo ""
 
-    SELECTED_IP_ID=$(echo $SELECTED_IP | jq -r '.[].id')
-    SELECTED_IP_RAW_ADDRESS="$(az network public-ip show --ids $SELECTED_IP_ID --query ipAddress -o tsv)"
-
-    echo "controller:
-    service:
-        loadBalancerIP: $SELECTED_IP_RAW_ADDRESS" > config
+    SELECTED_INGRESS_IP_ID=$(echo $SELECTED_INGRESS_IP | jq -r '.[].id')
+    SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show --ids $SELECTED_INGRESS_IP_ID --query ipAddress -o tsv)"
 else
-    echo "controller:
-    service:
-        loadBalancerIP: null" > config
+    # Create public ingress IP
+    CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
+    IP_EXISTS=$(az network public-ip list \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --query "[?name=='${CLUSTER_PIP_NAME}'].ipAddress" \
+        --output tsv \
+        --only-show-errors)
+
+    if [[ ! ${IP_EXISTS} ]]; then
+        Printf "Creating Public Ingress IP..."
+        SELECTED_INGRESS_IP_RAW_ADDRESS=$(az network public-ip create \
+            --name "${CLUSTER_PIP_NAME}" \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --location ${AZ_RADIX_ZONE_LOCATION} \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
+            --allocation-method Static \
+            --sku Standard \
+            --tier Regional \
+            --query "publicIp.ipAddress" \
+            --output tsv \
+            --only-show-errors) || { echo "ERROR: Could not create Public IP. Quitting..." >&2; exit 1; }
+        printf "Done.\n"
+    else
+        SELECTED_INGRESS_IP_RAW_ADDRESS="${IP_EXISTS}"
+    fi
 fi
+
+# create nsg rule, update subnet.
+# Create network security group rule
+printf "Creating azure NSG rule ${NSG_NAME}-rule..."
+az network nsg rule create \
+    --nsg-name "${NSG_NAME}" \
+    --name "${NSG_NAME}-rule" \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --destination-address-prefixes "${SELECTED_INGRESS_IP_RAW_ADDRESS}" \
+    --destination-port-ranges 80 443 \
+    --access "Allow" \
+    --direction "Inbound" \
+    --priority 100 \
+    --protocol Tcp \
+    --source-address-prefixes "*" \
+    --source-port-ranges "*" \
+    --output none \
+    --only-show-errors
+
+printf "Done.\n"
+
+echo "controller:
+  service:
+    loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
+
+printf "    Updating subnet ${SUBNET_NAME} to associate NSG..."
+az network vnet subnet update \
+    --vnet-name "${VNET_NAME}" \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --name "${SUBNET_NAME}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --network-security-group "${NSG_ID}" \
+    --output none \
+    --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
+printf "Done.\n"
 
 kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -
