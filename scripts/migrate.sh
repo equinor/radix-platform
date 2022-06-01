@@ -475,8 +475,8 @@ if [[ $ENABLE_NOTIFY == true ]]; then
     # Notify on slack
     echo "Notify on slack"
     # Get slack webhook url
-    SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $KV_SECRET_SLACK_WEBHOOK | jq -r .value)"
-    curl -X POST -H 'Content-type: application/json' --data '{"text":"'$slack_users' Restore has been completed.","link_names":1}' $SLACK_WEBHOOK_URL
+    SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_SLACK_WEBHOOK" | jq -r .value)"
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$slack_users"' Restore has been completed.","link_names":1}' "$SLACK_WEBHOOK_URL"
 fi
 
 # Define web console variables
@@ -536,7 +536,7 @@ fi
 
 # Wait for redis caches to be created.
 printf "\nWaiting for redis caches to be created..."
-while [[ $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
+while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
   printf "."
   sleep 5
 done
@@ -563,7 +563,7 @@ fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
     printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIPT (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
-    source $MOVE_CUSTOM_INGRESSES_SCRIPT
+    source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
 else
     echo ""
     echo "Chicken!"
