@@ -109,7 +109,7 @@ echo -e ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting..."; exit 0;;
@@ -131,7 +131,7 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
     # Prompt to paste list.
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Do you want to update the list of IPs? (Y/n) " yn
+            read -r -p "Do you want to update the list of IPs? (Y/n) " yn
             case $yn in
                 [Yy]* ) PASTE_LIST=true; break;;
                 [Nn]* ) break;;
@@ -140,7 +140,7 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
         done
         if [[ $PASTE_LIST == true ]]; then
             while true; do
-                read -p "Enter the complete comma-separated list of IPs: " K8S_API_IP_WHITELIST
+                read -r -p "Enter the complete comma-separated list of IPs: " K8S_API_IP_WHITELIST
                 case $K8S_API_IP_WHITELIST in
                     [0-9.,/]* ) break;;
                     * ) echo "Please enter a comma-separated list of IPs.";;
@@ -183,7 +183,7 @@ if [[ -n $CLUSTER_NAME ]]; then
         if [[ $USER_PROMPT == true ]]; then
             echo "This will update \"$CLUSTER_NAME\" with \"$K8S_API_IP_WHITELIST\""
             while true; do
-                read -p "Is this correct? (Y/n) " yn
+                read -r -p "Is this correct? (Y/n) " yn
                 case $yn in
                     [Yy]* ) break;;
                     [Nn]* ) echo ""; echo "Quitting..."; exit 0;;
