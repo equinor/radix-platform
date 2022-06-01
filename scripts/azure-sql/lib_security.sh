@@ -8,8 +8,6 @@
 # - Secret name in Key Vault. Required
 # - Overwrite if exist. Optional, true/false, default false
 
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 generate_password_and_store() {
     local keyvault=$1
     local secretName=$2
@@ -70,6 +68,7 @@ create_or_update_sql_user() {
     local userName=$5 # Database user name to map to login
     local password=$6 # Password to set for $loginName
     local roles=$7 # Comma separated list of database role names to add the user to
+    local script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
     if [[ -z $serverName ]]; then
         echo "ERROR: serverName not set" >&2

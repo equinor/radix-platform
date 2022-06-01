@@ -311,7 +311,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         echo "$AVAILABLE_INGRESS_IPS" | jq -r '.[].name'
         echo ""
         echo "The following public ingress IP(s) will be assigned to the cluster:"
-        echo "$SELECTED_INGRESS_IPS" | jq -r '.[].name'
+        echo "$SELECTED_INGRESS_IPS" | jq -r '.name'
         echo ""
         echo "-----------------------------------------------------------"
 
