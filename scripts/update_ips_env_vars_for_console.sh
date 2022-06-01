@@ -91,7 +91,7 @@ function updateIpsEnvVars() {
     printf " Done.\n"
 
     # Get list of IPs for Public IPs assigned to Cluster Type
-    printf "Getting list of IPs from Public IP Prefix ${ippre_name}..."
+    printf "Getting list of IPs from Public IP Prefix %s..." "${ippre_name}"
     IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
     if [[ "${IP_PREFIXES}" == "[]" ]]; then
