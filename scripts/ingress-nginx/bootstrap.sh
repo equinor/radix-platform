@@ -209,7 +209,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
         echo ""
         echo "The following public IP will be assigned as inbound IP to the cluster:"
         echo ""
-        echo $SELECTED_INGRESS_IP | jq -r '.[].name'
+        echo $SELECTED_INGRESS_IP | jq -r '.name'
         echo ""
         echo "-----------------------------------------------------------"
     fi
@@ -228,7 +228,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     fi
     echo ""
 
-    SELECTED_INGRESS_IP_ID=$(echo $SELECTED_INGRESS_IP | jq -r '.[].id')
+    SELECTED_INGRESS_IP_ID=$(echo $SELECTED_INGRESS_IP | jq -r '.id')
     SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show --ids $SELECTED_INGRESS_IP_ID --query ipAddress -o tsv)"
 else
     # Create public ingress IP
