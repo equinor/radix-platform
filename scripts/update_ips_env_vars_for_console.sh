@@ -77,13 +77,13 @@ function updateIpsEnvVars() {
 
     # Get auth token for Radix API
     printf "Getting auth token for Radix API..."
-    API_ACCESS_TOKEN_RESOURCE=$(echo ${OAUTH2_PROXY_SCOPE} | awk '{print $4}' | sed 's/\/.*//')
+    API_ACCESS_TOKEN_RESOURCE=$(echo "${OAUTH2_PROXY_SCOPE}" | awk '{print $4}' | sed 's/\/.*//')
     if [[ -z ${API_ACCESS_TOKEN_RESOURCE} ]]; then
         echo "ERROR: Could not get Radix API access token resource." >&2
         return
     fi
 
-    API_ACCESS_TOKEN=$(az account get-access-token --resource ${API_ACCESS_TOKEN_RESOURCE} | jq -r '.accessToken')
+    API_ACCESS_TOKEN=$(az account get-access-token --resource "${API_ACCESS_TOKEN_RESOURCE}" | jq -r '.accessToken')
     if [[ -z ${API_ACCESS_TOKEN} ]]; then
         echo "ERROR: Could not get Radix API access token." >&2
         return
@@ -100,12 +100,12 @@ function updateIpsEnvVars() {
     fi
 
     # Loop through list of IPs and create a comma separated string. 
-    for ippre in $(echo ${IP_PREFIXES} | jq -c '.[]')
+    for ippre in $(echo "${IP_PREFIXES}" | jq -c '.[]')
     do
         if [[ -z $IP_LIST ]]; then
-            IP_LIST=$(echo ${ippre} | jq -r '.')
+            IP_LIST=$(echo "${ippre}" | jq -r '.')
         else
-            IP_LIST="${IP_LIST},$(echo ${ippre} | jq -r '.')"
+            IP_LIST="${IP_LIST},$(echo "${ippre}" | jq -r '.')"
         fi
     done
     printf " Done.\n"
@@ -135,6 +135,6 @@ updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAM
 
 # Restart deployment for web component
 printf "Restarting web deployment..."
-kubectl rollout restart deployment -n radix-web-console-${RADIX_WEB_CONSOLE_ENV} ${WEB_COMPONENT}
+kubectl rollout restart deployment -n radix-web-console-"${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}"
 
 echo "Done."
