@@ -283,7 +283,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
 
     echo ""
     echo "Creating destination cluster..."
-    printf "${grn}► Execute $BOOTSTRAP_AKS_SCRIPT${normal}\n"
+    printf "%s► Execute %s%s\n" "${grn}" "$BOOTSTRAP_AKS_SCRIPT" "${normal}"
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
     wait # wait for subshell to finish
 
@@ -307,7 +307,7 @@ fi
 if [[ $install_base_components == true ]]; then
     echo ""
     echo "Installing base components..."
-    printf "${grn}► Execute ${INSTALL_BASE_COMPONENTS_SCRIPT}${normal}\n"
+    printf "%s► Execute %s%s\n" "${grn}" "${INSTALL_BASE_COMPONENTS_SCRIPT}" "${normal}"
     (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="${USER_PROMPT}" source "${INSTALL_BASE_COMPONENTS_SCRIPT}")
     wait # wait for subshell to finish
     printf "Done installing base components."
@@ -333,7 +333,7 @@ while [[ "$(kubectl get pods -n cert-manager -ojsonpath={.items[*].status.contai
     sleep 5
 done
 echo ""
-printf "${grn}► Execute $CERT_MANAGER_CONFIGURATION_SCRIPT${normal}\n"
+printf "%s► Execute %s%s\n" "${grn}" "$CERT_MANAGER_CONFIGURATION_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$CERT_MANAGER_CONFIGURATION_SCRIPT")
 wait
 
@@ -345,7 +345,7 @@ while [[ "$(kubectl get deploy prometheus-operator-operator 2>&1)" == *"Error"* 
 done
 
 echo ""
-printf "${grn}► Execute $PROMETHEUS_CONFIGURATION_SCRIPT${normal}\n"
+printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$PROMETHEUS_CONFIGURATION_SCRIPT")
 wait
 
@@ -368,7 +368,7 @@ while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
 done
 echo ""
 # Add grafana replyUrl to AAD app
-printf "${grn}► Execute $ADD_REPLY_URL_SCRIPT${normal}\n"
+printf "%s► Execute %s%s\n" "$ADD_REPLY_URL_SCRIPT" "${grn}" "${normal}"
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 
@@ -465,7 +465,7 @@ fi
 
 echo ""
 printf "Restore into destination cluster...\n"
-printf "${grn}► Execute $RESTORE_APPS_SCRIPT${normal}\n"
+printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
 
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
 wait # wait for subshell to finish
@@ -498,13 +498,13 @@ while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1
 done
 echo "Ingress is ready, adding replyUrl for radix web-console..."
 
-printf "${grn}► Execute $ADD_REPLY_URL_SCRIPT${normal}\n"
+printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 (AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 printf "Done."
 
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
-printf "${grn}► Execute $WEB_CONSOLE_EGRESS_IP_SCRIPT${normal}\n"
+printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
 wait # wait for subshell to finish
 echo ""
@@ -524,9 +524,9 @@ fi
 if [[ $create_redis_cache == true ]]; then
     printf "Creating Redis Caches for Console...\n"
     (
-        printf "${grn}► Execute $UPDATE_REDIS_CACHE_SECRET_SCRIPT (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
+        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV="qa")%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > tmp_qa &
-        printf "${grn}► Execute $UPDATE_REDIS_CACHE_SECRET_SCRIPT (RADIX_WEB_CONSOLE_ENV="prod")${normal}\n"
+        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV="prod")%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > tmp_prod
     )
     printf " Done.\n"
@@ -562,7 +562,7 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
-    printf "${grn}► Execute $MOVE_CUSTOM_INGRESSES_SCRIPT (RADIX_WEB_CONSOLE_ENV="qa")${normal}\n"
+    printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV="qa")%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
     source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
 else
     echo ""
@@ -570,9 +570,9 @@ else
     echo ""
     printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
     printf "Update Auth proxy secret...\n"
-    printf "${grn}► Execute $UPDATE_AUTH_PROXY_SECRET_SCRIPT${normal}\n"
+    printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" "${normal}"
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
     wait # wait for subshell to finish
 fi
 printf "\n"
-printf "${grn}Done.${normal}\n"
+printf "%sDone.%s\n" "${grn}" "${normal}"
