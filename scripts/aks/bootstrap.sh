@@ -405,7 +405,7 @@ if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
             --retention "90" \
             --enabled true \
             --output none
-        printf "Done.\n"
+        printf "    Done.\n"
     fi
 fi
 
