@@ -125,7 +125,7 @@ fi
 if [[ -z $K8S_API_IP_WHITELIST ]];then
     # Get secret from keyvault
     printf "Getting secret from keyvault..."
-    EXISTING_K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $SECRET_NAME --query="value" -otsv 2>/dev/null)
+    EXISTING_K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$SECRET_NAME" --query="value" -otsv 2>/dev/null)
     printf " Done.\n"
     echo "Existing list of IPs: $EXISTING_K8S_API_IP_WHITELIST"
     # Prompt to paste list.
@@ -152,7 +152,7 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
         UPDATE_KEYVAULT=false
         K8S_API_IP_WHITELIST=$EXISTING_K8S_API_IP_WHITELIST
         if [[ -z $K8S_API_IP_WHITELIST ]]; then
-            printf " ERROR: Could not get secret \"$SECRET_NAME\" from keyvault \"$AZ_RESOURCE_KEYVAULT\". Quitting...\n" >&2
+            printf " ERROR: Could not get secret \"%s\" from keyvault \"%s\". Quitting...\n" "$SECRET_NAME" "$AZ_RESOURCE_KEYVAULT" >&2
             exit 1
         fi
     fi
@@ -164,7 +164,7 @@ fi
 
 if [[ $UPDATE_KEYVAULT == true ]];then
     # Update keyvault
-    printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
+    printf "Updating keyvault \"%s\"..." "$AZ_RESOURCE_KEYVAULT"
     if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$K8S_API_IP_WHITELIST" 2>&1)"" == *"ERROR"* ]]; then
         echo -e "\nERROR: Could not update secret in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..." >&2
         exit 1
@@ -179,7 +179,7 @@ fi
 if [[ -n $CLUSTER_NAME ]]; then
     # Check if cluster exists
     echo "Update cluster \"$CLUSTER_NAME\"."
-    if [[ -n "$(az aks list --query "[?name=='$CLUSTER_NAME'].name" --subscription $AZ_SUBSCRIPTION_ID -otsv)" ]];then
+    if [[ -n "$(az aks list --query "[?name=='$CLUSTER_NAME'].name" --subscription "$AZ_SUBSCRIPTION_ID" -otsv)" ]];then
         if [[ $USER_PROMPT == true ]]; then
             echo "This will update \"$CLUSTER_NAME\" with \"$K8S_API_IP_WHITELIST\""
             while true; do
@@ -193,7 +193,7 @@ if [[ -n $CLUSTER_NAME ]]; then
         fi
         # Update cluster
         printf "Updating cluster with whitelist IPs..."
-        if [[ $(az aks update --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $CLUSTER_NAME --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST") == *"ERROR"* ]]; then
+        if [[ $(az aks update --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST") == *"ERROR"* ]]; then
             printf "ERROR: Could not update cluster. Quitting...\n" >&2
             exit 1
         fi
