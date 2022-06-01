@@ -85,7 +85,7 @@ if [[ -z "$SOURCE_CLUSTER" ]]; then
     echo "ERROR: SOURCE_CLUSTER is not defined" >&2
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Is this intentional? (Y/n) " yn
+            read -r -p "Is this intentional? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -152,7 +152,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -191,7 +191,7 @@ printf " OK\n"
 ###
 echo ""
 printf "Enabling monitoring addon in the destination cluster... "
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription ${AZ_SUBSCRIPTION_ID} --query "[].id" --output tsv)
+WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
 az aks enable-addons --addons monitoring --name "${DEST_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --workspace-resource-id "${WORKSPACE_ID}" --no-wait
 printf "Done.\n"
 
@@ -218,7 +218,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     printf "Delete custom ingresses... "
     while read -r line; do
         if [[ "$line" ]]; then
-            helm delete ${line}
+            helm delete "${line}"
         fi
     done <<<"$(helm list --short | grep radix-ingress)"
 
@@ -233,7 +233,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ### Scale down source cluster resources
     ###
     echo ""
-    printf "Scale down radix-cicd-canary in $SOURCE_CLUSTER...\n"
+    printf "Scale down radix-cicd-canary in %s...\n" "$SOURCE_CLUSTER"
     kubectl scale deployment --name radix-cicd-canary radix-cicd-canary --replicas=0
     wait
     printf "Done.\n"

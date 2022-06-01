@@ -129,7 +129,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -187,7 +187,7 @@ function get_scaleset_instance_name() {
     local nodeName="${1}"
 
     nodeNameElements=($(get_nodename_elements "$nodeName"))
-    instanceNumber=$(get_scaleset_instance_number $nodeName)
+    instanceNumber=$(get_scaleset_instance_number "$nodeName")
 
     instanceName="${nodeNameElements[0]}-${nodeNameElements[1]}-${nodeNameElements[2]}-vmss_${instanceNumber}"
     echo -e "$instanceName"
@@ -217,7 +217,7 @@ function get_scalesets() {
 function recycle_scalesetinstance() {
     local nodeName="${1}"
 
-    scaleSetInstance=$(get_scaleset_instance_name $nodeName)
+    scaleSetInstance=$(get_scaleset_instance_name "$nodeName")
 
     scaleSetResourceGroup=$(get_scaleset_resourcegroup)
     scaleSets=($(get_scalesets))
@@ -227,7 +227,7 @@ function recycle_scalesetinstance() {
 
         for instance in "${scaleSetInstances[@]}"; do
             if [[ $scaleSetInstance == $instance ]]; then
-                instanceNumber=$(get_scaleset_instance_number $nodeName)
+                instanceNumber=$(get_scaleset_instance_number "$nodeName")
 
                 echo -e "Deleting instance number $instanceNumber"
                 if [[ $DRY_RUN == false ]]; then
@@ -257,7 +257,7 @@ function recycle_node() {
 allNodes=($(kubectl get nodes -o custom-columns=':metadata.name' --no-headers))
 
 for node in "${allNodes[@]}"; do
-    nodePool="$(get_nodepool_name $node)"
+    nodePool="$(get_nodepool_name "$node")"
     numNodesInNodepool="$(az aks nodepool show --cluster-name "$CLUSTER_NAME" --name "$nodePool" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --query count)"
 
     if [[ $NODE_NAME == All ]]; then
@@ -273,7 +273,7 @@ for node in "${allNodes[@]}"; do
 
         if [[ $USER_PROMPT == true ]]; then
             while true; do
-                read -p "Continue to next node? (Y/n) " yn
+                read -r -p "Continue to next node? (Y/n) " yn
                 case $yn in
                     [Yy]* ) break;;
                     [Nn]* ) echo ""; echo "Quitting."; exit 0;;
