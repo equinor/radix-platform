@@ -118,7 +118,7 @@ function getAddressSpaceForVNET() {
 
     local HUB_PEERED_VNET_JSON="$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_VNET_HUB" --vnet-name "$AZ_VNET_HUB_NAME")"
     local HUB_PEERED_VNET_EXISTING="$(echo "$HUB_PEERED_VNET_JSON" | jq --arg HUB_PEERING_NAME "${HUB_PEERING_NAME}" '.[] | select(.name==$HUB_PEERING_NAME)' | jq -r '.remoteAddressSpace.addressPrefixes[0]')"
-    if [[ ! -z "$HUB_PEERED_VNET_EXISTING" ]]; then
+    if [[ -n "$HUB_PEERED_VNET_EXISTING" ]]; then
         # vnet peering exist from before - use same IP
         local withoutCIDR=${HUB_PEERED_VNET_EXISTING%"/16"}
         echo "$withoutCIDR"
@@ -283,7 +283,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     SELECTED_EGRESS_IPS="$(echo "$AVAILABLE_EGRESS_IPS" | jq '.[0:'$OUTBOUND_IP_COUNT']')"
 
     # list of AVAILABLE public INGRESS ips assigned to the Radix Zone
-    printf "Getting list of available public ingress ips in $RADIX_ZONE..."
+    printf "Getting list of available public ingress ips in %s..." "$RADIX_ZONE"
     AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
 
     # Select first available ingress ip

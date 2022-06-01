@@ -141,7 +141,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -192,7 +192,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
 
     # Select first available ingress ip
-    SELECTED_INGRESS_IP="$(echo $AVAILABLE_INGRESS_IPS | jq '.[0]')"
+    SELECTED_INGRESS_IP="$(echo "$AVAILABLE_INGRESS_IPS" | jq '.[0]')"
 
     if [[ "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
         echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
@@ -205,7 +205,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
         echo ""
         echo "The following public IP(s) are currently available:"
         echo ""
-        echo $AVAILABLE_INGRESS_IPS | jq -r '.[].name'
+        echo "$AVAILABLE_INGRESS_IPS" | jq -r '.[].name'
         echo ""
         echo "The following public IP will be assigned as inbound IP to the cluster:"
         echo ""
@@ -218,7 +218,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     USER_PROMPT="true"
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Is this correct? (Y/n) " yn
+            read -r -p "Is this correct? (Y/n) " yn
             case $yn in
                 [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
                 [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -245,7 +245,7 @@ else
         SELECTED_INGRESS_IP_RAW_ADDRESS=$(az network public-ip create \
             --name "${CLUSTER_PIP_NAME}" \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-            --location ${AZ_RADIX_ZONE_LOCATION} \
+            --location "${AZ_RADIX_ZONE_LOCATION}" \
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --allocation-method Static \
             --sku Standard \
@@ -261,7 +261,7 @@ fi
 
 # create nsg rule, update subnet.
 # Create network security group rule
-printf "Creating azure NSG rule ${NSG_NAME}-rule..."
+printf "Creating azure NSG rule %s-rule..." "${NSG_NAME}"
 az network nsg rule create \
     --nsg-name "${NSG_NAME}" \
     --name "${NSG_NAME}-rule" \
@@ -284,7 +284,7 @@ echo "controller:
   service:
     loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
 
-printf "    Updating subnet ${SUBNET_NAME} to associate NSG..."
+printf "    Updating subnet %s to associate NSG..." "${SUBNET_NAME}"
 az network vnet subnet update \
     --vnet-name "${VNET_NAME}" \
     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
