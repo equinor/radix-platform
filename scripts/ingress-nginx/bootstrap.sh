@@ -192,7 +192,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
 
     # Select first available ingress ip
-    SELECTED_INGRESS_IP="$(echo $AVAILABLE_INGRESS_IPS | jq '.[0]')"
+    SELECTED_INGRESS_IP="$(echo "$AVAILABLE_INGRESS_IPS" | jq '.[0]')"
 
     if [[ "$AVAILABLE_INGRESS_IPS" == "[]" ]]; then
         echo "ERROR: Query returned no ips. Please check the variable AZ_IPPRE_INBOUND_NAME in RADIX_ZONE_ENV and that the IP-prefix exists. Exiting..." >&2
@@ -205,11 +205,11 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
         echo ""
         echo "The following public IP(s) are currently available:"
         echo ""
-        echo $AVAILABLE_INGRESS_IPS | jq -r '.[].name'
+        echo "$AVAILABLE_INGRESS_IPS" | jq -r '.[].name'
         echo ""
         echo "The following public IP will be assigned as inbound IP to the cluster:"
         echo ""
-        echo $SELECTED_INGRESS_IP | jq -r '.[].name'
+        echo "$SELECTED_INGRESS_IP" | jq -r '.[].name'
         echo ""
         echo "-----------------------------------------------------------"
     fi
@@ -228,8 +228,8 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     fi
     echo ""
 
-    SELECTED_INGRESS_IP_ID=$(echo $SELECTED_INGRESS_IP | jq -r '.[].id')
-    SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show --ids $SELECTED_INGRESS_IP_ID --query ipAddress -o tsv)"
+    SELECTED_INGRESS_IP_ID=$(echo "$SELECTED_INGRESS_IP" | jq -r '.[].id')
+    SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show --ids "$SELECTED_INGRESS_IP_ID" --query ipAddress -o tsv)"
 else
     # Create public ingress IP
     CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
@@ -245,7 +245,7 @@ else
         SELECTED_INGRESS_IP_RAW_ADDRESS=$(az network public-ip create \
             --name "${CLUSTER_PIP_NAME}" \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-            --location ${AZ_RADIX_ZONE_LOCATION} \
+            --location "${AZ_RADIX_ZONE_LOCATION}" \
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --allocation-method Static \
             --sku Standard \
