@@ -238,7 +238,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -272,7 +272,7 @@ echo "Verifying destination cluster existence..."
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
+            read -r -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) echo "Aborting..."; exit 0;;
@@ -295,7 +295,7 @@ install_base_components=true
 if [[ $USER_PROMPT == true ]]; then
     echo ""
     while true; do
-        read -p "Install base components? (Y/n) " yn
+        read -r -p "Install base components? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) install_base_components=false; break;;
@@ -442,7 +442,7 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
     echo "About to restore into destination cluster."
     while true; do
-        read -p "Do you want to be notified once restoration has been completed? (Y/n) " yn
+        read -r -p "Do you want to be notified once restoration has been completed? (Y/n) " yn
         case $yn in
             [Yy]* ) ENABLE_NOTIFY=true; break;;
             [Nn]* ) ENABLE_NOTIFY=false; break;;
@@ -453,8 +453,8 @@ fi
 
 if [[ $ENABLE_NOTIFY == true ]]; then
     while true; do
-        read -p "Enter slack @ username(s). Example: \"@olmt, @ssmol, @omnia-radix\": " slack_users
-        read -p "You have selected \"$slack_users\". Is this correct? (Y/n) " yn
+        read -r -p "Enter slack @ username(s). Example: \"@olmt, @ssmol, @omnia-radix\": " slack_users
+        read -r -p "You have selected \"$slack_users\". Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo "";;
@@ -512,7 +512,7 @@ echo ""
 create_redis_cache=true
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Update Redis Caches for Console? (Y/n) " yn
+        read -r -p "Update Redis Caches for Console? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) create_redis_cache=false; exit 0;;
@@ -552,7 +552,7 @@ fi
 echo ""
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
+        read -r -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) CUSTOM_INGRESSES=false; break;;
