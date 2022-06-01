@@ -141,7 +141,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -218,7 +218,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     USER_PROMPT="true"
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Is this correct? (Y/n) " yn
+            read -r -p "Is this correct? (Y/n) " yn
             case $yn in
                 [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
                 [Nn]* ) echo ""; echo "Quitting."; exit 0;;
