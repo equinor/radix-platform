@@ -524,9 +524,9 @@ fi
 if [[ $create_redis_cache == true ]]; then
     printf "Creating Redis Caches for Console...\n"
     (
-        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV="qa")%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
+        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > tmp_qa &
-        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV="prod")%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
+        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > tmp_prod
     )
     printf " Done.\n"
@@ -562,7 +562,7 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $CUSTOM_INGRESSES == true ]]; then
-    printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV="qa")%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
+    printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
     source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
 else
     echo ""
