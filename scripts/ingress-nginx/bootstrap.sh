@@ -241,7 +241,7 @@ else
         --only-show-errors)
 
     if [[ ! ${IP_EXISTS} ]]; then
-        Printf "Creating Public Ingress IP..."
+        printf "Creating Public Ingress IP..."
         SELECTED_INGRESS_IP_RAW_ADDRESS=$(az network public-ip create \
             --name "${CLUSTER_PIP_NAME}" \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \

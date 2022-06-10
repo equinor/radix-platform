@@ -58,13 +58,13 @@ function updateReplyUrls() {
     local host_name
     local additionalReplyURL
 
-    aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
+    aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --only-show-errors --query [].appId -o tsv)"
     if [[ -z $aadAppId ]]; then
         echo "ERROR: Could not find app registration. Quitting..." >&2
         exit 1
     fi
     # Convert list to string where urls are separated by space
-    currentReplyUrls="$(az ad app show --id ${aadAppId} --query replyUrls --output json | jq -r '.[] | @sh')"
+    currentReplyUrls="$(az ad app show --id ${aadAppId} --query web.redirectUris --only-show-errors --output json | jq -r '.[] | @sh')"
     # Remove tabs as mac really insist on one being there
     currentReplyUrls="$(printf '%s\t' ${currentReplyUrls})"
     host_name=$(kubectl get ing -n ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
@@ -97,9 +97,8 @@ function updateReplyUrls() {
 
     # Workaround for newReplyURLs param expansion
     local cmd_text
-    cmd_text="az ad app update --id "${aadAppId}" --reply-urls "${newReplyURLs}""
+    cmd_text="az ad app update --id "${aadAppId}" --web-redirect-uris "${newReplyURLs}" --only-show-errors"
     bash -c "$cmd_text"
-   
     echo "Added replyUrl \"${additionalReplyURL}\" to AAD app \"${AAD_APP_NAME}\"."
     echo ""
 }

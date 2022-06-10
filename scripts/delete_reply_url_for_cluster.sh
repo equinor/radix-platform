@@ -39,7 +39,7 @@ echo ""
 echo "Deleting replyUrl for App Registration \"${APP_REGISTRATION_NAME}\"..."
 
 # Get a list of all replyUrls in the App Registration
-array=($(az ad app show --id ${APP_REGISTRATION_ID} --query replyUrls --output tsv --only-show-errors))
+array=($(az ad app show --id ${APP_REGISTRATION_ID} --query web.redirectUris --output tsv --only-show-errors))
 length=${#array[@]}
 
 # Get the index number of the replyUrl we want to delete
@@ -62,7 +62,8 @@ else
             esac
         done
     fi
+    uris=$(az ad app show --id ${APP_REGISTRATION_ID} --query "web.redirectUris" | jq 'del(.['${index}'])' | jq -r '[.[]] | join (" ")')
     printf "Deleting replyUrl \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"..."
-    az ad app update --id "${APP_REGISTRATION_ID}" --remove replyUrls ${index}
+    az ad app update --id "${APP_REGISTRATION_ID}" --web-redirect-uris ${uris}
     printf " Done.\n"
 fi
