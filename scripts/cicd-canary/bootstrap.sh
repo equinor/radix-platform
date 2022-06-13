@@ -169,8 +169,4 @@ kubectl create secret generic canary-secrets --namespace radix-cicd-canary \
 
 rm -f $YAML_SECRET_FILE
 
-echo "Updating radix-networkpolicy-canary HTTP password..."
-printf "%s► Execute %s%s\n" "${grn}" "${script_dir_path}/update_secret_for_networkpolicy_canary.sh" "${normal}"
-(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} ${script_dir_path}/update_secret_for_networkpolicy_canary.sh)
-
 echo "Done."

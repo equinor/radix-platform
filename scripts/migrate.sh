@@ -178,6 +178,12 @@ if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
   echo "ERROR: The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
 fi
 
+UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT="$WORKDIR_PATH/cicd-canary/update_secret_for_networkpolicy_canary.sh"
+if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
+  # Print to stderror
+  echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
+fi
+
 UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/update_redis_cache_for_console.sh"
 if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
   # Print to stderror
@@ -505,6 +511,12 @@ printf "Done."
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
 printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
+wait # wait for subshell to finish
+echo ""
+
+# Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
+printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT)
 wait # wait for subshell to finish
 echo ""
 
