@@ -38,12 +38,23 @@ grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.37.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
+    exit 1
+fi
+
+
 hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
