@@ -158,8 +158,9 @@ clusterFqdn: $CLUSTER_NAME.$AZ_RESOURCE_DNS
 " >> $YAML_SECRET_FILE
 
 # Create radix-cicd-canary namespace
-kubectl create ns radix-cicd-canary --dry-run=client --save-config -o yaml |
-    kubectl apply -f -
+if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="radix-cicd-canary")]}') ]]; then 
+    kubectl create namespace radix-cicd-canary
+fi
 
 # Create secret 
 kubectl create secret generic canary-secrets --namespace radix-cicd-canary \

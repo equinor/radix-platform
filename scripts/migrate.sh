@@ -508,7 +508,7 @@ WEB_COMPONENT="web"
 
 # Update replyUrls for those radix apps that require AD authentication
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
-while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get ingress $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
   printf "."
   sleep 5
 done
@@ -524,6 +524,12 @@ printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
 wait # wait for subshell to finish
 echo ""
+
+printf "Waiting for radix-networkpolicy-canary environments..."
+while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
+    printf "."
+    sleep 5
+done
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
