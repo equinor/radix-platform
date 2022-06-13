@@ -39,19 +39,9 @@ echo ""
 echo "Deleting replyUrl for App Registration \"${APP_REGISTRATION_NAME}\"..."
 
 # Get a list of all replyUrls in the App Registration
-array=($(az ad app show --id ${APP_REGISTRATION_ID} --query web.redirectUris --output tsv --only-show-errors))
-length=${#array[@]}
+array=$(az ad app show --id "${APP_REGISTRATION_ID}" --query "web.redirectUris" --only-show-errors)
 
-# Get the index number of the replyUrl we want to delete
-for ((i=0; i<$length; i++)); do
-    if [[ "${array[$i]}" = "${REPLY_URL}" ]]; then
-        index="${i}"
-    fi
-done
-
-if [[ -z $index ]]; then
-    echo "ERROR: ReplyUrl \"${REPLY_URL}\" not found in App Registration \"${APP_REGISTRATION_NAME}\"." >&2
-else
+if [[ $(echo ${array} | jq 'select(. | index("'${REPLY_URL}'"))') ]]; then
     if [[ $USER_PROMPT == true ]]; then
         while true; do
             read -p "Do you want to delete \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"? " yn
@@ -62,8 +52,10 @@ else
             esac
         done
     fi
-    uris=$(az ad app show --id ${APP_REGISTRATION_ID} --query "web.redirectUris" | jq 'del(.['${index}'])' | jq -r '[.[]] | join (" ")')
+    uris=$(echo ${array} | jq -r 'del(.[] | select(. | index("'${REPLY_URL}'"))) | join (" ")')
     printf "Deleting replyUrl \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"..."
-    az ad app update --id "${APP_REGISTRATION_ID}" --web-redirect-uris ${uris}
+    az ad app update --id "${APP_REGISTRATION_ID}" --web-redirect-uris ${uris} --only-show-errors
     printf " Done.\n"
+else
+    echo "ERROR: ReplyUrl \"${REPLY_URL}\" not found in App Registration \"${APP_REGISTRATION_NAME}\"." >&2
 fi
