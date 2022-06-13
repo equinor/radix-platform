@@ -177,6 +177,23 @@ if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
 fi
 
 #######################################################################################
+### Check for test cluster public IPs
+###
+
+CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
+IP_EXISTS=$(az network public-ip list \
+    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='${CLUSTER_PIP_NAME}'].{id:id, ipAddress:ipAddress}" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ ${IP_EXISTS} ]]; then
+    TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.ipAddress')
+    TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq '.id')
+fi
+
+#######################################################################################
 ### Verify task at hand
 ###
 
@@ -192,6 +209,9 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+if [[ ${IP_EXISTS} ]]; then
+    echo -e "   -  TEST_CLUSTER_PUBLIC_IP_ADDRESS           : $TEST_CLUSTER_PUBLIC_IP_ADDRESS"
+fi
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -342,7 +362,16 @@ az network nsg delete \
     --subscription "$AZ_SUBSCRIPTION_ID"
 echo "Done."
 
-# TODO: Clean up velero blob dialog (yes/no)
+if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
+    # IP cannot be deleted while still allocated to loadbalancer.
+    printf "Deleting Public IP ${TEST_CLUSTER_PUBLIC_IP_ADDRESS}..."
+    az network public-ip delete \
+        --ids "${TEST_CLUSTER_PUBLIC_IP_ID}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none \
+        --only-show-errors
+    printf "Done.\n"
+fi
 
 echo ""
 echo "Delete DNS records"
