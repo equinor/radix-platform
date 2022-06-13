@@ -21,15 +21,14 @@
 #######################################################################################
 ### HOW TO USE
 ###
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
+#
+# or without log:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-01 DEST_CLUSTER=weekly-02 ./migrate.sh
 
 ### DISASTER RECOVERY
 ###
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
-
-
-# If you want to filter stdout and stderr to separate log files, run like this. All "error messages" will appear in /tmp/stderr.log
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -368,7 +367,7 @@ while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
 done
 echo ""
 # Add grafana replyUrl to AAD app
-printf "%s► Execute %s%s\n" "$ADD_REPLY_URL_SCRIPT" "${grn}" "${normal}"
+printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 
@@ -550,7 +549,7 @@ else
 fi
 
 echo ""
-if [[ $USER_PROMPT == true ]]; then
+if [[ $USER_PROMPT == true && $MIGRATION_STRATEGY == "aa" ]]; then
     while true; do
         read -r -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
         case $yn in
@@ -565,8 +564,6 @@ if [[ $CUSTOM_INGRESSES == true ]]; then
     printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
     source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
 else
-    echo ""
-    echo "Chicken!"
     echo ""
     printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
     printf "Update Auth proxy secret...\n"
