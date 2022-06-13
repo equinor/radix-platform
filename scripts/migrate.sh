@@ -525,6 +525,12 @@ printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal
 wait # wait for subshell to finish
 echo ""
 
+printf "Waiting for radix-networkpolicy-canary environments..."
+while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
+    printf "."
+    sleep 5
+done
+
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT)
