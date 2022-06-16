@@ -52,7 +52,7 @@ function deleteRedisCache() {
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Do you want to delete Redis Cache \"$REDIS_CACHE_NAME\"? (Y/n) " yn
+            read -r -p "Do you want to delete Redis Cache \"$REDIS_CACHE_NAME\"? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) echo "Quitting."; exit 0;;
@@ -61,9 +61,9 @@ function deleteRedisCache() {
         done
     fi
 
-    printf "Deleting Redis Cache \"$REDIS_CACHE_NAME\"..."
+    printf "Deleting Redis Cache \"%s\"..." "$REDIS_CACHE_NAME"
     if [[ $(az redis delete --yes --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>&1) == *"ERROR"* ]]; then
-        printf " ERROR: Could not delete Redis Cache \"$REDIS_CACHE_NAME\".\n" >&2
+        printf " ERROR: Could not delete Redis Cache \"%s\".\n" "$REDIS_CACHE_NAME" >&2
     else
         printf " Done.\n"
     fi
