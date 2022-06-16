@@ -236,7 +236,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ###
     echo ""
     printf "Scale down radix-cicd-canary in %s...\n" "$SOURCE_CLUSTER"
-    kubectl scale deployment --name radix-cicd-canary radix-cicd-canary --replicas=0
+    kubectl scale deployment --namespace radix-cicd-canary radix-cicd-canary --replicas=0
     wait
     printf "Done.\n"
 

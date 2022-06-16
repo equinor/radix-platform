@@ -137,11 +137,10 @@ function resetAppRegistrationPassword() {
     # Generate new secret for App Registration.
     printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"...\n"
     APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NETWORKPOLICY_CANARY" | jq -r '.[].appId')
-
     # For some reason, description can not be too long.
     UPDATED_APP_REGISTRATION_PASSWORD=$(az ad app credential reset \
         --id "$APP_REGISTRATION_CLIENT_ID" \
-        --credential-description "${RADIX_ZONE}-${RADIX_ENVIRONMENT}" \
+        --display-name "${RADIX_ZONE}-${RADIX_ENVIRONMENT}" \
         --append \
         --query password \
         --output tsv \

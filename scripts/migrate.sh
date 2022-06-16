@@ -21,15 +21,14 @@
 #######################################################################################
 ### HOW TO USE
 ###
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
+#
+# or without log:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-01 DEST_CLUSTER=weekly-02 ./migrate.sh
 
 ### DISASTER RECOVERY
 ###
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
-
-
-# If you want to filter stdout and stderr to separate log files, run like this. All "error messages" will appear in /tmp/stderr.log
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -39,12 +38,23 @@ grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.37.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
+    exit 1
+fi
+
+
 hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
@@ -177,6 +187,12 @@ UPDATE_AUTH_PROXY_SECRET_SCRIPT="$WORKDIR_PATH/update_auth_proxy_secret_for_cons
 if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
   # Print to stderror
   echo "ERROR: The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
+fi
+
+UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT="$WORKDIR_PATH/cicd-canary/update_secret_for_networkpolicy_canary.sh"
+if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
+  # Print to stderror
+  echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
 fi
 
 UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/update_redis_cache_for_console.sh"
@@ -368,7 +384,7 @@ while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
 done
 echo ""
 # Add grafana replyUrl to AAD app
-printf "%s► Execute %s%s\n" "$ADD_REPLY_URL_SCRIPT" "${grn}" "${normal}"
+printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 
@@ -511,6 +527,18 @@ printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal
 wait # wait for subshell to finish
 echo ""
 
+printf "Waiting for radix-networkpolicy-canary environments..."
+while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
+    printf "."
+    sleep 5
+done
+
+# Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
+printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT)
+wait # wait for subshell to finish
+echo ""
+
 create_redis_cache=true
 if [[ $USER_PROMPT == true ]]; then
     while true; do
@@ -552,7 +580,7 @@ else
 fi
 
 echo ""
-if [[ $USER_PROMPT == true ]]; then
+if [[ $USER_PROMPT == true && $MIGRATION_STRATEGY == "aa" ]]; then
     while true; do
         read -r -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
         case $yn in
@@ -567,8 +595,6 @@ if [[ $CUSTOM_INGRESSES == true ]]; then
     printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
     source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
 else
-    echo ""
-    echo "Chicken!"
     echo ""
     printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
     printf "Update Auth proxy secret...\n"

@@ -52,16 +52,17 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
 fi
 printf " OK\n"
 
-function updateReplyUrls() {
+function updateRedirectUris() {
     local aadAppId
-    local currentReplyUrls
+    local currentRedirectUris
     local host_name
     local additionalReplyURL
+    local newRedirectUris
 
-    aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --query [].appId -o tsv)"
+    aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --only-show-errors --query [].appId -o tsv)"
     if [[ -z $aadAppId ]]; then
         echo "ERROR: Could not find app registration. Quitting..." >&2
-        exit 1
+        return 1
     fi
     # Convert list to string where urls are separated by space
     currentRedirectUris="$(az ad app show --id ${aadAppId} --query web.redirectUris --only-show-errors --output json | jq -r '.[] | @text')"
@@ -69,18 +70,17 @@ function updateReplyUrls() {
     host_name=$(kubectl get ing --namespace ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
     additionalReplyURL="https://${host_name}${REPLY_PATH}"
 
-    if [[ "$currentReplyUrls" == *"${additionalReplyURL}"* ]]; then
+    if [[ "$currentRedirectUris" == *"${additionalReplyURL}"* ]]; then
         echo "replyUrl \"${additionalReplyURL}\" already exist in AAD app \"${AAD_APP_NAME}\"."
         echo ""
-        exit 0
+        return 0
     fi
 
-    local newReplyURLs
-    newReplyURLs="${currentReplyUrls}'${additionalReplyURL}'"
-   
+    newRedirectUris="${currentRedirectUris} ${additionalReplyURL}"
+
     # Ask user
-    echo "This will be the new list of replyUrls for AAD app $AAD_APP_NAME:"
-    echo "$newReplyURLs"
+    echo "This will be the new list of Redirect URIs for AAD app $AAD_APP_NAME:"
+    echo "$newRedirectUris"
     echo ""
 
     if [[ $USER_PROMPT == true ]]; then
@@ -88,20 +88,21 @@ function updateReplyUrls() {
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
-                [Nn]* ) echo ""; echo "Skipping updating replyUrls."; exit 0;;
+                [Nn]* ) echo ""; echo "Skipping updating RedirectUris."; return 0;;
                 * ) echo "Please answer yes or no.";;
             esac
         done
     fi
 
-    # Workaround for newReplyURLs param expansion
-    local cmd_text
-    cmd_text="az ad app update --id "${aadAppId}" --reply-urls "${newReplyURLs}""
-    bash -c "$cmd_text"
-   
+    az ad app update \
+        --id "${aadAppId}" \
+        --web-redirect-uris "${newRedirectUris}" \
+        --only-show-errors ||
+        { echo "ERROR: Could not update app registration." >&2; return 1; }
+
     echo "Added replyUrl \"${additionalReplyURL}\" to AAD app \"${AAD_APP_NAME}\"."
     echo ""
 }
 
 ### MAIN
-updateReplyUrls
+updateRedirectUris

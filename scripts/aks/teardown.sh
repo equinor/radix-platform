@@ -36,6 +36,8 @@ grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
 echo ""
 echo "Start teardown of aks instance... "
 
@@ -49,6 +51,13 @@ printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.37.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
+    exit 1
+fi
 
 
 #######################################################################################
@@ -168,6 +177,23 @@ if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
 fi
 
 #######################################################################################
+### Check for test cluster public IPs
+###
+
+CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
+IP_EXISTS=$(az network public-ip list \
+    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='${CLUSTER_PIP_NAME}'].{id:id, ipAddress:ipAddress}" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ ${IP_EXISTS} ]]; then
+    TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.ipAddress')
+    TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq '.id')
+fi
+
+#######################################################################################
 ### Verify task at hand
 ###
 
@@ -183,6 +209,9 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+if [[ ${IP_EXISTS} ]]; then
+    echo -e "   -  TEST_CLUSTER_PUBLIC_IP_ADDRESS           : $TEST_CLUSTER_PUBLIC_IP_ADDRESS"
+fi
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"

@@ -139,10 +139,10 @@ echo ""
 
 # Exit if cluster does not exist
 printf "\nConnecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 1        
+    exit 1
 fi
 printf "...Done.\n"
 
@@ -164,6 +164,6 @@ echo "access-token=$(az keyvault secret show -n radix-snyk-sa-access-token-$RADI
     " > radix-snyk-sa-access-token.yaml
 
 kubectl create secret generic radix-snyk-service-account --from-env-file=radix-snyk-sa-access-token.yaml --dry-run=client -o yaml | kubectl apply -f -
-kubectl annotate secret radix-snyk-service-account kubed.appscode.com/sync='snyk-service-account-sync=radix-snyk-service-account'
+kubectl annotate secret radix-snyk-service-account kubed.appscode.com/sync='snyk-service-account-sync=radix-snyk-service-account' --overwrite true
 
 rm -f radix-snyk-sa-access-token.yaml
