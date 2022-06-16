@@ -333,7 +333,16 @@ az network nsg delete \
     --subscription "$AZ_SUBSCRIPTION_ID"
 echo "Done."
 
-# TODO: Clean up velero blob dialog (yes/no)
+if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
+    # IP cannot be deleted while still allocated to loadbalancer.
+    printf "Deleting Public IP %s..." "${TEST_CLUSTER_PUBLIC_IP_ADDRESS}"
+    az network public-ip delete \
+        --ids "${TEST_CLUSTER_PUBLIC_IP_ID}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none \
+        --only-show-errors
+    printf "Done.\n"
+fi
 
 echo ""
 echo "Delete DNS records"

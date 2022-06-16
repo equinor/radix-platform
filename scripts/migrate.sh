@@ -328,7 +328,7 @@ while [[ "$(kubectl get deploy cert-manager -n cert-manager 2>&1)" == *"Error"* 
     printf "."
     sleep 5
 done
-while [[ "$(kubectl get pods -n cert-manager -ojsonpath={.items[*].status.containerStatuses[*].ready} | grep --invert-match true 2>&1)" != "" ]]; do
+while [[ "$(kubectl get pods --namespace cert-manager -ojsonpath={.items[*].status.containerStatuses[*].ready} | grep --invert-match true 2>&1)" != "" ]]; do
     printf "."
     sleep 5
 done
@@ -376,14 +376,16 @@ wait # wait for subshell to finish
 echo ""
 echo "Waiting for velero to be deployed by flux-operator so that it can handle restore into cluster from backup"
 echo "If this lasts forever, are you migrating to a cluster without base components installed? (Tip: Allow 5 minutes. Try 'fluxctl sync' to force syncing flux repo)"
-while [[ "$(kubectl get deploy velero -n velero 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get deploy velero --namespace velero 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
 
 echo ""
 printf "Point to source cluster... "
-az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" \
+az aks get-credentials \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$SOURCE_CLUSTER" \
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
@@ -404,7 +406,7 @@ printf "Done.\n"
 echo ""
 printf "Making backup of source cluster... "
 
-cat <<EOF | kubectl apply -f -
+cat <<EOF | kubectl apply --filename -
 apiVersion: velero.io/v1
 kind: Backup
 metadata:
@@ -492,7 +494,7 @@ WEB_COMPONENT="web"
 
 # Update replyUrls for those radix apps that require AD authentication
 echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
-while [[ "$(kubectl get ing $AUTH_PROXY_COMPONENT -n $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get ingress $AUTH_PROXY_COMPONENT --namespace $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
   printf "."
   sleep 5
 done

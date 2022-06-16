@@ -54,7 +54,7 @@ if [[ -z $index ]]; then
 else
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Do you want to delete \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"? " yn
+            read -r -p "Do you want to delete \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) exit;;

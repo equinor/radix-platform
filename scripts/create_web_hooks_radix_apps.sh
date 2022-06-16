@@ -8,11 +8,11 @@
 #    GITHUB_PAT_TOKEN=<token generated>
 
 # Add webhooks
-kubectl get ing -n radix-github-webhook-prod -w
+kubectl get ing --namespace radix-github-webhook-prod -w
 
 # Webhook for the radix-github-webhook project
 # When the build is finished and the webhook is running, get the address as well as the shared secret:
-WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
+WEBHOOK_HOSTNAME=$(kubectl get ing --namespace radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
 SHARED_SECRET=$(kubectl get rr radix-github-webhook -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
@@ -24,7 +24,7 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${
 # PS: If you get a "message": "Not Found" you have probably not set the GH_USERNAME and GITHUB_PAT_TOKEN environment variables. See pre-requisites above.
 
 # Webhook for the radix-api project
-WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
+WEBHOOK_HOSTNAME=$(kubectl get ing --namespace radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
 SHARED_SECRET=$(kubectl get rr radix-api -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
@@ -34,7 +34,7 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${
     echo $RESPONSE | jq
 
 # Webhook for the radix-cost-allocation-api project
-WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
+WEBHOOK_HOSTNAME=$(kubectl get ing --namespace radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
 SHARED_SECRET=$(kubectl get rr radix-cost-allocation-api -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
@@ -44,7 +44,7 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${
     echo $RESPONSE | jq
 
 # Webhook for the radix-canary-golang project
-WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
+WEBHOOK_HOSTNAME=$(kubectl get ing --namespace radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
 SHARED_SECRET=$(kubectl get rr radix-canary-golang -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
@@ -59,7 +59,7 @@ if [[ $CLUSTER_TYPE  == "development" ]]; then
   RADIX_WEB_CONSOLE_ENV="qa"
 fi
 # Webhook for the radix-web-console project
-WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-$RADIX_WEB_CONSOLE_ENV webhook -o json| jq --raw-output .spec.rules[0].host)
+WEBHOOK_HOSTNAME=$(kubectl get ing --namespace radix-github-webhook-$RADIX_WEB_CONSOLE_ENV webhook -o json| jq --raw-output .spec.rules[0].host)
 SHARED_SECRET=$(kubectl get rr radix-web-console -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 
@@ -69,7 +69,7 @@ https://api.github.com/repos/equinor/radix-web-console/hooks \
 echo $RESPONSE | jq
 
 # Webhook for the radix-platform project
-WEBHOOK_HOSTNAME=$(kubectl get ing -n radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
+WEBHOOK_HOSTNAME=$(kubectl get ing --namespace radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
 SHARED_SECRET=$(kubectl get rr radix-platform -o json | jq .spec.sharedSecret)
 echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
 

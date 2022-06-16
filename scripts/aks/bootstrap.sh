@@ -116,7 +116,7 @@ fi
 
 function getAddressSpaceForVNET() {
 
-    local HUB_PEERED_VNET_JSON="$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_VNET_HUB" --vnet-name "$AZ_VNET_HUB_NAME")"
+    local HUB_PEERED_VNET_JSON="$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --vnet-name "$AZ_VNET_HUB_NAME")"
     local HUB_PEERED_VNET_EXISTING="$(echo "$HUB_PEERED_VNET_JSON" | jq --arg HUB_PEERING_NAME "${HUB_PEERING_NAME}" '.[] | select(.name==$HUB_PEERING_NAME)' | jq -r '.remoteAddressSpace.addressPrefixes[0]')"
     if [[ -n "$HUB_PEERED_VNET_EXISTING" ]]; then
         # vnet peering exist from before - use same IP
@@ -387,7 +387,7 @@ else
 fi
 
 if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
-    NSG_FLOW_LOGS="$(az network nsg show -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$NSG_NAME" | jq -r .flowLogs)"
+    NSG_FLOW_LOGS="$(az network nsg show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$NSG_NAME" | jq -r .flowLogs)"
 
     # Check if NSG has assigned Flow log
     if [[ $NSG_FLOW_LOGS != "null" ]]; then
@@ -414,7 +414,8 @@ VNET_EXISTS=$(az network vnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS
 
 if [[ ! ${VNET_EXISTS} ]]; then
     printf "    Creating azure VNET %s... " "${VNET_NAME}"
-    az network vnet create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    az network vnet create \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --name "$VNET_NAME" \
         --address-prefix "$VNET_ADDRESS_PREFIX" \
         --subnet-name "$SUBNET_NAME" \
@@ -427,24 +428,24 @@ if [[ ! ${VNET_EXISTS} ]]; then
 fi
 
 SUBNET_ID=$(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)
-VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_NAME" --query "id" --output tsv)"
+VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$VNET_NAME" --query "id" --output tsv)"
 
 # peering VNET to hub-vnet
-HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$AZ_VNET_HUB_NAME" --query "id" --output tsv)"
+HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$AZ_VNET_HUB_NAME" --query "id" --output tsv)"
 echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-az network vnet peering create -g "$AZ_RESOURCE_GROUP_CLUSTERS" -n "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME" --remote-vnet "$HUB_VNET_RESOURCE_ID" --allow-vnet-access 2>&1
-az network vnet peering create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME" --remote-vnet "$VNET_ID" --allow-vnet-access 2>&1
+az network vnet peering create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME" --remote-vnet "$HUB_VNET_RESOURCE_ID" --allow-vnet-access 2>&1
+az network vnet peering create --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME" --remote-vnet "$VNET_ID" --allow-vnet-access 2>&1
 
 function linkPrivateDnsZoneToVNET() {
     local dns_zone=${1}
-    local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$dns_zone" --query "id" --output tsv 2>&1)"
-    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" --query "type" --output tsv 2>&1)"
+    local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$dns_zone" --query "id" --output tsv 2>&1)"
+    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$VNET_DNS_LINK" --zone-name "$dns_zone" --query "type" --output tsv 2>&1)"
     if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
         echo "ERROR: Private DNS Zone ${dns_zone} not found." >&2
     elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
         echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
         # throws error if run twice
-        az network private-dns link vnet create -g "$AZ_RESOURCE_GROUP_VNET_HUB" -n "$VNET_DNS_LINK" -z "$dns_zone" -v "$VNET_ID" -e False 2>&1
+        az network private-dns link vnet create --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$VNET_DNS_LINK" --zone-name "$dns_zone" --virtual-network "$VNET_ID" -e False 2>&1
     fi
 }
 
@@ -551,8 +552,10 @@ fi
 ### Update local kube config
 ###
 
-printf "Updating local kube config with admin access to cluster \"$CLUSTER_NAME\"... "
-az aks get-credentials --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" \
+printf "Updating local kube config with admin access to cluster \"%s\"... " "$CLUSTER_NAME"
+az aks get-credentials \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$CLUSTER_NAME" \
     --overwrite-existing \
     --admin \
     2>&1 >/dev/null
