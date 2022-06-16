@@ -107,8 +107,10 @@ fi
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ $STAGING == false ]]; then
     CERT_ISSUER="letsencrypt-prod"
+    ACME_URL="https://acme-v02.api.letsencrypt.org/directory"
 else
     CERT_ISSUER="letsencrypt-staging"
+    ACME_URL="https://acme-staging-v02.api.letsencrypt.org/directory"
 fi
 
 
@@ -206,6 +208,42 @@ kubectl create secret generic cert-manager-helm-secret --namespace cert-manager 
     kubectl apply -f -
 rm -f config
 
+DNS_SP="$(az keyvault secret show \
+    --vault-name $AZ_RESOURCE_KEYVAULT \
+    --name $APP_REGISTRATION_CERT_MANAGER \
+    | jq '.value | fromjson')"
+
+# Set variables used in the manifest templates
+DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
+DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
+DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
+DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cert-manager-certificate-values
+  namespace: flux-system
+type: Opaque
+stringData:
+  CERT_ISSUER: ${CERT_ISSUER}
+  AZ_RESOURCE_DNS: ${AZ_RESOURCE_DNS}
+  ACME_URL: ${ACME_URL}
+  DNS_SP_ID: ${DNS_SP_ID}
+  AZ_SUBSCRIPTION_ID: ${AZ_SUBSCRIPTION_ID}
+  DNS_SP_TENANT_ID: ${DNS_SP_TENANT_ID}
+  AZ_RESOURCE_GROUP_COMMON: ${AZ_RESOURCE_GROUP_COMMON}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-dns-secret
+  namespace: cert-manager
+type: Opaque
+data:
+  client-secret: ${DNS_SP_PASSWORD_base64} # base64 encode of Azure AD password
+EOF
 
 echo ""
 echo "Bootstrapping of Cert-Manager done!"
