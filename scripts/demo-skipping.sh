@@ -22,7 +22,7 @@ function user_skip_subshell() {
    echo -e "\n-------------------"
    echo -e "User told me to skip this step..."
    while true; do
-      read -p "Do you want to continue with the next steps? (Y/n) " yn
+      read -r -p "Do you want to continue with the next steps? (Y/n) " yn
       case $yn in
          # "exit" will break out of the subshell
          # If you want to break out of a while loop in main/parent script then you would use "break"

@@ -207,7 +207,9 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
 
     echo ""
     printf "Point to source cluster... "
-    az aks get-credentials --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${SOURCE_CLUSTER}" \
+    az aks get-credentials \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --name "${SOURCE_CLUSTER}" \
         --overwrite-existing \
         --admin \
         2>&1 >/dev/null

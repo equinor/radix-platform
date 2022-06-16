@@ -364,7 +364,7 @@ echo "Done."
 
 if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
     # IP cannot be deleted while still allocated to loadbalancer.
-    printf "Deleting Public IP ${TEST_CLUSTER_PUBLIC_IP_ADDRESS}..."
+    printf "Deleting Public IP %s..." "${TEST_CLUSTER_PUBLIC_IP_ADDRESS}"
     az network public-ip delete \
         --ids "${TEST_CLUSTER_PUBLIC_IP_ID}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \

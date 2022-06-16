@@ -67,7 +67,7 @@ function updateRedirectUris() {
     # Convert list to string where urls are separated by space
     currentRedirectUris="$(az ad app show --id ${aadAppId} --query web.redirectUris --only-show-errors --output json | jq -r '.[] | @text')"
 
-    host_name=$(kubectl get ing -n ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
+    host_name=$(kubectl get ing --namespace ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
     additionalReplyURL="https://${host_name}${REPLY_PATH}"
 
     if [[ "$currentRedirectUris" == *"${additionalReplyURL}"* ]]; then
@@ -85,7 +85,7 @@ function updateRedirectUris() {
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -p "Do you want to continue? (Y/n) " yn
+            read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) echo ""; echo "Skipping updating RedirectUris."; return 0;;

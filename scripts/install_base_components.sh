@@ -158,7 +158,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
   while true; do
-    read -p "Is this correct? (Y/n) " yn
+    read -r -p "Is this correct? (Y/n) " yn
     case $yn in
       [Yy]* ) break;;
       [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -197,7 +197,7 @@ printf " OK\n"
 ###
 
 echo ""
-kubectl apply -f ./priority-classes/radixComponentPriorityClass.yaml
+kubectl apply --filename ./priority-classes/radixComponentPriorityClass.yaml
 wait
 
 #######################################################################################
@@ -219,8 +219,8 @@ wait
 ###
 
 echo "Creating storage classes"
-kubectl apply -f manifests/storageclass-retain.yaml
-kubectl apply -f manifests/storageclass-retain-nocache.yaml
+kubectl apply --filename manifests/storageclass-retain.yaml
+kubectl apply --filename manifests/storageclass-retain-nocache.yaml
 
 #######################################################################################
 ### Install grafana
