@@ -180,7 +180,7 @@ fi
 ### Check for test cluster public IPs
 ###
 
-CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
+CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
 IP_EXISTS=$(az network public-ip list \
     --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
