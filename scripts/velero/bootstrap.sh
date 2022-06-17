@@ -133,7 +133,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -151,12 +151,13 @@ echo ""
 
 echo ""
 echo "Create resource group..."
-az group create -n "$AZ_VELERO_RESOURCE_GROUP" --location "$AZ_RADIX_ZONE_LOCATION" 2>&1 >/dev/null
+az group create --name "$AZ_VELERO_RESOURCE_GROUP" --location "$AZ_RADIX_ZONE_LOCATION" 2>&1 >/dev/null
 echo "Done."
 
 echo ""
 echo "Create storage account..."
-az storage account create --name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
+az storage account create \
+    --name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
     --resource-group "$AZ_VELERO_RESOURCE_GROUP" \
     --sku Standard_GRS \
     --encryption-services blob \

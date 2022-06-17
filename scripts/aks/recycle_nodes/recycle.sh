@@ -210,7 +210,7 @@ function get_scaleset_resourcegroup() {
 
 function get_scalesets() {
     scaleSetResourceGroup=$(get_scaleset_resourcegroup)
-    scaleSets=($(az vmss list --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --query [].name -o tsv))
+    scaleSets=($(az vmss list --subscription "$AZ_SUBSCRIPTION_ID" --resource-group "$scaleSetResourceGroup" --query [].name -o tsv))
     echo "${scaleSets[@]}"
 }
 
@@ -223,7 +223,7 @@ function recycle_scalesetinstance() {
     scaleSets=($(get_scalesets))
 
     for scaleSet in "${scaleSets[@]}"; do
-        scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
+        scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION_ID" --resource-group "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
 
         for instance in "${scaleSetInstances[@]}"; do
             if [[ $scaleSetInstance == $instance ]]; then
@@ -231,7 +231,7 @@ function recycle_scalesetinstance() {
 
                 echo -e "Deleting instance number $instanceNumber"
                 if [[ $DRY_RUN == false ]]; then
-                    az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --name "$scaleSet"
+                    az vmss delete-instances --instance-ids "$instanceNumber" --subscription "$AZ_SUBSCRIPTION_ID" --resource-group "$scaleSetResourceGroup" --name "$scaleSet"
                 fi
 
             fi
@@ -308,7 +308,7 @@ scaleSetResourceGroup=$(get_scaleset_resourcegroup)
 scaleSets=($(get_scalesets))
 
 for scaleSet in "${scaleSets[@]}"; do
-    scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION_ID" -g "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
+    scaleSetInstances=($(az vmss list-instances --subscription "$AZ_SUBSCRIPTION_ID" --resource-group "$scaleSetResourceGroup" --name "$scaleSet" --query [].name -o tsv))
     for instances in "${scaleSetInstances[@]}"; do
         echo -e "  - $instances"
     done

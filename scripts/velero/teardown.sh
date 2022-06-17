@@ -123,7 +123,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -144,7 +144,7 @@ echo ""
 # but it turns out that azure does not handle deletion of storage accounts properly when doing so.
 echo ""
 echo "Deleting storage account..."
-az storage account delete --yes -g "$AZ_VELERO_RESOURCE_GROUP" -n "$AZ_VELERO_STORAGE_ACCOUNT_ID" 2>&1 >/dev/null
+az storage account delete --yes --resource-group "$AZ_VELERO_RESOURCE_GROUP" --name "$AZ_VELERO_STORAGE_ACCOUNT_ID" 2>&1 >/dev/null
 echo "Done."
 
 echo ""

@@ -223,7 +223,7 @@ function generateCredentialsFile() {
 trap cleanup 0 2 3 15
 
 printf "\nWorking on namespace..."
-case "$(kubectl get ns $VELERO_NAMESPACE 2>&1)" in 
+case "$(kubectl get namespace $VELERO_NAMESPACE 2>&1)" in 
     *Error*)
         kubectl create ns "$VELERO_NAMESPACE" 2>&1 >/dev/null
     ;;
@@ -235,13 +235,14 @@ generateCredentialsFile
 kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
    --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
    --dry-run=client -o yaml \
-   | kubectl apply -f - \
+   | kubectl apply --filename - \
    2>&1 >/dev/null
 printf "...Done"
 
 # Create the cluster specific blob container
 printf "\nWorking on storage container..."
-az storage container create -n "$CLUSTER_NAME" \
+az storage container create \
+  --name "$CLUSTER_NAME" \
   --public-access off \
   --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
   --auth-mode login \
@@ -251,7 +252,7 @@ printf "...Done"
 # Velero custom RBAC clusterrole
 RBAC_CLUSTERROLE="velero-admin"
 printf "\nCreating $RBAC_CLUSTERROLE clusterrole..\n"
-cat <<EOF | kubectl apply -f -
+cat <<EOF | kubectl apply --filename -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -273,7 +274,7 @@ EOF
 
 # Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
 printf "Working on configmap for flux..."
-cat <<EOF | kubectl apply -f - 2>&1 >/dev/null
+cat <<EOF | kubectl apply --filename - 2>&1 >/dev/null
 apiVersion: v1
 kind: ConfigMap
 metadata:

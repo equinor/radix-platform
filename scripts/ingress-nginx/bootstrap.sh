@@ -296,12 +296,12 @@ az network vnet subnet update \
 printf "Done.\n"
 
 kubectl create namespace ingress-nginx --dry-run=client -o yaml |
-    kubectl apply -f -
+    kubectl apply --filename -
 
 kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
             --from-file=./config \
             --dry-run=client -o yaml |
-            kubectl apply -f -
+            kubectl apply --filename -
 
 rm config
 

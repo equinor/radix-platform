@@ -181,7 +181,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -217,7 +217,7 @@ printf " OK\n"
 
 printf "\nWorking on namespace..."
 if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
-    kubectl create ns flux-system 2>&1 >/dev/null
+    kubectl create namespace flux-system 2>&1 >/dev/null
 fi
 printf "...Done"
 
@@ -228,7 +228,7 @@ printf "...Done"
 FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 
-printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
+printf "\nLooking for flux deploy keys for GitHub in keyvault \"%s\"..." "${AZ_RESOURCE_KEYVAULT}"
 if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
     printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
     ssh-keygen -t ed25519 -N "" -C "radix@statoilsrm.onmicrosoft.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
@@ -265,7 +265,7 @@ kubectl create secret docker-registry radix-docker \
     --docker-password="$(jq -r '.password' sp_credentials.json)" \
     --docker-email=radix@statoilsrm.onmicrosoft.com \
     --dry-run=client -o yaml |
-    kubectl apply -f - \
+    kubectl apply --filename - \
         2>&1 >/dev/null
 rm -f sp_credentials.json
 printf "...Done\n"

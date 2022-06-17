@@ -376,11 +376,11 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
 
     printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
         az storage account create \
-        --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
-        --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --sku "Standard_LRS" \
-        --subscription "$AZ_SUBSCRIPTION_ID"
+            --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
+            --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+            --location "$AZ_RADIX_ZONE_LOCATION" \
+            --sku "Standard_LRS" \
+            --subscription "$AZ_SUBSCRIPTION_ID"
     printf "Done.\n"
 else
     printf "    Storage account exists.\n"
@@ -433,8 +433,20 @@ VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" -
 # peering VNET to hub-vnet
 HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$AZ_VNET_HUB_NAME" --query "id" --output tsv)"
 echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-az network vnet peering create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME" --remote-vnet "$HUB_VNET_RESOURCE_ID" --allow-vnet-access 2>&1
-az network vnet peering create --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME" --remote-vnet "$VNET_ID" --allow-vnet-access 2>&1
+
+az network vnet peering create \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$VNET_PEERING_NAME" \
+    --vnet-name "$VNET_NAME" \
+    --remote-vnet "$HUB_VNET_RESOURCE_ID" \
+    --allow-vnet-access 2>&1
+
+az network vnet peering create \
+    --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+    --name "$HUB_PEERING_NAME" \
+    --vnet-name "$AZ_VNET_HUB_NAME" \
+    --remote-vnet "$VNET_ID" \
+    --allow-vnet-access 2>&1
 
 function linkPrivateDnsZoneToVNET() {
     local dns_zone=${1}
@@ -445,7 +457,12 @@ function linkPrivateDnsZoneToVNET() {
     elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
         echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
         # throws error if run twice
-        az network private-dns link vnet create --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$VNET_DNS_LINK" --zone-name "$dns_zone" --virtual-network "$VNET_ID" -e False 2>&1
+        az network private-dns link vnet create \
+            --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+            --name "$VNET_DNS_LINK" \
+            --zone-name "$dns_zone" \
+            --virtual-network "$VNET_ID" \
+            -e False 2>&1
     fi
 }
 
@@ -544,8 +561,20 @@ echo "Done."
 ### Lock cluster and network resources
 ###
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    az lock create --lock-type CanNotDelete --name "${CLUSTER_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.ContainerService/managedClusters --resource "$CLUSTER_NAME"  &>/dev/null
-    az lock create --lock-type CanNotDelete --name "${VNET_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.Network/virtualNetworks --resource "$VNET_NAME"  &>/dev/null
+    az lock create \
+        --lock-type CanNotDelete \
+        --name "${CLUSTER_NAME}"-lock \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-type Microsoft.ContainerService/managedClusters \
+        --resource "$CLUSTER_NAME"  \
+        &>/dev/null
+    az lock create \
+        --lock-type CanNotDelete \
+        --name "${VNET_NAME}"-lock \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-type Microsoft.Network/virtualNetworks \
+        --resource "$VNET_NAME"  \
+        &>/dev/null
 fi
 
 #######################################################################################

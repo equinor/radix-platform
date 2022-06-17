@@ -171,7 +171,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
   while true; do
-    read -p "Is this correct? (Y/n) " yn
+    read -r -p "Is this correct? (Y/n) " yn
     case $yn in
       [Yy]* ) break;;
       [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -191,7 +191,7 @@ echo ""
 function please_wait_until_rr_synced() {
   local resource="rr"
   local allCmd="kubectl get rr -o custom-columns=':metadata.name' --no-headers"
-  local currentCmd="kubectl get ns -o custom-columns=':metadata.name'"
+  local currentCmd="kubectl get namespace -o custom-columns=':metadata.name'"
   local condition="grep '\-app'"
 
   please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
@@ -201,7 +201,7 @@ function please_wait_until_rr_synced() {
 function please_wait_until_ra_synced() {
   local resource="ra"
   local allCmd="kubectl get ra --all-namespaces -o custom-columns=':spec.environments[*].name' | tr ',' '\n'"
-  local currentCmd="kubectl get ns --selector=app-wildcard-sync=app-wildcard-tls-cert"
+  local currentCmd="kubectl get namespace --selector=app-wildcard-sync=app-wildcard-tls-cert"
   # No condition
   local condition="grep ''"
 
@@ -227,7 +227,7 @@ function please_wait() {
 
   while [[ "$iterator" != "$iteration_end" ]]; do
     iterator="$((iterator + 1))"
-    printf "$delimiter"
+    printf "%s" "$delimiter"
     sleep 1
   done
   echo "Done."

@@ -132,7 +132,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -196,7 +196,7 @@ else
         --from-file=dockercfg.json \
         --from-literal=integrationId=$SNYK_INTEGRATION_ID \
         --dry-run=client -o yaml |
-        kubectl apply -f -
+        kubectl apply --filename -
 
     rm "dockercfg.json"
 fi
@@ -217,7 +217,7 @@ kubectl create secret generic snyk-helm-secret \
     --namespace snyk-monitor \
     --from-file=./values \
     --dry-run=client -o yaml |
-    kubectl apply -f -
+    kubectl apply --filename -
 rm -f values
 
 echo "Done."

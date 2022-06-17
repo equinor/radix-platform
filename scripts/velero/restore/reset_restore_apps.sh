@@ -31,7 +31,7 @@ echo "Current cluster is: $DESTINATION_CLUSTER"
 echo ""
 
 while true; do
-   read -p "Are you sure you want to continue? (Y/n) " yn
+   read -r -p "Are you sure you want to continue? (Y/n) " yn
    case $yn in
       [Yy]* ) break;;
       [Nn]* ) echo ""; echo "Chicken!"; exit 0;;
@@ -46,7 +46,7 @@ kubectl delete rr --all
 
 echo ""
 echo "Waiting for all radix app namespaces to be deleted..."
-while [[ "$(kubectl get ns --selector='radix-app' --output=name)" != "" ]]; do   
+while [[ "$(kubectl get namespace --selector='radix-app' --output=name)" != "" ]]; do   
    printf "."
    sleep 2
 done
