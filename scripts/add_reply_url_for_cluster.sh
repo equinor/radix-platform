@@ -80,7 +80,7 @@ function updateRedirectUris() {
 
     # Ask user
     echo "This will be the new list of Redirect URIs for AAD app $AAD_APP_NAME:"
-    echo "$newRedirectUris"
+    echo $newRedirectUris
     echo ""
 
     if [[ $USER_PROMPT == true ]]; then
@@ -96,7 +96,7 @@ function updateRedirectUris() {
 
     az ad app update \
         --id "${aadAppId}" \
-        --web-redirect-uris "${newRedirectUris}" \
+        --web-redirect-uris ${newRedirectUris} \
         --only-show-errors ||
         { echo "ERROR: Could not update app registration." >&2; return 1; }
 
