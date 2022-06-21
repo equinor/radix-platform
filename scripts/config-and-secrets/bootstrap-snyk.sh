@@ -164,6 +164,6 @@ echo "access-token=$(az keyvault secret show -n radix-snyk-sa-access-token-$RADI
     " > radix-snyk-sa-access-token.yaml
 
 kubectl create secret generic radix-snyk-service-account --from-env-file=radix-snyk-sa-access-token.yaml --dry-run=client -o yaml | kubectl apply -f -
-kubectl annotate secret radix-snyk-service-account kubed.appscode.com/sync='snyk-service-account-sync=radix-snyk-service-account' --overwrite true
+kubectl annotate secret radix-snyk-service-account kubed.appscode.com/sync='snyk-service-account-sync=radix-snyk-service-account' --overwrite=true
 
 rm -f radix-snyk-sa-access-token.yaml
