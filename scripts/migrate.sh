@@ -195,6 +195,12 @@ if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
   echo "ERROR: The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
 fi
 
+CHECK_KEYVAULT_SECRETS="$WORKDIR_PATH/check_keyvault_secrets.sh"
+if ! [[ -x "$CHECK_KEYVAULT_SECRETS" ]]; then
+  # Print to stderror
+  echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_KEYVAULT_SECRETS" >&2
+fi
+
 #######################################################################################
 ### Check the migration strategy
 ###
@@ -578,5 +584,12 @@ else
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
     wait # wait for subshell to finish
 fi
+
+# Check keyvault secrets
+printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
+(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} $CHECK_KEYVAULT_SECRETS)
+wait # wait for subshell to finish
+echo ""
+
 printf "\n"
 printf "%sDone.%s\n" "${grn}" "${normal}"
