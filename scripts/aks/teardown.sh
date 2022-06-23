@@ -185,12 +185,11 @@ IP_EXISTS=$(az network public-ip list \
     --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --query "[?name=='${CLUSTER_PIP_NAME}'].{id:id, ipAddress:ipAddress}" \
-    --output tsv \
     --only-show-errors)
 
 if [[ ${IP_EXISTS} ]]; then
-    TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.ipAddress')
-    TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq '.id')
+    TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.[].ipAddress')
+    TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq '.[].id')
 fi
 
 #######################################################################################
@@ -210,7 +209,7 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 if [[ ${IP_EXISTS} ]]; then
-    echo -e "   -  TEST_CLUSTER_PUBLIC_IP_ADDRESS           : $TEST_CLUSTER_PUBLIC_IP_ADDRESS"
+    echo -e "   -  TEST_CLUSTER_PUBLIC_IP_ADDRESS   : $TEST_CLUSTER_PUBLIC_IP_ADDRESS"
 fi
 echo -e ""
 echo -e "   > WHO:"
