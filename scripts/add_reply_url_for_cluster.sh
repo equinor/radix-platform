@@ -80,7 +80,8 @@ function updateRedirectUris() {
 
     # Ask user
     echo "This will be the new list of Redirect URIs for AAD app $AAD_APP_NAME:"
-    echo $newRedirectUris
+    echo "${currentRedirectUris}"
+    echo "${additionalReplyURL}"
     echo ""
 
     if [[ $USER_PROMPT == true ]]; then
