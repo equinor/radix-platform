@@ -193,6 +193,15 @@ fi
 printf " OK\n"
 
 #######################################################################################
+### Create flux namespace
+###
+if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
+    printf "\nCreating flux-system namespace..."
+    kubectl create namespace flux-system 2>&1 >/dev/null
+    printf "...Done"
+fi
+
+#######################################################################################
 ### Add priority classes
 ###
 
