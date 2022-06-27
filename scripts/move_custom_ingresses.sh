@@ -1,32 +1,30 @@
 #!/usr/bin/env bash
 
-
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Move custom ingresses from one cluster to another
 
 #######################################################################################
 ### PRECONDITIONS
-### 
+###
 
 # - AKS cluster is available
 # - User has role cluster-admin
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - SOURCE_CLUSTER      : Ex: "test-2", "weekly-93"
 # - DEST_CLUSTER        : Ex: "test-2", "weekly-93"
 
-
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # Option #1 - migrate ingresses from source to destination cluster
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER="weekly-2" DEST_CLUSTER="weekly-3" ./move_custom_ingresses.sh
@@ -34,13 +32,11 @@
 # Option #2 - configure ingresses from destination cluster only. Useful when creating cluster form scratch
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-3" ./move_custom_ingresses.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 echo ""
 echo "Start moving custom ingresses..."
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -48,10 +44,22 @@ echo "Start moving custom ingresses..."
 
 echo ""
 printf "Check for necessary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nERROR: helm not found in PATH. Exiting..." >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting..." >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash helm 2>/dev/null || {
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
 printf "All is good."
 echo ""
 
@@ -87,14 +95,17 @@ if [[ -z "$SOURCE_CLUSTER" ]]; then
         while true; do
             read -r -p "Is this intentional? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*) break ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
 fi
-
 
 #######################################################################################
 ### Resolve dependencies on other scripts
@@ -115,7 +126,7 @@ fi
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE  == "development" ]]; then
+if [[ $CLUSTER_TYPE == "development" ]]; then
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
 AUTH_INGRESS_SUFFIX=".custom-domain"
@@ -154,9 +165,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -169,7 +184,7 @@ echo ""
 
 # Exit if cluster does not exist
 printf "\nConnecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
+if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then
     # Send message to stderr
     echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
     exit 1
@@ -225,7 +240,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     done <<<"$(helm list --short | grep radix-ingress)"
 
     #######################################################################################
-    ### 
+    ###
     ###
     # Point grafana to cluster specific ingress
     GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"

@@ -93,9 +93,12 @@ function updateRedisCacheConfiguration() {
             while true; do
                 read -p "Do you want to create a new Redis Cache? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) break;;
-                    [Nn]* ) echo "Quitting."; exit 1;; # no redis cache available, exit
-                    * ) echo "Please answer yes or no.";;
+                [Yy]*) break ;;
+                [Nn]*)
+                    echo "Quitting."
+                    exit 1
+                    ;; # no redis cache available, exit
+                *) echo "Please answer yes or no." ;;
                 esac
             done
         fi
@@ -107,7 +110,6 @@ function updateRedisCacheConfiguration() {
         else
             REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_RADIX_ZONE_LOCATION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Standard --vm-size c1)
         fi
-        
 
         if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
             echo ""

@@ -67,7 +67,6 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
 fi
 printf " OK\n"
 
-
 function updateIpsEnvVars() {
 
     env_var_configmap_name="${1}"
@@ -99,9 +98,8 @@ function updateIpsEnvVars() {
         return
     fi
 
-    # Loop through list of IPs and create a comma separated string. 
-    for ippre in $(echo "${IP_PREFIXES}" | jq -c '.[]')
-    do
+    # Loop through list of IPs and create a comma separated string.
+    for ippre in $(echo "${IP_PREFIXES}" | jq -c '.[]'); do
         if [[ -z $IP_LIST ]]; then
             IP_LIST=$(echo "${ippre}" | jq -r '.')
         else
@@ -126,7 +124,6 @@ function updateIpsEnvVars() {
     echo "Web component env variable updated with Public IP Prefix IPs."
     unset IP_LIST
 }
-
 
 ### MAIN
 updateIpsEnvVars "${EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_OUTBOUND_NAME}"

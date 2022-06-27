@@ -142,10 +142,10 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
 if [ -n "$FLUX_OVERRIDE_GIT_BRANCH" ]; then
-echo -e "   -  FLUX_OVERRIDE_GIT_BRANCH         : $FLUX_OVERRIDE_GIT_BRANCH"
+  echo -e "   -  FLUX_OVERRIDE_GIT_BRANCH         : $FLUX_OVERRIDE_GIT_BRANCH"
 fi
 if [ -n "$FLUX_OVERRIDE_GIT_DIR" ]; then
-echo -e "   -  FLUX_OVERRIDE_GIT_DIR            : $FLUX_OVERRIDE_GIT_DIR"
+  echo -e "   -  FLUX_OVERRIDE_GIT_DIR            : $FLUX_OVERRIDE_GIT_DIR"
 fi
 echo -e ""
 echo -e "   > WHO:"
@@ -160,9 +160,13 @@ if [[ $USER_PROMPT == true ]]; then
   while true; do
     read -r -p "Is this correct? (Y/n) " yn
     case $yn in
-      [Yy]* ) break;;
-      [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-      * ) echo "Please answer yes or no.";;
+    [Yy]*) break ;;
+    [Nn]*)
+      echo ""
+      echo "Quitting."
+      exit 0
+      ;;
+    *) echo "Please answer yes or no." ;;
     esac
   done
 fi
@@ -187,18 +191,18 @@ printf "...Done.\n"
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n" >&2
-    exit 1
+  printf "ERROR: Could not access cluster. Quitting...\n" >&2
+  exit 1
 fi
 printf " OK\n"
 
 #######################################################################################
 ### Create flux namespace
 ###
-if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
-    printf "\nCreating flux-system namespace..."
-    kubectl create namespace flux-system 2>&1 >/dev/null
-    printf "...Done"
+if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
+  printf "\nCreating flux-system namespace..."
+  kubectl create namespace flux-system 2>&1 >/dev/null
+  printf "...Done"
 fi
 
 #######################################################################################

@@ -6,7 +6,7 @@
 
 # Example 1:
 # APP_REGISTRATION_ID="5687b237-eda3-4ec3-a2a1-023e85a2bd84" REPLY_URL="https://auth-radix-web-console-qa.weekly-39-c.dev.radix.equinor.com/oauth2/callback" ./delete_reply_url_for_cluster.sh
-# 
+#
 # Example 2: Using a subshell to avoid polluting parent shell
 # (APP_REGISTRATION_ID="f545deb5-f721-4d20-87cd-b046b5119d70" REPLY_URL="https://grafana.weekly-39-c.dev.radix.equinor.com/login/generic_oauth" source "./delete_reply_url_for_cluster.sh")
 
@@ -46,9 +46,9 @@ if [[ $(echo ${array} | jq 'select(. | index("'${REPLY_URL}'"))') ]]; then
         while true; do
             read -r -p "Do you want to delete \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) exit;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*) break ;;
+            [Nn]*) exit ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi

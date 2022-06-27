@@ -54,9 +54,12 @@ function deleteRedisCache() {
         while true; do
             read -r -p "Do you want to delete Redis Cache \"$REDIS_CACHE_NAME\"? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*) break ;;
+            [Nn]*)
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
