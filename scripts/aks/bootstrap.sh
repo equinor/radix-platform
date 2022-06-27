@@ -28,7 +28,6 @@
 # When creating a cluster that will become an active cluster (creating a cluster in advance)
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=aa ./bootstrap.sh
 
-
 #######################################################################################
 ### START
 ###
@@ -109,7 +108,6 @@ if [[ -z "$VNET_DNS_LINK" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
 
-
 #######################################################################################
 ### support functions
 ###
@@ -137,7 +135,6 @@ function getAddressSpaceForVNET() {
     done
 }
 
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -157,7 +154,7 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
     VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
 
 #######################################################################################
@@ -218,9 +215,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -239,8 +240,8 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     # AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     # AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     # AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
-    ID_AKS="$(az identity show --name "$MI_AKS" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2> /dev/null)"
-    ID_AKSKUBELET="$(az identity show --name "$MI_AKSKUBELET" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2> /dev/null)"
+    ID_AKS="$(az identity show --name "$MI_AKS" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2>/dev/null)"
+    ID_AKSKUBELET="$(az identity show --name "$MI_AKSKUBELET" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2>/dev/null)"
     ACR_ID="$(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --query "id" --output tsv)"
 else
     # Credentials are provided from input.
@@ -323,9 +324,17 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         while true; do
             read -r -p "Is this correct? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                echo "Sounds good, continuing."
+                break
+                ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -334,14 +343,13 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Create the comma separated string of egress ip resource ids to pass in as --load-balancer-outbound-ips for aks
     while read -r line; do
         EGRESS_IP_ID_LIST+="${line},"
-    done <<< "$(echo ${SELECTED_EGRESS_IPS} | jq -r '.[].id')"
+    done <<<"$(echo ${SELECTED_EGRESS_IPS} | jq -r '.[].id')"
     EGRESS_IP_ID_LIST=${EGRESS_IP_ID_LIST%,} # Remove trailing comma
 fi
 
 #######################################################################################
 ### Network
 ###
-
 
 echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
@@ -375,12 +383,12 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     printf "Flow logs storage account does not exists.\n"
 
     printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
-        az storage account create \
-            --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
-            --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
-            --location "$AZ_RADIX_ZONE_LOCATION" \
-            --sku "Standard_LRS" \
-            --subscription "$AZ_SUBSCRIPTION_ID"
+    az storage account create \
+        --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
+        --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+        --location "$AZ_RADIX_ZONE_LOCATION" \
+        --sku "Standard_LRS" \
+        --subscription "$AZ_SUBSCRIPTION_ID"
     printf "Done.\n"
 else
     printf "    Storage account exists.\n"
@@ -481,7 +489,6 @@ echo "Bootstrap of advanced network done."
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
-
 ###############################################################################
 
 AKS_BASE_OPTIONS=(
@@ -508,7 +515,6 @@ AKS_BASE_OPTIONS=(
     --vnet-subnet-id "$SUBNET_ID"
 )
 
-
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     MIGRATION_STRATEGY_OPTIONS=(
         --load-balancer-outbound-ips "$EGRESS_IP_ID_LIST"
@@ -528,7 +534,7 @@ elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
         --max-count "$MAX_COUNT"
     )
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
@@ -550,7 +556,7 @@ elif [[ "$CLUSTER_TYPE" = "classicprod" ]]; then
         --vnet-subnet-id "/subscriptions/7790e999-c11c-4f0b-bfdf-bc2fd5c38e91/resourceGroups/S340-NE-network/providers/Microsoft.Network/virtualNetworks/S340-NE-vnet"
     )
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
 
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
@@ -566,14 +572,14 @@ if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
         --name "${CLUSTER_NAME}"-lock \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --resource-type Microsoft.ContainerService/managedClusters \
-        --resource "$CLUSTER_NAME"  \
+        --resource "$CLUSTER_NAME" \
         &>/dev/null
     az lock create \
         --lock-type CanNotDelete \
         --name "${VNET_NAME}"-lock \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --resource-type Microsoft.Network/virtualNetworks \
-        --resource "$VNET_NAME"  \
+        --resource "$VNET_NAME" \
         &>/dev/null
 fi
 
@@ -592,7 +598,6 @@ az aks get-credentials \
 [[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
 
 printf "Done.\n"
-
 
 #######################################################################################
 ### Add GPU node pools

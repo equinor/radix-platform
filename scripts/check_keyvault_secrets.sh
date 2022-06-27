@@ -90,9 +90,13 @@ echo -e ""
 while true; do
     read -r -p "Is this correct? (Y/n) " yn
     case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) echo ""; echo "Quitting..."; exit 0;;
-        * ) echo "Please answer yes or no.";;
+    [Yy]*) break ;;
+    [Nn]*)
+        echo ""
+        echo "Quitting..."
+        exit 0
+        ;;
+    *) echo "Please answer yes or no." ;;
     esac
 done
 
