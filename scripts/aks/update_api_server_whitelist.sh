@@ -111,9 +111,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting..."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting..."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -122,7 +126,7 @@ fi
 ### Get list of IPs
 ###
 
-if [[ -z $K8S_API_IP_WHITELIST ]];then
+if [[ -z $K8S_API_IP_WHITELIST ]]; then
     # Get secret from keyvault
     printf "Getting secret from keyvault..."
     EXISTING_K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$SECRET_NAME" --query="value" -otsv 2>/dev/null)
@@ -133,17 +137,20 @@ if [[ -z $K8S_API_IP_WHITELIST ]];then
         while true; do
             read -r -p "Do you want to update the list of IPs? (Y/n) " yn
             case $yn in
-                [Yy]* ) PASTE_LIST=true; break;;
-                [Nn]* ) break;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                PASTE_LIST=true
+                break
+                ;;
+            [Nn]*) break ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
         if [[ $PASTE_LIST == true ]]; then
             while true; do
                 read -r -p "Enter the complete comma-separated list of IPs: " K8S_API_IP_WHITELIST
                 case $K8S_API_IP_WHITELIST in
-                    [0-9.,/]* ) break;;
-                    * ) echo "Please enter a comma-separated list of IPs.";;
+                [0-9.,/]*) break ;;
+                *) echo "Please enter a comma-separated list of IPs." ;;
                 esac
             done
         fi
@@ -162,7 +169,7 @@ fi
 ### Update keyvault if input list
 ###
 
-if [[ $UPDATE_KEYVAULT == true ]];then
+if [[ $UPDATE_KEYVAULT == true ]]; then
     # Update keyvault
     printf "Updating keyvault \"%s\"..." "$AZ_RESOURCE_KEYVAULT"
     if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$K8S_API_IP_WHITELIST" 2>&1)"" == *"ERROR"* ]]; then
@@ -179,15 +186,19 @@ fi
 if [[ -n $CLUSTER_NAME ]]; then
     # Check if cluster exists
     echo "Update cluster \"$CLUSTER_NAME\"."
-    if [[ -n "$(az aks list --query "[?name=='$CLUSTER_NAME'].name" --subscription "$AZ_SUBSCRIPTION_ID" -otsv)" ]];then
+    if [[ -n "$(az aks list --query "[?name=='$CLUSTER_NAME'].name" --subscription "$AZ_SUBSCRIPTION_ID" -otsv)" ]]; then
         if [[ $USER_PROMPT == true ]]; then
             echo "This will update \"$CLUSTER_NAME\" with \"$K8S_API_IP_WHITELIST\""
             while true; do
                 read -r -p "Is this correct? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) break;;
-                    [Nn]* ) echo ""; echo "Quitting..."; exit 0;;
-                    * ) echo "Please answer yes or no.";;
+                [Yy]*) break ;;
+                [Nn]*)
+                    echo ""
+                    echo "Quitting..."
+                    exit 0
+                    ;;
+                *) echo "Please answer yes or no." ;;
                 esac
             done
         fi

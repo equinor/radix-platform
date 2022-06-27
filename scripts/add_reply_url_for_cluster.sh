@@ -6,7 +6,7 @@
 
 # Example 1:
 # AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh
-# 
+#
 # Example 2: Using a subshell to avoid polluting parent shell
 # (AAD_APP_NAME="ar-radix-grafana-development" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
 
@@ -67,7 +67,7 @@ function updateRedirectUris() {
     # Convert list to string where urls are separated by space
     currentRedirectUris="$(az ad app show --id ${aadAppId} --query web.redirectUris --only-show-errors --output json | jq -r '.[] | @text')"
 
-    host_name=$(kubectl get ing --namespace ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
+    host_name=$(kubectl get ing --namespace ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json | jq --raw-output .spec.rules[0].host)
     additionalReplyURL="https://${host_name}${REPLY_PATH}"
 
     if [[ "$currentRedirectUris" == *"${additionalReplyURL}"* ]]; then
@@ -88,9 +88,13 @@ function updateRedirectUris() {
         while true; do
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) echo ""; echo "Skipping updating RedirectUris."; return 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*) break ;;
+            [Nn]*)
+                echo ""
+                echo "Skipping updating RedirectUris."
+                return 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -99,7 +103,10 @@ function updateRedirectUris() {
         --id "${aadAppId}" \
         --web-redirect-uris ${newRedirectUris} \
         --only-show-errors ||
-        { echo "ERROR: Could not update app registration." >&2; return 1; }
+        {
+            echo "ERROR: Could not update app registration." >&2
+            return 1
+        }
 
     echo "Added replyUrl \"${additionalReplyURL}\" to AAD app \"${AAD_APP_NAME}\"."
     echo ""

@@ -131,9 +131,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -275,9 +279,13 @@ for node in "${allNodes[@]}"; do
             while true; do
                 read -r -p "Continue to next node? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) break;;
-                    [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                    * ) echo "Please answer yes or no.";;
+                [Yy]*) break ;;
+                [Nn]*)
+                    echo ""
+                    echo "Quitting."
+                    exit 0
+                    ;;
+                *) echo "Please answer yes or no." ;;
                 esac
             done
         fi
