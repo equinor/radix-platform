@@ -49,7 +49,7 @@ SQL_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
 if [ ! "$SQL_LOGS_STORAGEACCOUNT_EXIST" ]; then
     printf "%s does not exists.\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
 
-    printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
+    printf "    Creating storage account %s..." "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
     az storage account create \
         --name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
@@ -62,11 +62,14 @@ else
     printf "    Storage account exists...skipping\n"
 fi
 
+LIFECYCLE=7
+RULE_NAME=sql-rule
+
 MANAGEMENT_POLICY_EXIST=$(az storage account management-policy show \
     --account-name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
-    --resource-group "$AZ_RESOURCE_GROUP_COMMON")
-
-LIFECYCLE=7
+    --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+    --query "policy.rules | [?name=='$RULE_NAME']".name \
+    --output tsv)
 
 POLICY_JSON="$(
     cat <<END
@@ -74,7 +77,7 @@ POLICY_JSON="$(
   "rules": [
       {
           "enabled": "true",
-          "name": "sql-rule",
+          "name": "$RULE_NAME",
           "type": "Lifecycle",
           "definition": {
               "actions": {
@@ -96,7 +99,7 @@ POLICY_JSON="$(
 END
 )"
 
-if [ -z "$MANAGEMENT_POLICY_EXIST" ]; then
+if [ ! "$MANAGEMENT_POLICY_EXIST" ]; then
     printf "Storage account %s is missing policy\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
 
     if az storage account management-policy create \
