@@ -368,7 +368,9 @@ else
 fi
 
 # NSG Flow Logs
-FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list --resource-group "$AZ_RESOURCE_GROUP_LOGS" --query "[0].name=='$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS'")
+FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
+    --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+    --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS'].name")
 FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
 
 if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
