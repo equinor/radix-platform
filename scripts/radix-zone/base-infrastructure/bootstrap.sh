@@ -357,6 +357,49 @@ function create_acr() {
     fi
 }
 
+function set_access_control_on_acr() {
+    # Grant access for cluster public IP range.
+    printf "Getting Publix IP Prefix..."
+    IP_PREFIX=$(az network public-ip prefix show \
+        --name "${AZ_IPPRE_OUTBOUND_NAME}" \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --query "ipPrefix" \
+        --output tsv)
+    if [[ -z ${IP_PREFIX} ]]; then
+        printf "ERROR: Could not get Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME}.\n"
+        return
+    fi
+    printf " Done.\n"
+
+    if [[ -n $(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" --output tsv) ]]; then
+        if [[ -z $(az acr network-rule list --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "ipRules[?ipAddressOrRange=='${IP_PREFIX}'].ipAddressOrRange" --output tsv) ]]; then
+            if [[ $USER_PROMPT == true ]]; then
+                while true; do
+                    read -p "Add network rule to registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                    case $yn in
+                        [Yy]* ) break;;
+                        [Nn]* ) echo ""; echo "Return."; return;;
+                        * ) echo "Please answer yes or no.";;
+                    esac
+                done
+            fi
+            printf "Adding network rule to registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
+            az acr network-rule add \
+                --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+                --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                --subscription "${AZ_SUBSCRIPTION_ID}" \
+                --ip-address "${IP_PREFIX}" \
+                --output none
+            printf "...Done\n"
+        else
+            printf "Network rule already exists.\n"
+        fi
+    else
+        printf "ERROR: ACR ${AZ_RESOURCE_CONTAINER_REGISTRY} does not exist.\n"
+    fi
+}
+
 function set_permissions_on_acr() {
     local scope
     scope="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
@@ -534,6 +577,7 @@ create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
+set_access_control_on_acr
 create_base_system_users_and_store_credentials
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
