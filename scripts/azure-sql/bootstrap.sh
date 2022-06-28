@@ -108,4 +108,4 @@ printf "Storage account %s is missing policy\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL
     fi
 fi
 
-prinf "Done."
+printf "Done."
