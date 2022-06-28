@@ -135,27 +135,23 @@ echo ""
 function create_acr_task() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    local NO_PUSH="$3"
     TASK_YAML="task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
-    if [[ $NO_PUSH == "--no-push" ]]; then
-        PUSH=""
-        cat <<EOF >>${TASK_YAML}
-version: v1.1.0
+    cat <<EOF >>${TASK_YAML}
+stepTimeout: 3600
 steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
+  - cmd: buildx create --use # start buildkit
+  - cmd: >-
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}}
+      --tag {{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:{{.Values.TAG}}
+      --tag {{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:{{.Values.CLUSTER_TYPE}}-{{.Values.TAG}}
+      --tag {{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:{{.Values.CLUSTER_NAME}}-{{.Values.TAG}}
+      --file {{.Values.DOCKER_FILE_NAME}}
+      --cache-to=type=registry,ref={{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}},mode=max
+      --cache-from=type=registry,ref={{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}}
+      .
+      {{.Values.BUILD_ARGS}}
 EOF
-    else
-        cat <<EOF >>${TASK_YAML}
-version: v1.1.0
-steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
-  - push:
-    - {{.Values.IMAGE}}
-    - {{.Values.CLUSTERTYPE_IMAGE}}
-    - {{.Values.CLUSTERNAME_IMAGE}}
-EOF
-    fi
     printf "Create ACR Task: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
         --registry ${ACR_NAME} \
@@ -164,7 +160,6 @@ EOF
         --file ${TASK_YAML} \
         --assign-identity [system] \
         --auth-mode None \
-        $NO_PUSH \
         --output none
 
     rm "$TASK_YAML"
@@ -249,10 +244,6 @@ function run_task() {
 create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
-
-create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "--no-push"
-create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
-add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
 echo ""
 echo "Done creating ACR Task."
