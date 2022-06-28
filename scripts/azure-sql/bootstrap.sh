@@ -43,10 +43,11 @@ fi
 
 SQL_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
     --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-    --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS'].name")
+    --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS'].name" \
+    --output tsv)
 
 if [ ! "$SQL_LOGS_STORAGEACCOUNT_EXIST" ]; then
-    printf "SQL logs storage account does not exists.\n"
+    printf "%s does not exists.\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
 
     printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
     az storage account create \
