@@ -6,7 +6,6 @@
 
 # Bootstrap radix environment infrastructure shared by all radix-zones
 
-
 #######################################################################################
 ### INPUTS
 ###
@@ -17,13 +16,11 @@
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
-
 #######################################################################################
 ### HOW TO USE
 ###
 
 # RADIX_ZONE_ENV=../radix_zone_dev.env ./bootstrap.sh
-
 
 #######################################################################################
 ### START
@@ -32,16 +29,17 @@
 echo ""
 echo "Start bootstrap of base infrastructure... "
 
-
 #######################################################################################
 ### Check for prerequisites binaries
 ###
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { printf "\n\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    printf "\n\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -63,26 +61,25 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 # Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_service_principal.sh"
+LIB_SERVICE_PRINCIPAL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+    exit 1
 else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
+    source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
-LIB_MANAGED_IDENTITY_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_managed_identity.sh"
+LIB_MANAGED_IDENTITY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../service-principals-and-aad-apps/lib_managed_identity.sh"
 if [[ ! -f "$LIB_MANAGED_IDENTITY_PATH" ]]; then
-   echo "ERROR: The dependency LIB_MANAGED_IDENTITY_PATH=$LIB_MANAGED_IDENTITY_PATH is invalid, the file does not exist." >&2
-   exit 1
+    echo "ERROR: The dependency LIB_MANAGED_IDENTITY_PATH=$LIB_MANAGED_IDENTITY_PATH is invalid, the file does not exist." >&2
+    exit 1
 else
-   source "$LIB_MANAGED_IDENTITY_PATH"
+    source "$LIB_MANAGED_IDENTITY_PATH"
 fi
-AD_APP_MANIFEST_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/manifest-server.json"
+AD_APP_MANIFEST_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/manifest-server.json"
 if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
-   echo "ERROR: The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
-   exit 1
+    echo "ERROR: The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
+    exit 1
 fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -94,7 +91,6 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 exit_if_user_does_not_have_required_ad_role
-
 
 #######################################################################################
 ### Verify task at hand
@@ -147,13 +143,16 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
-
 
 #######################################################################################
 ### Resource groups
@@ -162,12 +161,11 @@ fi
 function create_resource_groups() {
     printf "Creating all resource groups..."
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}"--subscription "${AZ_SUBSCRIPTION_ID}"  --output none
+    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}"--subscription "${AZ_SUBSCRIPTION_ID}" --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_LOGS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     printf "...Done\n"
 }
-
 
 #######################################################################################
 ### Common resources
@@ -220,9 +218,13 @@ function create_outbound_public_ip_prefix() {
                 while true; do
                     read -p "Create Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}? (Y/n) " yn
                     case $yn in
-                        [Yy]* ) break;;
-                        [Nn]* ) echo ""; echo "Return."; return;;
-                        * ) echo "Please answer yes or no.";;
+                    [Yy]*) break ;;
+                    [Nn]*)
+                        echo ""
+                        echo "Return."
+                        return
+                        ;;
+                    *) echo "Please answer yes or no." ;;
                     esac
                 done
                 printf "Creating Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}...\n"
@@ -249,7 +251,7 @@ function create_outbound_public_ip_prefix() {
             sed 's/^ *//g')
         while true; do
             # Get current number of IPs, add trailing 0s and increment by 1
-            IPPRE_OUTBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_OUTBOUND_IP_NUMBER + 1 )) )
+            IPPRE_OUTBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_OUTBOUND_IP_NUMBER + 1)))
             IP_NAME="${AZ_IPPRE_OUTBOUND_IP_PREFIX}-${IPPRE_OUTBOUND_IP_NUMBER}"
             if [[ $(az network public-ip create \
                 --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_OUTBOUND_NAME \
@@ -277,9 +279,13 @@ function create_inbound_public_ip_prefix() {
                 while true; do
                     read -p "Create Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}? (Y/n) " yn
                     case $yn in
-                        [Yy]* ) break;;
-                        [Nn]* ) echo ""; echo "Return."; return;;
-                        * ) echo "Please answer yes or no.";;
+                    [Yy]*) break ;;
+                    [Nn]*)
+                        echo ""
+                        echo "Return."
+                        return
+                        ;;
+                    *) echo "Please answer yes or no." ;;
                     esac
                 done
                 printf "Creating Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}...\n"
@@ -306,7 +312,7 @@ function create_inbound_public_ip_prefix() {
             sed 's/^ *//g')
         while true; do
             # Get current number of IPs, add trailing 0s and increment by 1
-            IPPRE_INBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_INBOUND_IP_NUMBER + 1 )) )
+            IPPRE_INBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_INBOUND_IP_NUMBER + 1)))
             IP_NAME="${AZ_IPPRE_INBOUND_IP_PREFIX}-${IPPRE_INBOUND_IP_NUMBER}"
             if [[ $(az network public-ip create \
                 --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_INBOUND_NAME \
@@ -334,9 +340,13 @@ function create_acr() {
             while true; do
                 read -p "Create Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) break;;
-                    [Nn]* ) echo ""; echo "Return."; return;;
-                    * ) echo "Please answer yes or no.";;
+                [Yy]*) break ;;
+                [Nn]*)
+                    echo ""
+                    echo "Return."
+                    return
+                    ;;
+                *) echo "Please answer yes or no." ;;
                 esac
             done
         fi
@@ -382,7 +392,6 @@ function set_permissions_on_acr() {
     # Configure new roles
     az role assignment create --assignee "${id}" --role Contributor --scope "${scope}" --output none
 
-
     printf "...Done\n"
 }
 
@@ -410,7 +419,7 @@ function set_permissions_on_dns() {
         # Get existing DNS Zone Id
         ZONE_ID=$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" -o tsv)
         # Create role assignment
-        az role assignment create --assignee $PRINCIPAL_ID --role "DNS Zone Contributor"  --scope $ZONE_ID
+        az role assignment create --assignee $PRINCIPAL_ID --role "DNS Zone Contributor" --scope $ZONE_ID
         printf "...Done\n"
     else
         # Use service principle.
@@ -526,6 +535,86 @@ function create_log_analytics_workspace() {
 }
 
 #######################################################################################
+### Create storage account for SQL logs
+###
+
+function create_sql_logs_storageaccount() {
+    SQL_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
+        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+        --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS'].name" \
+        --output tsv)
+
+    if [ ! "$SQL_LOGS_STORAGEACCOUNT_EXIST" ]; then
+        printf "%s does not exists.\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
+
+        printf "    Creating storage account %s..." "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
+        az storage account create \
+            --name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
+            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+            --location "$AZ_RADIX_ZONE_LOCATION" \
+            --sku "Standard_LRS" \
+            --subscription "$AZ_SUBSCRIPTION_ID" \
+            --only-show-errors
+        printf "Done.\n"
+    else
+        printf "    Storage account exists...skipping\n"
+    fi
+
+    LIFECYCLE=7
+    RULE_NAME=sql-rule
+
+    MANAGEMENT_POLICY_EXIST=$(az storage account management-policy show \
+        --account-name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
+        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+        --query "policy.rules | [?name=='$RULE_NAME']".name \
+        --output tsv)
+
+    POLICY_JSON="$(
+        cat <<END
+{
+  "rules": [
+      {
+          "enabled": "true",
+          "name": "$RULE_NAME",
+          "type": "Lifecycle",
+          "definition": {
+              "actions": {
+                  "version": {
+                      "delete": {
+                          "daysAfterCreationGreaterThan": "$LIFECYCLE"
+                      }
+                  },
+              },
+              "filters": {
+                  "blobTypes": [
+                      "blockBlob"
+                  ],
+              }
+          }
+      }
+  ]
+}
+END
+    )"
+
+    if [ ! "$MANAGEMENT_POLICY_EXIST" ]; then
+        printf "Storage account %s is missing policy\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
+
+        if az storage account management-policy create \
+            --account-name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
+            --policy "$(echo "$POLICY_JSON")" \
+            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+            --only-show-errors; then
+            printf "Successfully created policy for %s\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
+        fi
+    else
+        printf "    Storage account has policy...skipping\n"
+    fi
+
+    printf "Done.\n"
+}
+
+#######################################################################################
 ### MAIN
 ###
 
@@ -540,7 +629,7 @@ set_permissions_on_acr
 set_permissions_on_dns
 create_dns_role_definition_for_cert_manager
 create_log_analytics_workspace
-
+create_sql_logs_storageaccount
 
 #######################################################################################
 ### END
