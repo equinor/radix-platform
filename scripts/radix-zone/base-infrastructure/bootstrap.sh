@@ -105,47 +105,47 @@ printf "\nBootstrap of base infrastructure will use the following configuration:
 printf "\n"
 printf "\n   > WHERE:"
 printf "\n   ------------------------------------------------------------------"
-printf "\n   -  RADIX_ZONE                                  : $RADIX_ZONE"
-printf "\n   -  AZ_RADIX_ZONE_LOCATION                      : $AZ_RADIX_ZONE_LOCATION"
-printf "\n   -  RADIX_ENVIRONMENT                           : $RADIX_ENVIRONMENT"
+printf "\n   -  RADIX_ZONE                                  : %s" "$RADIX_ZONE"
+printf "\n   -  AZ_RADIX_ZONE_LOCATION                      : %s" "$AZ_RADIX_ZONE_LOCATION"
+printf "\n   -  RADIX_ENVIRONMENT                           : %s" "$RADIX_ENVIRONMENT"
 printf "\n"
 printf "\n   > WHAT:"
 printf "\n   -------------------------------------------------------------------"
-printf "\n   -  AZ_RESOURCE_GROUP_CLUSTERS                  : $AZ_RESOURCE_GROUP_CLUSTERS"
-printf "\n   -  AZ_RESOURCE_GROUP_COMMON                    : $AZ_RESOURCE_GROUP_COMMON"
-printf "\n   -  AZ_RESOURCE_GROUP_MONITORING                : $AZ_RESOURCE_GROUP_MONITORING"
+printf "\n   -  AZ_RESOURCE_GROUP_CLUSTERS                  : %s" "$AZ_RESOURCE_GROUP_CLUSTERS"
+printf "\n   -  AZ_RESOURCE_GROUP_COMMON                    : %s" "$AZ_RESOURCE_GROUP_COMMON"
+printf "\n   -  AZ_RESOURCE_GROUP_MONITORING                : %s" "$AZ_RESOURCE_GROUP_MONITORING"
 printf "\n"
-printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
-printf "\n   -  AZ_IPPRE_OUTBOUND_NAME                      : $AZ_IPPRE_OUTBOUND_NAME"
-printf "\n   -  AZ_IPPRE_OUTBOUND_IP_PREFIX                 : $AZ_IPPRE_OUTBOUND_IP_PREFIX"
-printf "\n   -  AZ_IPPRE_OUTBOUND_LENGTH                    : $AZ_IPPRE_OUTBOUND_LENGTH"
-printf "\n   -  AZ_IPPRE_INBOUND_NAME                       : $AZ_IPPRE_INBOUND_NAME"
-printf "\n   -  AZ_IPPRE_INBOUND_IP_PREFIX                  : $AZ_IPPRE_INBOUND_IP_PREFIX"
-printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_LENGTH"
-printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
-printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
+printf "\n   -  AZ_RESOURCE_KEYVAULT                        : %s " "$AZ_RESOURCE_KEYVAULT"
+printf "\n   -  AZ_IPPRE_OUTBOUND_NAME                      : %s " "$AZ_IPPRE_OUTBOUND_NAME"
+printf "\n   -  AZ_IPPRE_OUTBOUND_IP_PREFIX                 : %s " "$AZ_IPPRE_OUTBOUND_IP_PREFIX"
+printf "\n   -  AZ_IPPRE_OUTBOUND_LENGTH                    : %s " "$AZ_IPPRE_OUTBOUND_LENGTH"
+printf "\n   -  AZ_IPPRE_INBOUND_NAME                       : %s " "$AZ_IPPRE_INBOUND_NAME"
+printf "\n   -  AZ_IPPRE_INBOUND_IP_PREFIX                  : %s " "$AZ_IPPRE_INBOUND_IP_PREFIX"
+printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : %s " "$AZ_IPPRE_INBOUND_LENGTH"
+printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : %s " "$AZ_RESOURCE_CONTAINER_REGISTRY"
+printf "\n   -  AZ_RESOURCE_DNS                             : %s " "$AZ_RESOURCE_DNS"
 printf "\n"
-printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
-printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-printf "\n   -  AZ_SYSTEM_USER_DNS                          : $AZ_SYSTEM_USER_DNS"
-printf "\n   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
-printf "\n   -  APP_REGISTRATION_CERT_MANAGER               : $APP_REGISTRATION_CERT_MANAGER"
-printf "\n   -  APP_REGISTRATION_VELERO                     : $APP_REGISTRATION_VELERO"
+printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : %s" "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
+printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : %s" "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
+printf "\n   -  AZ_SYSTEM_USER_DNS                          : %s" "$AZ_SYSTEM_USER_DNS"
+printf "\n   -  APP_REGISTRATION_GRAFANA                    : %s" "$APP_REGISTRATION_GRAFANA"
+printf "\n   -  APP_REGISTRATION_CERT_MANAGER               : %s" "$APP_REGISTRATION_CERT_MANAGER"
+printf "\n   -  APP_REGISTRATION_VELERO                     : %s" "$APP_REGISTRATION_VELERO"
 printf "\n"
-printf "\n   -  MI_AKS                                      : $MI_AKS"
-printf "\n   -  MI_AKSKUBELET                               : $MI_AKSKUBELET"
+printf "\n   -  MI_AKS                                      : %s" "$MI_AKS"
+printf "\n   -  MI_AKSKUBELET                               : %s" "$MI_AKSKUBELET"
 printf "\n"
 printf "\n   > WHO:"
 printf "\n   -------------------------------------------------------------------"
-printf "\n   -  AZ_SUBSCRIPTION                             : $(az account show --query name -otsv)"
-printf "\n   -  AZ_USER                                     : $(az account show --query user.name -o tsv)"
+printf "\n   -  AZ_SUBSCRIPTION                             : %s" "$(az account show --query name -otsv)"
+printf "\n   -  AZ_USER                                     : %s" "$(az account show --query user.name -o tsv)"
 printf "\n"
 
 echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
@@ -174,7 +174,7 @@ function create_resource_groups() {
 ###
 
 function create_common_resources() {
-    printf "Creating key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
+    printf "Creating key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
     az keyvault create \
         --name "${AZ_RESOURCE_KEYVAULT}" \
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
@@ -183,7 +183,7 @@ function create_common_resources() {
         --output none
     printf "...Done\n"
 
-    printf "Set access policy for group \"Radix Platform Operators\" in key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
+    printf "Set access policy for group \"Radix Platform Operators\" in key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
     az keyvault set-policy \
         --object-id "$(az ad group show --group "Radix Platform Operators" --query objectId --output tsv --only-show-errors)" \
         --name "${AZ_RESOURCE_KEYVAULT}" \
@@ -197,7 +197,7 @@ function create_common_resources() {
         --only-show-errors
     printf "...Done\n"
 
-    printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
+    printf "Creating Azure DNS: %s\n" "${AZ_RESOURCE_DNS}"
     az network dns zone create --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     printf "...Done\n"
     # DNS CAA
@@ -215,17 +215,17 @@ function create_outbound_public_ip_prefix() {
     # Create public ip prefixes
     if [[ -n $AZ_IPPRE_OUTBOUND_NAME ]]; then
         if [[ -z $(az network public-ip prefix show --name "${AZ_IPPRE_OUTBOUND_NAME}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
-            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} does not exist.\n"
+            printf "Public IP Prefix %s does not exist.\n" "${AZ_IPPRE_OUTBOUND_NAME}"
             if [[ $USER_PROMPT == true ]]; then
                 while true; do
-                    read -p "Create Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}? (Y/n) " yn
+                    read -r -p "Create Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}? (Y/n) " yn
                     case $yn in
                         [Yy]* ) break;;
                         [Nn]* ) echo ""; echo "Return."; return;;
                         * ) echo "Please answer yes or no.";;
                     esac
                 done
-                printf "Creating Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}...\n"
+                printf "Creating Public IP Prefix: %s...\n" "${AZ_IPPRE_OUTBOUND_NAME}"
                 az network public-ip prefix create \
                     --length "${AZ_IPPRE_OUTBOUND_LENGTH}" \
                     --name "${AZ_IPPRE_OUTBOUND_NAME}" \
@@ -235,14 +235,14 @@ function create_outbound_public_ip_prefix() {
                 printf "...Done.\n"
             fi
         else
-            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} already exists."
+            printf "Public IP Prefix %s already exists." "${AZ_IPPRE_OUTBOUND_NAME}"
         fi
         # Create IPs
         echo "Creating IPs in Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME}..."
         IPPRE_OUTBOUND_IP_NUMBER=$(az network public-ip prefix show \
-            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-            --name ${AZ_IPPRE_OUTBOUND_NAME} \
-            --subscription ${AZ_SUBSCRIPTION_ID} \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --name "${AZ_IPPRE_OUTBOUND_NAME}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
             --query publicIpAddresses |
             jq -r .[].id |
             wc -l |
@@ -253,9 +253,9 @@ function create_outbound_public_ip_prefix() {
             IP_NAME="${AZ_IPPRE_OUTBOUND_IP_PREFIX}-${IPPRE_OUTBOUND_IP_NUMBER}"
             if [[ $(az network public-ip create \
                 --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_OUTBOUND_NAME \
-                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-                --name ${IP_NAME} \
-                --subscription ${AZ_SUBSCRIPTION_ID} \
+                --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                --name "${IP_NAME}" \
+                --subscription "${AZ_SUBSCRIPTION_ID}" \
                 --sku Standard \
                 2>/dev/null) ]]; then
                 echo "Created ip $IP_NAME"
@@ -272,7 +272,7 @@ function create_outbound_public_ip_prefix() {
 function create_inbound_public_ip_prefix() {
     if [[ -n $AZ_IPPRE_INBOUND_NAME ]]; then
         if [[ -z $(az network public-ip prefix show --name "${AZ_IPPRE_INBOUND_NAME}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
-            printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} does not exist.\n"
+            printf "Public IP Prefix %s does not exist.\n" "${AZ_IPPRE_INBOUND_NAME}"
             if [[ $USER_PROMPT == true ]]; then
                 while true; do
                     read -p "Create Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}? (Y/n) " yn
@@ -282,7 +282,7 @@ function create_inbound_public_ip_prefix() {
                         * ) echo "Please answer yes or no.";;
                     esac
                 done
-                printf "Creating Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}...\n"
+                printf "Creating Public IP Prefix: %s...\n" "${AZ_IPPRE_INBOUND_NAME}"
                 az network public-ip prefix create \
                     --length "${AZ_IPPRE_INBOUND_LENGTH}" \
                     --name "${AZ_IPPRE_INBOUND_NAME}" \
@@ -292,14 +292,14 @@ function create_inbound_public_ip_prefix() {
                 printf "...Done.\n"
             fi
         else
-            printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} already exists."
+            printf "Public IP Prefix %s already exists." "${AZ_IPPRE_INBOUND_NAME}"
         fi
         # Create IPs
         echo "Creating IPs in Public IP Prefix ${AZ_IPPRE_INBOUND_NAME}..."
         IPPRE_INBOUND_IP_NUMBER=$(az network public-ip prefix show \
-            --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-            --name ${AZ_IPPRE_INBOUND_NAME} \
-            --subscription ${AZ_SUBSCRIPTION_ID} \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --name "${AZ_IPPRE_INBOUND_NAME}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
             --query publicIpAddresses |
             jq -r .[].id |
             wc -l |
@@ -310,9 +310,9 @@ function create_inbound_public_ip_prefix() {
             IP_NAME="${AZ_IPPRE_INBOUND_IP_PREFIX}-${IPPRE_INBOUND_IP_NUMBER}"
             if [[ $(az network public-ip create \
                 --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_INBOUND_NAME \
-                --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-                --name ${IP_NAME} \
-                --subscription ${AZ_SUBSCRIPTION_ID} \
+                --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                --name "${IP_NAME}" \
+                --subscription "${AZ_SUBSCRIPTION_ID}" \
                 --sku Standard \
                 2>/dev/null) ]]; then
                 echo "Created ip $IP_NAME"
@@ -329,10 +329,10 @@ function create_inbound_public_ip_prefix() {
 function create_acr() {
     # Create ACR
     if [[ -z $(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
-        printf "Azure Container Registry ${AZ_RESOURCE_CONTAINER_REGISTRY} does not exist.\n"
+        printf "Azure Container Registry %s does not exist.\n" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
         if [[ $USER_PROMPT == true ]]; then
             while true; do
-                read -p "Create Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
+                read -r -p "Create Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
                 case $yn in
                     [Yy]* ) break;;
                     [Nn]* ) echo ""; echo "Return."; return;;
@@ -341,7 +341,7 @@ function create_acr() {
             done
         fi
 
-        printf "Creating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
+        printf "Creating Azure Container Registry: %s...\n" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
         az acr create \
             --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
@@ -353,7 +353,7 @@ function create_acr() {
             --output none
         printf "...Done\n"
     else
-        printf "ACR ${AZ_RESOURCE_CONTAINER_REGISTRY} already exists.\n"
+        printf "ACR %s already exists.\n" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
     fi
 }
 
@@ -366,16 +366,16 @@ function set_permissions_on_acr() {
     # Note that to be able to use "az acr build" you have to have the role "Contributor".
 
     local id
-    printf "Working on container registry \"${AZ_RESOURCE_CONTAINER_REGISTRY}\": "
+    printf "Working on container registry \"%s\": " "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..." # radix-cr-reader-dev
+    printf "Setting permissions for \"%s\"..." "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}" # radix-cr-reader-dev
     id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query [].appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
     az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
 
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..." # radix-cr-cicd-dev
+    printf "Setting permissions for \"%s\"..." "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" # radix-cr-cicd-dev
     id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query [].appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
