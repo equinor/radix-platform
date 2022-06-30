@@ -147,8 +147,7 @@ steps:
       --tag {{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:{{.Values.CLUSTER_TYPE}}-{{.Values.TAG}}
       --tag {{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:{{.Values.CLUSTER_NAME}}-{{.Values.TAG}}
       --file {{.Values.DOCKER_FILE_NAME}}
-      --cache-to=type=registry,ref={{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}},mode=max
-      --cache-from=type=registry,ref={{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}}
+      --cache-from=type=registry,ref={{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
       .
       {{.Values.BUILD_ARGS}}
 EOF
@@ -230,6 +229,8 @@ function run_task() {
     CACHE_DISABLED=true
     if [[ ${CACHE_DISABLED} == true ]]; then
         CACHE="--no-cache"
+    else
+        CACHE_TO_OPTIONS="--cache-to=type=registry,ref=${AZ_RESOURCE_CONTAINER_REGISTRY}/${REPOSITORY_NAME}:radix-cache-${BRANCH},mode=max"
     fi
 
     NO_PUSH=true
@@ -250,7 +251,8 @@ function run_task() {
         --set BRANCH="${BRANCH}" \
         --set BUILD_ARGS="${BUILD_ARGS}" \
         --set PUSH="${PUSH}" \
-        --set CACHE="${CACHE}"
+        --set CACHE="${CACHE}" \
+        --set CACHE_TO_OPTIONS="${CACHE_TO_OPTIONS}"
 
     echo $? # Exit code of last executed command.
 
