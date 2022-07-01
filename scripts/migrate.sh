@@ -417,7 +417,7 @@ printf "Done.\n"
 echo ""
 printf "Making backup of source cluster... "
 
-cat <<EOF | kubectl apply --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: velero.io/v1
 kind: Backup
 metadata:

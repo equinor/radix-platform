@@ -235,7 +235,7 @@ generateCredentialsFile
 kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
    --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
    --dry-run=client -o yaml \
-   | kubectl apply --filename - \
+   | kubectl apply -f - \
    2>&1 >/dev/null
 printf "...Done"
 
@@ -252,7 +252,7 @@ printf "...Done"
 # Velero custom RBAC clusterrole
 RBAC_CLUSTERROLE="velero-admin"
 printf "\nCreating $RBAC_CLUSTERROLE clusterrole..\n"
-cat <<EOF | kubectl apply --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -274,7 +274,7 @@ EOF
 
 # Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
 printf "Working on configmap for flux..."
-cat <<EOF | kubectl apply --filename - 2>&1 >/dev/null
+cat <<EOF | kubectl apply -f - 2>&1 >/dev/null
 apiVersion: v1
 kind: ConfigMap
 metadata:

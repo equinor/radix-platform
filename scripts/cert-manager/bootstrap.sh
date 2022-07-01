@@ -205,7 +205,7 @@ echo "ingressShim:
 kubectl create secret generic cert-manager-helm-secret --namespace cert-manager \
     --from-file=./config \
     --dry-run=client -o yaml |
-    kubectl apply --filename -
+    kubectl apply -f -
 rm -f config
 
 DNS_SP="$(az keyvault secret show \
@@ -219,7 +219,7 @@ DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
 DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
 DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
 
-cat <<EOF | kubectl apply --filename -
+cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:

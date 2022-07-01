@@ -230,7 +230,7 @@ done
 kubectl delete namespace cert-manager-test 2>&1 >/dev/null
 
 # Deploy the test resources
-kubectl apply --filename test-resources.yaml
+kubectl apply -f test-resources.yaml
 
 # Wait for the certificate status to be True
 printf "Validate test certificate...\n"
@@ -243,7 +243,7 @@ printf "...Done.\n"
 echo "Validation successful!"
 
 echo "Remove test resources..."
-kubectl delete --filename test-resources.yaml
+kubectl delete -f test-resources.yaml
 rm -f test-resources.yaml
 
 #######################################################################################

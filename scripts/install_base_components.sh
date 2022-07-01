@@ -210,7 +210,7 @@ fi
 ###
 
 echo ""
-kubectl apply --filename ./priority-classes/radixComponentPriorityClass.yaml
+kubectl apply -f ./priority-classes/radixComponentPriorityClass.yaml
 wait
 
 #######################################################################################
@@ -232,8 +232,8 @@ wait
 ###
 
 echo "Creating storage classes"
-kubectl apply --filename manifests/storageclass-retain.yaml
-kubectl apply --filename manifests/storageclass-retain-nocache.yaml
+kubectl apply -f manifests/storageclass-retain.yaml
+kubectl apply -f manifests/storageclass-retain-nocache.yaml
 
 #######################################################################################
 ### Install grafana

@@ -265,7 +265,7 @@ kubectl create secret docker-registry radix-docker \
     --docker-password="$(jq -r '.password' sp_credentials.json)" \
     --docker-email=radix@statoilsrm.onmicrosoft.com \
     --dry-run=client -o yaml |
-    kubectl apply --filename - \
+    kubectl apply -f - \
         2>&1 >/dev/null
 rm -f sp_credentials.json
 printf "...Done\n"

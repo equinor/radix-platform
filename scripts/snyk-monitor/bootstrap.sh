@@ -196,7 +196,7 @@ else
         --from-file=dockercfg.json \
         --from-literal=integrationId=$SNYK_INTEGRATION_ID \
         --dry-run=client -o yaml |
-        kubectl apply --filename -
+        kubectl apply -f -
 
     rm "dockercfg.json"
 fi
@@ -217,7 +217,7 @@ kubectl create secret generic snyk-helm-secret \
     --namespace snyk-monitor \
     --from-file=./values \
     --dry-run=client -o yaml |
-    kubectl apply --filename -
+    kubectl apply -f -
 rm -f values
 
 echo "Done."
