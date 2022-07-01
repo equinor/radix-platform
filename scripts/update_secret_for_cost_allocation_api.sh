@@ -74,7 +74,7 @@ function updateSecret() {
     WHITELIST=$whitelist
     AD_REPORT_READERS=$readers
     TOKEN_ISSUER=https://sts.windows.net/$(az account show --query tenantId -otsv)/
-    " > radix-cost-allocation-api-secrets.env
+    " >radix-cost-allocation-api-secrets.env
 
     COST_ALLOCATION_API_SECRET_NAME_QA=$(kubectl get secret --namespace "radix-cost-allocation-api-qa" --selector radix-component="server" -ojson | jq -r .items[0].metadata.name)
 

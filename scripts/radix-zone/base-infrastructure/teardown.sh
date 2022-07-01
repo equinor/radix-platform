@@ -157,11 +157,20 @@ printf "...Done.\n"
 
 printf "Working on resource groups: \n"
 printf "Deleting %s...\n" "${AZ_RESOURCE_GROUP_CLUSTERS}"
-az group delete --yes --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
+az group delete \
+    --yes \
+    --name "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --output none
 printf "Deleting %s...\n" "${AZ_RESOURCE_GROUP_COMMON}"
-az group delete --yes --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
+az group delete \
+    --yes \
+    --name "${AZ_RESOURCE_GROUP_COMMON}" \
+    --output none
 printf "Deleting %s...\n" "${AZ_RESOURCE_GROUP_MONITORING}"
-az group delete --yes --name "${AZ_RESOURCE_GROUP_MONITORING}" --output none
+az group delete \
+    --yes \
+    --name "${AZ_RESOURCE_GROUP_MONITORING}" \
+    --output none
 printf "...Done.\n"
 
 #######################################################################################

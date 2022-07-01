@@ -52,12 +52,11 @@ function assert_dep() {
 }
 
 # Function to ensure same functionality on linux and mac
-function date () 
-{ 
-    if type -p gdate > /dev/null; then
-        gdate "$@";
+function date() {
+    if type -p gdate >/dev/null; then
+        gdate "$@"
     else
-        command date "$@";
+        command date "$@"
     fi
 }
 
@@ -209,7 +208,7 @@ function create_and_register_deploy_key_and_store_credentials() {
         .machineUser='"${machine_user}"' |
         .owner=$owner |
         .sharedSecret=$sharedSecret |
-        .wbs=$wbs' > "$tmp_file_path"
+        .wbs=$wbs' >"$tmp_file_path"
 
     # 1 year from now, zulu format
     expires=$(date --utc --date "+1 year" +%FT%TZ)
@@ -230,8 +229,8 @@ function create_and_register_deploy_key_and_store_credentials() {
 
 function create_github_webhook_in_repository() {
     # This function will create a webhook in the repository.
-    local app_name          # Input 1
-    local github_pat        # Input 2
+    local app_name   # Input 1
+    local github_pat # Input 2
     local secret_file
     local repo_organization
     local repo_name
@@ -240,11 +239,11 @@ function create_github_webhook_in_repository() {
     app_name="${1}"
     github_pat="${2}"
     if [ -z "$app_name" ] || [ -z "${github_pat}" ]; then
-      printf "Missing arguments: "
-      [ -z "${app_name}" ] && printf "app_name "
-      [ -z "${github_pat}" ] && printf "github_pat "
-      printf "\n"
-      return
+        printf "Missing arguments: "
+        [ -z "${app_name}" ] && printf "app_name "
+        [ -z "${github_pat}" ] && printf "github_pat "
+        printf "\n"
+        return
     fi
 
     # Get secret from keyvault
@@ -257,7 +256,10 @@ function create_github_webhook_in_repository() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; rm -f "${secret_file}" return; }
+        --only-show-errors || {
+        echo "ERROR: Could not get secret from keyvault." >&2
+        rm -f "${secret_file}" return
+    }
 
     printf " Done.\n"
 
@@ -275,23 +277,26 @@ function create_github_webhook_in_repository() {
         --header "Authorization: token ${github_pat}" \
         --data "{\"name\":\"web\",\"active\":true,\"events\":[\"push\"],\"config\":{\"url\":\"https://webhook.${AZ_RESOURCE_DNS}/events/github\",\"secret\":\"${shared_secret}\",\"content_type\":\"json\",\"insecure_ssl\":\"0\"}}" \
         "https://api.github.com/repos/${repo_organization}/${repo_name}/hooks"
-    
+
     rm -f "${secret_file}"
-    
+
     printf " Done.\n"
 }
 
 function create_radix_application() {
     # This function checks if a radixRegistration exists in the cluster.
     # If not, it will download radixregistration-values from the keyvault and create a radixRegistration.
-    local app_name          # Input 1
+    local app_name # Input 1
     local secret_file
     local ad_groups
     local deploy_key
 
     app_name="${1}"
 
-    [ -z "$app_name" ] && { printf "Missing app_name."; return; }
+    [ -z "$app_name" ] && {
+        printf "Missing app_name."
+        return
+    }
 
     if [ -z $(kubectl get radixregistration "${app_name}" --output name 2>/dev/null) ]; then
 
@@ -305,19 +310,23 @@ function create_radix_application() {
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --file "${secret_file}" \
             --output none \
-            --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; rm -f "${secret_file}"; return; }
+            --only-show-errors || {
+            echo "ERROR: Could not get secret from keyvault." >&2
+            rm -f "${secret_file}"
+            return
+        }
 
         printf " Done.\n"
 
         # Generate yaml list of AD groups
         while read line; do
             ad_groups+=$(printf "\n    - ${line}")
-        done <<< "$(cat ${secret_file} | jq -r .adGroups[])"
+        done <<<"$(cat ${secret_file} | jq -r .adGroups[])"
 
         # Convert deploy_key to yaml value
         while read line; do
             deploy_key+=$(printf "\n    ${line}")
-        done <<< "$(cat ${secret_file} | jq -r .deployKey)"
+        done <<<"$(cat ${secret_file} | jq -r .deployKey)"
 
         printf "Create radixregistration..."
 
@@ -331,7 +340,7 @@ function create_radix_application() {
             MACHINE_USER=$(cat ${secret_file} | jq -r .machineUser) \
             SHARED_SECRET=$(cat ${secret_file} | jq -r .sharedSecret) \
             WBS=$(cat ${secret_file} | jq -r .wbs) \
-            envsubst < "${script_dir_path}/templates/radix-app-template-rr.yaml" > "${script_dir_path}/${app_name}-rr.yaml"
+            envsubst <"${script_dir_path}/templates/radix-app-template-rr.yaml" >"${script_dir_path}/${app_name}-rr.yaml"
 
         kubectl apply -f "${script_dir_path}/${app_name}-rr.yaml"
         rm -f "${secret_file}" "${script_dir_path}/${app_name}-rr.yaml"
@@ -343,8 +352,8 @@ function create_radix_application() {
 
 function create_build_deploy_job() {
     # This downloads radixregistration-values from the keyvault and creates a radixJob.
-    local app_name          # Input 1
-    local clone_branch      # Input 2
+    local app_name     # Input 1
+    local clone_branch # Input 2
     local secret_file
     local image_tag
 
@@ -369,7 +378,11 @@ function create_build_deploy_job() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --file "${secret_file}" \
         --output none \
-        --only-show-errors || { echo "ERROR: Could not get secret from keyvault." >&2; rm -f "${secret_file}"; return; }
+        --only-show-errors || {
+        echo "ERROR: Could not get secret from keyvault." >&2
+        rm -f "${secret_file}"
+        return
+    }
 
     printf " Done.\n"
 
@@ -387,7 +400,7 @@ function create_build_deploy_job() {
         TIMESTAMP="${timestamp}" \
         IMAGE_TAG="${image_tag}" \
         CONTAINER_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-        envsubst < "${script_dir_path}/templates/radix-app-template-rj.yaml" > "${script_dir_path}/${app_name}-rj.yaml"
+        envsubst <"${script_dir_path}/templates/radix-app-template-rj.yaml" >"${script_dir_path}/${app_name}-rj.yaml"
 
     kubectl apply -f "${script_dir_path}/${app_name}-rj.yaml"
     rm -f "${secret_file}" "${script_dir_path}/${app_name}-rj.yaml"
@@ -441,7 +454,7 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 #######################################################################################
 ### Verify task at hand
@@ -471,11 +484,15 @@ echo ""
 
 if [ $USER_PROMPT == true ]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -488,7 +505,10 @@ echo ""
 
 # Connect kubectl so we have the correct context
 az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
-[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2; exit 1; }
+[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || {
+    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
+    exit 1
+}
 
 # Wait for operator to be deployed from flux
 echo ""
@@ -752,7 +772,7 @@ fi
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 RADIX_WEB_CONSOLE_ENV="prod"
-if [ "${CLUSTER_TYPE}"  == "development" ]; then
+if [ "${CLUSTER_TYPE}" == "development" ]; then
     # Development cluster uses QA web-console
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
@@ -769,7 +789,6 @@ echo "Ingress is ready, adding replyUrl for radix web-console..."
 
 (AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="${WEB_CONSOLE_NAMESPACE}" K8S_INGRESS_NAME="${AUTH_PROXY_COMPONENT}" REPLY_PATH="${AUTH_PROXY_REPLY_PATH}" "${script_dir_path}/../../add_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
-
 
 echo ""
 echo "For the web console to work we need to apply the secrets for the auth proxy"
@@ -835,7 +854,6 @@ echo "Restarting radix-vulnerability-scanner-api... "
 kubectl rollout restart deployment -n radix-vulnerability-scanner-api-qa
 kubectl rollout restart deployment -n radix-vulnerability-scanner-api-prod
 
-
 ### All done
 echo ""
 echo "Roses are red, violets are blue"
@@ -843,4 +861,3 @@ echo "the deployment of radix apps has come to an end"
 echo "but maybe not so"
 echo "for all the remaining tasks assigned to you"
 echo ""
-

@@ -305,7 +305,7 @@ echo "ingress:
     hosts:
     - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
 env:
-  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" > config
+  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" >config
 
 kubectl create secret generic grafana-helm-secret \
     --from-file=./config \

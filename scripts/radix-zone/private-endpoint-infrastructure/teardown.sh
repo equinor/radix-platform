@@ -2,14 +2,13 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Tear down radix zone private endpoint infrastructure
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -17,21 +16,18 @@
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
-
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix_zone_playground.env ./teardown.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start tear down of Private endpoint infrastructure... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -39,9 +35,11 @@ echo "Start tear down of Private endpoint infrastructure... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -63,14 +61,13 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 # Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_service_principal.sh"
+LIB_SERVICE_PRINCIPAL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+    exit 1
 else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
+    source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -80,7 +77,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -110,19 +106,20 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
 
 echo ""
-
-
-
 
 #######################################################################################
 ### Delete service principle
@@ -132,7 +129,6 @@ echo "Deleting service principle: ${AZ_SYSTEM_USER_VNET_HUB}..."
 delete_service_principal_and_stored_credentials "${AZ_SYSTEM_USER_VNET_HUB}"
 echo "...Done."
 
-
 #######################################################################################
 ### Delete peering from clusters vnet
 ###
@@ -141,7 +137,6 @@ echo "Deleting peering from clusters vnet to hub vnet: ${AZ_SYSTEM_USER_VNET_HUB
 
 echo "...Done."
 
-
 #######################################################################################
 ### Delete peering from clusters vnet
 ###
@@ -149,7 +144,6 @@ echo "...Done."
 echo "Deleting resource group and all its resources: ${AZ_RESOURCE_GROUP_VNET_HUB}..."
 az group delete -n ${AZ_RESOURCE_GROUP_VNET_HUB} -y
 echo "...Done."
-
 
 #######################################################################################
 ### END

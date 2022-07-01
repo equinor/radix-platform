@@ -9,7 +9,7 @@
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV                  : Path to *.env file
@@ -19,7 +19,6 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-
 
 #######################################################################################
 ### HOW TO USE
@@ -117,11 +116,15 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -158,7 +161,10 @@ if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
         --request-message "Radix Private Link" \
         --query id \
         --output tsv \
-        --only-show-errors) || { echo "ERROR: Something went wrong when creating Private Endpoint." >&2; exit 1; }
+        --only-show-errors) || {
+        echo "ERROR: Something went wrong when creating Private Endpoint." >&2
+        exit 1
+    }
 else
     echo "Private Endpoint already exists."
 fi
@@ -225,9 +231,8 @@ fi
 
 # Get secret
 SECRET="$(az keyvault secret show \
-        --vault-name ${AZ_RESOURCE_KEYVAULT} \
-        --name ${RADIX_PE_KV_SECRET_NAME} \
-        | jq '.value | fromjson')"
+    --vault-name ${AZ_RESOURCE_KEYVAULT} \
+    --name ${RADIX_PE_KV_SECRET_NAME} | jq '.value | fromjson')"
 
 # Check if PE exists in secret
 if [[ -z $(echo ${SECRET} | jq '.[] | select(.private_endpoint_id=="'${PRIVATE_ENDPOINT_ID}'").name') ]]; then
@@ -250,7 +255,11 @@ if [[ -z $(echo ${SECRET} | jq '.[] | select(.private_endpoint_id=="'${PRIVATE_E
     echo "$JSON"
     echo "Updating keyvault secret..."
     NEW_SECRET=$(echo ${SECRET} | jq '. += ['"$(echo ${JSON} | jq -c)"']')
-    az keyvault secret set --name ${RADIX_PE_KV_SECRET_NAME} --vault-name ${AZ_RESOURCE_KEYVAULT} --value "${NEW_SECRET}" >/dev/null
+    az keyvault secret set \
+        --name ${RADIX_PE_KV_SECRET_NAME} \
+        --vault-name ${AZ_RESOURCE_KEYVAULT} \
+        --value "${NEW_SECRET}" \
+        >/dev/null
     echo "Done."
 else
     echo "Private endpoint exists in keyvault secret."

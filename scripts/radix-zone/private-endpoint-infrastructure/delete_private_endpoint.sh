@@ -8,7 +8,7 @@
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV                  : Path to *.env file
@@ -16,7 +16,6 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-
 
 #######################################################################################
 ### HOW TO USE
@@ -98,11 +97,15 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -112,8 +115,8 @@ fi
 ###
 
 PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
-    --name ${PRIVATE_ENDPOINT_NAME} \
-    --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
+    --name "${PRIVATE_ENDPOINT_NAME}" \
+    --resource-group "${AZ_RESOURCE_GROUP_VNET_HUB}" \
     --query id \
     --output tsv \
     2>/dev/null)
@@ -156,15 +159,18 @@ fi
 
 # Get secret
 SECRET="$(az keyvault secret show \
-        --vault-name ${AZ_RESOURCE_KEYVAULT} \
-        --name ${RADIX_PE_KV_SECRET_NAME} \
-        | jq '.value | fromjson')"
+    --vault-name ${AZ_RESOURCE_KEYVAULT} \
+    --name ${RADIX_PE_KV_SECRET_NAME} | jq '.value | fromjson')"
 
 # Check if PE exists in secret
 if [[ -n $(echo ${SECRET} | jq '.[] | select(.private_endpoint_name=="'${PRIVATE_ENDPOINT_NAME}'" and .private_endpoint_resource_group=="'${AZ_RESOURCE_GROUP_VNET_HUB}'").name') ]]; then
     NEW_SECRET=$(echo ${SECRET} | jq '. | del(.[] | select(.private_endpoint_name=="'${PRIVATE_ENDPOINT_NAME}'" and .private_endpoint_resource_group=="'${AZ_RESOURCE_GROUP_VNET_HUB}'"))')
     echo "Updating keyvault secret..."
-    az keyvault secret set --name ${RADIX_PE_KV_SECRET_NAME} --vault-name ${AZ_RESOURCE_KEYVAULT} --value "${NEW_SECRET}" >/dev/null
+    az keyvault secret set \
+        --name ${RADIX_PE_KV_SECRET_NAME} \
+        --vault-name ${AZ_RESOURCE_KEYVAULT} \
+        --value "${NEW_SECRET}" \
+        >/dev/null
     echo "Done."
 else
     echo "Private endpoint does not exist in keyvault secret."

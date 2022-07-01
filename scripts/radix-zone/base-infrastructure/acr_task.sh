@@ -5,7 +5,7 @@
 ###
 
 # Create Azure Container Registry (ACR) Task
-# This script will: 
+# This script will:
 # - create an ACR Task with a system-assigned identity
 # - grant the Task system-assigned identity access to push to ACR
 # - add credentials using the system-assigned identity to the task
@@ -109,7 +109,7 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY    : $AZ_RESOURCE_CONTAINER_REGISTRY"
-echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME         : $AZ_RESOURCE_ACR_TASK_NAME";
+echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME         : $AZ_RESOURCE_ACR_TASK_NAME"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -122,11 +122,15 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -171,7 +175,7 @@ EOF
     printf " Done.\n"
 }
 
-function create_role_assignment(){
+function create_role_assignment() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
     printf "Get ID of ACR: ${ACR_NAME}..."
@@ -195,10 +199,10 @@ function create_role_assignment(){
 function add_task_credential() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    printf "Add credentials for system-assigned identity to task: ${TASK_NAME}..."
+    printf "Add credentials for system-assigned identity to task: %s..." "${TASK_NAME}"
     if [[ 
         $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity') == null ||
-        -z $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity')
+        -z $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity') 
     ]]; then
         # Add credentials for user-assigned identity to the task
         az acr task credential add \
@@ -244,7 +248,6 @@ function run_task() {
 
     echo "Done."
 }
-
 
 create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"

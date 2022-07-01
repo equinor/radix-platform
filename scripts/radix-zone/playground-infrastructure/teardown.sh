@@ -2,14 +2,13 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Tear down radix zone infrastructure
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -17,21 +16,18 @@
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
-
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix_zone_playground.env ./teardown.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start tear down of Radix Zone... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -39,9 +35,11 @@ echo "Start tear down of Radix Zone... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -62,8 +60,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -72,7 +68,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -102,19 +97,20 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
 
 echo ""
-
-
-
 
 #######################################################################################
 ### Remove infrastructure
@@ -123,8 +119,6 @@ echo ""
 echo "Deleting Azure DNS: ${AZ_RESOURCE_DNS}..."
 az network dns zone delete --yes -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
 echo "...Done."
-
-
 
 #######################################################################################
 ### END
