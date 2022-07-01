@@ -2,14 +2,13 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Bootstrap infrastructure for managing private links
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -17,21 +16,18 @@
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
-
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix_zone_playground.env ./bootstrap.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start bootstrap of infrastructure for private links... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -39,9 +35,11 @@ echo "Start bootstrap of infrastructure for private links... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -63,12 +61,12 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 # Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_service_principal.sh"
+LIB_SERVICE_PRINCIPAL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+    exit 1
 else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
+    source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
 
 #######################################################################################
@@ -79,7 +77,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -109,15 +106,18 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
-
 
 #######################################################################################
 ### SUPPORT FUNCS - TODO move this to scripts/service-principle-and-aad-apps/lob_service_principle.sh?
@@ -131,9 +131,17 @@ function assignRoleForResourceToUser() {
     # Delete any existing roles before creating new roles
     local CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
     if [[ ! -z "$CURRENT_ROLES" ]]; then
-        az role assignment delete --assignee "${USER_ID}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null
-        az role assignment create --assignee "${USER_ID}" --role "${ROLE}" --scope "${ROLE_SCOPE}" 2>&1 >/dev/null   
-    fi 
+        az role assignment delete \
+            --assignee "${USER_ID}" \
+            --scope "${ROLE_SCOPE}" \
+            2>&1 >/dev/null
+
+        az role assignment create \
+            --assignee "${USER_ID}" \
+            --role "${ROLE}" \
+            --scope "${ROLE_SCOPE}" \
+            2>&1 >/dev/null
+    fi
 }
 
 #######################################################################################
@@ -142,9 +150,9 @@ function assignRoleForResourceToUser() {
 
 echo ""
 
-# Note - 
+# Note -
 echo "Azure resource group: Creating ${AZ_RESOURCE_GROUP_VNET_HUB}..."
-az group create -l $AZ_RADIX_ZONE_LOCATION -n $AZ_RESOURCE_GROUP_VNET_HUB
+az group create --location "$AZ_RADIX_ZONE_LOCATION" --name "$AZ_RESOURCE_GROUP_VNET_HUB"
 echo "...Done."
 
 #######################################################################################
@@ -156,7 +164,7 @@ echo ""
 echo "Azure service principle: Create ${AZ_SYSTEM_USER_VNET_HUB}..."
 # Create service principle
 create_service_principal_and_store_credentials "${AZ_SYSTEM_USER_VNET_HUB}" "Service principal managing hub vnet and private endpoints"
-ROLE_SCOPE="$(az group show -n $AZ_RESOURCE_GROUP_VNET_HUB --query "id" --output tsv)"
+ROLE_SCOPE="$(az group show --name "$AZ_RESOURCE_GROUP_VNET_HUB" --query "id" --output tsv)"
 
 sleep 5 # Have to wait for required SP change cascades async in Azure
 echo "Azure VNET HUB: Assign role Contributor for scope ${ROLE_SCOPE} to SP ${AZ_SYSTEM_USER_VNET_HUB}..."
@@ -165,14 +173,19 @@ echo "...Done."
 
 #######################################################################################
 ### HUB VNET
-### VNET containing private links to managed azure services. 
+### VNET containing private links to managed azure services.
 
 echo ""
 
-# Note - 
+# Note -
 echo "Azure VNET: Creating ${AZ_VNET_HUB_NAME}..."
-az network vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $AZ_VNET_HUB_NAME -l $AZ_RADIX_ZONE_LOCATION \
-    --address-prefix 10.0.0.0/16 --subnet-name $AZ_VNET_HUB_SUBNET_NAME --subnet-prefix 10.0.0.0/18 
+az network vnet create \
+    --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+    --name "$AZ_VNET_HUB_NAME" \
+    --location "$AZ_RADIX_ZONE_LOCATION" \
+    --address-prefix 10.0.0.0/16 \
+    --subnet-name "$AZ_VNET_HUB_SUBNET_NAME" \
+    --subnet-prefix 10.0.0.0/18
 echo "...Done."
 
 #######################################################################################
@@ -181,24 +194,30 @@ echo "...Done."
 echo ""
 echo "Azure Private DNS Zones: Creating..."
 
-function createPrivateDNSZones(){
+function createPrivateDNSZones() {
     dns_zone="${1}"
-    DNS_ZONE_EXIST="$(az network private-dns zone show -g $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone --query "type" --output tsv 2>/dev/null)"
+    DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$dns_zone" --query "type" --output tsv 2>/dev/null)"
     if [[ $DNS_ZONE_EXIST != "Microsoft.Network/privateDnsZones" ]]; then
         echo "Private DNS Zone: Creating ${dns_zone}..."
         # throws error if run twice
-        az network private-dns zone create -g $AZ_RESOURCE_GROUP_VNET_HUB -n $dns_zone
+        az network private-dns zone create \
+            --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+            --name "$dns_zone"
     fi
-    DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show -g $AZ_RESOURCE_GROUP_VNET_HUB -n hublink -z $dns_zone --query "type" --output tsv 2>/dev/null)"
+    DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name hublink --zone-name "$dns_zone" --query "type" --output tsv 2>/dev/null)"
     if [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
         echo "Linking private DNS Zone:  ${dns_zone} to HUB VNET ${AZ_VNET_HUB_NAME}"
         # throws error if run twice
-        az network private-dns link vnet create -g $AZ_RESOURCE_GROUP_VNET_HUB -n hublink -z $dns_zone -v $AZ_VNET_HUB_NAME -e False
-    fi  
+        az network private-dns link vnet create \
+            --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+            --name hublink \
+            --zone-name "$dns_zone" \
+            --virtual-network "$AZ_VNET_HUB_NAME" \
+            --registration-enabled False
+    fi
 }
 
-for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"
-do
+for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
     createPrivateDNSZones $dns_zone &
 done
 wait
