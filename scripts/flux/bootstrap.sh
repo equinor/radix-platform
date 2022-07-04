@@ -215,11 +215,11 @@ if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; th
 fi
 printf " OK\n"
 
-printf "\nWorking on namespace..."
+printf "\nWorking on namespace... "
 if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
     kubectl create namespace flux-system 2>&1 >/dev/null
 fi
-printf "...Done"
+printf "Done"
 
 #######################################################################################
 ### CREDENTIALS
@@ -228,18 +228,18 @@ printf "...Done"
 FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 
-printf "\nLooking for flux deploy keys for GitHub in keyvault \"%s\"..." "${AZ_RESOURCE_KEYVAULT}"
+printf "\nLooking for flux deploy keys for GitHub in keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
 if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
-    printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
+    printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault... "
     ssh-keygen -t ed25519 -N "" -C "radix@statoilsrm.onmicrosoft.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
     az keyvault secret set --file=./id_ed25519."$RADIX_ENVIRONMENT" --name="$FLUX_PRIVATE_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
     az keyvault secret set --file=./id_ed25519."$RADIX_ENVIRONMENT".pub --name="$FLUX_PUBLIC_KEY_NAME" --vault-name="$AZ_RESOURCE_KEYVAULT" 2>&1 >/dev/null
     rm id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
     rm id_ed25519."$RADIX_ENVIRONMENT".pub 2>&1 >/dev/null
     FLUX_DEPLOY_KEYS_GENERATED=true
-    printf "...Done\n"
+    printf "Done\n"
 else
-    printf "...Keys found."
+    printf "Keys found. "
 fi
 
 az keyvault secret download \
@@ -248,10 +248,10 @@ az keyvault secret download \
     --file "$FLUX_PRIVATE_KEY_NAME" \
     2>&1 >/dev/null
 
-printf "...Done\n"
+printf "Done\n"
 
 # Create secret for Flux v2 to use to authenticate with ACR.
-printf "\nCreating k8s secret \"radix-docker\"..."
+printf "\nCreating k8s secret \"radix-docker\"... "
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
     --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
@@ -268,13 +268,13 @@ kubectl create secret docker-registry radix-docker \
     kubectl apply -f - \
         2>&1 >/dev/null
 rm -f sp_credentials.json
-printf "...Done\n"
+printf "Done\n"
 
 # Create ConfigMap radix-flux-config which will provide values for flux deployments
 echo "Creating \"radix-flux-config\"..."
 
 # list of public ips assigned to the cluster
-printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
+printf "\nGetting list of public ips assigned to %s... " "$CLUSTER_NAME"
 ASSIGNED_IPS="$(az network public-ip list \
     --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].ipAddress" \
     --output json)"
@@ -291,17 +291,17 @@ else
             IP_LIST="$IP_LIST,$(echo $ipaddress)"
         fi
     done
-    printf "...Done\n"
+    printf "Done\n"
 fi
 
-printf "\nGetting Slack Webhook URL..."
+printf "\nGetting Slack Webhook URL... "
 SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $KV_SECRET_SLACK_WEBHOOK | jq -r .value)"
-printf "...Done\n"
+printf "Done\n"
 
 IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
 
 # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
-printf "Deploy \"radix-flux-config\" configmap in flux-system namespace..."
+printf "Deploy \"radix-flux-config\" configmap in flux-system namespace... "
 cat <<EOF >radix-flux-config.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -321,7 +321,7 @@ EOF
 
 kubectl apply -f radix-flux-config.yaml 2>&1 >/dev/null
 rm radix-flux-config.yaml
-printf "...Done.\n"
+printf "Done.\n"
 
 #######################################################################################
 ### INSTALLATION
@@ -345,7 +345,7 @@ then
   exit 1
 else
   rm "$FLUX_PRIVATE_KEY_NAME"
-  echo "done."
+  echo "Done."
 fi
 
 echo -e ""

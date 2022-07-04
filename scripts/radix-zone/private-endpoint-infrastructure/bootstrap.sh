@@ -151,7 +151,7 @@ function assignRoleForResourceToUser() {
 echo ""
 
 # Note -
-echo "Azure resource group: Creating ${AZ_RESOURCE_GROUP_VNET_HUB}..."
+echo "Azure resource group: Creating ${AZ_RESOURCE_GROUP_VNET_HUB}... "
 az group create --location "$AZ_RADIX_ZONE_LOCATION" --name "$AZ_RESOURCE_GROUP_VNET_HUB"
 echo "...Done."
 

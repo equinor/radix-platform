@@ -104,9 +104,9 @@ function update_ad_app_owners() {
         user_object_id=${line[0]}
         user_email=${line[1]}
         if [[ ! ${app_owners[@]} =~ ${user_object_id} ]]; then
-            printf "Adding ${user_email} to ${name}..."
+            printf "Adding ${user_email} to ${name}... "
             az ad app owner add --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
-            printf " Done.\n"
+            printf "Done.\n"
         fi
     done <<< "${ad_group_users}"
     unset IFS
@@ -115,9 +115,9 @@ function update_ad_app_owners() {
         user_object_id=${line[0]}
         user_email=${line[1]}
         if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
-            printf "Removing ${user_email} from ${name}"
+            printf "Removing %s from %s " "${user_email}" "${name}"
             az ad app owner remove --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
-            printf " Done.\n"
+            printf "Done.\n"
         fi
     done <<< "${app_owners}"
     unset IFS
@@ -156,10 +156,10 @@ function update_service_principal_owners() {
         user_object_id=${line[0]}
         user_email=${line[1]}
         if [[ ! ${sp_owners[@]} =~ ${user_object_id} ]]; then
-            printf "Adding ${user_email} to ${name}..."
+            printf "Adding %s to %s... " "${user_email}" "${name}"
             az rest --method POST --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/\$ref \
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
-            printf " Done.\n"
+            printf "Done.\n"
         fi
     done <<< "${ad_group_users}"
     unset IFS
@@ -168,10 +168,10 @@ function update_service_principal_owners() {
         user_object_id=${line[0]}
         user_email=${line[1]}
         if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
-            echo "Removing ${user_email} from ${name}..."
+            echo "Removing %s from %s... " "${user_email}" "${name}"
             az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/\$ref \
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
-            printf " Done.\n"
+            printf "Done.\n"
         fi
     done <<< "${sp_owners}"
     unset IFS
@@ -189,30 +189,30 @@ function create_service_principal_and_store_credentials() {
     name="$1"
     description="$2"
 
-    printf "Working on \"${name}\": Creating service principal..."
+    printf "Working on \"%s\": Creating service principal... " "${name}"
 
     # Skip creation if the sp exist
     local testSP
     testSP="$(az ad sp list --display-name "${name}" --query [].appId --output tsv 2> /dev/null)"
     if [ -z "$testSP" ]; then
-        printf "creating ${name}..."
+        printf "creating %s... " "${name}"
         password="$(az ad sp create-for-rbac --name "${name}" --query password --output tsv)"
         id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
         secret="$(az ad sp credential list --id "${id}" --query "sort_by([?customKeyIdentifier=='rbac'], &endDate)[-1:].{endDate:endDate,keyId:keyId}")"
         secret_id="$(echo "${secret}" | jq -r .[].keyId)"
         expiration_date="$(echo "${secret}" | jq -r .[].endDate | sed 's/\..*//')Z"
-        printf " Done.\n"
+        printf "Done.\n"
 
-        printf "Update credentials in keyvault..."
+        printf "Update credentials in keyvault... "
         update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}" "${secret_id}" "${expiration_date}"
     else
-        printf "${name} exists.\n"
+        printf "%s exists.\n" "${name}"
     fi
 
-    printf "Update owners of app registration..."
+    printf "Update owners of app registration... "
     update_ad_app_owners "${name}"
 
-    printf "Update owners of service principal..."
+    printf "Update owners of service principal... "
     update_service_principal_owners "${name}"
 
     printf "Done.\n"
@@ -228,7 +228,7 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
     name="$1"
     description="$2"
 
-    printf "Working on \"${name}\": Appending new credentials in Azure AD..."
+    printf "Working on \"%s\": Appending new credentials in Azure AD... " "${name}"
 
     # The --credential-description option has a limit of 32 bytes: https://github.com/Azure/azure-cli/issues/20561
     id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
@@ -237,7 +237,7 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
     secret_id="$(echo "${secret}" | jq -r .[].keyId)"
     expiration_date="$(echo "${secret}" | jq -r .[].endDate | sed 's/\..*//')Z" # Keep only YYYY-MM-DDTHH:MM:SS and append Z for Zulu-time.
 
-    printf "Update credentials in keyvault..."
+    printf "Update credentials in keyvault... "
     update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}" "${secret_id}" "${expiration_date}"
 
     printf "Done.\n"
@@ -253,13 +253,13 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
     name="$1"
     description="$2"
 
-    printf "Working on \"${name}\": Appending new credentials in Azure AD..."
+    printf "Working on \"%s\": Appending new credentials in Azure AD... " "${name}"
 
     # The --credential-description option has a limit of 32 bytes: https://github.com/Azure/azure-cli/issues/20561
     id="$(az ad app list --display-name "${name}" --query '[].appId' --output tsv)"
     password="$(az ad app credential reset --id "${id}" --credential-description "rbac" --append --query password --output tsv)"
 
-    printf "Update credentials in keyvault..."
+    printf "Update credentials in keyvault... "
     update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}" "${secret_id}" "${expiration_date}"
 
     printf "Done.\n"
@@ -269,13 +269,13 @@ function delete_service_principal_and_stored_credentials() {
     local name # Input 1
     name="${1}"
 
-    printf "Working on service principal \"${name}\": "
+    printf "Working on service principal \"%s\": " "${name}"
 
     printf "deleting user in az ad..."
     id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
     az ad sp delete --id "${id}" --output none
 
-    printf "deleting credentials in keyvault..."
+    printf "deleting credentials in keyvault... "
     az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --output none
     printf "Done.\n"
 }
@@ -284,15 +284,15 @@ function delete_ad_app_and_stored_credentials() {
     local name # Input 1
     name="${1}"
 
-    printf "Working on ad app \"${name}\": "
+    printf "Working on ad app \"%s\": " "${name}"
 
     # Get id from key vault as trying to use the name is just hopeless for client apps when using cli
     app_id="$(az keyvault secret show --vault-name ${AZ_RESOURCE_KEYVAULT} --name "${name}" | jq -r .value | jq -r .id)"
 
-    printf "deleting app in az ad..."
+    printf "deleting app in az ad... "
     az ad app delete --id "${app_id}" --output none
 
-    printf "deleting credentials in keyvault..."
+    printf "deleting credentials in keyvault... "
     az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --output none
     printf "Done.\n"
 }

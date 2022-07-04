@@ -116,9 +116,9 @@ echo ""
 ### Remove infrastructure
 ###
 
-echo "Deleting Azure DNS: ${AZ_RESOURCE_DNS}..."
+echo "Deleting Azure DNS: ${AZ_RESOURCE_DNS}... "
 az network dns zone delete --yes -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
-echo "...Done."
+echo "Done."
 
 #######################################################################################
 ### END

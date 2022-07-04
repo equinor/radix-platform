@@ -103,7 +103,7 @@ function updateRedisCacheConfiguration() {
             done
         fi
 
-        echo "Creating new Redis Cache..."
+        printf "Creating new Redis Cache... "
         #Docs https://azure.microsoft.com/en-us/pricing/details/cache/
         if [[ $RADIX_ZONE == "dev" ]]; then
             REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_RADIX_ZONE_LOCATION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Basic --vm-size c1)
@@ -116,7 +116,7 @@ function updateRedisCacheConfiguration() {
             echo "ERROR: Could not create Redis Cache. Quitting." >&2
             exit 1
         fi
-        printf " Done.\n"
+        printf "Done.\n"
     fi
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
@@ -137,7 +137,7 @@ function updateRedisCacheConfiguration() {
 
     printf "Restarting $AUTH_PROXY_COMPONENT deployment in $WEB_CONSOLE_NAMESPACE..."
     kubectl rollout restart deployment -n "$WEB_CONSOLE_NAMESPACE" "$AUTH_PROXY_COMPONENT"
-    printf " Done.\n"
+    printf "Done.\n"
 }
 
 updateRedisCacheConfiguration

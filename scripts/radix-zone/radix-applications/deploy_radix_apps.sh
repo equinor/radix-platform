@@ -158,7 +158,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     fi
 
     # Generate deploy key
-    printf "Generating new deploy key..."
+    printf "Generating new deploy key... "
     rm -f "${script_dir_path}/id_ed25519" "${script_dir_path}/id_ed25519.pub"
 
     ssh-keygen -t ed25519 -C "${owner_email}" -f "id_ed25519" -P "" -q
@@ -168,9 +168,9 @@ function create_and_register_deploy_key_and_store_credentials() {
     key_fingerprint=$(ssh-keygen -l -f "${script_dir_path}/id_ed25519.pub" | awk '{print $2}')
 
     rm -f "${script_dir_path}/id_ed25519" "${script_dir_path}/id_ed25519.pub"
-    printf " Done.\n"
+    printf "Done.\n"
 
-    printf "Post deploy key to GitHub..."
+    printf "Post deploy key to GitHub... "
     curl \
         --silent \
         --request POST \
@@ -178,7 +178,7 @@ function create_and_register_deploy_key_and_store_credentials() {
         --header "Authorization: token ${github_pat}" \
         --data "{\"title\": \"${deploy_key_name}\", \"key\": \"${public_key}\", \"read_only\": true}" \
         "https://api.github.com/repos/${repo_organization}/${repo_name}/keys"
-    printf " Done.\n"
+    printf "Done.\n"
 
     # Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
 
@@ -213,7 +213,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     # 1 year from now, zulu format
     expires=$(date --utc --date "+1 year" +%FT%TZ)
 
-    printf "Store RadixRegistration in keyvault..."
+    printf "Store RadixRegistration in keyvault... "
     az keyvault secret set \
         --vault-name "${AZ_RESOURCE_KEYVAULT}" \
         --name "${app_name}-radixregistration-values" \
@@ -222,7 +222,7 @@ function create_and_register_deploy_key_and_store_credentials() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none \
         --only-show-errors
-    printf " Done.\n"
+    printf "Done.\n"
 
     rm -f "${tmp_file_path}"
 }
@@ -247,7 +247,7 @@ function create_github_webhook_in_repository() {
     fi
 
     # Get secret from keyvault
-    printf "Get secret from keyvault..."
+    printf "Get secret from keyvault... "
     secret_file="${script_dir_path}/${app_name}-radixregistration-values.json"
 
     az keyvault secret download \
@@ -261,7 +261,7 @@ function create_github_webhook_in_repository() {
         rm -f "${secret_file}" return
     }
 
-    printf " Done.\n"
+    printf "Done.\n"
 
     # Extract repo_organization and repo_name from repository url.
     repo_organization="$(cat ${secret_file} | jq -r .repository | awk -F/ '{print $4}')"
@@ -269,7 +269,7 @@ function create_github_webhook_in_repository() {
 
     shared_secret=$(cat ${secret_file} | jq -r .sharedSecret)
 
-    printf "Create GitHub webhook..."
+    printf "Create GitHub webhook... "
     curl \
         --silent \
         --request POST \
@@ -280,7 +280,7 @@ function create_github_webhook_in_repository() {
 
     rm -f "${secret_file}"
 
-    printf " Done.\n"
+    printf "Done.\n"
 }
 
 function create_radix_application() {
@@ -301,7 +301,7 @@ function create_radix_application() {
     if [ -z $(kubectl get radixregistration "${app_name}" --output name 2>/dev/null) ]; then
 
         # Get secret from keyvault
-        printf "Get secret from keyvault..."
+        printf "Get secret from keyvault... "
         secret_file="${script_dir_path}/${app_name}-radixregistration-values.json"
 
         az keyvault secret download \
@@ -316,7 +316,7 @@ function create_radix_application() {
             return
         }
 
-        printf " Done.\n"
+        printf "Done.\n"
 
         # Generate yaml list of AD groups
         while read line; do
@@ -328,7 +328,7 @@ function create_radix_application() {
             deploy_key+=$(printf "\n    ${line}")
         done <<<"$(cat ${secret_file} | jq -r .deployKey)"
 
-        printf "Create radixregistration..."
+        printf "Create radixregistration... "
 
         NAME="${app_name}" \
             AD_GROUPS="${ad_groups}" \
@@ -344,7 +344,7 @@ function create_radix_application() {
 
         kubectl apply -f "${script_dir_path}/${app_name}-rr.yaml"
         rm -f "${secret_file}" "${script_dir_path}/${app_name}-rr.yaml"
-        printf " Done.\n"
+        printf "Done.\n"
     else
         echo "RadixRegistration exists."
     fi
@@ -369,7 +369,7 @@ function create_build_deploy_job() {
     fi
 
     # Get secret from keyvault
-    printf "Get secret from keyvault..."
+    printf "Get secret from keyvault... "
     secret_file="${script_dir_path}/${app_name}-radixregistration-values.json"
 
     az keyvault secret download \
@@ -384,14 +384,14 @@ function create_build_deploy_job() {
         return
     }
 
-    printf " Done.\n"
+    printf "Done.\n"
 
     # Generate timestamp
     timestamp=$(date --utc +%Y%m%d%H%M%S)
     # Generate image tag
     image_tag=$(date +%s%N | sha256sum | base64 | head -c 5 | tr '[:upper:]' '[:lower:]')
 
-    printf "Create radixJob..."
+    printf "Create radixJob... "
 
     NAME="${app_name}" \
         CLONE_URL=$(cat ${secret_file} | jq -r .cloneURL) \
@@ -404,7 +404,7 @@ function create_build_deploy_job() {
 
     kubectl apply -f "${script_dir_path}/${app_name}-rj.yaml"
     rm -f "${secret_file}" "${script_dir_path}/${app_name}-rj.yaml"
-    printf " Done.\n"
+    printf "Done.\n"
 }
 
 #######################################################################################

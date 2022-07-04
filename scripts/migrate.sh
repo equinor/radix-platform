@@ -563,7 +563,7 @@ if [[ $create_redis_cache == true ]]; then
         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" >tmp_prod
     )
-    printf " Done.\n"
+    printf "Done.\n"
     cat tmp_qa && rm tmp_qa
     cat tmp_prod && rm tmp_prod
 fi

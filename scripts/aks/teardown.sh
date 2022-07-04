@@ -117,7 +117,7 @@ printf "Done.\n"
 ### Check if cluster or network resources are locked
 ###
 
-printf "Checking for resource locks..."
+printf "Checking for resource locks... "
 
 CLUSTER=$(az aks list \
     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
@@ -155,7 +155,7 @@ if [[ "${VNET}" ]]; then
         --only-show-errors)"
 fi
 
-printf " Done.\n"
+printf "Done.\n"
 
 if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
     echo -e ""
@@ -266,7 +266,7 @@ fi
 printf "Done.\n"
 
 # Delete the cluster
-echo "Deleting cluster... "
+printf "Deleting cluster... "
 az aks delete \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --name "$CLUSTER_NAME" \
@@ -274,7 +274,7 @@ az aks delete \
     --yes \
     --output none \
     --only-show-errors
-echo "Done."
+printf "Done.\n"
 
 #######################################################################################
 ### Delete Redis Cache
@@ -282,12 +282,14 @@ echo "Done."
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "Deleting Redis Cache for QA..."
+printf "Deleting Redis Cache for QA... "
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
 wait # wait for subshell to finish
-echo "Deleting Redis Cache for Prod..."
+printf "Done.\n"
+printf "Deleting Redis Cache for Prod... "
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
 wait # wait for subshell to finish
+printf "Done.\n"
 
 #######################################################################################
 ### Delete replyUrls
@@ -323,16 +325,16 @@ echo "Deleting Dynatrace integration..."
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
 
-echo "Cleaning up local kube config... "
+printf "Cleaning up local kube config... "
 kubectl config delete-context "${CLUSTER_NAME}-admin" &>/dev/null
 if [[ "$(kubectl config get-contexts -o name)" == *"${CLUSTER_NAME}"* ]]; then
     kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
 fi
 kubectl config delete-cluster "${CLUSTER_NAME}" &>/dev/null
-echo "Done."
+printf "Done.\n"
 
 if [[ "${VNET}" ]]; then
-    echo "Deleting vnet... "
+    printf "Deleting vnet... "
     az network vnet peering delete \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --name "$VNET_PEERING_NAME" \
@@ -355,19 +357,19 @@ if [[ "${VNET}" ]]; then
         --subscription "$AZ_SUBSCRIPTION_ID" \
         --output none \
         --only-show-errors
-    echo "Done."
+    printf "Done.\n"
 fi
 
-echo "Deleting Network Security Group..."
+printf "Deleting Network Security Group... "
 az network nsg delete \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --name "$NSG_NAME" \
     --subscription "$AZ_SUBSCRIPTION_ID"
-echo "Done."
+printf "Done.\n"
 
 if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
     # IP cannot be deleted while still allocated to loadbalancer.
-    printf "Deleting Public IP %s..." "${TEST_CLUSTER_PUBLIC_IP_ADDRESS}"
+    printf "Deleting Public IP %s... " "${TEST_CLUSTER_PUBLIC_IP_ADDRESS}"
     az network public-ip delete \
         --ids "${TEST_CLUSTER_PUBLIC_IP_ID}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
@@ -377,9 +379,10 @@ if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
 fi
 
 echo ""
-echo "Delete DNS records"
+printf "Delete DNS records... "
 (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" CLUSTER_NAME="$CLUSTER_NAME" ../dns/delete_dns_entries_for_cluster.sh)
 wait # wait for subshell to finish
+printf "Done.\n"
 
 echo ""
 echo "Delete orphaned DNS records"

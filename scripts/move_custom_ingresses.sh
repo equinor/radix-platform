@@ -183,13 +183,13 @@ echo ""
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "\nConnecting kubectl... "
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then
     # Send message to stderr
     echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
     exit 1
 fi
-printf "...Done.\n"
+printf "Done.\n"
 
 #######################################################################################
 ### Verify cluster access
@@ -250,7 +250,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ### Scale down source cluster resources
     ###
     echo ""
-    printf "Scale down radix-cicd-canary in %s...\n" "$SOURCE_CLUSTER"
+    printf "Scale down radix-cicd-canary in %s... " "$SOURCE_CLUSTER"
     kubectl scale deployment --namespace radix-cicd-canary radix-cicd-canary --replicas=0
     wait
     printf "Done.\n"
@@ -259,7 +259,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ### Suspend source flux resources
     ###
     echo ""
-    printf "Suspend radix-cicd-canary kustomizations...\n"
+    printf "Suspend radix-cicd-canary kustomizations... "
     flux suspend kustomization radix-cicd-canary
     wait
     printf "Done.\n"

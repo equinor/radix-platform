@@ -70,10 +70,10 @@ function create_dashboard_json (){
     # Substitute variables in template file with values into dashboard JSON file.
     envsubst < $DASHBOARD_JSON_TEMPLATE > $TEMP_DASHBOARD_JSON
 
-    printf "Get API token..."
+    printf "Get API token... "
     API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
     DYNATRACE_API_URL=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-api-url | jq -r .value)
-    printf " done.\n"
+    printf "Done.\n"
 
     # Check if dashboard exists, get id
     response="$(curl -k -sS -X GET "${DYNATRACE_API_URL}/config/v1/dashboards?tags=RADIX" \
@@ -86,7 +86,7 @@ function create_dashboard_json (){
         # Create dashboard
         JSON=$(cat $TEMP_DASHBOARD_JSON)
 
-        printf "Send API request (create dashboard)..."
+        printf "Send API request (create dashboard)... "
         response="$(curl -k -sS -X POST "${DYNATRACE_API_URL}/config/v1/dashboards" \
             -H "accept: application/json; charset=utf-8" \
             -H "Authorization: Api-Token ${API_TOKEN}" \
@@ -98,7 +98,7 @@ function create_dashboard_json (){
             printf "ERROR: Could not create dashboard. Quitting...\n" >&2
             return
         fi
-        printf " done.\n"
+        printf "Done.\n"
 
         export DASHBOARD_ID=$(echo $response | jq -r '.id')
     else
@@ -108,7 +108,7 @@ function create_dashboard_json (){
          # Set dashboard id and set tile position before sending the request JSON.
         JSON=$(jq '.id = "'${DASHBOARD_ID}'"' ${TEMP_DASHBOARD_JSON})
 
-        printf "Send API request (update dashboard)..."
+        printf "Send API request (update dashboard)... "
         response="$(curl -k -sS -X PUT "${DYNATRACE_API_URL}/config/v1/dashboards/${DASHBOARD_ID}" \
             -H "accept: application/json; charset=utf-8" \
             -H "Authorization: Api-Token ${API_TOKEN}" \
@@ -120,7 +120,7 @@ function create_dashboard_json (){
             echo "$response"
             return
         fi
-        printf " done.\n"
+        printf "Done.\n"
     fi
 
     # Update share settings
@@ -131,7 +131,7 @@ function create_dashboard_json (){
 
     JSON=$(cat $TEMP_DASHBOARD_PERMISSIONS_JSON | jq '')
 
-    printf "Send API request (update share settings)..."
+    printf "Send API request (update share settings)... "
     response="$(curl -k -sS -X PUT "${DYNATRACE_API_URL}/config/v1/dashboards/${DASHBOARD_ID}/shareSettings" \
         -H "accept: application/json; charset=utf-8" \
         -H "Authorization: Api-Token ${API_TOKEN}" \
@@ -142,7 +142,7 @@ function create_dashboard_json (){
         printf "ERROR: Could not update share settings. Quitting...\n" >&2
         return
     fi
-    printf " done.\n"
+    printf "Done.\n"
 
     # Remove temp files
     rm "$TEMP_DASHBOARD_JSON" "$TEMP_DASHBOARD_PERMISSIONS_JSON"

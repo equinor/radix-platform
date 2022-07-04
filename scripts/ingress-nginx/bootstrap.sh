@@ -241,7 +241,7 @@ else
         --only-show-errors)
 
     if [[ ! ${IP_EXISTS} ]]; then
-        printf "Creating Public Ingress IP..."
+        printf "Creating Public Ingress IP... "
         SELECTED_INGRESS_IP_RAW_ADDRESS=$(az network public-ip create \
             --name "${CLUSTER_PIP_NAME}" \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
@@ -261,7 +261,7 @@ fi
 
 # create nsg rule, update subnet.
 # Create network security group rule
-printf "Creating azure NSG rule %s-rule..." "${NSG_NAME}"
+printf "Creating azure NSG rule %s-rule... " "${NSG_NAME}"
 az network nsg rule create \
     --nsg-name "${NSG_NAME}" \
     --name "${NSG_NAME}-rule" \
@@ -284,7 +284,7 @@ echo "controller:
   service:
     loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
 
-printf "    Updating subnet %s to associate NSG..." "${SUBNET_NAME}"
+printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
 az network vnet subnet update \
     --vnet-name "${VNET_NAME}" \
     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \

@@ -361,7 +361,7 @@ NSG_ID=$(az network nsg list --resource-group clusters --query "[?name=='${NSG_N
 
 if [[ ! ${NSG_ID} ]]; then
     # Create network security group
-    printf "    Creating azure NSG %s..." "${NSG_NAME}"
+    printf "    Creating azure NSG %s... " "${NSG_NAME}"
     NSG_ID=$(az network nsg create \
         --name "$NSG_NAME" \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -405,7 +405,7 @@ if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
         printf "    There is an existing Flow Log on %s\n" "$NSG_NAME"
     else
         # Create network watcher flow log and assign to NSG
-        printf "    Creating azure Flow-log %s...\n" "${NSG_NAME}-rule"
+        printf "    Creating azure Flow-log %s... " "${NSG_NAME}-rule"
         az network watcher flow-log create \
             --name "${NSG_NAME}-flow-log" \
             --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -416,7 +416,7 @@ if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
             --retention "90" \
             --enabled true \
             --output none
-        printf "    Done.\n"
+        printf "Done.\n"
     fi
 fi
 

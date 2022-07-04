@@ -95,7 +95,7 @@ fi
 ###
 
 echo ""
-echo "Logging you in to Azure if not already logged in..."
+echo "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done."
@@ -150,12 +150,12 @@ echo ""
 ### 
 
 echo ""
-echo "Create resource group..."
+echo "Create resource group... "
 az group create --name "$AZ_VELERO_RESOURCE_GROUP" --location "$AZ_RADIX_ZONE_LOCATION" 2>&1 >/dev/null
 echo "Done."
 
 echo ""
-echo "Create storage account..."
+echo "Create storage account... "
 az storage account create \
     --name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
     --resource-group "$AZ_VELERO_RESOURCE_GROUP" \
@@ -190,7 +190,7 @@ AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD="$(az ad sp create-for-rbac --name "$APP_RE
 AZ_VELERO_SERVICE_PRINCIPAL_ID="$(az ad sp list --display-name "$APP_REGISTRATION_VELERO" --query '[0].appId' -o tsv)"
 AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION="Used by Velero to access Azure resources"
 
-printf "Update credentials in keyvault..."
+printf "Update credentials in keyvault... "
 update_service_principal_credentials_in_az_keyvault "${APP_REGISTRATION_VELERO}" "${AZ_VELERO_SERVICE_PRINCIPAL_ID}" "${AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD}" "${AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION}"
 printf "Done.\n"
 

@@ -146,13 +146,13 @@ echo ""
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "\nConnecting kubectl... "
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 1
 fi
-printf "...Done.\n"
+printf "Done.\n"
 
 #######################################################################################
 ### Verify cluster access
@@ -169,29 +169,29 @@ printf " OK\n"
 ###
 
 # Step 1: Remove the helm release
-printf "\nDelete and purge the helm release..."
+printf "\nDelete and purge the helm release... "
 helm delete flux --purge 2>&1 >/dev/null
-printf "...Done.\n"
+printf "Done.\n"
 
 # Step 1.1: Remove the helm release
-printf "\nDelete and purge the helm operator..."
+printf "\nDelete and purge the helm operator... "
 helm delete helm-operator --purge 2>&1 >/dev/null
-printf "...Done.\n"
+printf "Done.\n"
 
 # Step 1.6: Making sure the v1 webhook is really gone
-printf "\nMaking sure the v1 webhook is really gone..."
+printf "\nMaking sure the v1 webhook is really gone... "
 kubectl delete apiservice v1.helm.fluxcd.io 2>&1 >/dev/null
-printf "...Done.\n"
+printf "Done.\n"
 
 # Step 2: Delete the repo credentials
-printf "\nDelete the repo credentials..."
+printf "\nDelete the repo credentials... "
 kubectl delete secret "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
-printf "...Done.\n"
+printf "Done.\n"
 
 # Step 3: Remove all the custom resource definitions
-printf "\nDelete all the custom resource definitions..."
+printf "\nDelete all the custom resource definitions... "
 kubectl delete -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
-printf "...Done.\n"
+printf "Done.\n"
 
 
 #######################################################################################

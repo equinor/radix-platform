@@ -168,12 +168,12 @@ function checkExpiryDates() {
     done < <(echo "${KEY_VAULT_SECRETS}" | jq -c '.[]')
 }
 
-printf "\nCreating arrays..."
+printf "\nCreating arrays... "
 createArrays
-printf "done"
+printf " Done"
 
 if [ ${#MISSING_EXPIRY_ARRAY[@]} -ne 0 ]; then
-    printf "\nChecking for missing expiration dates..."
+    printf "\nChecking for missing expiration dates... "
     while read -r i; do
         NAME=$(jq -n "$i" | jq -r '.name')
         printf "\n%s  Secret %s is missing expiry date%s" "${yel}" "$NAME" "${normal}"
@@ -192,6 +192,6 @@ if [ ${#MISSING_EXPIRY_ARRAY[@]} -ne 0 ]; then
     printf "\nDone"
 fi
 
-printf "\nChecking expiration dates..."
+printf "\nChecking expiration dates... "
 checkExpiryDates
-printf "\nDone\n"
+printf "Done\n"

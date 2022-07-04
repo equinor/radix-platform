@@ -106,11 +106,11 @@ if [[ $USER_PROMPT == true ]]; then
     done
 fi
 
-printf "Getting list of aks clusters..."
+printf "Getting list of aks clusters... "
 CLUSTERS="$(az aks list --subscription ${AZ_SUBSCRIPTION_ID} | jq --raw-output -r '.[].name')"
-printf " Done.\n"
+printf "Done.\n"
 
-printf "Get TXT records..."
+printf "Get TXT records... "
 
 
 TXT_RECORD_LIST=$(az network dns record-set txt list \
@@ -119,7 +119,7 @@ TXT_RECORD_LIST=$(az network dns record-set txt list \
     --subscription ${AZ_SUBSCRIPTION_ID} \
     --query "[].[name,to_string(txtRecords[].value[])]" -otsv)
 
-printf " Done.\n"
+printf "Done.\n"
 
 function delete_txt_record() {
     local record_name=${1}
@@ -157,7 +157,7 @@ EXCLUDE_LIST=(
     "*.ext-mon"
 )
 
-printf "Get A-records..."
+printf "Get A-records... "
 
 A_RECORD_LIST=$(az network dns record-set a list \
     --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
@@ -166,7 +166,7 @@ A_RECORD_LIST=$(az network dns record-set a list \
     --query "[].[name]" \
     --output tsv)
 
-printf " Done.\n"
+printf "Done.\n"
 
 echo "Find A records not bound to a TXT-record..."
 

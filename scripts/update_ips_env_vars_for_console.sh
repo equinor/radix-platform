@@ -90,7 +90,7 @@ function updateIpsEnvVars() {
     printf " Done.\n"
 
     # Get list of IPs for Public IPs assigned to Cluster Type
-    printf "Getting list of IPs from Public IP Prefix %s..." "${ippre_name}"
+    printf "Getting list of IPs from Public IP Prefix %s... " "${ippre_name}"
     IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
     if [[ "${IP_PREFIXES}" == "[]" ]]; then
@@ -106,9 +106,9 @@ function updateIpsEnvVars() {
             IP_LIST="${IP_LIST},$(echo "${ippre}" | jq -r '.')"
         fi
     done
-    printf " Done.\n"
+    printf "Done.\n"
 
-    printf "Sending PATCH request to Radix API..."
+    printf "Sending PATCH request to Radix API... "
     API_REQUEST=$(curl -s -X PATCH "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
         -H "accept: application/json" \
         -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
@@ -119,7 +119,7 @@ function updateIpsEnvVars() {
         echo -e "\nERROR: API request failed." >&2
         return
     fi
-    printf " Done.\n"
+    printf "Done.\n"
 
     echo "Web component env variable updated with Public IP Prefix IPs."
     unset IP_LIST

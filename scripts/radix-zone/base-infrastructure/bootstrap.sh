@@ -159,12 +159,12 @@ fi
 ###
 
 function create_resource_groups() {
-    printf "Creating all resource groups..."
+    printf "Creating all resource groups "
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}"--subscription "${AZ_SUBSCRIPTION_ID}" --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
     az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_LOGS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
-    printf "...Done\n"
+    printf "Done\n"
 }
 
 #######################################################################################
@@ -172,16 +172,16 @@ function create_resource_groups() {
 ###
 
 function create_common_resources() {
-    printf "Creating key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
+    printf "Creating key vault: %s... " "${AZ_RESOURCE_KEYVAULT}"
     az keyvault create \
         --name "${AZ_RESOURCE_KEYVAULT}" \
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --enable-purge-protection \
         --output none
-    printf "...Done\n"
+    printf "Done\n"
 
-    printf "Set access policy for group \"Radix Platform Operators\" in key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
+    printf "Set access policy for group \"Radix Platform Operators\" in key vault: %s... " "${AZ_RESOURCE_KEYVAULT}"
     az keyvault set-policy \
         --object-id "$(az ad group show --group "Radix Platform Operators" --query objectId --output tsv --only-show-errors)" \
         --name "${AZ_RESOURCE_KEYVAULT}" \
@@ -193,18 +193,18 @@ function create_common_resources() {
         --storage-permissions \
         --output none \
         --only-show-errors
-    printf "...Done\n"
+    printf "Done\n"
 
-    printf "Creating Azure DNS: %s\n" "${AZ_RESOURCE_DNS}"
+    printf "Creating Azure DNS: %s... " "${AZ_RESOURCE_DNS}"
     az network dns zone create --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
-    printf "...Done\n"
+    printf "Done\n"
     # DNS CAA
     if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-        printf "Adding CAA records..."
+        printf "Adding CAA records... "
         az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org" --output none
         az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "digicert.com" --output none
         az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "godaddy.com" --output none
-        printf "...Done\n"
+        printf "Done\n"
     fi
     ../private-endpoint-infrastructure/bootstrap.sh
 }
@@ -227,14 +227,14 @@ function create_outbound_public_ip_prefix() {
                     *) echo "Please answer yes or no." ;;
                     esac
                 done
-                printf "Creating Public IP Prefix: %s...\n" "${AZ_IPPRE_OUTBOUND_NAME}"
+                printf "Creating Public IP Prefix: %s... " "${AZ_IPPRE_OUTBOUND_NAME}"
                 az network public-ip prefix create \
                     --length "${AZ_IPPRE_OUTBOUND_LENGTH}" \
                     --name "${AZ_IPPRE_OUTBOUND_NAME}" \
                     --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
                     --subscription "${AZ_SUBSCRIPTION_ID}" \
                     --output none
-                printf "...Done.\n"
+                printf "Done.\n"
             fi
         else
             printf "Public IP Prefix %s already exists." "${AZ_IPPRE_OUTBOUND_NAME}"
@@ -288,14 +288,14 @@ function create_inbound_public_ip_prefix() {
                     *) echo "Please answer yes or no." ;;
                     esac
                 done
-                printf "Creating Public IP Prefix: %s...\n" "${AZ_IPPRE_INBOUND_NAME}"
+                printf "Creating Public IP Prefix: %s... " "${AZ_IPPRE_INBOUND_NAME}"
                 az network public-ip prefix create \
                     --length "${AZ_IPPRE_INBOUND_LENGTH}" \
                     --name "${AZ_IPPRE_INBOUND_NAME}" \
                     --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
                     --subscription "${AZ_SUBSCRIPTION_ID}" \
                     --output none
-                printf "...Done.\n"
+                printf "Done.\n"
             fi
         else
             printf "Public IP Prefix %s already exists." "${AZ_IPPRE_INBOUND_NAME}"
@@ -351,7 +351,7 @@ function create_acr() {
             done
         fi
 
-        printf "Creating Azure Container Registry: %s...\n" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+        printf "Creating Azure Container Registry: %s... " "${AZ_RESOURCE_CONTAINER_REGISTRY}"
         az acr create \
             --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
@@ -361,7 +361,7 @@ function create_acr() {
             --default-action "Deny" \
             --public-network-enabled "true" \
             --output none
-        printf "...Done\n"
+        printf "Done\n"
     else
         printf "ACR %s already exists.\n" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
     fi
@@ -385,14 +385,14 @@ function set_permissions_on_acr() {
     # Configure new roles
     az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
 
-    printf "Setting permissions for \"%s\"..." "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" # radix-cr-cicd-dev
+    printf "Setting permissions for \"%s\"... " "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" # radix-cr-cicd-dev
     id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query [].appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles
     az role assignment create --assignee "${id}" --role Contributor --scope "${scope}" --output none
 
-    printf "...Done\n"
+    printf "Done\n"
 }
 
 function set_permissions_on_dns() {
@@ -410,7 +410,7 @@ function set_permissions_on_dns() {
         # Use Managed Identity.
         # https://cert-manager.io/docs/configuration/acme/dns01/azuredns/#managed-identity-using-aad-pod-identities
 
-        printf "Azure dns zone: Setting permissions for \"${AZ_MANAGED_IDENTITY_NAME}\" on \"${dns}\"..."
+        printf "Azure dns zone: Setting permissions for \"%s\" on \"%s\"... " "${AZ_MANAGED_IDENTITY_NAME}" "${dns}"
 
         # Choose a unique Identity name and existing resource group to create identity in.
         IDENTITY="$(az identity show --name $AZ_MANAGED_IDENTITY_NAME --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --output json)"
@@ -420,7 +420,7 @@ function set_permissions_on_dns() {
         ZONE_ID=$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" -o tsv)
         # Create role assignment
         az role assignment create --assignee $PRINCIPAL_ID --role "DNS Zone Contributor" --scope $ZONE_ID
-        printf "...Done\n"
+        printf "Done\n"
     else
         # Use service principle.
 
@@ -428,10 +428,10 @@ function set_permissions_on_dns() {
 
         # Grant 'DNS Zone Contributor' permissions to a specific zone
         # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
-        printf "Azure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
+        printf "Azure dns zone: Setting permissions for \"%s\" on \"%s\"... " "${AZ_SYSTEM_USER_DNS}" "${dns}"
         id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_DNS} --query [].appId --output tsv)"
         az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
-        printf "...Done\n"
+        printf "Done\n"
     fi
 }
 
@@ -470,7 +470,7 @@ EOF
             sleep 5
             printf "."
         done
-        printf "...Done.\n"
+        printf " Done.\n"
     elif [[ ! ${ROLE_DEFINITION[@]} =~ ${AZ_SUBSCRIPTION_ID} ]]; then
         echo "ERROR: Role definition exists, but subscription ${AZ_SUBSCRIPTION_ID} is not an assignable scope. This script does not update it, so it must be done manually." >&2
         return
@@ -478,13 +478,13 @@ EOF
         echo "DNS TXT Contributor role definition exists."
     fi
 
-    printf "Creating role assignment..."
+    printf "Creating role assignment... "
     az role assignment create \
         --assignee "$APP_ID" \
         --role "$ROLENAME" \
         --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" \
         2>/dev/null
-    printf "...Done.\n"
+    printf "Done.\n"
 
 }
 
@@ -523,7 +523,7 @@ function create_managed_identities_and_role_assignments() {
 ### Log analytics workspace
 ###
 function create_log_analytics_workspace() {
-    printf "Creating log-analytics workspace..."
+    printf "Creating log-analytics workspace... "
     az monitor log-analytics workspace create \
         --workspace-name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" \
         --resource-group "${AZ_RESOURCE_GROUP_LOGS}" \
@@ -531,7 +531,7 @@ function create_log_analytics_workspace() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none \
         --only-show-errors
-    printf "...Done\n"
+    printf "Done\n"
 }
 
 #######################################################################################
@@ -547,7 +547,7 @@ function create_sql_logs_storageaccount() {
     if [ ! "$SQL_LOGS_STORAGEACCOUNT_EXIST" ]; then
         printf "%s does not exists.\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
 
-        printf "    Creating storage account %s..." "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
+        printf "    Creating storage account %s... " "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
         az storage account create \
             --name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
@@ -557,7 +557,7 @@ function create_sql_logs_storageaccount() {
             --only-show-errors
         printf "Done.\n"
     else
-        printf "    Storage account exists...skipping\n"
+        printf "    Storage account exists... skipping\n"
     fi
 
     LIFECYCLE=7

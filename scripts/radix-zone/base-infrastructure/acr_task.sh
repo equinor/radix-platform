@@ -160,7 +160,7 @@ steps:
     - {{.Values.CLUSTERNAME_IMAGE}}
 EOF
     fi
-    printf "Create ACR Task: ${TASK_NAME} in ACR: ${ACR_NAME}..."
+    printf "Create ACR Task: ${TASK_NAME} in ACR: ${ACR_NAME}... "
     az acr task create \
         --registry ${ACR_NAME} \
         --name ${TASK_NAME} \
@@ -172,34 +172,34 @@ EOF
         --output none
 
     rm "$TASK_YAML"
-    printf " Done.\n"
+    printf "Done.\n"
 }
 
 function create_role_assignment() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    printf "Get ID of ACR: ${ACR_NAME}..."
+    printf "Get ID of ACR: ${ACR_NAME}... "
     REGISTRY_ID=$(az acr show --name ${ACR_NAME} --query id --output tsv)
     printf "Done.\n"
 
-    printf "Get ID of task: ${TASK_NAME}..."
+    printf "Get ID of task: ${TASK_NAME}... "
     TASK_IDENTITY=$(az acr task show --name ${TASK_NAME} --registry ${ACR_NAME} --query identity.principalId --output tsv)
-    printf " Done.\n"
+    printf "Done.\n"
 
-    printf "Create role assignment..."
+    printf "Create role assignment... "
     az role assignment create \
         --assignee $TASK_IDENTITY \
         --scope $REGISTRY_ID \
         --role "AcrPush" \
         --output none \
         2>/dev/null
-    printf " Done.\n"
+    printf "Done.\n"
 }
 
 function add_task_credential() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    printf "Add credentials for system-assigned identity to task: %s..." "${TASK_NAME}"
+    printf "Add credentials for system-assigned identity to task: %s... " "${TASK_NAME}"
     if [[ 
         $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity') == null ||
         -z $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity') 
@@ -211,14 +211,14 @@ function add_task_credential() {
             --login-server ${ACR_NAME}.azurecr.io \
             --use-identity [system] \
             &>/dev/null
-        printf " Done.\n"
+        printf "Done.\n"
     else
-        printf " Credential exists.\n"
+        printf "Credential exists.\n"
     fi
 }
 
 function run_task() {
-    echo "run task..."
+    printf "run task... "
     CONTEXT="https://github.com/equinor/radix-app.git#main:frontend" # https://github.com/organization/repo.git#branch:directory - Can be path to local git repo directory
 
     DOCKER_FILE_NAME="Dockerfile"
@@ -244,9 +244,9 @@ function run_task() {
         --set DOCKER_FILE_NAME="${DOCKER_FILE_NAME}" \
         --set BUILD_ARGS="${BUILD_ARGS}"
 
-    echo $? # Exit code of last executed command.
+    printf "%s" "$?" # Exit code of last executed command.
 
-    echo "Done."
+    printf "Done.\n"
 }
 
 create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
@@ -257,5 +257,4 @@ create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
-echo ""
-echo "Done creating ACR Task."
+printf "\nDone creating ACR Task."

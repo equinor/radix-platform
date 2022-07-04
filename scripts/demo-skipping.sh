@@ -49,7 +49,7 @@ function everloop() {
 }
 
 function do_step_2() {
-   echo "Step 2: Doing something else...Done"
+   echo "Step 2: Doing something else... Done"
 }
 
 ## MAIN

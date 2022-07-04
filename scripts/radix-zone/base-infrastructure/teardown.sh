@@ -149,11 +149,11 @@ delete_ad_app_and_stored_credentials ""$AZ_RESOURCE_AAD_SERVER""
 delete_ad_app_and_stored_credentials ""$AZ_RESOURCE_AAD_CLIENT""
 
 # Need to handle key vault separately due to "soft delete" feature
-printf "Working in Azure key vault: Deleting %s...\n" "${AZ_RESOURCE_KEYVAULT}"
+printf "Working in Azure key vault: Deleting %s... " "${AZ_RESOURCE_KEYVAULT}"
 az keyvault delete -n "${AZ_RESOURCE_KEYVAULT}" --output none
 # printf "Purging ${AZ_RESOURCE_KEYVAULT}...\n"
 # az keyvault purge -n "${AZ_RESOURCE_KEYVAULT}" --output none
-printf "...Done.\n"
+printf "Done.\n"
 
 printf "Working on resource groups: \n"
 printf "Deleting %s...\n" "${AZ_RESOURCE_GROUP_CLUSTERS}"
@@ -171,7 +171,7 @@ az group delete \
     --yes \
     --name "${AZ_RESOURCE_GROUP_MONITORING}" \
     --output none
-printf "...Done.\n"
+printf "Done.\n"
 
 #######################################################################################
 ### END

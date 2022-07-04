@@ -138,9 +138,9 @@ function delete_service_principal() {
     local name # Input 1
     name="${1}"
 
-    printf "Working on \"$name\": Deleting credentials in keyvault..."
+    printf "Working on \"$name\": Deleting credentials in keyvault... "
     az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" -n "${name}" 2>&1 >/dev/null
-    printf "Deleting user in az ad..."
+    printf "Deleting user in az ad... "
     az ad sp delete --id "http://${name}" 2>&1 >/dev/null
     printf "Done.\n"
 }

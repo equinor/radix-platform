@@ -57,9 +57,9 @@ function delete_dashboard(){
 
     DASHBOARD_NAME="Radix cluster overview $cluster_name"
 
-    printf "Get API token..."
+    printf "Get API token... "
     API_TOKEN=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name dynatrace-tenant-token | jq -r .value)
-    printf " done.\n"
+    printf "Done.\n"
 
     # Check if dashboard exists, get id
     response="$(curl -k -sS -X GET "https://spa-equinor.kanari.com/e/eddaec99-38b1-4a9c-9f4c-9148921efa10/api/config/v1/dashboards?tags=RADIX" \
@@ -85,7 +85,7 @@ function delete_dashboard(){
         done
     fi
 
-    printf "Send API request (delete dashboard)..."
+    printf "Send API request (delete dashboard)... "
     response="$(curl -k -sS -X DELETE "https://spa-equinor.kanari.com/e/eddaec99-38b1-4a9c-9f4c-9148921efa10/api/config/v1/dashboards/${DASHBOARD_ID}" \
         -H "accept: application/json; charset=utf-8" \
         -H "Authorization: Api-Token ${API_TOKEN}" \
@@ -95,7 +95,7 @@ function delete_dashboard(){
         printf "ERROR: Could not delete dashboard. Quitting...\n" >&2
         return
     fi
-    printf " done.\n"
+    printf "Done.\n"
 }
 
 #######################################################################################

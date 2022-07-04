@@ -105,7 +105,7 @@ fi
 ###
 
 echo ""
-echo "Logging you in to Azure if not already logged in..."
+echo "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done."
@@ -222,32 +222,32 @@ function generateCredentialsFile() {
 # Run cleanup even if script crashed
 trap cleanup 0 2 3 15
 
-printf "\nWorking on namespace..."
+printf "\nWorking on namespace... "
 case "$(kubectl get namespace $VELERO_NAMESPACE 2>&1)" in 
     *Error*)
         kubectl create ns "$VELERO_NAMESPACE" 2>&1 >/dev/null
     ;;
 esac
-printf "...Done"
+printf "Done"
 
-printf "\nWorking on credentials..."
+printf "\nWorking on credentials... "
 generateCredentialsFile
 kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
    --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
    --dry-run=client -o yaml \
    | kubectl apply -f - \
    2>&1 >/dev/null
-printf "...Done"
+printf "Done"
 
 # Create the cluster specific blob container
-printf "\nWorking on storage container..."
+printf "\nWorking on storage container... "
 az storage container create \
   --name "$CLUSTER_NAME" \
   --public-access off \
   --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
   --auth-mode login \
   2>&1 >/dev/null
-printf "...Done"
+printf "Done"
 
 # Velero custom RBAC clusterrole
 RBAC_CLUSTERROLE="velero-admin"
@@ -273,7 +273,7 @@ rules:
 EOF
 
 # Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
-printf "Working on configmap for flux..."
+printf "Working on configmap for flux... "
 cat <<EOF | kubectl apply -f - 2>&1 >/dev/null
 apiVersion: v1
 kind: ConfigMap
@@ -288,11 +288,11 @@ data:
         config:
           storageAccount: $AZ_VELERO_STORAGE_ACCOUNT_ID
 EOF
-printf "...Done"
+printf "Done"
 
-printf "\nClean up local tmp files..."
+printf "\nClean up local tmp files... "
 cleanup
-printf "...Done"
+printf "Done"
 
 
 #######################################################################################

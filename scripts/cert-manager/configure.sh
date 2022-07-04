@@ -165,13 +165,13 @@ echo ""
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "\nConnecting kubectl... "
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 1        
 fi
-printf "...Done.\n"
+printf "Done.\n"
 
 #######################################################################################
 ### Verify cluster access
@@ -233,12 +233,12 @@ kubectl delete namespace cert-manager-test 2>&1 >/dev/null
 kubectl apply -f test-resources.yaml
 
 # Wait for the certificate status to be True
-printf "Validate test certificate...\n"
+printf "Validate test certificate..."
 while [[ "$(kubectl get certificate -n cert-manager-test selfsigned-cert -ojson | jq -r '.status.conditions[0].status' 2>&1)" != "True" ]]; do
     printf "."
     sleep 1
 done
-printf "...Done.\n"
+printf " Done.\n"
 
 echo "Validation successful!"
 
@@ -255,13 +255,13 @@ function createIdentityResourceAndBinding() {
     printf "\nCreate identity resource and binding, and certificate issuer...\n"
 
     # Get the already created identity
-    printf "Getting identity..."
+    printf "Getting identity... "
     IDENTITY="$(az identity show --name $MI_CERT_MANAGER --resource-group $AZ_RESOURCE_GROUP_COMMON --output json 2>&1)"
     if [[ $IDENTITY == *"ERROR"* ]]; then
         echo "ERROR: Could not get identity." >&2
         exit 1
     fi
-    printf " Done.\n"
+    printf "Done.\n"
 
     # Used for identity binding
     CLIENT_ID=$(echo $IDENTITY | jq -r '.clientId')

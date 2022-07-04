@@ -197,7 +197,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     echo -e "   - RADIX_AUTH_SECRET            : $RADIX_AUTH_SECRET"
 
     echo -e ""
-    printf "     Working..."
+    printf "     Working... "
 
     # Get cluster IP
     CLUSTER_IP=$(kubectl get service --namespace ingress-nginx ingress-nginx-controller -ojson | jq -r .status.loadBalancer.ingress[0].ip)

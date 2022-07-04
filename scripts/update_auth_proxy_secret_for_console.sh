@@ -95,7 +95,7 @@ function updateAuthProxySecret() {
 
     printf "Restarting auth deployment..."
     kubectl rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $AUTH_PROXY_COMPONENT
-    printf " Done."
+    printf "Done."
     echo ""
     echo "NOTE: Console is set up with redirect url $OAUTH2_PROXY_REDIRECT_URL. If this cluster will be"
     echo "the official cluster, using the custom aliases, you will need to manually modify the OAUTH2_PROXY_REDIRECT_URL"

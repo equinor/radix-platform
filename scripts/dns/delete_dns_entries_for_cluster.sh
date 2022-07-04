@@ -110,7 +110,7 @@ while true; do
 done
 
 # Get all txt records bound to the cluster.
-printf "Get TXT records bound to ${CLUSTER_NAME}..."
+printf "Get TXT records bound to %s... " "${CLUSTER_NAME}"
 
 TXT_RECORDS=$(az network dns record-set txt list \
     --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
@@ -119,7 +119,7 @@ TXT_RECORDS=$(az network dns record-set txt list \
     --query "[?contains(to_string(txtRecords[].value[]),'external-dns/owner=${CLUSTER_NAME}')].name" \
     --output tsv)
 
-printf " Done.\n"
+printf "Done.\n"
 
 # Delete TXT and A records bound to cluster.
 echo "Deleting TXT and A records"

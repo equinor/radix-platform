@@ -53,9 +53,9 @@ if [[ $(echo ${array} | jq 'select(. | index("'${REPLY_URL}'"))') ]]; then
         done
     fi
     uris=$(echo ${array} | jq -r 'del(.[] | select(. | index("'${REPLY_URL}'"))) | join (" ")')
-    printf "Deleting replyUrl \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"..."
+    printf "Deleting replyUrl \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"... "
     az ad app update --id "${APP_REGISTRATION_ID}" --web-redirect-uris ${uris} --only-show-errors
-    printf " Done.\n"
+    printf "Done.\n"
 else
     echo "ERROR: ReplyUrl \"${REPLY_URL}\" not found in App Registration \"${APP_REGISTRATION_NAME}\"." >&2
 fi

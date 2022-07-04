@@ -178,13 +178,13 @@ echo ""
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "\nConnecting kubectl... "
 if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then
   # Send message to stderr
   echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
   exit 0
 fi
-printf "...Done.\n"
+printf "Done.\n"
 
 #######################################################################################
 ### Verify cluster access
@@ -200,9 +200,9 @@ printf " OK\n"
 ### Create flux namespace
 ###
 if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
-  printf "\nCreating flux-system namespace..."
+  printf "\nCreating flux-system namespace... "
   kubectl create namespace flux-system 2>&1 >/dev/null
-  printf "...Done"
+  printf "Done"
 fi
 
 #######################################################################################

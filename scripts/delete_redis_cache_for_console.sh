@@ -64,11 +64,11 @@ function deleteRedisCache() {
         done
     fi
 
-    printf "Deleting Redis Cache \"%s\"..." "$REDIS_CACHE_NAME"
+    printf "Deleting Redis Cache \"%s\"... " "$REDIS_CACHE_NAME"
     if [[ $(az redis delete --yes --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>&1) == *"ERROR"* ]]; then
         printf " ERROR: Could not delete Redis Cache \"%s\".\n" "$REDIS_CACHE_NAME" >&2
     else
-        printf " Done.\n"
+        printf "Done.\n"
     fi
 }
 
