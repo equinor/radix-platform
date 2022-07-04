@@ -88,7 +88,7 @@ function create_role_assignment_for_identity() {
 
     printf "Working on managed identity \"${id_name}\": "
 
-    printf "Creating role assignment..."
+    printf "Creating role assignment... "
 
     # Return if missing inputs.
     [ $# -ne 3 ] && { printf "missing inputs.\n"; return; }
