@@ -173,9 +173,13 @@ if [[ $USER_PROMPT == true ]]; then
   while true; do
     read -p "Is this correct? (Y/n) " yn
     case $yn in
-      [Yy]* ) break;;
-      [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-      * ) echo "Please answer yes or no.";;
+    [Yy]*) break ;;
+    [Nn]*)
+      echo ""
+      echo "Quitting."
+      exit 0
+      ;;
+    *) echo "Please answer yes or no." ;;
     esac
   done
 fi
@@ -309,7 +313,7 @@ function please_wait_for_all_resources() {
   # can assume all are visible
   while [[ $((second - first)) != 0 ]]; do
     first=($($command 2>/dev/null | wc -l | xargs))
-    printf "$iterator"
+    printf "%s" "$iterator"
     sleep 5
     second=($($command 2>/dev/null | wc -l | xargs))
   done
@@ -352,8 +356,8 @@ fi
 ###
 printf "Verifying cluster access..."
 if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
-    exit 1
+  printf "ERROR: Could not access cluster. Quitting...\n"
+  exit 1
 fi
 printf " OK\n"
 
@@ -378,25 +382,45 @@ PATCH_JSON="$(
 }
 END
 )"
-kubectl patch BackupStorageLocation azure -n velero --type merge --patch "$(echo $PATCH_JSON)"
+
+wait_for_velero() {
+    local resource="${1}"
+    local command="kubectl get $resource --namespace velero"
+
+    check=($($command 2>/dev/null | wc -l))
+
+    printf "waiting for %s..." "$resource"
+
+    while [[ $check -lt 2 ]]; do
+        check=($($command 2>/dev/null | wc -l))
+        printf "."
+        sleep 5
+    done
+
+    printf "Done.\n"
+}
+
+wait_for_velero "BackupStorageLocation azure"
+
+kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
-echo "Wait for backup \"$BACKUP_NAME\" to be available in destination cluster \"$DEST_CLUSTER\" before we can restore..."
+printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
 while [[ "$(velero backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
   printf "."
   sleep 2
 done
-echo "Done."
+printf " Done."
 
 #######################################################################################
 ### Restart operator to get proper metrics
 ###
 
-echo "Restarting Radix operator."
+printf "\nRestarting Radix operator... "
 $(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 0}]" --type json 2>&1 >/dev/null)
 sleep 2
 $(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 1}]" --type json 2>&1 >/dev/null)
-echo "Done."
+printf "Done."
 
 #######################################################################################
 ### Restore Radix registrations
@@ -406,7 +430,6 @@ echo ""
 echo "Restore app registrations..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rr.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
-
 
 #######################################################################################
 ### Restore secrets
@@ -503,9 +526,9 @@ PATCH_JSON="$(
 }
 END
 )"
-kubectl patch BackupStorageLocation azure -n velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 # Set velero in read/write mode
-kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
+kubectl patch deployment velero --namespace velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 
 #######################################################################################
 ### Done!

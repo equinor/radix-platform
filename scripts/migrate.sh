@@ -491,12 +491,12 @@ AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 WEB_COMPONENT="web"
 
 # Update replyUrls for those radix apps that require AD authentication
-echo "Waiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
+printf "\nWaiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
 while [[ "$(kubectl get ingress $AUTH_PROXY_COMPONENT --namespace $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
   printf "."
   sleep 5
 done
-echo "Ingress is ready, adding replyUrl for radix web-console..."
+printf "\nIngress is ready, adding replyUrl for radix web-console...\n"
 
 printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 (AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
@@ -516,7 +516,7 @@ while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadat
 done
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
-printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
+printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT)
 wait # wait for subshell to finish
 echo ""
@@ -587,7 +587,7 @@ fi
 
 # Check keyvault secrets
 printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
-(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} $CHECK_KEYVAULT_SECRETS)
+(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
 wait # wait for subshell to finish
 echo ""
 
