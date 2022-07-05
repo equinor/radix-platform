@@ -384,20 +384,20 @@ END
 )"
 
 wait_for_velero() {
-    local resource="${1}"
-    local command="kubectl get $resource --namespace velero"
+  local resource="${1}"
+  local command="kubectl get $resource --namespace velero"
 
+  check=($($command 2>/dev/null | wc -l))
+
+  printf "waiting for %s..." "$resource"
+
+  while [[ $check -lt 2 ]]; do
     check=($($command 2>/dev/null | wc -l))
+    printf "."
+    sleep 5
+  done
 
-    printf "waiting for %s..." "$resource"
-
-    while [[ $check -lt 2 ]]; do
-        check=($($command 2>/dev/null | wc -l))
-        printf "."
-        sleep 5
-    done
-
-    printf "Done.\n"
+  printf "Done.\n"
 }
 
 wait_for_velero "BackupStorageLocation azure"
