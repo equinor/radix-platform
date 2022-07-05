@@ -13,6 +13,9 @@
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
 
+# Optional:
+# - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+
 #######################################################################################
 ### HOW TO USE
 ###
@@ -40,6 +43,12 @@ else
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
+fi
+
+# Optional inputs
+
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
 fi
 
 #######################################################################################
@@ -87,14 +96,20 @@ echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
-while true; do
-    read -r -p "Is this correct? (Y/n) " yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) echo ""; echo "Quitting..."; exit 0;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -r -p "Is this correct? (Y/n) " yn
+        case $yn in
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting..."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
+        esac
+    done
+fi
 
 #######################################################################################
 ### Start
@@ -177,14 +192,18 @@ if [ ${#MISSING_EXPIRY_ARRAY[@]} -ne 0 ]; then
 
     printf "\n"
 
-    while true; do
-        read -r -p "Do you want to assign date to secrets missing expiry date? $EXPIRY_DATE_EXTENSION from today (y/N) " yn
-        case $yn in
-        [Yy]*) assignExpiryDate || break ;;
-        [Nn]*) break ;;
-        *) echo "Please answer yes or no" ;;
-        esac
-    done
+    if [[ $USER_PROMPT == true ]]; then
+        while true; do
+            read -r -p "Do you want to assign date to secrets missing expiry date? $EXPIRY_DATE_EXTENSION from today (y/N) " yn
+            case $yn in
+            [Yy]*) assignExpiryDate || break ;;
+            [Nn]*) break ;;
+            *) echo "Please answer yes or no" ;;
+            esac
+        done
+    else
+        assignExpiryDate
+    fi
     printf "\nDone"
 fi
 
