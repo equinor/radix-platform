@@ -86,7 +86,7 @@ if [[ -z "$RADIX_APP_ENVIRONMENT" ]]; then
     RADIX_APP_ENVIRONMENT="prod"
 fi
 if [[ $CLUSTER_TYPE  == "development" ]]; then
-  echo "Development cluster uses QA environment"
+  printf "\nDevelopment cluster uses QA environment"
   RADIX_APP_ENVIRONMENT="qa"
 fi
 
