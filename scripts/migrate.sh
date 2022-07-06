@@ -274,18 +274,14 @@ echo ""
 if [[ ${BACKUP_NAME} == "migration-"* ]];then
 # Exit if source cluster does not exist
     echo ""
-    echo "Verifying source cluster existence..."
-    if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$SOURCE_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
-        # Send message to stderr
-        echo -e "Error: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
-        exit 0
-    fi
+    echo "Verifying source cluster existence..."    
+    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" || { echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2; exit 1; }
 fi
 
 # Give option to create dest cluster if it does not exist
 echo ""
 echo "Verifying destination cluster existence..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ARMResourceNotFoundFix"* ]]; then
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
     if [[ $USER_PROMPT == true ]]; then
         while true; do
             read -r -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
@@ -303,10 +299,11 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
     wait # wait for subshell to finish
 
-    [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
-fi
+    [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+    }
 printf "Done creating cluster."
 install_base_components=true
+
 
 if [[ $USER_PROMPT == true ]]; then
     echo ""
@@ -332,7 +329,7 @@ fi
 # Connect kubectl so we have the correct context
 echo ""
 printf "Point to destination cluster... "
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
 
 # Wait for prometheus to be deployed from flux
@@ -381,22 +378,12 @@ done
 
 echo ""
 printf "Point to source cluster... "
-az aks get-credentials \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$SOURCE_CLUSTER" \
-    --overwrite-existing \
-    --admin \
-    2>&1 >/dev/null
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
 
 #######################################################################################
 ### Verify cluster access
 ###
-printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n" >&2
-    exit 1
-fi
-printf " OK\n"
+verify_cluster_access
 
 [[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
 printf "Done.\n"

@@ -149,13 +149,12 @@ echo ""
 
 # Exit if cluster does not exist
 echo ""
-echo "Connecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+echo "Connecting kubectl..."   
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {    
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 1        
-fi
-
+}
 
 #######################################################################################
 ### Bootstrap aliases

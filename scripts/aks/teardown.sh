@@ -241,7 +241,8 @@ echo ""
 
 printf "Verifying that cluster exist and/or the user can access it... "
 # We use az aks get-credentials to test if both the cluster exist and if the user has access to it. 
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+   
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
         while true; do
@@ -255,7 +256,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     else
         exit 0
     fi
-fi
+}
 printf "Done.\n"
 
 # Delete the cluster

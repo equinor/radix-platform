@@ -345,20 +345,22 @@ function showProgress() {
 # Exit if cluster does not exist
 echo ""
 echo "Connecting kubectl to velero-destination..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
   # Send message to stderr
   echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
   exit 0
-fi
+}
 
 #######################################################################################
 ### Verify cluster access
 ###
 printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
+kubectl cluster-info || {
   printf "ERROR: Could not access cluster. Quitting...\n"
   exit 1
-fi
+}
+  
+
 printf " OK\n"
 
 #######################################################################################
