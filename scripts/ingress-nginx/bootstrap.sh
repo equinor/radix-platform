@@ -95,6 +95,10 @@ if [[ -z "${MIGRATION_STRATEGY}" ]]; then
     MIGRATION_STRATEGY="at"
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then

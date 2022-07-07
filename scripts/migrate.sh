@@ -116,6 +116,10 @@ if [[ -z "$DEST_CLUSTER" ]]; then
     exit 1
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -300,7 +304,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
     wait # wait for subshell to finish
 
     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
-    }
+}
 printf "Done creating cluster."
 install_base_components=true
 
@@ -330,7 +334,7 @@ fi
 echo ""
 printf "Point to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
 # Wait for prometheus to be deployed from flux
 echo "Wait for prometheus to be deployed by flux-operator..."
@@ -385,7 +389,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
 ###
 verify_cluster_access
 
-[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER-admin" ]] && exit 1
+[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER" ]] && exit 1
 printf "Done.\n"
 
 echo ""

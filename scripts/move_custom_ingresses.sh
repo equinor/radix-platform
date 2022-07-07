@@ -95,6 +95,9 @@ if [[ -z "$SOURCE_CLUSTER" ]]; then
     fi
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 #######################################################################################
 ### Resolve dependencies on other scripts

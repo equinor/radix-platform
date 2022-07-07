@@ -2,6 +2,7 @@
 
 
 function get_credentials () {
+    printf "Ran get_credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
   
@@ -10,12 +11,14 @@ function get_credentials () {
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  \
     --name "$CLUSTER" \
     --format exec \
-    2>&1 || { return; }
-  
+    || { return; }
+    # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 
 
 function verify_cluster_access() {
+printf "Ran verify_cluster_access...\n"
+
 printf "Verifying cluster access..."
 kubectl cluster-info || {
   printf "ERROR: Could not access cluster. Quitting...\n"

@@ -42,6 +42,11 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+# Source util scripts
+
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${script_dir}/utility/util.sh
+
 #######################################################################################
 ### Verify cluster access
 ###

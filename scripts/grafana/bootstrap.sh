@@ -98,6 +98,10 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then

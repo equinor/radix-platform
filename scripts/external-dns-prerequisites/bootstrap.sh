@@ -72,6 +72,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Configs and dependencies
 CREDENTIALS_GENERATED_PATH="$(mktemp)"
 CREDENTIALS_TEMPLATE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/template-azure.json"

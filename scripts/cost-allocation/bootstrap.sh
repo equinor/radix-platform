@@ -113,6 +113,10 @@ case $REGENERATE_API_PASSWORD in
         ;;
 esac
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 #######################################################################################
 ### Prepare az session
 ###

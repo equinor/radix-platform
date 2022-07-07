@@ -46,6 +46,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 #######################################################################################
 ### Prepare az session
 ###

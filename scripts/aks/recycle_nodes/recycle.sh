@@ -74,8 +74,12 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-# Read the cluster config that correnspond to selected environment in the zone config.
+# Read the cluster config that correspond to selected environment in the zone config.
 source "$RADIX_ZONE_ENV"
+
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
 

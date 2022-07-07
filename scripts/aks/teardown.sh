@@ -84,6 +84,10 @@ fi
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${CLUSTER_TYPE}.env"
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true

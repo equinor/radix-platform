@@ -86,6 +86,10 @@ fi
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$CREDENTIALS_FILE" ]]; then
@@ -556,7 +560,7 @@ fi
 ### Update local kube config
 ###
 
-printf "Updating local kube config with admin access to cluster \"%s\"... " "$CLUSTER_NAME"
+printf "Updating local kube config with access to cluster \"%s\"... " "$CLUSTER_NAME"
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 
 [[ "$(kubectl config current-context)" != "$CLUSTER_NAME" ]] && exit 1

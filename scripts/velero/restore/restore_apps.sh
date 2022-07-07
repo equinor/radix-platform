@@ -125,6 +125,10 @@ if [[ -z "$BACKUP_NAME" ]]; then
   exit 1
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$DEST_CLUSTER" ]]; then
