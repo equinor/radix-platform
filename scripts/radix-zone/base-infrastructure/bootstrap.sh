@@ -541,6 +541,7 @@ function create_log_analytics_workspace() {
 function create_sql_logs_storageaccount() {
     SQL_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
         --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS'].name" \
         --output tsv)
 
@@ -567,6 +568,7 @@ function create_sql_logs_storageaccount() {
         --account-name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
         --query "policy.rules | [?name=='$RULE_NAME']".name \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
         --output tsv)
 
     POLICY_JSON="$(
@@ -604,6 +606,7 @@ END
             --account-name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
             --policy "$(echo "$POLICY_JSON")" \
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+            --subscription "$AZ_SUBSCRIPTION_ID" \
             --only-show-errors; then
             printf "Successfully created policy for %s\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
         fi
