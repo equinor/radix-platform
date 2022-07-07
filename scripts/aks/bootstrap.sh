@@ -559,7 +559,7 @@ fi
 printf "Updating local kube config with admin access to cluster \"%s\"... " "$CLUSTER_NAME"
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 
-[[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
+[[ "$(kubectl config current-context)" != "$CLUSTER_NAME" ]] && exit 1
 
 printf "Done.\n"
 

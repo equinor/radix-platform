@@ -488,7 +488,7 @@ echo ""
 
 # Connect kubectl so we have the correct context
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
-[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2; exit 1; }
+[ "$(kubectl config current-context)" == "$CLUSTER_NAME" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}" >&2; exit 1; }
 
 # Wait for operator to be deployed from flux
 echo ""

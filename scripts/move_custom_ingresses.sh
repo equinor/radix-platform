@@ -203,7 +203,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""
     printf "Point to source cluster... "
     get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
-    [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}-admin" ]] && exit 1
+    [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}" ]] && exit 1
     printf "Done.\n"
 
     echo ""
@@ -251,7 +251,7 @@ fi
 echo ""
 printf "Point to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
 echo ""
 printf "Create aliases in destination cluster... "

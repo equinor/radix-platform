@@ -164,7 +164,7 @@ fi
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
 kubectl_context="$(kubectl config current-context)"
 
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
+if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
     echo "kubectl is ready..."
 else
     echo "ERROR: Please set your kubectl current-context to be $CLUSTER_NAME" >&2
