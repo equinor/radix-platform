@@ -358,14 +358,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
 #######################################################################################
 ### Verify cluster access
 ###
-printf "Verifying cluster access..."
-kubectl cluster-info || {
-  printf "ERROR: Could not access cluster. Quitting...\n"
-  exit 1
-}
-  
-
-printf " OK\n"
+verify_cluster_access
 
 #######################################################################################
 ### Configure velero for restore in destinaton
