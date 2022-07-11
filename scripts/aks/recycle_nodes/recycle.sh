@@ -74,8 +74,12 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-# Read the cluster config that correnspond to selected environment in the zone config.
+# Read the cluster config that correspond to selected environment in the zone config.
 source "$RADIX_ZONE_ENV"
+
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
 
@@ -147,21 +151,17 @@ echo ""
 # Exit if cluster does not exist
 echo ""
 echo "Connecting kubectl to cluster..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then
+
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
     exit 0
-fi
+}
 
 #######################################################################################
 ### Verify cluster access
 ###
-printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
-    exit 1
-fi
-printf " OK\n"
+verify_cluster_access
 
 #######################################################################################
 ### Support funcs

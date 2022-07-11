@@ -89,6 +89,10 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -149,22 +153,17 @@ echo ""
 
 kubectl_context="$(kubectl config current-context)"
 
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
+if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
     echo "kubectl is ready..."
 else
-    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2
+    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}" >&2
     exit 1
 fi
 
 #######################################################################################
 ### Verify cluster access
 ###
-printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n" >&2
-    exit 1
-fi
-printf " OK\n"
+verify_cluster_access
 
 #######################################################################################
 ### Create secret required by snyk-monitor

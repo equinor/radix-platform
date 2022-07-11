@@ -95,6 +95,9 @@ if [[ -z "$SOURCE_CLUSTER" ]]; then
     fi
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 #######################################################################################
 ### Resolve dependencies on other scripts
@@ -169,22 +172,17 @@ echo ""
 
 # Exit if cluster does not exist
 printf "\nConnecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$DEST_CLUSTER" 2>&1)"" == *"ERROR"* ]]; then    
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {  
     # Send message to stderr
     echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
     exit 1
-fi
+ }
 printf "...Done.\n"
 
 #######################################################################################
 ### Verify cluster access
 ###
-printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n" >&2
-    exit 1
-fi
-printf " OK\n"
+verify_cluster_access
 
 #######################################################################################
 ### Move custom ingresses
@@ -207,13 +205,8 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
 
     echo ""
     printf "Point to source cluster... "
-    az aks get-credentials \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-        --name "${SOURCE_CLUSTER}" \
-        --overwrite-existing \
-        --admin \
-        2>&1 >/dev/null
-    [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}-admin" ]] && exit 1
+    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
+    [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}" ]] && exit 1
     printf "Done.\n"
 
     echo ""
@@ -260,8 +253,8 @@ fi
 
 echo ""
 printf "Point to destination cluster... "
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER-admin" ]] && exit 1
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
 echo ""
 printf "Create aliases in destination cluster... "

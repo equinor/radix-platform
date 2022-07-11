@@ -29,6 +29,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -41,12 +45,7 @@ printf "Done.\n"
 #######################################################################################
 ### Verify cluster access
 ###
-printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n" >&2
-    exit 1
-fi
-printf " OK\n"
+verify_cluster_access
 
 function updateSecret() {
     whitelist='{"whiteList":[]}'

@@ -422,6 +422,10 @@ if [ -z "$CLUSTER_NAME" ]; then
     exit 1
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [ -z "$USER_PROMPT" ]; then
@@ -487,8 +491,8 @@ echo ""
 ###
 
 # Connect kubectl so we have the correct context
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
-[ "$(kubectl config current-context)" == "$CLUSTER_NAME-admin" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}-admin" >&2; exit 1; }
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
+[ "$(kubectl config current-context)" == "$CLUSTER_NAME" ] || { echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}" >&2; exit 1; }
 
 # Wait for operator to be deployed from flux
 echo ""

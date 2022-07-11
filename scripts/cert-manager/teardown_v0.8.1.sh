@@ -87,6 +87,10 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -153,11 +157,11 @@ echo ""
 
 # Exit if cluster does not exist
 printf "\nConnecting kubectl..."
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"  --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 1
-fi
+}
 printf "...Done.\n"
 
 

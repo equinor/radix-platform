@@ -25,8 +25,10 @@
 ### HOW TO USE
 ### 
 
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 ./teardown.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
+#
+# or without log:
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 ./teardown.sh
-
 
 #######################################################################################
 ### START
@@ -83,6 +85,10 @@ fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${CLUSTER_TYPE}.env"
+
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
@@ -241,7 +247,8 @@ echo ""
 
 printf "Verifying that cluster exist and/or the user can access it... "
 # We use az aks get-credentials to test if both the cluster exist and if the user has access to it. 
-if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" 2>&1)"" == *"ERROR"* ]]; then    
+   
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
         while true; do
@@ -255,7 +262,7 @@ if [[ ""$(az aks get-credentials --overwrite-existing --admin --resource-group "
     else
         exit 0
     fi
-fi
+}
 printf "Done.\n"
 
 # Delete the cluster
@@ -320,7 +327,7 @@ echo "Deleting Dynatrace integration..."
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
 
 echo "Cleaning up local kube config... "
-kubectl config delete-context "${CLUSTER_NAME}-admin" &>/dev/null
+kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
 if [[ "$(kubectl config get-contexts -o name)" == *"${CLUSTER_NAME}"* ]]; then
     kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
 fi

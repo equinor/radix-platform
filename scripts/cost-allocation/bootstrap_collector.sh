@@ -105,6 +105,10 @@ case $REGENERATE_SQL_PASSWORD in
         ;;
 esac
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Load dependencies
 LIB_AZURE_SQL_FIREWALL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../azure-sql/lib_firewall.sh"
 if [[ ! -f "$LIB_AZURE_SQL_FIREWALL_PATH" ]]; then
@@ -169,10 +173,9 @@ fi
 #######################################################################################
 ### CLUSTER?
 ###
-
-az aks get-credentials --overwrite-existing --admin --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
 kubectl_context="$(kubectl config current-context)"
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}-admin" ]; then
+if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
     echo "kubectl is ready..."
 else
     echo "Please set your kubectl current-context to be $CLUSTER_NAME"
@@ -182,12 +185,7 @@ fi
 #######################################################################################
 ### Verify cluster access
 ###
-printf "Verifying cluster access..."
-if [[ $(kubectl cluster-info 2>&1) == *"Unable to connect to the server"* ]]; then
-    printf "ERROR: Could not access cluster. Quitting...\n"
-    exit 1
-fi
-printf " OK\n"
+verify_cluster_access
 
 echo "Generate password for Radix Cost Allocation Writer SQL user and store in KV"
 

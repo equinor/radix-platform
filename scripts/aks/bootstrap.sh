@@ -86,6 +86,10 @@ fi
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$CREDENTIALS_FILE" ]]; then
@@ -492,6 +496,7 @@ AKS_BASE_OPTIONS=(
     --attach-acr "$ACR_ID"
     --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST"
     --vnet-subnet-id "$SUBNET_ID"
+    --disable-local-accounts
 )
 
 
@@ -555,15 +560,10 @@ fi
 ### Update local kube config
 ###
 
-printf "Updating local kube config with admin access to cluster \"%s\"... " "$CLUSTER_NAME"
-az aks get-credentials \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$CLUSTER_NAME" \
-    --overwrite-existing \
-    --admin \
-    2>&1 >/dev/null
+printf "Updating local kube config with access to cluster \"%s\"... " "$CLUSTER_NAME"
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 
-[[ "$(kubectl config current-context)" != "$CLUSTER_NAME-admin" ]] && exit 1
+[[ "$(kubectl config current-context)" != "$CLUSTER_NAME" ]] && exit 1
 
 printf "Done.\n"
 
