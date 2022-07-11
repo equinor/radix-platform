@@ -2,7 +2,7 @@
 
 
 function get_credentials () {
-    printf "Ran get_credentials...\n"
+    printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
   
@@ -17,13 +17,11 @@ function get_credentials () {
 
 
 function verify_cluster_access() {
-printf "Ran verify_cluster_access...\n"
-
-printf "Verifying cluster access..."
-kubectl cluster-info || {
-  printf "ERROR: Could not access cluster. Quitting...\n"
-  exit 1
-}
-  
-printf " OK\n"
+    printf "\nVerifying cluster access..\n."
+    kubectl cluster-info || {
+      printf "ERROR: Could not access cluster. Quitting...\n"
+      exit 1
+    }
+      
+    printf " OK\n"
 }
