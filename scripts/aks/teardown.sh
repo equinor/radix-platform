@@ -60,6 +60,12 @@ if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
     printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
     exit 1
 fi
+hash kubelogin 2>/dev/null || {
+    echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
+    exit 1
+}
+
+
 
 
 #######################################################################################
