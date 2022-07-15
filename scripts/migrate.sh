@@ -87,6 +87,10 @@ hash sqlcmd 2>/dev/null || {
     echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
     exit 1
 }
+hash kubelogin 2>/dev/null || {
+    echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
 
 #######################################################################################
@@ -268,7 +272,6 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 echo ""
-
 #--------------------------------------------------------
 
 #######################################################################################
@@ -393,8 +396,11 @@ verify_cluster_access
 printf "Done.\n"
 
 echo ""
-printf "Making backup of source cluster... "
 
+printf "Making sure Velero backupstoragelocation are set for $SOURCE_CLUSTER... "
+kubectl patch backupstoragelocation azure --namespace velero --type merge --patch '{"spec": {"objectStorage": {"bucket": '"$SOURCE_CLUSTER"'}}}'
+
+printf "Making backup of source cluster... "
 cat <<EOF | kubectl apply --filename -
 apiVersion: velero.io/v1
 kind: Backup

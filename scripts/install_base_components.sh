@@ -47,6 +47,10 @@
 #######################################################################################
 ### START
 ###
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
 
 echo ""
 echo "Start install of base components... "
@@ -91,6 +95,7 @@ echo ""
 # Overridable input
 FLUX_GITOPS_BRANCH_OVERRIDE=$FLUX_GITOPS_BRANCH
 FLUX_GITOPS_DIR_OVERRIDE=$FLUX_GITOPS_DIR
+WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Required inputs
 
@@ -111,7 +116,6 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Source util scripts
-
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
@@ -211,14 +215,14 @@ wait
 #######################################################################################
 ### Install ingress-nginx
 ###
-
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/ingress-nginx/bootstrap.sh" "${normal}"
 (MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
 wait
 
 #######################################################################################
 ### Install cert-manager
 ###
-
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/bootstrap.sh" "${normal}"
 (USER_PROMPT="false" ./cert-manager/bootstrap.sh)
 wait
 
@@ -233,7 +237,7 @@ kubectl apply --filename manifests/storageclass-retain-nocache.yaml
 #######################################################################################
 ### Install grafana
 ###
-
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/grafana/bootstrap.sh" "${normal}"
 echo ""
 (USER_PROMPT="$USER_PROMPT" ./grafana/bootstrap.sh)
 wait
@@ -241,7 +245,7 @@ wait
 #######################################################################################
 ### Install prerequisites for external-dns (flux handles the main installation)
 ###
-
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/external-dns-prerequisites/bootstrap.sh" "${normal}"
 echo ""
 (./external-dns-prerequisites/bootstrap.sh)
 wait
@@ -258,7 +262,9 @@ echo ""
 echo "Start on radix platform shared configs and secrets..."
 
 echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-acr.sh" "${normal}"
 (./config-and-secrets/bootstrap-acr.sh)
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-snyk.sh" "${normal}"
 (USER_PROMPT="$USER_PROMPT" ./config-and-secrets/bootstrap-snyk.sh)
 wait
 
@@ -269,6 +275,7 @@ echo "Done."
 # NOTE: Depends on radix-docker secret, created in scripts/config-and-secrets/bootstrap-acr.sh
 
 echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/snyk-monitor/bootstrap.sh" "${normal}"
 (USER_PROMPT="$USER_PROMPT" ./snyk-monitor/bootstrap.sh)
 wait
 
@@ -277,6 +284,7 @@ wait
 ###
 
 echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cicd-canary/bootstrap.sh" "${normal}"
 (./cicd-canary/bootstrap.sh)
 wait
 
@@ -285,6 +293,7 @@ wait
 ###
 
 echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cost-allocation/bootstrap.sh" "${normal}"
 (./cost-allocation/bootstrap.sh)
 wait
 
@@ -293,6 +302,7 @@ wait
 ###
 
 echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/vulnerability-scanner/bootstrap.sh" "${normal}"
 (./vulnerability-scanner/bootstrap.sh)
 wait
 
@@ -309,6 +319,7 @@ wait
 ###
 
 echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/velero/install_prerequisites_in_cluster.sh" "${normal}"
 (USER_PROMPT="$USER_PROMPT" ./velero/install_prerequisites_in_cluster.sh)
 wait
 
@@ -330,7 +341,7 @@ wait
 echo ""
 echo "Install Flux v2"
 echo ""
-
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/flux/bootstrap.sh" "${normal}"
 (USER_PROMPT="$USER_PROMPT" \
   RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
   CLUSTER_NAME="$CLUSTER_NAME" \
@@ -344,5 +355,5 @@ wait
 ###
 
 echo ""
-echo "Install of base components is done!"
+printf "%s%s%s\n" "${yel}" "Install of base components is done!" "${normal}"
 echo ""

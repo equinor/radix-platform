@@ -368,17 +368,19 @@ echo ""
 echo "Configure velero for restore in destination cluster \"$DEST_CLUSTER\"..."
 
 # Set velero-destination to read-only
-kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server", "--restore-only"]}]}}}}'
+#kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server", "--restore-only"]}]}}}}'
+#kubectl patch deployment velero -n velero --patch '{"spec": {"objectStorage": {"bucket": "$SOURCE_CLUSTER"}}}'
 # Set velero in destination to read source backup location
 PATCH_JSON="$(
   cat <<END
 {
-   "spec": {
-      "objectStorage": {
-         "bucket": "$SOURCE_CLUSTER"
-      }
-   }
-}
+    "spec": {
+       "objectStorage": {
+            "bucket": "$SOURCE_CLUSTER"
+       }
+    },
+       "accessMode":"ReadOnly"
+ }
 END
 )"
 
@@ -400,7 +402,6 @@ wait_for_velero() {
 }
 
 wait_for_velero "BackupStorageLocation azure"
-
 kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
@@ -517,17 +518,19 @@ echo "Configure velero back to normal operation in destination..."
 PATCH_JSON="$(
   cat <<END
 {
-   "spec": {
-      "objectStorage": {
-         "bucket": "$DEST_CLUSTER"
-      }
-   }
-}
+    "spec": {
+       "objectStorage": {
+            "bucket": "$DEST_CLUSTER"
+       }
+    },
+            "accessMode":"ReadWrite"
+ }
 END
 )"
-kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 # Set velero in read/write mode
-kubectl patch deployment velero --namespace velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
+kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+
+#kubectl patch deployment velero --namespace velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 
 #######################################################################################
 ### Done!
