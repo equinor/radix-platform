@@ -12,6 +12,10 @@
 
 # INPUTS:
 #   RADIX_ZONE_ENV          (Mandatory)
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
 
 echo ""
 echo "Updating secret for the radix network policy canary"
@@ -80,7 +84,7 @@ function getApiToken() {
         echo "ERROR: Could not get Radix API access token." >&2
         return 1
     fi
-    printf " Done.\n"
+    printf "Done.\n"
 }
 
 function getSecret() {
@@ -96,7 +100,11 @@ function getSecret() {
 }
 
 function getAppEnvironments() {
-    APP_ENVIRONMENTS=$(curl \
+    printf "Waiting for enviroment %shttps://server-radix-api-prod.%s/api/v1/applications/radix-networkpolicy-canary/environments %s\n" "${yel}" "${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "${normal}"
+    while [[ -z "$APP_ENVIRONMENTS" ]]; do
+        printf "."
+        sleep 5
+        APP_ENVIRONMENTS=$(curl \
         --silent \
         -X GET \
         "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-networkpolicy-canary/environments" \
@@ -104,11 +112,8 @@ function getAppEnvironments() {
         -H 'Content-Type: application/json' \
         -H "Authorization: Bearer ${API_ACCESS_TOKEN}" \
         | jq .[].name --raw-output)
-    if [[ -z "$APP_ENVIRONMENTS" ]]; then
-        echo "ERROR: Could not get the app environments of radix-networkpolicy-canary."  >&2
-        return 1
-    fi
-    printf " Retrieved app environments $(echo $APP_ENVIRONMENTS | tr '\n' ' ')\n\n"
+    done
+    printf "\nRetrieved app environments $(echo $APP_ENVIRONMENTS | tr '\n' ' ')\n\n"
 }
 
 function updateSecret() {
