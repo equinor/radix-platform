@@ -164,7 +164,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
 ### Bootstrap aliases
 ###
 
-helm repo update
+#helm repo update
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONFIG_DIR="${WORK_DIR}/configs"
 
