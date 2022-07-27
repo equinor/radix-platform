@@ -102,7 +102,7 @@ function updateRedisCacheConfiguration() {
 
         echo "Creating new Redis Cache..."
         #Docs https://azure.microsoft.com/en-us/pricing/details/cache/
-        if [[ $RADIX_ZONE == "dev" ]]; then
+        if [[ $RADIX_ZONE == "dev" || $RADIX_ZONE == "playground" ]]; then
             REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_RADIX_ZONE_LOCATION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Basic --vm-size c1)
         else
             REDIS_CACHE_INSTANCE=$(az redis create --location "$AZ_RADIX_ZONE_LOCATION" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" --sku Standard --vm-size c1)
