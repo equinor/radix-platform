@@ -514,7 +514,7 @@ done
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT)
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
