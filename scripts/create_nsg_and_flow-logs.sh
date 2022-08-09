@@ -109,6 +109,7 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
         az storage account create \
         --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
         --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
         --subscription "$AZ_SUBSCRIPTION_ID" \
         --sku "Standard_LRS"
