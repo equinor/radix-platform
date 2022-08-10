@@ -205,3 +205,6 @@ for node in "${NODES[@]}"; do
     kubectl drain --force --ignore-daemonsets --delete-emptydir-data --grace-period=60 "$node"
 done
 az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "nodepool${oldnodepool}" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count 0
+
+echo ""
+echo "Upgrade of \"${CLUSTER_NAME}\" done!"
