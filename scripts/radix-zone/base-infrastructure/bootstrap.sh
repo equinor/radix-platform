@@ -395,6 +395,10 @@ function set_permissions_on_acr() {
     printf "...Done\n"
 }
 
+function create_acr_tasks() {
+    ./acr_task.sh
+}
+
 function set_permissions_on_dns() {
     local scope
     local id
@@ -629,6 +633,7 @@ create_acr
 create_base_system_users_and_store_credentials
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
+create_acr_tasks
 set_permissions_on_dns
 create_dns_role_definition_for_cert_manager
 create_log_analytics_workspace
