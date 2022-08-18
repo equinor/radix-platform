@@ -142,12 +142,14 @@ function create_acr_task() {
         PUSH=""
         cat <<EOF >>${TASK_YAML}
 version: v1.1.0
+stepTimeout: 3600
 steps:
   - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
 EOF
     else
         cat <<EOF >>${TASK_YAML}
 version: v1.1.0
+stepTimeout: 3600
 steps:
   - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
   - push:
