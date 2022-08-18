@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-
+# Upgrade nodepool according to .env file
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-02 ./nodeupgrade.sh
 #
-# Optional with spesific Kubernetes version
+# Upgrade nodepool with spesific Kubernetes version
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env KUBERNETES_VERSION="1.23.8" CLUSTER_NAME=weekly-02 ./nodeupgrade.sh
-
 
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
@@ -50,6 +49,68 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+#######################################################################################
+### Check if cluster or network resources are locked
+###
+
+printf "Checking for resource locks..."
+
+CLUSTER=$(az aks list \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='"${CLUSTER_NAME}"'].name" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ "${CLUSTER}" ]]; then
+    CLUSTERLOCK="$(az lock list \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --resource-type Microsoft.ContainerService/managedClusters \
+        --resource "$CLUSTER_NAME" \
+        --query [].name \
+        --output tsv \
+        --only-show-errors)"
+fi
+
+VNET=$(az network vnet list \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='"${VNET_NAME}"'].name" \
+    --output tsv \
+    --only-show-errors)
+
+if [[ "${VNET}" ]]; then
+    VNETLOCK="$(az lock list \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --resource-type Microsoft.Network/virtualNetworks  \
+        --resource "$VNET_NAME" \
+        --query [].name \
+        --output tsv \
+        --only-show-errors)"
+fi
+
+printf " Done.\n"
+
+if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
+    echo -e ""
+    echo -e "Azure lock status:"
+    echo -e "   ------------------------------------------------------------------"
+    if [ -n "$CLUSTERLOCK" ]; then
+        printf "   -  AZ Cluster               : %s               ${red}Locked${normal} by %s\n" "$CLUSTER_NAME" "$CLUSTERLOCK"
+    else
+        printf "   -  AZ Cluster               : %s               ${grn}unlocked${normal}\n" "$CLUSTER_NAME"
+    fi
+    if [ -n "$VNETLOCK" ]; then
+        printf "   -  AZ VirtualNetworks       : %s          ${red}Locked${normal} by %s\n" "$VNET_NAME" "$VNETLOCK"
+    else
+    printf "   -  AZ VirtualNetworks       : %s          ${grn}unlocked${normal}\n" "$VNET_NAME"
+    fi
+    echo -e "   -------------------------------------------------------------------"
+    printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"; exit 0;
+fi
+
 
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
@@ -58,10 +119,11 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
-AZ_ENVIROMENT=($(az aks get-upgrades --resource-group clusters --name "$CLUSTER_NAME"))
+AZ_ENVIROMENT=($(az aks get-upgrades --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME"))
 CP_VERSION="$(jq -r ."controlPlaneProfile"."kubernetesVersion" <<< ${AZ_ENVIROMENT[@]})"
 AVAIL_VERSIONS=($(jq -r '[."controlPlaneProfile"."upgrades"[] | ."kubernetesVersion"] | @tsv' <<< ${AZ_ENVIROMENT[@]}))
 upgradable=false
+
 
 
 for upgrade in "${AVAIL_VERSIONS[@]}"; do
@@ -76,21 +138,24 @@ if [[ $upgradable == false ]]; then
     exit 1
 fi
 
+upgrade_cp=false
 
 if [ $(version $CP_VERSION) -lt $(version "$KUBERNETES_VERSION") ]; then
     printf ""${yel}"Upgrade kubernetes in "$CLUSTER_NAME" to "$KUBERNETES_VERSION" requires upgrade of control-plane first.${normal}\n"
     while true; do
         read -r -p "Do you wish to upgrade control-plane to "$KUBERNETES_VERSION"? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
+            [Yy]* ) upgrade_cp=true; break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;
             * ) echo "Please answer yes or no.";;
         esac
     done
 fi
 
-echo "Upgradring Control-Plane in $CLUSTER_NAME."
-az aks upgrade --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --control-plane-only --kubernetes-version "$KUBERNETES_VERSION"
+if [[ $upgrade_cp == true ]]; then
+    echo "Upgradring Control-Plane in $CLUSTER_NAME."
+    az aks upgrade --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$CLUSTER_NAME" --control-plane-only --kubernetes-version "$KUBERNETES_VERSION"
+fi
 
 NODEPOOLS=($(kubectl get nodes -ojson | jq -r '[.items[].metadata.labels.agentpool] | unique | @tsv'))
 SUBNET_ID=($(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv))
@@ -205,6 +270,15 @@ for node in "${NODES[@]}"; do
     kubectl drain --force --ignore-daemonsets --delete-emptydir-data --grace-period=60 "$node"
 done
 az aks nodepool scale --cluster-name "$CLUSTER_NAME" --name "nodepool${oldnodepool}" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-count 0
+
+#######################################################################################
+### Lock cluster and network resources
+###
+if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
+    az lock create --lock-type CanNotDelete --name "${CLUSTER_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.ContainerService/managedClusters --resource "$CLUSTER_NAME"  &>/dev/null
+    az lock create --lock-type CanNotDelete --name "${VNET_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.Network/virtualNetworks --resource "$VNET_NAME"  &>/dev/null
+fi
+
 
 echo ""
 echo "Upgrade of \"${CLUSTER_NAME}\" done!"
