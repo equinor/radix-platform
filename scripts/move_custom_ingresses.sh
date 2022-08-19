@@ -117,6 +117,7 @@ fi
 
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+WEB_COMPONENT="web"
 RADIX_WEB_CONSOLE_ENV="prod"
 if [[ $CLUSTER_TYPE  == "development" ]]; then
     RADIX_WEB_CONSOLE_ENV="qa"
@@ -243,7 +244,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     printf "Done.\n"
 
     printf "Update Auth proxy secret...\n"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
     printf "Done.\n"
 fi
 
@@ -263,7 +264,7 @@ wait # wait for subshell to finish
 printf "Done creating aliases."
 
 # Update auth proxy secret and redis cache
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
 wait # wait for subshell to finish
 
 # Point granana to cluster type ingress
