@@ -308,10 +308,12 @@ echo "Delete replyUrls"
 WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" # "Development", "Playground", "Production"
 APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId --output tsv --only-show-errors)"
+APP_REGISTRATION_OBJ_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].id --output tsv --only-show-errors)"
 HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
+WEB_REDIRECT_URI="https://${HOST_NAME_WEB_CONSOLE}/application"
 
-(APP_REGISTRATION_ID="$APP_REGISTRATION_ID" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
+(APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="$WEB_REDIRECT_URI" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
 
 # Delete replyUrl for grafana
@@ -319,7 +321,7 @@ APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA
 HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
 
-(APP_REGISTRATION_ID="$APP_REGISTRATION_ID" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
+(APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
 
 
