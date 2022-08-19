@@ -485,6 +485,7 @@ fi
 WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+WEB_REDIRECT_URI="/application"
 WEB_COMPONENT="web"
 
 # Update replyUrls for those radix apps that require AD authentication
@@ -496,7 +497,7 @@ done
 printf "\nIngress is ready, adding replyUrl for radix web-console...\n"
 
 printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
-(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 printf "Done."
 

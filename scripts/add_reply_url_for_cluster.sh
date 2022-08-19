@@ -5,7 +5,7 @@
 # The script will generate the correct replyUrl to the app based on the app ingress host value, which is why the script also require input ingress name and namespace where the ingress can be found.
 
 # Example 1:
-# AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" ./add_reply_url_for_cluster.sh
+# AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" WEB_REDIRECT_URI="/application" ./add_reply_url_for_cluster.sh
 # 
 # Example 2: Using a subshell to avoid polluting parent shell
 # (AAD_APP_NAME="ar-radix-grafana-development" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
@@ -15,6 +15,7 @@
 #   K8S_NAMESPACE           (Mandatory)
 #   K8S_INGRESS_NAME        (Mandatory)
 #   REPLY_PATH              (Mandatory)
+#   WEB_REDIRECT_URI        (Optional)
 #   USER_PROMPT             (Optional. Defaulted if omitted. ex: false,true. Will skip any user input, so that script can run to the end with no interaction)
 
 echo ""
@@ -37,6 +38,12 @@ if [[ -z "$REPLY_PATH" ]]; then
     echo "ERROR: Please provide REPLY_PATH." >&2
     exit 1
 fi
+if [[ -z "$WEB_REDIRECT_URI" ]]; then
+    RUN_updateSpaRedirectUris=false
+    echo "WARNING: No WEB_REDIRECT_URI found will skip updateSpaRedirectUris"
+else
+    RUN_updateSpaRedirectUris=true
+fi
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
@@ -52,12 +59,12 @@ source ${script_dir}/utility/util.sh
 ###
 verify_cluster_access
 
-function updateRedirectUris() {
+function updateWebRedirectUris() {
     local aadAppId
     local currentRedirectUris
     local host_name
-    local additionalReplyURL
-    local newRedirectUris
+    local additionalWebReplyURL
+    local newWebRedirectUris
 
     aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --only-show-errors --query [].appId -o tsv)"
     if [[ -z $aadAppId ]]; then
@@ -65,23 +72,23 @@ function updateRedirectUris() {
         return 1
     fi
     # Convert list to string where urls are separated by space
-    currentRedirectUris="$(az ad app show --id ${aadAppId} --query web.redirectUris --only-show-errors --output json | jq -r '.[] | @text')"
+    currentRedirectUris="$(az ad app show --id "${aadAppId}" --query web.redirectUris --only-show-errors --output json | jq -r '.[] | @text')"
 
-    host_name=$(kubectl get ing --namespace ${K8S_NAMESPACE} ${K8S_INGRESS_NAME} -o json| jq --raw-output .spec.rules[0].host)
-    additionalReplyURL="https://${host_name}${REPLY_PATH}"
+    host_name=$(kubectl get ing --namespace "${K8S_NAMESPACE}" "${K8S_INGRESS_NAME}" -o json| jq --raw-output .spec.rules[0].host)
+    additionalWebReplyURL="https://${host_name}${REPLY_PATH}"
 
-    if [[ "$currentRedirectUris" == *"${additionalReplyURL}"* ]]; then
-        echo "replyUrl \"${additionalReplyURL}\" already exist in AAD app \"${AAD_APP_NAME}\"."
+    if [[ "$currentRedirectUris" == *"${additionalWebReplyURL}"* ]]; then
+        echo "Web replyUrl \"${additionalWebReplyURL}\" already exist in AAD app \"${AAD_APP_NAME}\"."
         echo ""
         return 0
     fi
 
-    newRedirectUris="${currentRedirectUris} ${additionalReplyURL}"
+    newWebRedirectUris="${currentRedirectUris} ${additionalWebReplyURL}"
 
     # Ask user
-    echo "This will be the new list of Redirect URIs for AAD app $AAD_APP_NAME:"
+    echo "This will be the new list of Web Redirect URIs for AAD app $AAD_APP_NAME:"
     echo "${currentRedirectUris}"
-    echo "${additionalReplyURL}"
+    echo "${additionalWebReplyURL}"
     echo ""
 
     if [[ $USER_PROMPT == true ]]; then
@@ -89,7 +96,7 @@ function updateRedirectUris() {
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
                 [Yy]* ) break;;
-                [Nn]* ) echo ""; echo "Skipping updating RedirectUris."; return 0;;
+                [Nn]* ) echo ""; echo "Skipping updating Web RedirectUris."; return 0;;
                 * ) echo "Please answer yes or no.";;
             esac
         done
@@ -97,13 +104,68 @@ function updateRedirectUris() {
 
     az ad app update \
         --id "${aadAppId}" \
-        --web-redirect-uris ${newRedirectUris} \
+        --web-redirect-uris ${newWebRedirectUris} \
         --only-show-errors ||
         { echo "ERROR: Could not update app registration." >&2; return 1; }
 
-    echo "Added replyUrl \"${additionalReplyURL}\" to AAD app \"${AAD_APP_NAME}\"."
+    echo "Added Web replyUrl \"${additionalWebReplyURL}\" to AAD app \"${AAD_APP_NAME}\"."
+    echo ""
+}
+
+function updateSpaRedirectUris() {
+    local aadObjId
+    local currentSpaRedirectUris
+    local host_name
+    local additionalSpaReplyURI
+    local newSpaRedirectUris
+
+    aadObjId="$(az ad app list --display-name "${AAD_APP_NAME}" --only-show-errors --query [].id -o tsv)"
+    if [[ -z $aadObjId ]]; then
+        echo "ERROR: Could not find app registration. Quitting..." >&2
+        return 1
+    fi
+    
+    currentSpaRedirectUris=$(az rest --method GET --uri "https://graph.microsoft.com/v1.0/applications/${aadObjId}" | jq -r .spa.redirectUris)
+
+    host_name=$(kubectl get ing --namespace "${K8S_NAMESPACE}" "${K8S_INGRESS_NAME}" -o json| jq --raw-output .spec.rules[0].host)
+    additionalSpaReplyURI="https://${host_name}${WEB_REDIRECT_URI}"
+
+    if [[ "$(echo "${currentSpaRedirectUris}" | jq -e ". | any(. == \"$additionalSpaReplyURI\")")" == true ]]; then
+        echo "Spa replyUrl \"${additionalSpaReplyURI}\" already exist in AAD app \"${AAD_APP_NAME}\"."
+        echo ""
+        return 0
+    fi
+    
+    newSpaRedirectUris=$(echo "${currentSpaRedirectUris}" | jq ". += [\"$additionalSpaReplyURI\"]")
+
+    # Ask user
+    echo "This will be the new list of Spa Redirect URIs for AAD app $AAD_APP_NAME:"
+    echo "${newSpaRedirectUris}" | jq -r '.[] | @text'
+    echo ""
+
+    if [[ $USER_PROMPT == true ]]; then
+        while true; do
+            read -r -p "Do you want to continue? (Y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) echo ""; echo "Skipping updating SpaRedirectUris."; return 0;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
+
+    az rest \
+        --method PATCH \
+        --uri "https://graph.microsoft.com/v1.0/applications/${aadObjId}" \
+        --headers "Content-Type=application/json" \
+        --body "{\"spa\":{\"redirectUris\":${newSpaRedirectUris}}}"
+
+    echo "Added Spa replyUrl \"${additionalSpaReplyURI}\" to AAD app \"${AAD_APP_NAME}\"."
     echo ""
 }
 
 ### MAIN
-updateRedirectUris
+updateWebRedirectUris
+if [[ $RUN_updateSpaRedirectUris == true ]]; then
+    updateSpaRedirectUris
+fi
