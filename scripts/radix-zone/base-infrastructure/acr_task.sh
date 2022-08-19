@@ -138,26 +138,21 @@ function create_acr_task() {
     local NO_PUSH="$3"
     TASK_YAML="task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
-    if [[ $NO_PUSH == "--no-push" ]]; then
-        PUSH=""
-        cat <<EOF >>${TASK_YAML}
+    cat <<EOF >>${TASK_YAML}
 version: v1.1.0
 stepTimeout: 3600
 steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
+  - cmd: buildx create --use # start buildkit
+  - cmd: >-
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}}
+      --tag {{.Values.IMAGE}}
+      --tag {{.Values.CLUSTERTYPE_IMAGE}}
+      --tag {{.Values.CLUSTERNAME_IMAGE}}
+      --file {{.Values.DOCKER_FILE_NAME}}
+      --cache-from=type=registry,ref={{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
+      .
+      {{.Values.BUILD_ARGS}}
 EOF
-    else
-        cat <<EOF >>${TASK_YAML}
-version: v1.1.0
-stepTimeout: 3600
-steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
-  - push:
-    - {{.Values.IMAGE}}
-    - {{.Values.CLUSTERTYPE_IMAGE}}
-    - {{.Values.CLUSTERNAME_IMAGE}}
-EOF
-    fi
     printf "Create ACR Task: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
         --registry ${ACR_NAME} \
@@ -166,7 +161,6 @@ EOF
         --file ${TASK_YAML} \
         --assign-identity [system] \
         --auth-mode None \
-        $NO_PUSH \
         --output none
 
     rm "$TASK_YAML"
