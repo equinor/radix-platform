@@ -138,7 +138,7 @@ printf "Done.\n"
 ###
 
 echo ""
-echo ">> You must manually update credentials for Radix Web Console in clusters."
+echo ">> You must update credentials for Radix Web Console in clusters."
 echo ">> See Refresh Radix Web Console App Credentials in README."
 
 
