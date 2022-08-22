@@ -135,7 +135,6 @@ echo ""
 function create_acr_task() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    local NO_PUSH="$3"
     TASK_YAML="task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
     cat <<EOF >>${TASK_YAML}
@@ -210,45 +209,63 @@ function add_task_credential() {
 }
 
 function run_task() {
+    # This function is for testing the ACR task.
+    # It can use a remote context or a local context.
     echo "run task..."
     CONTEXT="https://github.com/equinor/radix-app.git#main:frontend" # https://github.com/organization/repo.git#branch:directory - Can be path to local git repo directory
+    CONTEXT="/local/path/to/equinor/radix-app/frontend" # Path to local context
 
+    REPOSITORY_NAME="test-acr-task-notused-deleteme"
     DOCKER_FILE_NAME="Dockerfile"
-    ACR_TASK_NAME="radix-image-builder-no-push"
-    REGISTRY_URL="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
-    IMAGE_NAME="test-acr-task-notused-deleteme"
+    CLUSTER_TYPE="development"
     CLUSTER_NAME="weekly-00"
-    TAG="gaebu"
-    IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${TAG}"
-    CLUSTERTYPE_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${CLUSTER_TYPE}-${TAG}"
-    CLUSTERNAME_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${CLUSTER_NAME}-${TAG}"
+    TAG="gaebo"
+    BRANCH="main"
+
+    # Build arguments
     TARGET_ENVIRONMENTS="dev"
     BUILD_ARGS="--build-arg TARGET_ENVIRONMENTS=\"${TARGET_ENVIRONMENTS}\" "
+    BUILD_ARGS+="--build-arg BRANCH=\"${BRANCH}\" "
+
+    CACHE_DISABLED=true
+    if [[ ${CACHE_DISABLED} == true ]]; then
+        CACHE="--no-cache"
+    else
+        CACHE_TO_OPTIONS="--cache-to=type=registry,ref=${AZ_RESOURCE_CONTAINER_REGISTRY}/${REPOSITORY_NAME}:radix-cache-${BRANCH},mode=max"
+    fi
+
+    NO_PUSH=true
+    if [[ ${NO_PUSH} != true ]]; then
+        PUSH="--push"
+    fi
 
     az acr task run \
-        --name "${ACR_TASK_NAME}" \
+        --name "${AZ_RESOURCE_ACR_TASK_NAME}" \
         --registry "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
         --context "${CONTEXT}" \
         --file "${CONTEXT}${DOCKER_FILE_NAME}" \
-        --set IMAGE="${IMAGE}" \
-        --set CLUSTERTYPE_IMAGE="${CLUSTERTYPE_IMAGE}" \
-        --set CLUSTERNAME_IMAGE="${CLUSTERNAME_IMAGE}" \
+        --set REPOSITORY_NAME="${REPOSITORY_NAME}" \
+        --set TAG="${TAG}" \
+        --set CLUSTER_TYPE="${CLUSTER_TYPE}" \
+        --set CLUSTER_NAME="${CLUSTER_NAME}" \
         --set DOCKER_FILE_NAME="${DOCKER_FILE_NAME}" \
-        --set BUILD_ARGS="${BUILD_ARGS}"
+        --set BRANCH="${BRANCH}" \
+        --set BUILD_ARGS="${BUILD_ARGS}" \
+        --set PUSH="${PUSH}" \
+        --set CACHE="${CACHE}" \
+        --set CACHE_TO_OPTIONS="${CACHE_TO_OPTIONS}"
 
     echo $? # Exit code of last executed command.
 
     echo "Done."
 }
 
-
+export AZ_RESOURCE_ACR_TASK_NAME="magnus-test-task"
 create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
-create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "--no-push"
-create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
-add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+# run_task # Uncomment this line to test the task
 
 echo ""
 echo "Done creating ACR Task."
