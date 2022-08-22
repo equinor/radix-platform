@@ -198,9 +198,9 @@ function create_service_principal_and_store_credentials() {
         printf "creating ${name}..."
         password="$(az ad sp create-for-rbac --name "${name}" --query password --output tsv)"
         id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
-        secret="$(az ad sp credential list --id "${id}" --query "sort_by([?customKeyIdentifier=='rbac'], &endDate)[-1:].{endDate:endDate,keyId:keyId}")"
+        secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
         secret_id="$(echo "${secret}" | jq -r .[].keyId)"
-        expiration_date="$(echo "${secret}" | jq -r .[].endDate | sed 's/\..*//')Z"
+        expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
         printf " Done.\n"
 
         printf "Update credentials in keyvault..."
@@ -230,12 +230,11 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
-    # The --credential-description option has a limit of 32 bytes: https://github.com/Azure/azure-cli/issues/20561
     id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
-    password="$(az ad sp credential reset --name "${id}" --credential-description "rbac" --append --query password --output tsv)"
-    secret="$(az ad sp credential list --id "${id}" --query "sort_by([?customKeyIdentifier=='rbac'], &endDate)[-1:].{endDate:endDate,keyId:keyId}")"
+    password="$(az ad sp credential reset --name "${id}" --display-name "rbac" --append --query password --output tsv)"
+    secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
     secret_id="$(echo "${secret}" | jq -r .[].keyId)"
-    expiration_date="$(echo "${secret}" | jq -r .[].endDate | sed 's/\..*//')Z" # Keep only YYYY-MM-DDTHH:MM:SS and append Z for Zulu-time.
+    expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
 
     printf "Update credentials in keyvault..."
     update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}" "${secret_id}" "${expiration_date}"
@@ -255,9 +254,11 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
-    # The --credential-description option has a limit of 32 bytes: https://github.com/Azure/azure-cli/issues/20561
     id="$(az ad app list --display-name "${name}" --query '[].appId' --output tsv)"
-    password="$(az ad app credential reset --id "${id}" --credential-description "rbac" --append --query password --output tsv)"
+    password="$(az ad app credential reset --id "${id}" --display-name "rbac" --append --query password --output tsv)"
+    secret="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
+    secret_id="$(echo "${secret}" | jq -r .[].keyId)"
+    expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
 
     printf "Update credentials in keyvault..."
     update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}" "${secret_id}" "${expiration_date}"
