@@ -148,7 +148,7 @@ steps:
       --tag {{.Values.CLUSTERTYPE_IMAGE}}
       --tag {{.Values.CLUSTERNAME_IMAGE}}
       --file {{.Values.DOCKER_FILE_NAME}}
-      --cache-from=type=registry,ref={{.Run.Registry}}/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
+      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
       .
       {{.Values.BUILD_ARGS}}
 EOF
@@ -212,20 +212,22 @@ function run_task() {
     # This function is for testing the ACR task.
     # It can use a remote context or a local context.
     echo "run task..."
-    CONTEXT="https://github.com/equinor/radix-app.git#main:frontend" # https://github.com/organization/repo.git#branch:directory - Can be path to local git repo directory
+    #CONTEXT="https://github.com/equinor/radix-app.git#main:frontend" # https://github.com/organization/repo.git#branch:directory - Can be path to local git repo directory
     CONTEXT="/local/path/to/equinor/radix-app/frontend" # Path to local context
 
     REPOSITORY_NAME="test-acr-task-notused-deleteme"
     DOCKER_FILE_NAME="Dockerfile"
-    CLUSTER_TYPE="development"
-    CLUSTER_NAME="weekly-00"
-    TAG="gaebo"
+    IMAGE="radixdev.azurecr.io/test-acr-task-notused-deleteme:abcdef"
+    CLUSTERTYPE_IMAGE="radixdev.azurecr.io/test-acr-task-notused-deleteme:development-abcdef"
+    CLUSTERNAME_IMAGE="radixdev.azurecr.io/test-acr-task-notused-deleteme:weekly-notexisting-abcdef"
     BRANCH="main"
 
     # Build arguments
-    TARGET_ENVIRONMENTS="dev"
-    BUILD_ARGS="--build-arg TARGET_ENVIRONMENTS=\"${TARGET_ENVIRONMENTS}\" "
+    TARGET_ENVIRONMENTS="dev qa"
+    RADIX_GIT_TAGS="v1.12 v1.13"
+    BUILD_ARGS="--build-arg TARGET_ENVIRONMENTS=\\\"${TARGET_ENVIRONMENTS}\\\" "
     BUILD_ARGS+="--build-arg BRANCH=\"${BRANCH}\" "
+    BUILD_ARGS+="--build-arg RADIX_GIT_TAGS=\\\"${RADIX_GIT_TAGS}\\\" "
 
     CACHE_DISABLED=true
     if [[ ${CACHE_DISABLED} == true ]]; then
@@ -245,9 +247,9 @@ function run_task() {
         --context "${CONTEXT}" \
         --file "${CONTEXT}${DOCKER_FILE_NAME}" \
         --set REPOSITORY_NAME="${REPOSITORY_NAME}" \
-        --set TAG="${TAG}" \
-        --set CLUSTER_TYPE="${CLUSTER_TYPE}" \
-        --set CLUSTER_NAME="${CLUSTER_NAME}" \
+        --set IMAGE=${IMAGE} \
+        --set CLUSTERTYPE_IMAGE=${CLUSTERTYPE_IMAGE} \
+        --set CLUSTERNAME_IMAGE=${CLUSTERNAME_IMAGE} \
         --set DOCKER_FILE_NAME="${DOCKER_FILE_NAME}" \
         --set BRANCH="${BRANCH}" \
         --set BUILD_ARGS="${BUILD_ARGS}" \
@@ -265,7 +267,7 @@ create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
-# run_task # Uncomment this line to test the task
+#run_task # Uncomment this line to test the task
 
 echo ""
 echo "Done creating ACR Task."
