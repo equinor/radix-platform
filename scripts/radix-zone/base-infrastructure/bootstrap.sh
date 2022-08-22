@@ -673,7 +673,7 @@ create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
-set_access_control_on_acr
+#set_access_control_on_acr
 create_base_system_users_and_store_credentials
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
