@@ -132,10 +132,42 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 echo ""
 
+function create_internal_acr_task() {
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    local TASK_YAML="task_internal.yaml"
+    test -f "$TASK_YAML" && rm "$TASK_YAML"
+    cat <<EOF >>${TASK_YAML}
+version: v1.1.0
+stepTimeout: 3600
+steps:
+  - cmd: buildx create --use # start buildkit
+  - cmd: >-
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}} 
+      {{.Values.TAGS}} 
+      --file {{.Values.DOCKER_FILE_NAME}} 
+      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}} 
+      . 
+      {{.Values.BUILD_ARGS}} 
+EOF
+    printf "Create ACR Task for internal use: ${TASK_NAME} in ACR: ${ACR_NAME}..."
+    az acr task create \
+        --registry ${ACR_NAME} \
+        --name ${TASK_NAME} \
+        --context /dev/null \
+        --file ${TASK_YAML} \
+        --assign-identity [system] \
+        --auth-mode None \
+        --output none
+
+    rm "$TASK_YAML"
+    printf " Done.\n"
+}
+
 function create_acr_task() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    TASK_YAML="task.yaml"
+    local TASK_YAML="task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
     cat <<EOF >>${TASK_YAML}
 version: v1.1.0
@@ -266,7 +298,11 @@ create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
+create_internal_acr_task "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+create_role_assignment "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+add_task_credential "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+
 #run_task # Uncomment this line to test the task
 
 echo ""
-echo "Done creating ACR Task."
+echo "Done creating ACR Tasks."
