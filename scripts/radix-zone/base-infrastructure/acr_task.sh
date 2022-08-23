@@ -85,6 +85,11 @@ if [[ -z "$AZ_RESOURCE_ACR_TASK_NAME" ]]; then
     exit 1
 fi
 
+if [[ -z "$AZ_RESOURCE_ACR_INTERNAL_TASK_NAME" ]]; then
+    echo "ERROR: AZ_RESOURCE_ACR_INTERNAL_TASK_NAME not defined. Exiting..." >&2
+    exit 1
+fi
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -107,14 +112,15 @@ echo -e ""
 echo -e "Create ACR Task with the following configuration:"
 echo -e ""
 echo -e "   > WHAT:"
-echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY    : $AZ_RESOURCE_CONTAINER_REGISTRY"
-echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME         : $AZ_RESOURCE_ACR_TASK_NAME";
+echo -e "   --------------------------------------------------------------------------------"
+echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY       : $AZ_RESOURCE_CONTAINER_REGISTRY"
+echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME            : $AZ_RESOURCE_ACR_TASK_NAME";
+echo -e "   -  AZ_RESOURCE_ACR_INTERNAL_TASK_NAME   : $AZ_RESOURCE_ACR_INTERNAL_TASK_NAME";
 echo -e ""
 echo -e "   > WHO:"
-echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e "   --------------------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                      : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                              : $(az account show --query user.name -o tsv)"
 echo -e ""
 echo -e ""
 
