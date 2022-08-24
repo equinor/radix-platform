@@ -18,7 +18,7 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}{"api": "Azure Kubernetes Service AAD Server","permissions": ["user.read"]}' ./update_app_registration_permissions.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}' ./update_app_registration_permissions.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
