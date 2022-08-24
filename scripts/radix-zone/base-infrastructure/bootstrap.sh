@@ -80,6 +80,13 @@ if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
     echo "ERROR: The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
     exit 1
 fi
+update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
+if [[ -f "$update_app_registration_permissions" ]]; then
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
+    exit 1
+else
+    source "$update_app_registration_permissions"
+fi
 
 #######################################################################################
 ### Prepare az session
@@ -504,6 +511,11 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_CERT_MANAGER" "Cert-Manager"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
+    create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Web Console OAUTH2"
+}
+
+function update_app_registration() {
+    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}{"api": "Azure Kubernetes Service AAD Server","permissions": ["user.read"]}' source "${update_app_registration_permissions}")
 }
 
 # Create managed identities
@@ -631,6 +643,7 @@ create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
 create_base_system_users_and_store_credentials
+update_app_registration
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
 create_acr_tasks
