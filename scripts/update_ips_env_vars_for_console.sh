@@ -109,7 +109,7 @@ function updateIpsEnvVars() {
     done
     printf " Done.\n"
 
-    MAX_TRIES=3
+    MAX_TRIES=15
     try_nr=0
     printf "Sending PATCH request to Radix API..."
     RADIX_API_FQDN="server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
