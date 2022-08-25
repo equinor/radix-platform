@@ -9,6 +9,9 @@
 # Example 2: Using a subshell to avoid polluting parent shell
 # (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh)
 #
+# Example 3: Use the .custom-domain ingress suffix when updating secrets when cluster is the active cluster
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" AUTH_PROXY_REPLY_PATH="/oauth2/callback" AUTH_INGRESS_SUFFIX=".custom-domain" ./update_auth_proxy_secret_for_console.sh
+#
 
 # INPUTS:
 #   RADIX_ZONE_ENV          (Mandatory)

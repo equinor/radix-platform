@@ -85,6 +85,11 @@ if [[ -z "$AZ_RESOURCE_ACR_TASK_NAME" ]]; then
     exit 1
 fi
 
+if [[ -z "$AZ_RESOURCE_ACR_INTERNAL_TASK_NAME" ]]; then
+    echo "ERROR: AZ_RESOURCE_ACR_INTERNAL_TASK_NAME not defined. Exiting..." >&2
+    exit 1
+fi
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -107,14 +112,15 @@ echo -e ""
 echo -e "Create ACR Task with the following configuration:"
 echo -e ""
 echo -e "   > WHAT:"
-echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY    : $AZ_RESOURCE_CONTAINER_REGISTRY"
-echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME         : $AZ_RESOURCE_ACR_TASK_NAME";
+echo -e "   --------------------------------------------------------------------------------"
+echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY       : $AZ_RESOURCE_CONTAINER_REGISTRY"
+echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME            : $AZ_RESOURCE_ACR_TASK_NAME";
+echo -e "   -  AZ_RESOURCE_ACR_INTERNAL_TASK_NAME   : $AZ_RESOURCE_ACR_INTERNAL_TASK_NAME";
 echo -e ""
 echo -e "   > WHO:"
-echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e "   --------------------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                      : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                              : $(az account show --query user.name -o tsv)"
 echo -e ""
 echo -e ""
 
@@ -132,32 +138,58 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 echo ""
 
+function create_internal_acr_task() {
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    local TASK_YAML="task_internal.yaml"
+    test -f "$TASK_YAML" && rm "$TASK_YAML"
+    cat <<EOF >>${TASK_YAML}
+version: v1.1.0
+stepTimeout: 3600
+steps:
+  - cmd: buildx create --use # start buildkit
+  - cmd: >-
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}} 
+      {{.Values.TAGS}} 
+      --file {{.Values.DOCKER_FILE_NAME}} 
+      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}} 
+      . 
+      {{.Values.BUILD_ARGS}} 
+EOF
+    printf "Create ACR Task for internal use: ${TASK_NAME} in ACR: ${ACR_NAME}..."
+    az acr task create \
+        --registry ${ACR_NAME} \
+        --name ${TASK_NAME} \
+        --context /dev/null \
+        --file ${TASK_YAML} \
+        --assign-identity [system] \
+        --auth-mode None \
+        --output none
+
+    rm "$TASK_YAML"
+    printf " Done.\n"
+}
+
 function create_acr_task() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    local NO_PUSH="$3"
-    TASK_YAML="task.yaml"
+    local TASK_YAML="task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
-    if [[ $NO_PUSH == "--no-push" ]]; then
-        PUSH=""
-        cat <<EOF >>${TASK_YAML}
+    cat <<EOF >>${TASK_YAML}
 version: v1.1.0
 stepTimeout: 3600
 steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
+  - cmd: buildx create --use # start buildkit
+  - cmd: >-
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}}
+      --tag {{.Values.IMAGE}}
+      --tag {{.Values.CLUSTERTYPE_IMAGE}}
+      --tag {{.Values.CLUSTERNAME_IMAGE}}
+      --file {{.Values.DOCKER_FILE_NAME}}
+      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
+      .
+      {{.Values.BUILD_ARGS}}
 EOF
-    else
-        cat <<EOF >>${TASK_YAML}
-version: v1.1.0
-stepTimeout: 3600
-steps:
-  - build: -t {{.Values.IMAGE}} -t {{.Values.CLUSTERTYPE_IMAGE}} -t {{.Values.CLUSTERNAME_IMAGE}} -f {{.Values.DOCKER_FILE_NAME}} . {{.Values.BUILD_ARGS}}
-  - push:
-    - {{.Values.IMAGE}}
-    - {{.Values.CLUSTERTYPE_IMAGE}}
-    - {{.Values.CLUSTERNAME_IMAGE}}
-EOF
-    fi
     printf "Create ACR Task: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
         --registry ${ACR_NAME} \
@@ -166,7 +198,6 @@ EOF
         --file ${TASK_YAML} \
         --assign-identity [system] \
         --auth-mode None \
-        $NO_PUSH \
         --output none
 
     rm "$TASK_YAML"
@@ -216,45 +247,68 @@ function add_task_credential() {
 }
 
 function run_task() {
+    # This function is for testing the ACR task.
+    # It can use a remote context or a local context.
     echo "run task..."
-    CONTEXT="https://github.com/equinor/radix-app.git#main:frontend" # https://github.com/organization/repo.git#branch:directory - Can be path to local git repo directory
+    #CONTEXT="https://github.com/equinor/radix-app.git#main:frontend" # https://github.com/organization/repo.git#branch:directory - Can be path to local git repo directory
+    CONTEXT="/local/path/to/equinor/radix-app/frontend" # Path to local context
 
+    REPOSITORY_NAME="test-acr-task-notused-deleteme"
     DOCKER_FILE_NAME="Dockerfile"
-    ACR_TASK_NAME="radix-image-builder-no-push"
-    REGISTRY_URL="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
-    IMAGE_NAME="test-acr-task-notused-deleteme"
-    CLUSTER_NAME="weekly-00"
-    TAG="gaebu"
-    IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${TAG}"
-    CLUSTERTYPE_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${CLUSTER_TYPE}-${TAG}"
-    CLUSTERNAME_IMAGE="${REGISTRY_URL}/${IMAGE_NAME}:${CLUSTER_NAME}-${TAG}"
-    TARGET_ENVIRONMENTS="dev"
-    BUILD_ARGS="--build-arg TARGET_ENVIRONMENTS=\"${TARGET_ENVIRONMENTS}\" "
+    IMAGE="radixdev.azurecr.io/test-acr-task-notused-deleteme:abcdef"
+    CLUSTERTYPE_IMAGE="radixdev.azurecr.io/test-acr-task-notused-deleteme:development-abcdef"
+    CLUSTERNAME_IMAGE="radixdev.azurecr.io/test-acr-task-notused-deleteme:weekly-notexisting-abcdef"
+    BRANCH="main"
+
+    # Build arguments
+    TARGET_ENVIRONMENTS="dev qa"
+    RADIX_GIT_TAGS="v1.12 v1.13"
+    BUILD_ARGS="--build-arg TARGET_ENVIRONMENTS=\\\"${TARGET_ENVIRONMENTS}\\\" "
+    BUILD_ARGS+="--build-arg BRANCH=\"${BRANCH}\" "
+    BUILD_ARGS+="--build-arg RADIX_GIT_TAGS=\\\"${RADIX_GIT_TAGS}\\\" "
+
+    CACHE_DISABLED=true
+    if [[ ${CACHE_DISABLED} == true ]]; then
+        CACHE="--no-cache"
+    else
+        CACHE_TO_OPTIONS="--cache-to=type=registry,ref=${AZ_RESOURCE_CONTAINER_REGISTRY}/${REPOSITORY_NAME}:radix-cache-${BRANCH},mode=max"
+    fi
+
+    NO_PUSH=true
+    if [[ ${NO_PUSH} != true ]]; then
+        PUSH="--push"
+    fi
 
     az acr task run \
-        --name "${ACR_TASK_NAME}" \
+        --name "${AZ_RESOURCE_ACR_TASK_NAME}" \
         --registry "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
         --context "${CONTEXT}" \
         --file "${CONTEXT}${DOCKER_FILE_NAME}" \
-        --set IMAGE="${IMAGE}" \
-        --set CLUSTERTYPE_IMAGE="${CLUSTERTYPE_IMAGE}" \
-        --set CLUSTERNAME_IMAGE="${CLUSTERNAME_IMAGE}" \
+        --set REPOSITORY_NAME="${REPOSITORY_NAME}" \
+        --set IMAGE=${IMAGE} \
+        --set CLUSTERTYPE_IMAGE=${CLUSTERTYPE_IMAGE} \
+        --set CLUSTERNAME_IMAGE=${CLUSTERNAME_IMAGE} \
         --set DOCKER_FILE_NAME="${DOCKER_FILE_NAME}" \
-        --set BUILD_ARGS="${BUILD_ARGS}"
+        --set BRANCH="${BRANCH}" \
+        --set BUILD_ARGS="${BUILD_ARGS}" \
+        --set PUSH="${PUSH}" \
+        --set CACHE="${CACHE}" \
+        --set CACHE_TO_OPTIONS="${CACHE_TO_OPTIONS}"
 
     echo $? # Exit code of last executed command.
 
     echo "Done."
 }
 
-
 create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
-create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "--no-push"
-create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
-add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}-no-push" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+create_internal_acr_task "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+create_role_assignment "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+add_task_credential "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+
+#run_task # Uncomment this line to test the task
 
 echo ""
-echo "Done creating ACR Task."
+echo "Done creating ACR Tasks."
