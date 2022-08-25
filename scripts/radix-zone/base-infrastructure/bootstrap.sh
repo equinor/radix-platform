@@ -554,7 +554,7 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_CERT_MANAGER" "Cert-Manager"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
-    create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Web Console OAUTH2"
+    create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Used by web console for login and other AD information"
 }
 
 function update_app_registration() {
