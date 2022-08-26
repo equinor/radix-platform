@@ -130,6 +130,8 @@ if [[ -z "$FLUX_VERSION" ]]; then
     exit 1
 fi
 
+FLUX_LOCAL="$(flux version -ojson | jq -r .flux)"
+
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -174,6 +176,7 @@ echo -e "   -  GIT_REPO                         : $GIT_REPO"
 echo -e "   -  GIT_BRANCH                       : $GIT_BRANCH"
 echo -e "   -  GIT_DIR                          : $GIT_DIR"
 echo -e "   -  FLUX_VERSION                     : $FLUX_VERSION"
+echo -e "   -  FLUX_LOCAL                       : $FLUX_LOCAL"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -328,7 +331,6 @@ printf "...Done.\n"
 echo ""
 echo "Starting installation of Flux..."
 
-flux --version
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
     --url="$GIT_REPO" \
