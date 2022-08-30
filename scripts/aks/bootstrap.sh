@@ -366,7 +366,7 @@ if [[ ! ${NSG_ID} ]]; then
         --query id \
         --output tsv \
         --only-show-errors)
-    printf "Done.\n"
+    printf " Done.\n"
 else
     echo "    NSG exists."
 fi
@@ -572,7 +572,7 @@ printf "Done.\n"
 #######################################################################################
 ### Add GPU node pools
 ###
-echo "Adding GPU node pools to the cluster... "
+printf "Adding GPU node pools to the cluster... "
 
 az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -625,7 +625,7 @@ az aks nodepool add \
     --output none \
     --only-show-errors
 
-echo "Done."
+printf "Done."
 
 #######################################################################################
 ### END

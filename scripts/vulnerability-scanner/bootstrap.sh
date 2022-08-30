@@ -155,7 +155,7 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) echo ""; break;;
+            [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 1;;
             * ) echo "Please answer yes or no.";;
         esac

@@ -390,7 +390,7 @@ wait_for_velero() {
 
   check=($($command 2>/dev/null | wc -l))
 
-  printf "waiting for %s..." "$resource"
+  printf "Waiting for %s..." "$resource"
 
   while [[ $check -lt 2 ]]; do
     check=($($command 2>/dev/null | wc -l))
@@ -398,7 +398,7 @@ wait_for_velero() {
     sleep 5
   done
 
-  printf "Done.\n"
+  printf " Done.\n"
 }
 
 wait_for_velero "BackupStorageLocation azure"
@@ -408,9 +408,9 @@ echo ""
 printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
 while [[ "$(velero backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
   printf "."
-  sleep 2
+  sleep 5
 done
-printf " Done."
+printf " Done.\n"
 
 #######################################################################################
 ### Restart operator to get proper metrics

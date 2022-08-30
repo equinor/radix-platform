@@ -184,8 +184,6 @@ echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
-echo ""
-
 if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
@@ -329,7 +327,7 @@ printf "...Done.\n"
 ### INSTALLATION
 
 echo ""
-echo "Starting installation of Flux..."
+printf "Starting installation of Flux..."
 
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
@@ -341,12 +339,12 @@ flux bootstrap git \
     --silent
 if [[ "$?" != "0" ]]
 then
-  printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+  printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
   rm "$FLUX_PRIVATE_KEY_NAME"
   exit 1
 else
   rm "$FLUX_PRIVATE_KEY_NAME"
-  echo "done."
+  echo " Done."
 fi
 
 echo -e ""

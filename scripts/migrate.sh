@@ -330,7 +330,6 @@ if [[ $install_base_components == true ]]; then
     printf "%s► Execute %s%s\n" "${grn}" "${INSTALL_BASE_COMPONENTS_SCRIPT}" "${normal}"
     (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="${USER_PROMPT}" source "${INSTALL_BASE_COMPONENTS_SCRIPT}")
     wait # wait for subshell to finish
-    printf "Done installing base components."
 fi
 
 # Connect kubectl so we have the correct context
@@ -340,11 +339,13 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
 # Wait for prometheus to be deployed from flux
-echo "Wait for prometheus to be deployed by flux-operator..."
+echo ""
+printf "Wait for prometheus to be deployed by flux-operator..."
 while [[ "$(kubectl get deploy prometheus-operator-operator 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
+printf " Done."
 
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
@@ -359,6 +360,7 @@ while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
+printf " Done."
 
 
 # Wait for grafana to be deployed from flux
@@ -368,6 +370,7 @@ while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
+
 echo ""
 # Add grafana replyUrl to AAD app
 printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
@@ -499,7 +502,7 @@ printf "\nIngress is ready, adding replyUrl for radix web-console...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 (AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
-printf "Done."
+printf "Done.\n"
 
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
 printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
@@ -507,11 +510,12 @@ printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal
 wait # wait for subshell to finish
 echo ""
 
-printf "Waiting for radix-networkpolicy-canary environments..."
+printf "Waiting for radix-networkpolicy-canary environments... "
 while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
     printf "."
     sleep 5
 done
+printf "Done.\n"
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"

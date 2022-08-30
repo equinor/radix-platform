@@ -109,7 +109,7 @@ fi
 ###
 
 echo ""
-echo "Logging you in to Azure if not already logged in..."
+printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done."
@@ -142,8 +142,6 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
-
-echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do

@@ -211,7 +211,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     printf "Done.\n"
 
     echo ""
-    printf "Delete custom ingresses... "
+    printf "Delete custom ingresses...\n"
     while read -r line; do
         if [[ "$line" ]]; then
             helm delete "${line}"
@@ -229,7 +229,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ### Scale down source cluster resources
     ###
     echo ""
-    printf "Scale down radix-cicd-canary in %s...\n" "$SOURCE_CLUSTER"
+    printf "Scale down radix-cicd-canary in %s..." "$SOURCE_CLUSTER"
     kubectl scale deployment --namespace radix-cicd-canary radix-cicd-canary --replicas=0
     wait
     printf "Done.\n"
@@ -317,3 +317,4 @@ echo "(e.g. app-canarycicd-test2-prod.playground.radix.equinor.com)."
 echo "Delete these DNS entries in Azure DNS!"
 echo ""
 echo "###########################################################"
+echo ""
