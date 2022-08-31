@@ -271,7 +271,6 @@ if [[ $USER_PROMPT == true ]]; then
     done
 fi
 
-echo ""
 #--------------------------------------------------------
 
 #######################################################################################
@@ -308,7 +307,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
 
     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 }
-printf "Done creating cluster."
+printf "Done creating cluster.\n"
 install_base_components=true
 
 
@@ -466,7 +465,6 @@ fi
 echo ""
 printf "Restore into destination cluster...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
-
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."

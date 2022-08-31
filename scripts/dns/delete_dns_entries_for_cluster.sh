@@ -100,6 +100,8 @@ echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
+echo ""
+
 while true; do
     read -p "Is this correct? (Y/n) " yn
     case $yn in

@@ -175,14 +175,12 @@ if [[ $USER_PROMPT == true ]]; then
   done
 fi
 
-echo ""
-
 #######################################################################################
 ### Connect kubectl
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
   # Send message to stderr
   echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
@@ -238,7 +236,6 @@ kubectl apply --filename manifests/storageclass-retain-nocache.yaml
 ### Install grafana
 ###
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/grafana/bootstrap.sh" "${normal}"
-echo ""
 (USER_PROMPT="$USER_PROMPT" ./grafana/bootstrap.sh)
 wait
 
@@ -246,7 +243,6 @@ wait
 ### Install prerequisites for external-dns (flux handles the main installation)
 ###
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/external-dns-prerequisites/bootstrap.sh" "${normal}"
-echo ""
 (./external-dns-prerequisites/bootstrap.sh)
 wait
 
@@ -260,7 +256,6 @@ kubectl label ns default purpose=radix-base-ns --overwrite
 
 echo ""
 echo "Start on radix platform shared configs and secrets..."
-
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-acr.sh" "${normal}"
 (./config-and-secrets/bootstrap-acr.sh)
