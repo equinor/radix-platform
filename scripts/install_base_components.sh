@@ -264,8 +264,6 @@ echo "Start on radix platform shared configs and secrets..."
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-acr.sh" "${normal}"
 (./config-and-secrets/bootstrap-acr.sh)
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-snyk.sh" "${normal}"
-(USER_PROMPT="$USER_PROMPT" ./config-and-secrets/bootstrap-snyk.sh)
 wait
 
 echo "Done."
