@@ -163,9 +163,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### Connect kubectl
@@ -189,7 +188,7 @@ verify_cluster_access
 ### Install cert-manager
 ###
 
-printf "\nCreating cert-manager namespace and secret for flux-chart..."
+printf "\nCreating cert-manager namespace and secret for flux-chart...\n"
 
 # Create the namespace for cert-manager
 kubectl create namespace cert-manager \
@@ -244,4 +243,4 @@ data:
 EOF
 
 echo ""
-echo "Bootstrapping of Cert-Manager done!"
+printf "Bootstrapping of Cert-Manager done!\n"

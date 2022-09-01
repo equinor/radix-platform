@@ -344,7 +344,7 @@ while [[ "$(kubectl get deploy prometheus-operator-operator 2>&1)" == *"Error"* 
     printf "."
     sleep 5
 done
-printf " Done."
+printf " Done.\n"
 
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
@@ -503,6 +503,7 @@ wait # wait for subshell to finish
 printf "Done.\n"
 
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
+echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
 wait # wait for subshell to finish
@@ -531,6 +532,7 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
 
 if [[ $create_redis_cache == true ]]; then
@@ -541,7 +543,7 @@ if [[ $create_redis_cache == true ]]; then
         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > tmp_prod
     )
-    printf " Done.\n"
+    printf " Done.\n"     
     cat tmp_qa && rm tmp_qa
     cat tmp_prod && rm tmp_prod
 fi

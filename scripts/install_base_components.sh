@@ -173,6 +173,7 @@ if [[ $USER_PROMPT == true ]]; then
       * ) echo "Please answer yes or no.";;
     esac
   done
+  echo ""
 fi
 
 #######################################################################################
@@ -209,6 +210,7 @@ fi
 echo ""
 kubectl apply --filename ./priority-classes/radixComponentPriorityClass.yaml
 wait
+echo ""
 
 #######################################################################################
 ### Install ingress-nginx
@@ -220,6 +222,7 @@ wait
 #######################################################################################
 ### Install cert-manager
 ###
+echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/bootstrap.sh" "${normal}"
 (USER_PROMPT="false" ./cert-manager/bootstrap.sh)
 wait
@@ -231,6 +234,7 @@ wait
 echo "Creating storage classes"
 kubectl apply --filename manifests/storageclass-retain.yaml
 kubectl apply --filename manifests/storageclass-retain-nocache.yaml
+echo ""
 
 #######################################################################################
 ### Install grafana
@@ -242,6 +246,7 @@ wait
 #######################################################################################
 ### Install prerequisites for external-dns (flux handles the main installation)
 ###
+echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/external-dns-prerequisites/bootstrap.sh" "${normal}"
 (./external-dns-prerequisites/bootstrap.sh)
 wait
@@ -259,6 +264,7 @@ echo "Start on radix platform shared configs and secrets..."
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-acr.sh" "${normal}"
 (./config-and-secrets/bootstrap-acr.sh)
+echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-snyk.sh" "${normal}"
 (USER_PROMPT="$USER_PROMPT" ./config-and-secrets/bootstrap-snyk.sh)
 wait

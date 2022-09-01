@@ -186,9 +186,8 @@ if [[ $USER_PROMPT == true ]]; then
     *) echo "Please answer yes or no." ;;
     esac
   done
+  echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### Support funcs
@@ -347,7 +346,6 @@ function showProgress() {
 ###
 
 # Exit if cluster does not exist
-echo ""
 echo "Connecting kubectl to velero-destination..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
   # Send message to stderr
