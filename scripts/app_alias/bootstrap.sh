@@ -150,7 +150,6 @@ fi
 ###
 
 # Exit if cluster does not exist
-echo ""
 echo "Connecting kubectl..."   
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {    
     # Send message to stderr

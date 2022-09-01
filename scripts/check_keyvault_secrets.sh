@@ -111,6 +111,7 @@ if [[ $USER_PROMPT == true ]]; then
         *) echo "Please answer yes or no." ;;
         esac
     done
+    echo ""
 fi
 
 #######################################################################################
@@ -181,7 +182,7 @@ function checkExpiryDates() {
     done < <(echo "${KEY_VAULT_SECRETS}" | jq -c '.[]')
 }
 
-printf "\nCreating arrays..."
+printf "Creating arrays..."
 createArrays
 printf "done"
 
