@@ -110,10 +110,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
-
 
 #######################################################################################
 ### Refresh credentials for Radix Web Console app in Azure AD and store in key vault
