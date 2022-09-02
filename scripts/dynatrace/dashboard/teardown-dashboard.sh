@@ -102,7 +102,7 @@ function delete_dashboard(){
 ### Prepare az session
 ###
 
-printf "Logging you in to Azure if not already logged in... "
+printf "\nLogging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"

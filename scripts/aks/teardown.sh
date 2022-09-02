@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 
-
 #######################################################################################
 ### PURPOSE
 ### 
 
 # Tear down of a aks cluster and any related infrastructure (vnet and similar) or configuration that was created to specifically support that cluster.
-
 
 #######################################################################################
 ### INPUTS
@@ -33,6 +31,7 @@
 #######################################################################################
 ### START
 ###
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
@@ -42,7 +41,6 @@ function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4
 
 echo ""
 echo "Start teardown of aks instance... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -64,9 +62,6 @@ hash kubelogin 2>/dev/null || {
     echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
     exit 1
 }
-
-
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -115,7 +110,6 @@ if [[ $CLUSTER_TYPE  == "development" ]]; then
     # Development cluster uses QA web-console
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -254,6 +248,7 @@ printf "Verifying that cluster exist and/or the user can access it... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
+        echo ""
         while true; do
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
@@ -269,6 +264,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
 printf "Done.\n"
 
 # Delete the cluster
+echo ""
 echo "Deleting cluster... "
 az aks delete \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -279,20 +275,20 @@ az aks delete \
     --only-show-errors
 echo "Done."
 
-
 #######################################################################################
 ### Delete Redis Cache
 ###
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "Deleting Redis Cache for QA..."
+echo ""
+printf "%s► Execute Redis Cache for QA %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_redis_cache_for_console.sh" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
 wait # wait for subshell to finish
-echo "Deleting Redis Cache for Prod..."
+echo ""
+printf "%s► Execute Redis Cache for Prod %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_redis_cache_for_console.sh" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../delete_redis_cache_for_console.sh")
 wait # wait for subshell to finish
-
 
 #######################################################################################
 ### Delete replyUrls
@@ -310,6 +306,7 @@ HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS
 REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
 WEB_REDIRECT_URI="https://${HOST_NAME_WEB_CONSOLE}/application"
 
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
 (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="$WEB_REDIRECT_URI" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
 
@@ -318,17 +315,23 @@ APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA
 HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
 
+echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
 (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
-
 
 #######################################################################################
 ### Delete related stuff
 ###
 
 #To be deleted
+echo ""
 echo "Deleting Dynatrace integration..."
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/teardown.sh" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
+
+echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/dashboard/teardown-dashboard.sh" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
 
 echo "Cleaning up local kube config... "
@@ -386,14 +389,15 @@ fi
 
 echo ""
 echo "Delete DNS records"
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dns/delete_dns_entries_for_cluster.sh" "${normal}"
 (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" CLUSTER_NAME="$CLUSTER_NAME" ../dns/delete_dns_entries_for_cluster.sh)
 wait # wait for subshell to finish
 
 echo ""
 echo "Delete orphaned DNS records"
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dns/delete_orphaned_dns_entries.sh" "${normal}"
 (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" ../dns/delete_orphaned_dns_entries.sh)
 wait # wait for subshell to finish
-
 
 #######################################################################################
 ### END
