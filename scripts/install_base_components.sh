@@ -47,6 +47,7 @@
 #######################################################################################
 ### START
 ###
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
@@ -192,11 +193,13 @@ printf "...Done.\n"
 #######################################################################################
 ### Verify cluster access
 ###
+
 verify_cluster_access
 
 #######################################################################################
 ### Create flux namespace
 ###
+
 if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
     printf "\nCreating flux-system namespace..."
     kubectl create namespace flux-system 2>&1 >/dev/null
@@ -215,6 +218,7 @@ echo ""
 #######################################################################################
 ### Install ingress-nginx
 ###
+
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/ingress-nginx/bootstrap.sh" "${normal}"
 (MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
 wait
@@ -222,6 +226,7 @@ wait
 #######################################################################################
 ### Install cert-manager
 ###
+
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/bootstrap.sh" "${normal}"
 (USER_PROMPT="false" ./cert-manager/bootstrap.sh)
@@ -239,6 +244,7 @@ echo ""
 #######################################################################################
 ### Install grafana
 ###
+
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/grafana/bootstrap.sh" "${normal}"
 (USER_PROMPT="$USER_PROMPT" ./grafana/bootstrap.sh)
 wait
@@ -246,6 +252,7 @@ wait
 #######################################################################################
 ### Install prerequisites for external-dns (flux handles the main installation)
 ###
+
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/external-dns-prerequisites/bootstrap.sh" "${normal}"
 (./external-dns-prerequisites/bootstrap.sh)

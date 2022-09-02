@@ -114,7 +114,6 @@ printf " Done.\n"
 
 printf "Get TXT records..."
 
-
 TXT_RECORD_LIST=$(az network dns record-set txt list \
     --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
     --zone-name ${AZ_RESOURCE_DNS} \
@@ -152,7 +151,6 @@ wait
 unset IFS
 
 echo "Deleted TXT-records not bound to a cluster."
-
 
 EXCLUDE_LIST=(
     "@"

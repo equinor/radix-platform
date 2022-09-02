@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 
-
 #######################################################################################
 ### PURPOSE
 ### 
 
 # Delete connection between cluster and dynatrace
-
 
 #######################################################################################
 ### PRECONDITIONS
@@ -14,7 +12,6 @@
 
 # - AKS cluster is available
 # - Dynatrace secrets are available in keyvault: API_URL and API_TOKEN
-
 
 #######################################################################################
 ### INPUTS
@@ -26,7 +23,6 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-
 
 #######################################################################################
 ### HOW TO USE
@@ -51,7 +47,6 @@ printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -93,7 +88,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
