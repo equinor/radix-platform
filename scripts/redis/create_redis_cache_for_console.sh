@@ -29,18 +29,8 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$AUTH_PROXY_COMPONENT" ]]; then
-    echo "ERROR: Please provide AUTH_PROXY_COMPONENT." >&2
-    exit 1
-fi
-
 if [[ -z "$CLUSTER_NAME" ]]; then
     echo "ERROR: Please provide CLUSTER_NAME." >&2
-    exit 1
-fi
-
-if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_WEB_CONSOLE_ENV." >&2
     exit 1
 fi
 
@@ -61,24 +51,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
-#######################################################################################
-### CLUSTER?
-###
-
-kubectl_context="$(kubectl config current-context)"
-
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
-    echo "kubectl is ready..."
-else
-    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}" >&2
-    exit 1
-fi
-
-#######################################################################################
-### Verify cluster access
-###
-verify_cluster_access
 
 #######################################################################################
 
@@ -102,7 +74,7 @@ function createRedisCache() {
 
         echo "Creating new Redis Cache. Running asynchronously..."
         #Docs https://azure.microsoft.com/en-us/pricing/details/cache/
-        az deployment group create --no-wait --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "${AZ_SUBSCRIPTION_ID}" --template-file "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/redis/azure_cache_for_redis.json" --name "redis-cache-${RADIX_ZONE}-${RADIX_ENVIRONMENT}" \
+        az deployment group create --no-wait --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "${AZ_SUBSCRIPTION_ID}" --template-file "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/redis/azure_cache_for_redis.json" --name "redis-cache-${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}" \
                 --parameters name="${REDIS_CACHE_NAME}" \
                 --parameters location="${AZ_RADIX_ZONE_LOCATION}" \
                 --parameters sku="${AZ_REDIS_CACHE_SKU}"
