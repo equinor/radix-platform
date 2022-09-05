@@ -4,10 +4,10 @@
 # Deletes the redis cache for the cluster given the context.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./delete_redis_cache_for_console.sh
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./delete_redis_cache_for_console.sh
 
 # Example 2:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./delete_redis_cache_for_console.sh
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./delete_redis_cache_for_console.sh
 
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
