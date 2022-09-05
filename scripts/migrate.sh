@@ -565,6 +565,14 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
+# Wait for redis caches to be created.
+printf "\nWaiting for redis caches to be created..."
+while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
+  printf "."
+  sleep 5
+done
+printf " Done\n."
+
 if [[ $update_redis_cache == true ]]; then
     printf "Updating Redis Caches for Console...\n"
     (
@@ -575,14 +583,6 @@ if [[ $update_redis_cache == true ]]; then
     )
     printf "Done...\n"
 fi
-
-# Wait for redis caches to be created.
-printf "\nWaiting for redis caches to be created..."
-while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
-  printf "."
-  sleep 5
-done
-printf " Done\n."
 
 # Move custom ingresses
 if [[ $MIGRATION_STRATEGY == "aa" ]]; then
