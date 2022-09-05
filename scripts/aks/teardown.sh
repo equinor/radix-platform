@@ -314,8 +314,7 @@ APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_GRAFANA
 HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
 
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
+printf "\n%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
 (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
 
