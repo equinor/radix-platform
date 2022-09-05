@@ -197,7 +197,7 @@ if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
   echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
 fi
 
-UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/update_redis_cache_for_console.sh"
+UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/redis/update_redis_cache_for_console.sh"
 if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
   # Print to stderror
   echo "ERROR: The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
@@ -539,13 +539,13 @@ if [[ $create_redis_cache == true ]]; then
     printf "Creating Redis Caches for Console...\n"
     (
         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > tmp_qa &
+        redis_cache_qa_output_file="/tmp/$(uuidgen)"
+        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > ${redis_cache_qa_output_file} &
         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > tmp_prod
+        redis_cache_prod_output_file="/tmp/$(uuidgen)"
+        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" > ${redis_cache_prod_output_file} &
     )
-    printf " Done.\n"
-    cat tmp_qa && rm tmp_qa
-    cat tmp_prod && rm tmp_prod
+    printf "Started asynchronous job to create redis caches...\n"
 fi
 
 # Wait for redis caches to be created.
@@ -554,6 +554,8 @@ while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "
   printf "."
   sleep 5
 done
+cat tmp_qa && rm tmp_qa
+cat tmp_prod && rm tmp_prod
 printf " Done\n."
 
 # Move custom ingresses
