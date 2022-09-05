@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # PURPOSE
-# Configures the redis cache for the cluster given the context.
+# Creates the redis cache for the cluster given the context.
 
 # Example 1:
 # RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./update_redis_cache_for_console.sh
@@ -82,29 +82,31 @@ verify_cluster_access
 
 #######################################################################################
 
-function updateRedisCacheConfiguration() {
+function createRedisCache() {
     # check if redis cache exist, else create new
     REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
+    REDIS_CACHE_INSTANCE=$(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>/dev/null)
+    if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
+        echo "Info: Redis Cache \"$REDIS_CACHE_NAME\" not found."
 
-    WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-    WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -ojson | jq -r .items[0].metadata.name)
-    OAUTH2_PROXY_REDIS_CONNECTION_URL="rediss://"$(jq -r '"\(.hostName):\(.sslPort)"' <<< $REDIS_CACHE_INSTANCE)
-    OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" | jq -r .primaryKey)
-    REDIS_ENV_FILE="redis_secret_$REDIS_CACHE_NAME.env"
+        if [[ $USER_PROMPT == true ]]; then
+            while true; do
+                read -p "Do you want to create a new Redis Cache? (Y/n) " yn
+                case $yn in
+                    [Yy]* ) break;;
+                    [Nn]* ) echo "Quitting."; exit 1;; # no redis cache available, exit
+                    * ) echo "Please answer yes or no.";;
+                esac
+            done
+        fi
 
-    echo "OAUTH2_PROXY_REDIS_CONNECTION_URL=$OAUTH2_PROXY_REDIS_CONNECTION_URL" >> "$REDIS_ENV_FILE"
-    echo "OAUTH2_PROXY_REDIS_PASSWORD=$OAUTH2_PROXY_REDIS_PASSWORD" >> "$REDIS_ENV_FILE"
-
-    kubectl patch secret "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
-        --patch "$(kubectl create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$REDIS_ENV_FILE" --dry-run=client -o yaml)"
-
-    rm "$REDIS_ENV_FILE"
-
-    echo "Redis Cache secrets updated"
-
-    printf "Restarting $AUTH_PROXY_COMPONENT deployment in $WEB_CONSOLE_NAMESPACE..."
-    kubectl rollout restart deployment -n "$WEB_CONSOLE_NAMESPACE" "$AUTH_PROXY_COMPONENT"
-    printf " Done.\n"
+        echo "Creating new Redis Cache. Running asynchronously..."
+        #Docs https://azure.microsoft.com/en-us/pricing/details/cache/
+        az deployment group create --no-wait --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --subscription "${AZ_SUBSCRIPTION_ID}" --template-file "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/redis/azure_cache_for_redis.json" --name "redis-cache-${RADIX_ZONE}-${RADIX_ENVIRONMENT}" \
+                --parameters name="${REDIS_CACHE_NAME}" \
+                --parameters location="${AZ_RADIX_ZONE_LOCATION}" \
+                --parameters sku="${AZ_REDIS_CACHE_SKU}"
+    fi
 }
 
-updateRedisCacheConfiguration
+createRedisCache
