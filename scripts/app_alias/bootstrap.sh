@@ -142,17 +142,14 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
-
 
 #######################################################################################
 ### Connect kubectl
 ###
 
 # Exit if cluster does not exist
-echo ""
 echo "Connecting kubectl..."   
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {    
     # Send message to stderr

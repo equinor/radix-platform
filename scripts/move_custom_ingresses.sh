@@ -163,16 +163,15 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### Connect kubectl
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {  
     # Send message to stderr
     echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
@@ -189,7 +188,7 @@ verify_cluster_access
 ### Move custom ingresses
 ###
 echo ""
-printf "Enabling monitoring addon in the destination cluster... "
+printf "Enabling monitoring addon in the destination cluster...\n"
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
 az aks enable-addons --addons monitoring --name "${DEST_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --workspace-resource-id "${WORKSPACE_ID}" --no-wait
 printf "Done.\n"
@@ -205,13 +204,13 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ###
 
     echo ""
-    printf "Point to source cluster... "
+    printf "Point to source cluster...\n"
     get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
     [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}" ]] && exit 1
     printf "Done.\n"
 
     echo ""
-    printf "Delete custom ingresses... "
+    printf "Delete custom ingresses...\n"
     while read -r line; do
         if [[ "$line" ]]; then
             helm delete "${line}"
@@ -229,7 +228,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ### Scale down source cluster resources
     ###
     echo ""
-    printf "Scale down radix-cicd-canary in %s...\n" "$SOURCE_CLUSTER"
+    printf "Scale down radix-cicd-canary in %s..." "$SOURCE_CLUSTER"
     kubectl scale deployment --namespace radix-cicd-canary radix-cicd-canary --replicas=0
     wait
     printf "Done.\n"
@@ -246,6 +245,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     printf "Update Auth proxy secret...\n"
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
     printf "Done.\n"
+    echo ""
 fi
 
 #######################################################################################
@@ -317,3 +317,4 @@ echo "(e.g. app-canarycicd-test2-prod.playground.radix.equinor.com)."
 echo "Delete these DNS entries in Azure DNS!"
 echo ""
 echo "###########################################################"
+echo ""

@@ -50,6 +50,7 @@ function deleteWebRedirectUris() {
 
     echo ""
     echo "Deleting Web replyUrl for App Registration \"${APP_REGISTRATION_NAME}\"..."
+    echo ""
 
     # Get a list of all replyUrls in the App Registration
     array=$(az ad app show --id "${APP_REGISTRATION_ID}" --query "web.redirectUris" --only-show-errors)
@@ -59,7 +60,7 @@ function deleteWebRedirectUris() {
             while true; do
                 read -r -p "Do you want to delete \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) break;;
+                    [Yy]* ) echo ""; break;;
                     [Nn]* ) exit;;
                     * ) echo "Please answer yes or no.";;
                 esac
@@ -83,6 +84,7 @@ function deleteSpaRedirectUris() {
 
     echo ""
     echo "Deleting Spa replyUrl for App Registration \"${APP_REGISTRATION_NAME}\"..."
+    echo ""
 
     currentSpaRedirectUris=$(az rest --method GET --uri "https://graph.microsoft.com/v1.0/applications/${APP_REGISTRATION_OBJ_ID}" | jq -r .spa.redirectUris)
 
@@ -91,7 +93,7 @@ function deleteSpaRedirectUris() {
             while true; do
                 read -r -p "Do you want to delete \"${WEB_REDIRECT_URI}\" from App Registration \"${APP_REGISTRATION_NAME}\"? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) break;;
+                    [Yy]* ) echo ""; break;;
                     [Nn]* ) exit;;
                     * ) echo "Please answer yes or no.";;
                 esac

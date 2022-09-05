@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -76,7 +76,7 @@ fi
 ### Prepare az session
 ###
 
-printf "Logging you in to Azure if not already logged in... "
+printf "\nLogging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
@@ -99,6 +99,8 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
+
+echo ""
 
 while true; do
     read -p "Is this correct? (Y/n) " yn

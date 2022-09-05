@@ -17,7 +17,7 @@ function get_credentials () {
 
 
 function verify_cluster_access() {
-    printf "\nVerifying cluster access..\n"
+    printf "\nVerifying cluster access...\n"
     kubectl cluster-info || {
       printf "ERROR: Could not access cluster. Quitting...\n"
       exit 1

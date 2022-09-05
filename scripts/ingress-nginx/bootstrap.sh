@@ -152,9 +152,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### CLUSTER?
@@ -304,4 +303,4 @@ kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
 
 rm config
 
-echo "Done."
+printf "Done.\n"

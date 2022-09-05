@@ -36,6 +36,8 @@
 ### START
 ###
 
+echo ""
+
 # Load dependencies
 LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
@@ -154,9 +156,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### CLUSTER?
@@ -231,4 +232,4 @@ kubectl create secret generic grafana-secrets \
 #   --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
 #   --set env.GF_SERVER_ROOT_URL=$GF_SERVER_ROOT_URL
 
-echo "Done."
+printf "Done.\n"
