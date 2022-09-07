@@ -288,6 +288,7 @@ if [[ ${BACKUP_NAME} == "migration-"* ]];then
     echo ""
     echo "Verifying source cluster existence..."    
     get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" || { echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2; exit 1; }
+    echo ""
 fi
 
 create_redis_cache=true
@@ -308,6 +309,7 @@ if [[ $create_redis_cache == true ]]; then
     (
         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
+        echo ""
         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
     )
