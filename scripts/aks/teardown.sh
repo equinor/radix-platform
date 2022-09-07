@@ -195,7 +195,7 @@ IP_EXISTS=$(az network public-ip list \
 
 if [[ ${IP_EXISTS} ]]; then
     TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.[].ipAddress')
-    TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq '.[].id')
+    TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq -r '.[].id')
 fi
 
 #######################################################################################
@@ -379,7 +379,6 @@ if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
     printf "Deleting Public IP %s..." "${TEST_CLUSTER_PUBLIC_IP_ADDRESS}"
     az network public-ip delete \
         --ids "${TEST_CLUSTER_PUBLIC_IP_ID}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none \
         --only-show-errors
     printf "Done.\n"
