@@ -40,7 +40,7 @@ if [[ -z "$REPLY_PATH" ]]; then
 fi
 if [[ -z "$WEB_REDIRECT_URI" ]]; then
     RUN_updateSpaRedirectUris=false
-    echo "WARNING: No WEB_REDIRECT_URI found will skip updateSpaRedirectUris"
+    echo "INFO: No WEB_REDIRECT_URI found will skip updateSpaRedirectUris"
 else
     RUN_updateSpaRedirectUris=true
 fi
@@ -95,7 +95,7 @@ function updateWebRedirectUris() {
         while true; do
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
+                [Yy]* ) echo ""; break;;
                 [Nn]* ) echo ""; echo "Skipping updating Web RedirectUris."; return 0;;
                 * ) echo "Please answer yes or no.";;
             esac
@@ -147,7 +147,7 @@ function updateSpaRedirectUris() {
         while true; do
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
+                [Yy]* ) echo ""; break;;
                 [Nn]* ) echo ""; echo "Skipping updating SpaRedirectUris."; return 0;;
                 * ) echo "Please answer yes or no.";;
             esac

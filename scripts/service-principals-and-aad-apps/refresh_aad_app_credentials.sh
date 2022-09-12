@@ -131,10 +131,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
-
 
 #######################################################################################
 ### Refresh credentials in Azure AD and key vault

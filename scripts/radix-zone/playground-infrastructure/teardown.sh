@@ -109,12 +109,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
-
-
-
 
 #######################################################################################
 ### Remove infrastructure
@@ -123,8 +119,6 @@ echo ""
 echo "Deleting Azure DNS: ${AZ_RESOURCE_DNS}..."
 az network dns zone delete --yes -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
 echo "...Done."
-
-
 
 #######################################################################################
 ### END

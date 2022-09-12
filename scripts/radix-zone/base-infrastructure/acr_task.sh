@@ -135,8 +135,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-echo ""
 
 function create_internal_acr_task() {
     local TASK_NAME="$1"

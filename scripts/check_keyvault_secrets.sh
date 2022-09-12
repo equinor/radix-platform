@@ -96,6 +96,8 @@ echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
+echo ""
+
 if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
@@ -109,6 +111,7 @@ if [[ $USER_PROMPT == true ]]; then
         *) echo "Please answer yes or no." ;;
         esac
     done
+    echo ""
 fi
 
 #######################################################################################
@@ -179,7 +182,7 @@ function checkExpiryDates() {
     done < <(echo "${KEY_VAULT_SECRETS}" | jq -c '.[]')
 }
 
-printf "\nCreating arrays..."
+printf "Creating arrays..."
 createArrays
 printf "done"
 

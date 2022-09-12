@@ -106,3 +106,5 @@ kubectl create secret docker-registry radix-docker \
     kubectl apply -f -
 
 rm -f sp_credentials.json
+
+printf "\nDone\n"

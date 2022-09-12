@@ -125,10 +125,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
-
 
 #######################################################################################
 ### Delete service principal

@@ -87,9 +87,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 # Generate new secret for App Registration.
 printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\"..."

@@ -195,9 +195,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### CLUSTER?
@@ -329,7 +328,7 @@ printf "...Done.\n"
 ### INSTALLATION
 
 echo ""
-echo "Starting installation of Flux..."
+printf "Starting installation of Flux...\n"
 
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
@@ -341,12 +340,12 @@ flux bootstrap git \
     --silent
 if [[ "$?" != "0" ]]
 then
-  printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+  printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
   rm "$FLUX_PRIVATE_KEY_NAME"
   exit 1
 else
   rm "$FLUX_PRIVATE_KEY_NAME"
-  echo "done."
+  echo " Done."
 fi
 
 echo -e ""

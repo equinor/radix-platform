@@ -163,17 +163,15 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
-
 
 #######################################################################################
 ### Connect kubectl
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
@@ -190,7 +188,7 @@ verify_cluster_access
 ### Install cert-manager
 ###
 
-printf "\nCreating cert-manager namespace and secret for flux-chart..."
+printf "\nCreating cert-manager namespace and secret for flux-chart...\n"
 
 # Create the namespace for cert-manager
 kubectl create namespace cert-manager \
@@ -245,4 +243,4 @@ data:
 EOF
 
 echo ""
-echo "Bootstrapping of Cert-Manager done!"
+printf "Bootstrapping of Cert-Manager done!\n"

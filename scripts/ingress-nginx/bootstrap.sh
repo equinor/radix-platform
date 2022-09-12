@@ -152,9 +152,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### CLUSTER?
@@ -240,7 +239,7 @@ else
         --only-show-errors)
 
     if [[ ! ${IP_EXISTS} ]]; then
-        printf "Creating Public Ingress IP..."
+        printf "Creating Public Ingress IP... "
         SELECTED_INGRESS_IP_RAW_ADDRESS=$(az network public-ip create \
             --name "${CLUSTER_PIP_NAME}" \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
@@ -304,4 +303,4 @@ kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
 
 rm config
 
-echo "Done."
+printf "Done.\n"
