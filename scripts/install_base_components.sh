@@ -47,6 +47,7 @@
 #######################################################################################
 ### START
 ###
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
@@ -173,16 +174,15 @@ if [[ $USER_PROMPT == true ]]; then
       * ) echo "Please answer yes or no.";;
     esac
   done
+  echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### Connect kubectl
 ###
 
 # Exit if cluster does not exist
-printf "\nConnecting kubectl..."
+printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
   # Send message to stderr
   echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
@@ -193,11 +193,13 @@ printf "...Done.\n"
 #######################################################################################
 ### Verify cluster access
 ###
+
 verify_cluster_access
 
 #######################################################################################
 ### Create flux namespace
 ###
+
 if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
     printf "\nCreating flux-system namespace..."
     kubectl create namespace flux-system 2>&1 >/dev/null
@@ -211,10 +213,12 @@ fi
 echo ""
 kubectl apply --filename ./priority-classes/radixComponentPriorityClass.yaml
 wait
+echo ""
 
 #######################################################################################
 ### Install ingress-nginx
 ###
+
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/ingress-nginx/bootstrap.sh" "${normal}"
 (MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
 wait
@@ -222,6 +226,8 @@ wait
 #######################################################################################
 ### Install cert-manager
 ###
+
+echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/bootstrap.sh" "${normal}"
 (USER_PROMPT="false" ./cert-manager/bootstrap.sh)
 wait
@@ -233,20 +239,22 @@ wait
 echo "Creating storage classes"
 kubectl apply --filename manifests/storageclass-retain.yaml
 kubectl apply --filename manifests/storageclass-retain-nocache.yaml
+echo ""
 
 #######################################################################################
 ### Install grafana
 ###
+
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/grafana/bootstrap.sh" "${normal}"
-echo ""
 (USER_PROMPT="$USER_PROMPT" ./grafana/bootstrap.sh)
 wait
 
 #######################################################################################
 ### Install prerequisites for external-dns (flux handles the main installation)
 ###
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/external-dns-prerequisites/bootstrap.sh" "${normal}"
+
 echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/external-dns-prerequisites/bootstrap.sh" "${normal}"
 (./external-dns-prerequisites/bootstrap.sh)
 wait
 
@@ -260,12 +268,9 @@ kubectl label ns default purpose=radix-base-ns --overwrite
 
 echo ""
 echo "Start on radix platform shared configs and secrets..."
-
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-acr.sh" "${normal}"
 (./config-and-secrets/bootstrap-acr.sh)
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-snyk.sh" "${normal}"
-(USER_PROMPT="$USER_PROMPT" ./config-and-secrets/bootstrap-snyk.sh)
 wait
 
 echo "Done."

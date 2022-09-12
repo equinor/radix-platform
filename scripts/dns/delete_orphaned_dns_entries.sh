@@ -72,7 +72,7 @@ fi
 ### Prepare az session
 ###
 
-printf "Logging you in to Azure if not already logged in... "
+printf "\nLogging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
@@ -95,6 +95,8 @@ echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name
 echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
+echo ""
+
 if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
@@ -111,7 +113,6 @@ CLUSTERS="$(az aks list --subscription ${AZ_SUBSCRIPTION_ID} | jq --raw-output -
 printf " Done.\n"
 
 printf "Get TXT records..."
-
 
 TXT_RECORD_LIST=$(az network dns record-set txt list \
     --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
@@ -150,7 +151,6 @@ wait
 unset IFS
 
 echo "Deleted TXT-records not bound to a cluster."
-
 
 EXCLUDE_LIST=(
     "@"

@@ -100,7 +100,7 @@ function getSecret() {
 }
 
 function getAppEnvironments() {
-    printf "Waiting for enviroment %shttps://server-radix-api-prod.%s/api/v1/applications/radix-networkpolicy-canary/environments %s\n" "${yel}" "${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "${normal}"
+    printf "Waiting for enviroment %shttps://server-radix-api-prod.%s/api/v1/applications/radix-networkpolicy-canary/environments %s" "${yel}" "${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "${normal}"
     while [[ -z "$APP_ENVIRONMENTS" ]]; do
         printf "."
         sleep 5
@@ -121,7 +121,7 @@ function updateSecret() {
     secret_name=$2
     secret_value=$3
     radix_component=$4
-    printf "Updating ${secret_name} for environment ${app_env} in ${radix_component} component \n"
+    printf "Updating ${secret_name} for environment ${app_env} in ${radix_component} component..."
     API_REQUEST=$(curl \
          --silent \
          -X PUT \
@@ -134,7 +134,7 @@ function updateSecret() {
         echo -e "\nERROR: API request failed."  >&2
         return 1
     fi
-    printf "Secret updated\n"
+    printf " Secret updated\n"
 }
 
 function resetAppRegistrationPassword() {

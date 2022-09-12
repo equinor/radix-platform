@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "sku": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Cache/Redis",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('name')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "redisVersion": "4.0",
+                "sku": {
+                    "name": "[parameters('sku')]",
+                    "family": "C",
+                    "capacity": 1
+                },
+                "enableNonSslPort": false,
+                "publicNetworkAccess": "Enabled",
+                "tenantSettings": {},
+                "redisConfiguration": {
+                    "maxmemory-reserved": "125",
+                    "maxfragmentationmemory-reserved": "125",
+                    "maxmemory-delta": "125"
+                }
+            }
+        }
+    ]
+}

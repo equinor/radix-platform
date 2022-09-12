@@ -482,9 +482,8 @@ if [ $USER_PROMPT == true ]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### Deploy apps
@@ -755,6 +754,8 @@ fi
 # Update replyUrl for web-console
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
+WEB_REDIRECT_URI="/application"
+WEB_COMPONENT="web"
 RADIX_WEB_CONSOLE_ENV="prod"
 if [ "${CLUSTER_TYPE}"  == "development" ]; then
     # Development cluster uses QA web-console
@@ -771,20 +772,20 @@ done
 
 echo "Ingress is ready, adding replyUrl for radix web-console..."
 
-(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="${WEB_CONSOLE_NAMESPACE}" K8S_INGRESS_NAME="${AUTH_PROXY_COMPONENT}" REPLY_PATH="${AUTH_PROXY_REPLY_PATH}" "${script_dir_path}/../../add_reply_url_for_cluster.sh")
+(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="${WEB_CONSOLE_NAMESPACE}" K8S_INGRESS_NAME="${AUTH_PROXY_COMPONENT}" REPLY_PATH="${AUTH_PROXY_REPLY_PATH}" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" "${script_dir_path}/../../add_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
 
 
 echo ""
 echo "For the web console to work we need to apply the secrets for the auth proxy"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" AUTH_PROXY_COMPONENT="${AUTH_PROXY_COMPONENT}" WEB_CONSOLE_NAMESPACE="${WEB_CONSOLE_NAMESPACE}" AUTH_PROXY_REPLY_PATH="${AUTH_PROXY_REPLY_PATH}" "${script_dir_path}/../../update_auth_proxy_secret_for_console.sh")
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" AUTH_PROXY_COMPONENT="${AUTH_PROXY_COMPONENT}" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="${WEB_CONSOLE_NAMESPACE}" AUTH_PROXY_REPLY_PATH="${AUTH_PROXY_REPLY_PATH}" "${script_dir_path}/../../update_auth_proxy_secret_for_console.sh")
 wait # wait for subshell to finish
 
 echo ""
 echo "For the web console to work we need to apply the secrets for the Redis Cache"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" AUTH_PROXY_COMPONENT="${AUTH_PROXY_COMPONENT}" CLUSTER_NAME="${CLUSTER_NAME}" RADIX_WEB_CONSOLE_ENV="qa" "${script_dir_path}/../../update_redis_cache_for_console.sh")
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" AUTH_PROXY_COMPONENT="${AUTH_PROXY_COMPONENT}" CLUSTER_NAME="${CLUSTER_NAME}" RADIX_WEB_CONSOLE_ENV="qa" "${script_dir_path}/../../redis/update_redis_cache_for_console.sh")
 wait # wait for subshell to finish
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" AUTH_PROXY_COMPONENT="${AUTH_PROXY_COMPONENT}" CLUSTER_NAME="${CLUSTER_NAME}" RADIX_WEB_CONSOLE_ENV="prod" "${script_dir_path}/../../update_redis_cache_for_console.sh")
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" AUTH_PROXY_COMPONENT="${AUTH_PROXY_COMPONENT}" CLUSTER_NAME="${CLUSTER_NAME}" RADIX_WEB_CONSOLE_ENV="prod" "${script_dir_path}/../../redis/update_redis_cache_for_console.sh")
 wait # wait for subshell to finish
 
 echo ""

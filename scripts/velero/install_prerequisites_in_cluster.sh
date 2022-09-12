@@ -109,7 +109,7 @@ fi
 ###
 
 echo ""
-echo "Logging you in to Azure if not already logged in..."
+printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done."
@@ -154,9 +154,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### CLUSTER?

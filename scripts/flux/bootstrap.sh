@@ -130,6 +130,8 @@ if [[ -z "$FLUX_VERSION" ]]; then
     exit 1
 fi
 
+FLUX_LOCAL="$(flux version -ojson | jq -r .flux)"
+
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -174,6 +176,7 @@ echo -e "   -  GIT_REPO                         : $GIT_REPO"
 echo -e "   -  GIT_BRANCH                       : $GIT_BRANCH"
 echo -e "   -  GIT_DIR                          : $GIT_DIR"
 echo -e "   -  FLUX_VERSION                     : $FLUX_VERSION"
+echo -e "   -  FLUX_LOCAL                       : $FLUX_LOCAL"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -192,9 +195,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### CLUSTER?
@@ -326,9 +328,8 @@ printf "...Done.\n"
 ### INSTALLATION
 
 echo ""
-echo "Starting installation of Flux..."
+printf "Starting installation of Flux...\n"
 
-flux --version
 flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
     --url="$GIT_REPO" \
@@ -339,12 +340,12 @@ flux bootstrap git \
     --silent
 if [[ "$?" != "0" ]]
 then
-  printf "ERROR: flux bootstrap git failed. Exiting...\n" >&2
+  printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
   rm "$FLUX_PRIVATE_KEY_NAME"
   exit 1
 else
   rm "$FLUX_PRIVATE_KEY_NAME"
-  echo "done."
+  echo " Done."
 fi
 
 echo -e ""

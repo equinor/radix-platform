@@ -227,9 +227,8 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 #######################################################################################
 ### Set credentials
@@ -366,7 +365,7 @@ if [[ ! ${NSG_ID} ]]; then
         --query id \
         --output tsv \
         --only-show-errors)
-    printf "Done.\n"
+    printf " Done.\n"
 else
     echo "    NSG exists."
 fi
@@ -497,11 +496,9 @@ AKS_BASE_OPTIONS=(
     --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST"
     --vnet-subnet-id "$SUBNET_ID"
     --disable-local-accounts
+    --enable-addons azure-keyvault-secrets-provider
+    --enable-secret-rotation
 )
-#commented while investigating why secrets are not available for drivers
-#    --enable-addons azure-keyvault-secrets-provider
-#    --enable-secret-rotation
-
 
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     MIGRATION_STRATEGY_OPTIONS=(
@@ -574,7 +571,7 @@ printf "Done.\n"
 #######################################################################################
 ### Add GPU node pools
 ###
-echo "Adding GPU node pools to the cluster... "
+printf "Adding GPU node pools to the cluster... "
 
 az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -627,7 +624,7 @@ az aks nodepool add \
     --output none \
     --only-show-errors
 
-echo "Done."
+printf "Done."
 
 #######################################################################################
 ### END

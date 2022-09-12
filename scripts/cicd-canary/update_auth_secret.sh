@@ -87,15 +87,14 @@ if [[ $USER_PROMPT == true ]]; then
             * ) echo "Please answer yes or no.";;
         esac
     done
+    echo ""
 fi
-
-echo ""
 
 # Generate new secret for App Registration.
 printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\"..."
 APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NAME" | jq -r '.[].appId')
 
-UPDATED_PRIVATE_IMAGE_HUB_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --credential-description "rdx-cicd-canary" 2>/dev/null | jq -r '.password') # For some reason, description can not be too long.
+UPDATED_PRIVATE_IMAGE_HUB_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --display-name "rdx-cicd-canary" 2>/dev/null | jq -r '.password')
 if [[ -z "$UPDATED_PRIVATE_IMAGE_HUB_PASSWORD" ]]; then
     echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\". Exiting..." >&2
     exit 1
@@ -103,7 +102,7 @@ fi
 printf " Done.\n"
 
 # Get expiration date of updated credential
-EXPIRATION_DATE=$(az ad app credential list --id $APP_REGISTRATION_CLIENT_ID --query "[?customKeyIdentifier=='rdx-cicd-canary'].endDate" --output tsv | sed 's/\..*//')"Z"
+EXPIRATION_DATE=$(az ad app credential list --id $APP_REGISTRATION_CLIENT_ID --query "[?displayName=='rdx-cicd-canary'].endDateTime" --output tsv | sed 's/\..*//')""
 # Get the existing secret and change the value using jq.
 FIRST_KEYVAULT=${KEYVAULT_LIST%%,*}
 

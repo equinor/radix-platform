@@ -5,8 +5,7 @@
 ### PURPOSE
 ### 
 
-# Bootstrap radix service principals: create them and store credentials in az keyvault
-
+# Refresh credentials for Radix Web Console AAD app and store in keyvault
 
 #######################################################################################
 ### INPUTS
@@ -23,7 +22,7 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./refresh_web_console_app_credentials.sh
 
 
 #######################################################################################
@@ -31,7 +30,7 @@
 ### 
 
 echo ""
-echo "Start bootstrap radix service principals... "
+echo "Start refreshing credentials for Radix Web Console AAD app... "
 
 
 #######################################################################################
@@ -40,8 +39,7 @@ echo "Start bootstrap radix service principals... "
 
 printf "Check for neccesary executables for \"$(basename ${BASH_SOURCE[0]})\"... "
 hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+hash jq 2> /dev/null || { echo -e "\nERROR: jq not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
 
@@ -66,15 +64,7 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/lib_service_principal.sh"
-if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
-else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
-fi
-
+WEB_CONSOLE_DISPLAY_NAME=$(az ad app show --id "${OAUTH2_PROXY_CLIENT_ID}" --query displayName --output tsv) || exit
 
 #######################################################################################
 ### Prepare az session
@@ -85,28 +75,23 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-exit_if_user_does_not_have_required_ad_role
-
-
 
 #######################################################################################
 ### Verify task at hand
 ###
 
 echo -e ""
-echo -e "Bootstrap radix service principals will use the following configuration:"
+echo -e "Refresh credentials for Radix Web Console will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                               : $RADIX_ZONE"
-echo -e "   -  AZ_RADIX_ZONE_LOCATION                   : $AZ_RADIX_ZONE_LOCATION"
-echo -e "   -  RADIX_ENVIRONMENT                        : $RADIX_ENVIRONMENT"
+echo -e "   -  AZ_RESOURCE_KEYVAULT                     : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  VAULT_CLIENT_SECRET_NAME                 : $VAULT_CLIENT_SECRET_NAME"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
-echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-echo -e "   -  AZ_SYSTEM_USER_DNS                       : $AZ_SYSTEM_USER_DNS"
+echo -e "   -  Radix Web Console App Name               : $WEB_CONSOLE_DISPLAY_NAME"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -129,19 +114,32 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
-### Create service principal
+### Refresh credentials for Radix Web Console app in Azure AD and store in key vault
 ###
 
-create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
-create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
-create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
+printf "Generating new app secret for ${WEB_CONSOLE_DISPLAY_NAME} in Azure AD..."
 
+password="$(az ad app credential reset --id "${OAUTH2_PROXY_CLIENT_ID}" --display-name "web console" --append --query password --output tsv)"
+secret="$(az ad app credential list --id "${OAUTH2_PROXY_CLIENT_ID}" --query "sort_by([?displayName=='web console'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
+expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')" || exit
+
+printf "Update credentials for ${WEB_CONSOLE_DISPLAY_NAME} in keyvault ${AZ_RESOURCE_KEYVAULT}..."
+
+# Upload to keyvault
+az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${VAULT_CLIENT_SECRET_NAME}" --value "${password}" --expires "${expiration_date}" --output none || exit
+
+printf "Done.\n"
+
+
+#######################################################################################
+### Explain manual steps
+###
+
+echo ""
+echo ">> You must update credentials for Radix Web Console in clusters."
+echo ">> See Refresh Radix Web Console App Credentials in README."
 
 
 #######################################################################################
 ### END
 ###
-
-
-echo ""
-echo "Bootstrap of radix service principals done!"

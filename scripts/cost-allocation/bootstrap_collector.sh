@@ -159,11 +159,13 @@ echo -e "   -  AZ_SUBSCRIPTION                   : $(az account show --query nam
 echo -e "   -  AZ_USER                           : $(az account show --query user.name -o tsv)"
 echo -e ""
 
+echo ""
+
 if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) echo ""; break;;
+            [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 1;;
             * ) echo "Please answer yes or no.";;
         esac
@@ -173,6 +175,8 @@ fi
 #######################################################################################
 ### CLUSTER?
 ###
+
+printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
 kubectl_context="$(kubectl config current-context)"
 if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then

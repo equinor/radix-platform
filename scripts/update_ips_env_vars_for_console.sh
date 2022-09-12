@@ -46,6 +46,7 @@ fi
 EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
 INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_INGRESS_IPS"
 
+echo ""
 echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" environment variables for Radix Web Console"
 
 # Source util scripts
@@ -109,31 +110,42 @@ function updateIpsEnvVars() {
     done
     printf " Done.\n"
 
+    MAX_TRIES=15
+    try_nr=0
     printf "Sending PATCH request to Radix API..."
-    API_REQUEST=$(curl -s -X PATCH "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
+    RADIX_API_FQDN="server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
+    while true; do
+        API_REQUEST=$(curl -s -X PATCH "https://${RADIX_API_FQDN}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
         -H "accept: application/json" \
         -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
         -H "Content-Type: application/json" \
         -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
 
-    if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
-        echo -e "\nERROR: API request failed." >&2
-        return
-    fi
-    printf " Done.\n"
-
-    echo "Web component env variable updated with Public IP Prefix IPs."
-    unset IP_LIST
+        if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
+            try_nr=$(($try_nr+1))
+            if [ "$try_nr" -lt $MAX_TRIES ]; then
+                sleep_seconds=$(($try_nr * 4))
+                echo -e "\nERROR: Patch request to ${RADIX_API_FQDN} failed. Sleeping ${sleep_seconds} seconds and retrying..." >&2
+                sleep $sleep_seconds
+                continue
+            else
+                echo -e "\nERROR: Patch request to ${RADIX_API_FQDN} failed. Out of retries, exiting." >&2
+                return 1
+            fi
+        fi
+        printf " Done.\n"
+        echo "Web component env variable updated with Public IP Prefix IPs."
+        unset IP_LIST
+        break
+    done
 }
 
-
 ### MAIN
-updateIpsEnvVars "${EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_OUTBOUND_NAME}"
-
-updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAME}"
+updateIpsEnvVars "${EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_OUTBOUND_NAME}" || exit 1
+updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAME}" || exit 1
 
 # Restart deployment for web component
-printf "Restarting web deployment..."
+printf "Restarting web deployment...\n"
 kubectl rollout restart deployment -n radix-web-console-"${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}"
 
 echo "Done."
