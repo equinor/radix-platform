@@ -369,6 +369,30 @@ printf "Point to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
+
+if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
+    package="tmux"
+    checkpackage=$( dpkg -s ${package} /dev/null 2>&1 | grep Status: )
+    if [[ -n ${checkpackage} ]]; then
+        tmux new -s flux -d 'watch "kubectl get ks -A"' \; split-window -v 'watch "kubectl get hr -A"'
+        echo "Please open a new terminal window, and run following command:"
+        echo ""
+        echo "tmux a -t flux"
+        echo ""
+        echo "Hit space after every kustomizations and helmreleases is in 'Ready' state."
+        echo "(Tip: You migt need to open another terminal windows to do flux reconcile commands etc...)"
+        read -r -s -d ' '
+        tmux kill-session -t flux
+    else
+        echo "Optional: Please do 'sudo apt install ${package}' for instruction how to monitor Flux kustomizations and helmreleases before you run the migration script next time......"
+        echo "You can run it manually now in seperate terminal windows:"
+        echo "watch \"kubectl get ks -A\""
+        echo "watch \"kubectl get hr -A\""
+    fi
+
+fi
+
+
 # Wait for prometheus to be deployed from flux
 echo ""
 printf "Wait for prometheus to be deployed by flux-operator..."
@@ -380,7 +404,7 @@ printf " Done.\n"
 
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$PROMETHEUS_CONFIGURATION_SCRIPT")
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${DEST_CLUSTER}" source "${PROMETHEUS_CONFIGURATION_SCRIPT}")
 wait
 
 # Wait for operator to be deployed from flux
@@ -469,6 +493,26 @@ spec:
   - azure
 EOF
 
+
+if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
+    package="tmux"
+    checkpackage=$( dpkg -s ${package} /dev/null 2>&1 | grep Status: )
+    if [[ -n ${checkpackage} ]]; then
+        tmux new -s velero -d 'watch "kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
+        echo "Please open a new terminal window, and run following command:"
+        echo ""
+        echo "tmux a -t velero"
+        echo ""
+        KILL_VELERO_WINDOWS=true
+    else
+        echo "Optional: Please do 'sudo apt install ${package}' for instruction how to monitor Velero restore in the migration script next time......"
+        echo "You can run it manually now:"
+        echo "watch \"kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems\""
+    fi
+
+fi
+
+
 if [[ $USER_PROMPT == true ]]; then
     echo ""
     echo "About to restore into destination cluster."
@@ -494,12 +538,18 @@ if [[ $ENABLE_NOTIFY == true ]]; then
     done
 fi
 
+
 echo ""
 printf "Restore into destination cluster...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
+
+if [[ $KILL_VELERO_WINDOWS == true ]]; then
+    tmux kill-session -t velero
+fi
+
 
 if [[ $ENABLE_NOTIFY == true ]]; then
     # Notify on slack
