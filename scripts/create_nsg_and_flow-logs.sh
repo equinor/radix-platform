@@ -39,23 +39,23 @@ printf "Done.\n"
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
+if [[ -z "${RADIX_ZONE_ENV}" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+    if [[ ! -f "${RADIX_ZONE_ENV}" ]]; then
+        echo "ERROR: RADIX_ZONE_ENV=${RADIX_ZONE_ENV} is invalid, the file does not exist." >&2
         exit 1
     fi
-    source "$RADIX_ZONE_ENV"
+    source "${RADIX_ZONE_ENV}"
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
+if [[ -z "${CLUSTER_NAME}" ]]; then
     echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
-if [[ -z "$MIGRATION_STRATEGY" ]]; then
+if [[ -z "${MIGRATION_STRATEGY}" ]]; then
     echo "ERROR: Please provide MIGRATION_STRATEGY" >&2
     exit 1
 fi
@@ -78,9 +78,9 @@ if [[ ! ${NSG_ID} ]]; then
     # Create network security group
     printf "Creating azure NSG %s..." "${NSG_NAME}"
     NSG_ID=$(az network nsg create \
-        --name "$NSG_NAME" \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
+        --name "${NSG_NAME}" \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --query id \
         --output tsv \
@@ -95,23 +95,23 @@ fi
 ###
 
 FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
-    --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+    --resource-group "${AZ_RESOURCE_GROUP_LOGS}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS'].name" \
+    --query "[?name=='${AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS}'].name" \
     --output tsv)
 
-FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
+FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}/providers/Microsoft.Storage/storageAccounts/${AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS}"
 
 # Check if storage account exist
-if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
+if [ ! "${FLOW_LOGS_STORAGEACCOUNT_EXIST}" ]; then
     printf "Flow logs storage account does not exists.\n"
-    printf "Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
+    printf "Creating storage account %s" "${AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS}"
         az storage account create \
-        --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
-        --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+        --name "${AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS}" \
+        --resource-group "${AZ_RESOURCE_GROUP_LOGS}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
         --sku "Standard_LRS"
     printf "Done.\n"
 else
@@ -120,23 +120,23 @@ fi
 
 if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     NSG_FLOW_LOGS="$(az network nsg show \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --name "$NSG_NAME" | jq -r .flowLogs)" 
+        --name "${NSG_NAME}" | jq -r .flowLogs)" 
 
     # Check if NSG has assigned Flow log
     if [[ $NSG_FLOW_LOGS != "null" ]]; then
-        printf "There is an existing Flow Log on %s.\n" "$NSG_NAME"
+        printf "There is an existing Flow Log on %s.\n" "${NSG_NAME}"
     else
         # Create network watcher flow log and assign to NSG
         printf "Creating azure Flow-log %s... " "${NSG_NAME}-rule"
         az network watcher flow-log create \
             --name "${NSG_NAME}-flow-log" \
-            --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-            --nsg "$NSG_NAME" \
-            --location "$AZ_RADIX_ZONE_LOCATION" \
-            --storage-account "$FLOW_LOGS_STORAGEACCOUNT_ID" \
-            --subscription "$AZ_SUBSCRIPTION_ID" \
+            --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+            --nsg "${NSG_NAME}" \
+            --location "${AZ_RADIX_ZONE_LOCATION}" \
+            --storage-account "${FLOW_LOGS_STORAGEACCOUNT_ID}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
             --retention "90" \
             --enabled true \
             --output none
@@ -149,7 +149,7 @@ fi
 ###
 
 VNET_EXISTS=$(az network vnet list \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --query "[?name=='${VNET_NAME}'].id" \
     --output tsv \
@@ -158,25 +158,25 @@ VNET_EXISTS=$(az network vnet list \
 if [[ ! ${VNET_EXISTS} ]]; then
     printf "Creating azure VNET %s... " "${VNET_NAME}"
     az network vnet create \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$VNET_NAME" \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --name "${VNET_NAME}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --address-prefix "$VNET_ADDRESS_PREFIX" \
-        --subnet-name "$SUBNET_NAME" \
-        --subnet-prefix "$VNET_SUBNET_PREFIX" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --nsg "$NSG_NAME" \
+        --address-prefix "${VNET_ADDRESS_PREFIX}" \
+        --subnet-name "${SUBNET_NAME}" \
+        --subnet-prefix "${VNET_SUBNET_PREFIX}" \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --nsg "${NSG_NAME}" \
         --output none \
         --only-show-errors
     printf "Done.\n"
 else
     printf "Updating azure subnet %s... " "${SUBNET_NAME}"
     az network vnet subnet update \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$SUBNET_NAME" \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --name "${SUBNET_NAME}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --vnet-name "$VNET_NAME" \
-        --network-security-group "$NSG_NAME" \
+        --vnet-name "${VNET_NAME}" \
+        --network-security-group "${NSG_NAME}" \
         --output none \
         --only-show-errors
     printf "Done.\n"
@@ -187,14 +187,14 @@ fi
 ###
 
 if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
-    IPPRE_INGRESS_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+    IPPRE_INGRESS_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${AZ_IPPRE_INBOUND_NAME}"
     USED_INGRESS_IP=$(az network public-ip list \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup=='mc_clusters_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].{name:name, id:id, ipAddress:ipAddress}")
 
-    SELECTED_INGRESS_IP="$(echo "$USED_INGRESS_IP" | jq '.[0]')"
-    SELECTED_INGRESS_IP_ID=$(echo "$SELECTED_INGRESS_IP" | jq -r '.id')
-    SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show --ids "$SELECTED_INGRESS_IP_ID" --query ipAddress -o tsv)"
+    SELECTED_INGRESS_IP="$(echo "${USED_INGRESS_IP}" | jq '.[0]')"
+    SELECTED_INGRESS_IP_ID=$(echo "${SELECTED_INGRESS_IP}" | jq -r '.id')
+    SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show --ids "${SELECTED_INGRESS_IP_ID}" --query ipAddress -o tsv)"
 else
     # Create public ingress IP
     CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
