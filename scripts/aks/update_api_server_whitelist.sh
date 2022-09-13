@@ -126,121 +126,100 @@ fmt2="%-41s%-45s\n"
 #     checkpackage=$( dpkg -s libnet-ip-perl /dev/null 2>&1 | grep Status: )
 #     if [[ -n ${checkpackage} ]]; then
 # fi
-if [[ ${USER_PROMPT} == true ]]; then
-    while true; do
-        printf "\nCurrent k8s API whitelist server configuration:"
-        printf "\n"
-        printf "\n   > WHERE:"
-        printf "\n   ------------------------------------------------------------------"
-        printf "\n   -  RADIX_ZONE                       : %s" "${RADIX_ZONE}"
-        printf "\n   -  AZ_RADIX_ZONE_LOCATION           : %s" "${AZ_RADIX_ZONE_LOCATION}"
-        printf "\n   -  AZ_RESOURCE_KEYVAULT             : %s" "${AZ_RESOURCE_KEYVAULT}"
-        printf "\n   -  SECRET_NAME                      : %s" "${SECRET_NAME}"
-        printf "\n"
-        printf "\n   Please inspect and approve the listed network before your continue:"
-        printf "\n"
-        CURRENT_K8S_API_IP_WHITELIST=("{ \"whitelist\": [ ")
-        listandindex
-        CURRENT_K8S_API_IP_WHITELIST+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
 
+while true; do
+    printf "\nCurrent k8s API whitelist server configuration:"
+    printf "\n"
+    printf "\n   > WHERE:"
+    printf "\n   ------------------------------------------------------------------"
+    printf "\n   -  RADIX_ZONE                       : %s" "${RADIX_ZONE}"
+    printf "\n   -  AZ_RADIX_ZONE_LOCATION           : %s" "${AZ_RADIX_ZONE_LOCATION}"
+    printf "\n   -  AZ_RESOURCE_KEYVAULT             : %s" "${AZ_RESOURCE_KEYVAULT}"
+    printf "\n   -  SECRET_NAME                      : %s" "${SECRET_NAME}"
+    printf "\n"
+    printf "\n   Please inspect and approve the listed network before your continue:"
+    printf "\n"
+    CURRENT_K8S_API_IP_WHITELIST=("{ \"whitelist\": [ ")
+    listandindex
+    CURRENT_K8S_API_IP_WHITELIST+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
+    while true; do
+        printf "\n"
+        read -r -p "Is above list correct? (Y/n) " yn
+        case ${yn} in
+            [Yy]* ) whitelist_ok=true; break;;
+            [Nn]* ) whitelist_ok=false; break;;
+            * ) printf "\nPlease answer yes or no.\n";;
+        esac
+    done
+
+    if [[ ${whitelist_ok} == false ]]; then
         while true; do
             printf "\n"
-            read -r -p "Is above list correct? (Y/n) " yn
-            case ${yn} in
-                [Yy]* ) whitelist_ok=true; break;;
-                [Nn]* ) whitelist_ok=false; break;;
-                * ) printf "\nPlease answer yes or no.\n";;
+            read -r -p "Please press 'a' to add or 'd' to delete entry (a/d) " adc
+            case ${adc} in
+                [Aa]* ) addip=true; removeip=false; break;;
+                [Dd]* ) removeip=true; addip=false; break;;
+                [Cc]* ) break;;
+                * ) printf "\nPlease press 'a' or 'd' (Hit 'C' to cancel any updates).\n";;
             esac
         done
+    elif [[ ${whitelist_ok} == true ]] && [[ -z ${CLUSTER_NAME} ]]; then
+        printf "\nNothing to do...\n"
+        exit
+    fi
 
-        if [[ ${whitelist_ok} == false ]]; then
-            while true; do
-                printf "\n"
-                read -r -p "Please press 'a' to add or 'd' to delete entry (a/d) " adc
-                case ${adc} in
-                    [Aa]* ) addip=true; removeip=false; break;;
-                    [Dd]* ) removeip=true; addip=false; break;;
-                    [Cc]* ) break;;
-                    * ) printf "\nPlease press 'a' or 'd' (Hit 'C' to cancel any updates).\n";;
-                esac
-            done
-        elif [[ ${whitelist_ok} == true ]] && [[ -z ${CLUSTER_NAME} ]]; then
-            printf "\nNothing to do...\n"
-            exit
-        fi
+    if [[ ${addip} == true ]]; then
+        while [ -z "${new_location}" ]; do
+            printf "\nEnter location: "
+            read -r new_location
+        done
 
-        if [[ ${addip} == true ]]; then
-            while [ -z "${new_location}" ]; do
-                printf "\nEnter location: "
-                read -r new_location
-            done
+        while [ -z "${new_ip}" ]; do
+            printf "\nEnter ip address in x.x.x.x/y format: "
+            read -r new_ip
+        done
 
-            while [ -z "${new_ip}" ]; do
-                printf "\nEnter ip address in x.x.x.x/y format: "
-                read -r new_ip
-            done
+        printf "\nAdding location %s at %s... " "${new_location}" "${new_ip}"
+        CURRENT_K8S_API_IP_WHITELIST=("{ \"whitelist\": [ ")
+        addwhitelist
+        UPDATE_KEYVAULT=true
+        CURRENT_K8S_API_IP_WHITELIST+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
+        CURRENT_K8S_API_IP_WHITELIST+=(" ] }")
+        MASTER_K8S_API_IP_WHITELIST=$(jq <<< "${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
+        printf "Done.\n"
+    fi
 
-            printf "\nAdding location %s at %s... " "${new_location}" "${new_ip}"
-            CURRENT_K8S_API_IP_WHITELIST=("{ \"whitelist\": [ ")
-            addwhitelist
-            UPDATE_KEYVAULT=true
-            CURRENT_K8S_API_IP_WHITELIST+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
-            CURRENT_K8S_API_IP_WHITELIST+=(" ] }")
-            MASTER_K8S_API_IP_WHITELIST=$(jq <<< "${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
-            printf "Done.\n"
-        fi
+    if [[ ${removeip} == true ]]; then
+        printf "\nEnter location number of which you want to remove: "
 
-        if [[ ${removeip} == true ]]; then
-            printf "\nEnter location number of which you want to remove: "
+        while [ -z "${delete_ip}" ]; do
+            read -r delete_ip
+        done
 
-            while [ -z "${delete_ip}" ]; do
-                read -r delete_ip
-            done
+        MASTER_K8S_API_IP_WHITELIST=$(jq <<< "${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq "del(.whitelist [] | select(.id == \"${delete_ip}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
+        UPDATE_KEYVAULT=true
+    fi
 
-            MASTER_K8S_API_IP_WHITELIST=$(jq <<< "${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq "del(.whitelist [] | select(.id == \"${delete_ip}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
-            UPDATE_KEYVAULT=true
-        fi
-
-        if [[ ${whitelist_ok} == true ]]; then
+    if [[ ${whitelist_ok} == true ]]; then
+        break
+    else
+        printf "\n"
+        while true; do
+            read -r -p "Are you finished with list and update Azure? (Y/n) " yn
+            case ${yn} in
+                [Yy]* ) finished_ok=true;break;;
+                [Nn]* ) whitelist_ok=false;unset delete_ip;unset new_location;unset new_ip; break;;
+                * ) printf "\nPlease answer yes or no.";;
+            esac
+        done
+        if [[ ${finished_ok} == true ]]; then
             break
-        else
-            printf "\n"
-            while true; do
-                read -r -p "Are you finished with list and update Azure? (Y/n) " yn
-                case ${yn} in
-                    [Yy]* ) break;;
-                    #[Nn]* ) whitelist_ok=false; break;;
-                    * ) printf "\nPlease answer yes or no.";;
-                esac
-            done
         fi
-    done
-fi
+        
+    fi
+done
 
 MASTER_K8S_API_IP_WHITELIST_BASE64=$(jq <<< "${MASTER_K8S_API_IP_WHITELIST[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64) 
-
-#######################################################################################
-### Verify task at hand
-###
-
-printf "\nUpdate k8s API server whitelist will use the following configuration:"
-printf "\n"
-printf "\n   > WHERE:"
-printf "\n   ------------------------------------------------------------------"
-printf "\n   -  RADIX_ZONE                       : %s" "${RADIX_ZONE}"
-printf "\n   -  AZ_RADIX_ZONE_LOCATION           : %s" "${AZ_RADIX_ZONE_LOCATION}"
-printf "\n   -  AZ_RESOURCE_KEYVAULT             : %s" "${AZ_RESOURCE_KEYVAULT}"
-printf "\n   -  SECRET_NAME                      : %s" "${SECRET_NAME}"
-printf "\n"
-printf "\n   > WHAT:"
-printf "\n   -------------------------------------------------------------------"
-printf "\n"
-listwhitelist
-printf "\n   > WHO:"
-printf "\n   -------------------------------------------------------------------"
-printf "\n   -  AZ_SUBSCRIPTION                  : %s" "$(az account show --query name -otsv)"
-printf "\n   -  AZ_USER                          : %s" "$(az account show --query user.name -o tsv)"
-printf "\n"
 
 #######################################################################################
 ### Get list of IPs
@@ -270,26 +249,12 @@ if [[ -n ${CLUSTER_NAME} ]]; then
     # Check if cluster exists
     printf "\nUpdate cluster \"%s\".\n" "${CLUSTER_NAME}"
     if [[ -n "$(az aks list --query "[?name=='${CLUSTER_NAME}'].name" --subscription "${AZ_SUBSCRIPTION_ID}" -otsv)" ]]; then
-        if [[ ${USER_PROMPT} == true ]]; then
-            printf "\n"
-            printf "This will update \"%s\" with \"%s\"\n" "${CLUSTER_NAME}" "${K8S_API_IP_WHITELIST}"
-            while true; do
-                printf "\n"
-                read -r -p "Is this correct? (Y/n) " yn
-                case ${yn} in
-                    [Yy]* ) break;;
-                    [Nn]* ) printf "\nQuitting...\n"; exit 0;;
-                    * ) printf "\nPlease answer yes or no.\n";;
-                esac
-            done
-        fi
-        # Update cluster
         printf "\nUpdating cluster with whitelist IPs...\n"
         if [[ $(az aks update --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${CLUSTER_NAME}" --api-server-authorized-ip-ranges "${K8S_API_IP_WHITELIST}") == *"ERROR"* ]]; then
             printf "ERROR: Could not update cluster. Quitting...\n" >&2
             exit 1
         fi
-        printf "Done.\n"
+        printf "\nDone.\n"
     else
         printf "\nERROR: Could not find the cluster. Make sure you have access to it." >&2
         exit 1
