@@ -4,7 +4,7 @@
 ### PURPOSE
 ###
 
-# Add NSG and Flow-log
+# Add network security group and flow log
 
 #######################################################################################
 ### INPUTS
@@ -19,7 +19,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="sondre-dev" MIGRATION_STRATEGY=at ./create_nsg_and_flow-logs.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" MIGRATION_STRATEGY=at ./create_nsg_and_flow-logs.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -190,11 +190,12 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     IPPRE_INGRESS_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${AZ_IPPRE_INBOUND_NAME}"
     USED_INGRESS_IP=$(az network public-ip list \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup=='mc_clusters_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].{name:name, id:id, ipAddress:ipAddress}")
-
+        --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup=='mc_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].{name:name, id:id, ipAddress:ipAddress}")
     SELECTED_INGRESS_IP="$(echo "${USED_INGRESS_IP}" | jq '.[0]')"
     SELECTED_INGRESS_IP_ID=$(echo "${SELECTED_INGRESS_IP}" | jq -r '.id')
-    SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show --ids "${SELECTED_INGRESS_IP_ID}" --query ipAddress -o tsv)"
+    SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show \
+        --ids "${SELECTED_INGRESS_IP_ID}" \
+        --query ipAddress -o tsv)"
 else
     # Create public ingress IP
     CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
