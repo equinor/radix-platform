@@ -163,11 +163,6 @@ else
     echo "Unknown parameter"
 fi
 
-#######################################################################################
-### Get api server whitelist
-###
-
-(USER_PROMPT=false CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
 
 #######################################################################################
 ### Verify task at hand
@@ -618,6 +613,12 @@ fi
 
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
+#######################################################################################
+### Get api server whitelist
+###
+
+(USER_PROMPT=false CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
+
 echo "Done."
 
 #######################################################################################
@@ -706,6 +707,7 @@ az aks nodepool add \
     --no-wait \
     --output none \
     --only-show-errors
+
 
 printf "Done."
 

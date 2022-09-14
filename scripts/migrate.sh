@@ -408,6 +408,7 @@ if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
         echo "watch \"kubectl get ks -A\""
         echo "watch \"kubectl get hr -A\""
     fi
+
 fi
 
 # Wait for prometheus to be deployed from flux
@@ -421,7 +422,7 @@ printf " Done.\n"
 
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="$USER_PROMPT" CLUSTER_NAME="$DEST_CLUSTER" source "$PROMETHEUS_CONFIGURATION_SCRIPT")
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${DEST_CLUSTER}" source "${PROMETHEUS_CONFIGURATION_SCRIPT}")
 wait
 
 # Wait for operator to be deployed from flux
