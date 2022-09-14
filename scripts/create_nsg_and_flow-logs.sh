@@ -106,7 +106,7 @@ FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups
 if [ ! "${FLOW_LOGS_STORAGEACCOUNT_EXIST}" ]; then
     printf "Flow logs storage account does not exists.\n"
     printf "Creating storage account %s" "${AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS}"
-        az storage account create \
+    az storage account create \
         --name "${AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS}" \
         --resource-group "${AZ_RESOURCE_GROUP_LOGS}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
@@ -122,7 +122,7 @@ if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     NSG_FLOW_LOGS="$(az network nsg show \
         --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --name "${NSG_NAME}" | jq -r .flowLogs)" 
+        --name "${NSG_NAME}" | jq -r .flowLogs)"
 
     # Check if NSG has assigned Flow log
     if [[ $NSG_FLOW_LOGS != "null" ]]; then
@@ -218,7 +218,10 @@ else
             --tier Regional \
             --query "publicIp.ipAddress" \
             --output tsv \
-            --only-show-errors) || { echo "ERROR: Could not create Public IP. Quitting..." >&2; exit 1; }
+            --only-show-errors) || {
+            echo "ERROR: Could not create Public IP. Quitting..." >&2
+            exit 1
+        }
         printf "Done.\n"
     else
         SELECTED_INGRESS_IP_RAW_ADDRESS="${IP_EXISTS}"
