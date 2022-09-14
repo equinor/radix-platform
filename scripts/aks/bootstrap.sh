@@ -141,7 +141,6 @@ function getAddressSpaceForVNET() {
     done
 }
 
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -161,7 +160,7 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
     VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
 
 #######################################################################################
@@ -222,9 +221,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -246,12 +249,12 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
         --name "$MI_AKS" \
         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
         --query 'id' \
-        --output tsv 2> /dev/null)"
+        --output tsv 2>/dev/null)"
     ID_AKSKUBELET="$(az identity show \
         --name "$MI_AKSKUBELET" \
         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
         --query 'id' \
-        --output tsv 2> /dev/null)"
+        --output tsv 2>/dev/null)"
     ACR_ID="$(az acr show \
         --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
@@ -339,9 +342,17 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         while true; do
             read -r -p "Is this correct? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                echo "Sounds good, continuing."
+                break
+                ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -350,7 +361,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Create the comma separated string of egress ip resource ids to pass in as --load-balancer-outbound-ips for aks
     while read -r line; do
         EGRESS_IP_ID_LIST+="${line},"
-    done <<< "$(echo ${SELECTED_EGRESS_IPS} | jq -r '.[].id')"
+    done <<<"$(echo ${SELECTED_EGRESS_IPS} | jq -r '.[].id')"
     EGRESS_IP_ID_LIST=${EGRESS_IP_ID_LIST%,} # Remove trailing comma
 fi
 
@@ -398,7 +409,7 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     printf "Flow logs storage account does not exists.\n"
 
     printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
-        az storage account create \
+    az storage account create \
         --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
         --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
@@ -580,7 +591,7 @@ elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
         --max-count "$MAX_COUNT"
     )
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
@@ -602,7 +613,7 @@ elif [[ "$CLUSTER_TYPE" = "classicprod" ]]; then
         --vnet-subnet-id "/subscriptions/7790e999-c11c-4f0b-bfdf-bc2fd5c38e91/resourceGroups/S340-NE-network/providers/Microsoft.Network/virtualNetworks/S340-NE-vnet"
     )
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
 
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
@@ -619,13 +630,13 @@ if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
         --name "${CLUSTER_NAME}"-lock \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --resource-type Microsoft.ContainerService/managedClusters \
-        --resource "$CLUSTER_NAME"  &>/dev/null
+        --resource "$CLUSTER_NAME" &>/dev/null
 
     az lock create --lock-type CanNotDelete \
         --name "${VNET_NAME}"-lock \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --resource-type Microsoft.Network/virtualNetworks \
-        --resource "$VNET_NAME"  &>/dev/null
+        --resource "$VNET_NAME" &>/dev/null
 fi
 
 #######################################################################################

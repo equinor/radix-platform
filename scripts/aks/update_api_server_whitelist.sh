@@ -85,7 +85,7 @@ printf "Done.\n"
 
 function listandindex() {
     j=0
-    
+
     printf "${fmt}" "    #" "Location" "IP"
     while read -r i; do
         LOCATION=$(jq -n "${i}" | jq -r .location)
@@ -146,9 +146,15 @@ while true; do
         printf "\n"
         read -r -p "Is above list correct? (Y/n) " yn
         case ${yn} in
-            [Yy]* ) whitelist_ok=true; break;;
-            [Nn]* ) whitelist_ok=false; break;;
-            * ) printf "\nPlease answer yes or no.\n";;
+        [Yy]*)
+            whitelist_ok=true
+            break
+            ;;
+        [Nn]*)
+            whitelist_ok=false
+            break
+            ;;
+        *) printf "\nPlease answer yes or no.\n" ;;
         esac
     done
 
@@ -157,10 +163,18 @@ while true; do
             printf "\n"
             read -r -p "Please press 'a' to add or 'd' to delete entry (a/d) " adc
             case ${adc} in
-                [Aa]* ) addip=true; removeip=false; break;;
-                [Dd]* ) removeip=true; addip=false; break;;
-                [Cc]* ) break;;
-                * ) printf "\nPlease press 'a' or 'd' (Hit 'C' to cancel any updates).\n";;
+            [Aa]*)
+                addip=true
+                removeip=false
+                break
+                ;;
+            [Dd]*)
+                removeip=true
+                addip=false
+                break
+                ;;
+            [Cc]*) break ;;
+            *) printf "\nPlease press 'a' or 'd' (Hit 'C' to cancel any updates).\n" ;;
             esac
         done
     elif [[ ${whitelist_ok} == true ]] && [[ -z ${CLUSTER_NAME} ]]; then
@@ -185,7 +199,7 @@ while true; do
         UPDATE_KEYVAULT=true
         CURRENT_K8S_API_IP_WHITELIST+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
         CURRENT_K8S_API_IP_WHITELIST+=(" ] }")
-        MASTER_K8S_API_IP_WHITELIST=$(jq <<< "${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
+        MASTER_K8S_API_IP_WHITELIST=$(jq <<<"${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
         printf "Done.\n"
     fi
 
@@ -196,7 +210,7 @@ while true; do
             read -r delete_ip
         done
 
-        MASTER_K8S_API_IP_WHITELIST=$(jq <<< "${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq "del(.whitelist [] | select(.id == \"${delete_ip}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
+        MASTER_K8S_API_IP_WHITELIST=$(jq <<<"${CURRENT_K8S_API_IP_WHITELIST[@]}" | jq '.' | jq "del(.whitelist [] | select(.id == \"${delete_ip}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
         UPDATE_KEYVAULT=true
     fi
 
@@ -207,31 +221,40 @@ while true; do
         while true; do
             read -r -p "Are you finished with list and update Azure? (Y/n) " yn
             case ${yn} in
-                [Yy]* ) finished_ok=true;break;;
-                [Nn]* ) whitelist_ok=false;unset delete_ip;unset new_location;unset new_ip; break;;
-                * ) printf "\nPlease answer yes or no.";;
+            [Yy]*)
+                finished_ok=true
+                break
+                ;;
+            [Nn]*)
+                whitelist_ok=false
+                unset delete_ip
+                unset new_location
+                unset new_ip
+                break
+                ;;
+            *) printf "\nPlease answer yes or no." ;;
             esac
         done
         if [[ ${finished_ok} == true ]]; then
             break
         fi
-        
+
     fi
 done
 
-MASTER_K8S_API_IP_WHITELIST_BASE64=$(jq <<< "${MASTER_K8S_API_IP_WHITELIST[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64) 
+MASTER_K8S_API_IP_WHITELIST_BASE64=$(jq <<<"${MASTER_K8S_API_IP_WHITELIST[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
 
 #######################################################################################
 ### Get list of IPs
 ###
 
-K8S_API_IP_WHITELIST=$(jq <<< "${MASTER_K8S_API_IP_WHITELIST[@]}" | jq -r '[.whitelist[].ip] | join(",")') 
+K8S_API_IP_WHITELIST=$(jq <<<"${MASTER_K8S_API_IP_WHITELIST[@]}" | jq -r '[.whitelist[].ip] | join(",")')
 
 #######################################################################################
 ### Update keyvault if input list
 ###
 
-if [[ ${UPDATE_KEYVAULT} == true ]];then
+if [[ ${UPDATE_KEYVAULT} == true ]]; then
     # Update keyvault
     printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
     if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${MASTER_K8S_API_IP_WHITELIST_BASE64}" 2>&1)" == *"ERROR"* ]]; then
