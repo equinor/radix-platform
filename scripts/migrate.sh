@@ -21,18 +21,19 @@
 #######################################################################################
 ### HOW TO USE
 ###
+
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
-#
+
 # or without log:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-01 DEST_CLUSTER=weekly-02 ./migrate.sh
 
-### DISASTER RECOVERY
-###
+# DISASTER RECOVERY:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
 ###
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
@@ -53,7 +54,6 @@ if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
     printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
     exit 1
 fi
-
 
 hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
@@ -76,8 +76,8 @@ hash jq 2>/dev/null || {
     exit 1
 }
 hash htpasswd 2>/dev/null || {
-  echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
-  exit 1
+    echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
+    exit 1
 }
 hash flux 2>/dev/null || {
     echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
@@ -160,7 +160,6 @@ if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
     echo "ERROR: The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
 fi
 
-
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
@@ -169,50 +168,50 @@ fi
 
 ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/add_reply_url_for_cluster.sh"
 if ! [[ -x "$ADD_REPLY_URL_SCRIPT" ]]; then
-  # Print to stderror
-  echo "ERROR: The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2
+    # Print to stderror
+    echo "ERROR: The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2
 fi
 
 WEB_CONSOLE_EGRESS_IP_SCRIPT="$WORKDIR_PATH/update_ips_env_vars_for_console.sh"
 if ! [[ -x "$WEB_CONSOLE_EGRESS_IP_SCRIPT" ]]; then
-  # Print to stderror
-  echo "ERROR: The web console egress ip script is not found or it is not executable in path $WEB_CONSOLE_EGRESS_IP_SCRIPT" >&2
+    # Print to stderror
+    echo "ERROR: The web console egress ip script is not found or it is not executable in path $WEB_CONSOLE_EGRESS_IP_SCRIPT" >&2
 fi
 
 MOVE_CUSTOM_INGRESSES_SCRIPT="$WORKDIR_PATH/move_custom_ingresses.sh"
 if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
-  # Print to stderror
-  echo "ERROR: The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
+    # Print to stderror
+    echo "ERROR: The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
 fi
 
 UPDATE_AUTH_PROXY_SECRET_SCRIPT="$WORKDIR_PATH/update_auth_proxy_secret_for_console.sh"
 if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
-  # Print to stderror
-  echo "ERROR: The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
+    # Print to stderror
+    echo "ERROR: The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
 fi
 
 UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT="$WORKDIR_PATH/cicd-canary/update_secret_for_networkpolicy_canary.sh"
 if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
-  # Print to stderror
-  echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
+    # Print to stderror
+    echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
 fi
 
 CREATE_REDIS_CACHE_SCRIPT="$WORKDIR_PATH/redis/create_redis_cache_for_console.sh"
 if ! [[ -x "$CREATE_REDIS_CACHE_SCRIPT" ]]; then
-  # Print to stderror
-  echo "ERROR: The create redis cache script is not found or it is not executable in path $CREATE_REDIS_CACHE_SCRIPT" >&2
+    # Print to stderror
+    echo "ERROR: The create redis cache script is not found or it is not executable in path $CREATE_REDIS_CACHE_SCRIPT" >&2
 fi
 
 UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/redis/update_redis_cache_for_console.sh"
 if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
-  # Print to stderror
-  echo "ERROR: The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
+    # Print to stderror
+    echo "ERROR: The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
 fi
 
 CHECK_KEYVAULT_SECRETS="$WORKDIR_PATH/check_keyvault_secrets.sh"
 if ! [[ -x "$CHECK_KEYVAULT_SECRETS" ]]; then
-  # Print to stderror
-  echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_KEYVAULT_SECRETS" >&2
+    # Print to stderror
+    echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_KEYVAULT_SECRETS" >&2
 fi
 
 #######################################################################################
@@ -222,9 +221,15 @@ fi
 while true; do
     read -r -e -p "Are you migrating active to active or active to test? (aa/at) " -i "at" yn
     case $yn in
-        "aa" ) MIGRATION_STRATEGY="aa"; break;;
-        "at" ) MIGRATION_STRATEGY="at"; break;;
-        * ) echo "Please answer aa or at.";;
+    "aa")
+        MIGRATION_STRATEGY="aa"
+        break
+        ;;
+    "at")
+        MIGRATION_STRATEGY="at"
+        break
+        ;;
+    *) echo "Please answer aa or at." ;;
     esac
 done
 
@@ -270,9 +275,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -283,11 +292,14 @@ fi
 ### Connect kubectl
 ###
 
-if [[ ${BACKUP_NAME} == "migration-"* ]];then
-# Exit if source cluster does not exist
+if [[ ${BACKUP_NAME} == "migration-"* ]]; then
+    # Exit if source cluster does not exist
     echo ""
-    echo "Verifying source cluster existence..."    
-    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" || { echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2; exit 1; }
+    echo "Verifying source cluster existence..."
+    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" || {
+        echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
+        exit 1
+    }
     echo ""
 fi
 
@@ -296,9 +308,12 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Create Redis Caches for Console? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) create_redis_cache=false; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            create_redis_cache=false
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -324,9 +339,12 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
         while true; do
             read -r -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) echo "Aborting..."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*) break ;;
+            [Nn]*)
+                echo "Aborting..."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -342,15 +360,17 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
 printf "Done creating cluster.\n"
 install_base_components=true
 
-
 if [[ $USER_PROMPT == true ]]; then
     echo ""
     while true; do
         read -r -p "Install base components? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) install_base_components=false; break;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            install_base_components=false
+            break
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -369,10 +389,9 @@ printf "Point to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
-
 if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
     package="tmux"
-    checkpackage=$( dpkg -s ${package} /dev/null 2>&1 | grep Status: )
+    checkpackage=$(dpkg -s ${package} /dev/null 2>&1 | grep Status:)
     if [[ -n ${checkpackage} ]]; then
         tmux new -s flux -d 'watch "kubectl get ks -A"' \; split-window -v 'watch "kubectl get hr -A"'
         echo "Please open a new terminal window, and run following command:"
@@ -391,7 +410,6 @@ if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
     fi
 
 fi
-
 
 # Wait for prometheus to be deployed from flux
 echo ""
@@ -416,7 +434,6 @@ while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     sleep 5
 done
 printf " Done."
-
 
 # Wait for grafana to be deployed from flux
 echo ""
@@ -493,10 +510,9 @@ spec:
   - azure
 EOF
 
-
 if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
     package="tmux"
-    checkpackage=$( dpkg -s ${package} /dev/null 2>&1 | grep Status: )
+    checkpackage=$(dpkg -s ${package} /dev/null 2>&1 | grep Status:)
     if [[ -n ${checkpackage} ]]; then
         tmux new -s velero -d 'watch "kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
         echo "Please open a new terminal window, and run following command:"
@@ -512,16 +528,21 @@ if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
 
 fi
 
-
 if [[ $USER_PROMPT == true ]]; then
     echo ""
     echo "About to restore into destination cluster."
     while true; do
         read -r -p "Do you want to be notified once restoration has been completed? (Y/n) " yn
         case $yn in
-            [Yy]* ) ENABLE_NOTIFY=true; break;;
-            [Nn]* ) ENABLE_NOTIFY=false; break;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*)
+            ENABLE_NOTIFY=true
+            break
+            ;;
+        [Nn]*)
+            ENABLE_NOTIFY=false
+            break
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -531,13 +552,12 @@ if [[ $ENABLE_NOTIFY == true ]]; then
         read -r -p "Enter slack @ username(s). Example: \"@olmt, @ssmol, @omnia-radix\": " slack_users
         read -r -p "You have selected \"$slack_users\". Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo "";;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*) echo "" ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
-
 
 echo ""
 printf "Restore into destination cluster...\n"
@@ -550,7 +570,6 @@ if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
 fi
 
-
 if [[ $ENABLE_NOTIFY == true ]]; then
     # Notify on slack
     echo "Notify on slack"
@@ -561,7 +580,7 @@ fi
 
 # Define web console variables
 RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE  == "development" ]]; then
+if [[ $CLUSTER_TYPE == "development" ]]; then
     # Development cluster uses QA web-console
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
@@ -574,8 +593,8 @@ WEB_COMPONENT="web"
 # Update replyUrls for those radix apps that require AD authentication
 printf "\nWaiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
 while [[ "$(kubectl get ingress $AUTH_PROXY_COMPONENT --namespace $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
-  printf "."
-  sleep 5
+    printf "."
+    sleep 5
 done
 printf "\nIngress is ready, adding replyUrl for radix web-console...\n"
 
@@ -609,9 +628,12 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Update Redis Caches for Console? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) update_redis_cache=false; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            update_redis_cache=false
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -620,8 +642,8 @@ fi
 # Wait for redis caches to be created.
 printf "\nWaiting for redis caches to be created..."
 while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
-  printf "."
-  sleep 5
+    printf "."
+    sleep 5
 done
 printf " Done\n."
 
@@ -648,9 +670,12 @@ if [[ $USER_PROMPT == true && $MIGRATION_STRATEGY == "aa" ]]; then
     while true; do
         read -r -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) CUSTOM_INGRESSES=false; break;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            CUSTOM_INGRESSES=false
+            break
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
@@ -663,7 +688,7 @@ else
     printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
     printf "Update Auth proxy secret...\n"
     printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH"  source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
     wait # wait for subshell to finish
 fi
 

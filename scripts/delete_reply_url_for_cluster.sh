@@ -6,7 +6,7 @@
 
 # Example 1:
 # APP_REGISTRATION_ID="5687b237-eda3-4ec3-a2a1-023e85a2bd84" APP_REGISTRATION_OBJ_ID="eb9a6a59-d542-4e6d-b3f6-d5955d1b919a" REPLY_URL="https://auth-radix-web-console-qa.weekly-39-c.dev.radix.equinor.com/oauth2/callback" WEB_REDIRECT_URI="https://auth-radix-web-console-qa.weekly-39-c.dev.radix.equinor.com/application" ./delete_reply_url_for_cluster.sh
-# 
+#
 # Example 2: Using a subshell to avoid polluting parent shell
 # (APP_REGISTRATION_ID="f545deb5-f721-4d20-87cd-b046b5119d70" REPLY_URL="https://grafana.weekly-39-c.dev.radix.equinor.com/login/generic_oauth" source "./delete_reply_url_for_cluster.sh")
 
@@ -60,9 +60,12 @@ function deleteWebRedirectUris() {
             while true; do
                 read -r -p "Do you want to delete \"${REPLY_URL}\" from App Registration \"${APP_REGISTRATION_NAME}\"? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) echo ""; break;;
-                    [Nn]* ) exit;;
-                    * ) echo "Please answer yes or no.";;
+                [Yy]*)
+                    echo ""
+                    break
+                    ;;
+                [Nn]*) exit ;;
+                *) echo "Please answer yes or no." ;;
                 esac
             done
         fi
@@ -93,9 +96,12 @@ function deleteSpaRedirectUris() {
             while true; do
                 read -r -p "Do you want to delete \"${WEB_REDIRECT_URI}\" from App Registration \"${APP_REGISTRATION_NAME}\"? (Y/n) " yn
                 case $yn in
-                    [Yy]* ) echo ""; break;;
-                    [Nn]* ) exit;;
-                    * ) echo "Please answer yes or no.";;
+                [Yy]*)
+                    echo ""
+                    break
+                    ;;
+                [Nn]*) exit ;;
+                *) echo "Please answer yes or no." ;;
                 esac
             done
         fi
