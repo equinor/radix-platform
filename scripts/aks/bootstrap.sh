@@ -163,7 +163,6 @@ else
     echo "Unknown parameter"
 fi
 
-
 #######################################################################################
 ### Verify task at hand
 ###
@@ -707,7 +706,6 @@ az aks nodepool add \
     --no-wait \
     --output none \
     --only-show-errors
-
 
 printf "Done."
 
