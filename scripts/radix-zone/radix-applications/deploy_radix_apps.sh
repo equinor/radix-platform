@@ -754,7 +754,7 @@ fi
 # Update replyUrl for web-console
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-WEB_REDIRECT_URI="/application"
+WEB_REDIRECT_URI="/applications"
 WEB_COMPONENT="web"
 RADIX_WEB_CONSOLE_ENV="prod"
 if [ "${CLUSTER_TYPE}"  == "development" ]; then
