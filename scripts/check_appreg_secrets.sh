@@ -129,7 +129,7 @@ function compareDate() {
 ###
 
 echo -e ""
-echo -e "Check keyvault secrets will use the following configuration:"
+echo -e "Check App registrations secrets will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
