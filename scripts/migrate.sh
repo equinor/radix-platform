@@ -141,6 +141,7 @@ fi
 ###
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RADIX_ZONE_PATH="${WORKDIR_PATH}/radix-zone"
 
 BOOTSTRAP_AKS_SCRIPT="$WORKDIR_PATH/aks/bootstrap.sh"
 if ! [[ -x "$BOOTSTRAP_AKS_SCRIPT" ]]; then
@@ -692,11 +693,20 @@ else
     wait # wait for subshell to finish
 fi
 
-# Check keyvault secrets
-printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
-(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
-wait # wait for subshell to finish
-echo ""
+if [[ -d "${RADIX_ZONE_PATH}" ]]; then
+    for filename in "$RADIX_ZONE_PATH"/*.env; do
+        if [[ "${filename}" == *classic* || "${filename}" == *test* ]]; then continue; fi
+        RADIX_ZONE_ENV="${filename}"
+
+        # Check keyvault secrets
+        printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
+        (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
+        wait # wait for subshell to finish
+        echo ""
+    done
+else
+    printf "ERROR: The radix-zone path is not found\n" >&2
+fi
 
 printf "\n"
 printf "%sDone.%s\n" "${grn}" "${normal}"
