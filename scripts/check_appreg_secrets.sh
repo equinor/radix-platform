@@ -92,9 +92,6 @@ function check_applications() {
 }
 
 function list_secrets () {
-    SECRET_DISPLAY=$(jq -n "${i}" | jq -r .displayName)
-    SECRET_APPID=$(jq -n "${i}" | jq -r .appId)
-    
     while read -r i; do
         SECRET_NAME=$(jq -n "${i}" | jq -r .displayName)
         EXPIRES=$(jq -n "${i}" | jq -r .endDateTime)
