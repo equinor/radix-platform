@@ -215,6 +215,12 @@ if ! [[ -x "$CHECK_KEYVAULT_SECRETS" ]]; then
   echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_KEYVAULT_SECRETS" >&2
 fi
 
+CHECK_APPREG_SECRETS="$WORKDIR_PATH/check_appreg_secrets.sh"
+if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
+  # Print to stderror
+  echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
+fi
+
 #######################################################################################
 ### Check the migration strategy
 ###
@@ -670,6 +676,12 @@ fi
 # Check keyvault secrets
 printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
 (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
+wait # wait for subshell to finish
+echo ""
+
+# Check Appreg secrets
+printf "%s► Execute %s%s\n" "${grn}" "$CHECK_APPREG_SECRETS" "${normal}"
+(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_APPREG_SECRETS")
 wait # wait for subshell to finish
 echo ""
 
