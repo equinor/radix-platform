@@ -588,7 +588,7 @@ fi
 WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
 AUTH_PROXY_COMPONENT="auth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-WEB_REDIRECT_URI="/application"
+WEB_REDIRECT_URI="/applications"
 WEB_COMPONENT="web"
 
 # Update replyUrls for those radix apps that require AD authentication
