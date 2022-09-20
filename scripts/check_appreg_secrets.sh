@@ -115,7 +115,7 @@ function compareDate() {
             printf "${fmt}" "   ${DISPLAYNAME}" "${SECRET_NAME}" "${DIFFERANSE}"
         fi
         printf "${normal}"
-    elif [ "$DIFFERANSE" -le $YELLOW_WARNING_DAYS ];then
+    elif [ "$DIFFERANSE" -le $YELLOW_WARNING_DAYS ]; then
         printf "${yel}"
         if [[ ${SECRET_NAME} == null ]]; then
             printf "${fmt}" "   ${DISPLAYNAME}" "${KEYID}" "${DIFFERANSE}"
