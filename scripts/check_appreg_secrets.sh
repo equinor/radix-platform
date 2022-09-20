@@ -169,6 +169,7 @@ fi
 #######################################################################################
 ### Start
 ###
-AZAPP=$(az ad app list --show-mine --query "[].{appId: appId, displayName: displayName, passwordCredentials: passwordCredentials}" |  jq 'sort_by(.displayName | ascii_downcase)')
+
+AZAPP=$(az ad app list --show-mine --query "[].{appId: appId, displayName: displayName, passwordCredentials: passwordCredentials}" | jq 'sort_by(.displayName | ascii_downcase)')
 printf "${fmt2}" "   Display Name" "Description/Id" "Expires in:"
 check_applications
