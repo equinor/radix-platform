@@ -87,7 +87,6 @@ function check_applications() {
     while read -r i; do
         APPID=$(jq -n "${i}" | jq -r .appId)
         DISPLAYNAME=$(jq -n "${i}" | jq -r .displayName)
-        APPINFO=$(echo "$AZAPP" | jq '.[] | select(.appId=='\"${APPID}\"')')
         list_secrets
     done < <(printf "%s" "${AZAPP}" | jq -c '.[]')
 }
