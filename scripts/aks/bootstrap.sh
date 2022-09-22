@@ -564,6 +564,10 @@ AKS_BASE_OPTIONS=(
     --disable-local-accounts
     --enable-addons azure-keyvault-secrets-provider
     --enable-secret-rotation
+    --enable-cluster-autoscaler
+    --node-count "$NODE_COUNT"
+    --min-count "$MIN_COUNT"
+    --max-count "$MAX_COUNT"
 )
 
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
@@ -571,21 +575,6 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         --load-balancer-outbound-ips "$EGRESS_IP_ID_LIST"
         --load-balancer-outbound-ports "4000"
     )
-fi
-
-if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    AKS_ENV_OPTIONS=(
-        --node-count "$NODE_COUNT"
-    )
-elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
-    AKS_ENV_OPTIONS=(
-        --enable-cluster-autoscaler
-        --node-count "$NODE_COUNT"
-        --min-count "$MIN_COUNT"
-        --max-count "$MAX_COUNT"
-    )
-else
-    echo "Unknown parameter"
 fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
@@ -610,7 +599,7 @@ else
     echo "Unknown parameter"
 fi
 
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 #######################################################################################
 ### Get api server whitelist
@@ -660,7 +649,10 @@ az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc6sv3 \
+    --enable-cluster-autoscaler \
     --node-count 0 \
+    --min-count 0 \
+    --max-count 1 \
     --max-pods 110 \
     --node-vm-size Standard_NC6s_v3 \
     --labels sku=gpu gpu=nvidia-v100 gpu-count=1 radix-node-gpu=nvidia-v100 radix-node-gpu-count=1 \
@@ -677,7 +669,10 @@ az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc12sv3 \
+    --enable-cluster-autoscaler \
     --node-count 0 \
+    --min-count 0 \
+    --max-count 1 \
     --max-pods 110 \
     --node-vm-size Standard_NC12s_v3 \
     --labels sku=gpu gpu=nvidia-v100 gpu-count=2 radix-node-gpu=nvidia-v100 radix-node-gpu-count=2 \
@@ -694,7 +689,10 @@ az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc24sv3 \
+    --enable-cluster-autoscaler \
     --node-count 0 \
+    --min-count 0 \
+    --max-count 1 \
     --max-pods 110 \
     --node-vm-size Standard_NC24s_v3 \
     --labels sku=gpu gpu=nvidia-v100 gpu-count=4 radix-node-gpu=nvidia-v100 radix-node-gpu-count=4 \
