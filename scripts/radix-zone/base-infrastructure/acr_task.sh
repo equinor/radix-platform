@@ -116,6 +116,10 @@ echo -e "   --------------------------------------------------------------------
 echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY       : $AZ_RESOURCE_CONTAINER_REGISTRY"
 echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME            : $AZ_RESOURCE_ACR_TASK_NAME";
 echo -e "   -  AZ_RESOURCE_ACR_INTERNAL_TASK_NAME   : $AZ_RESOURCE_ACR_INTERNAL_TASK_NAME";
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME : $AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME";
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_NAME      : $AZ_RESOURCE_ACR_AGENT_POOL_NAME";
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TIER      : $AZ_RESOURCE_ACR_AGENT_POOL_TIER";
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_COUNT     : $AZ_RESOURCE_ACR_AGENT_POOL_COUNT";
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   --------------------------------------------------------------------------------"
@@ -137,6 +141,90 @@ if [[ $USER_PROMPT == true ]]; then
     done
     echo ""
 fi
+
+function agent_pool_exists() {
+    local AGENT_POOL_NAME="$1"
+    local ACR_NAME="$2"
+    az acr agentpool show --registry ${ACR_NAME} --name "${AGENT_POOL_NAME}"
+    return
+}
+
+function agent_pool_has_correct_tier() {
+    local AGENT_POOL_NAME="$1"
+    local ACR_NAME="$2"
+    tier=$(az acr agentpool show --registry ${ACR_NAME} --name "${AGENT_POOL_NAME}" | jq .tier --raw-output)
+    if [[ ${tier} == "${AGENT_POOL_TIER}" ]]
+    then
+      return 0
+    else
+      printf "Current agent pool has tier ${tier}, but desired new tier is ${AGENT_POOL_TIER}. Deleting and recreating agent pool..."
+      return 1
+    fi
+}
+
+function create_agent_pool() {
+    local AGENT_POOL_NAME="$1"
+    local ACR_NAME="$2"
+    local AGENT_POOL_TIER="$3"
+    local AGENT_POOL_COUNT="$4"
+
+    if agent_pool_exists "${AGENT_POOL_NAME}" "${ACR_NAME}"
+    then
+      if agent_pool_has_correct_tier "${AGENT_POOL_NAME}" "${ACR_NAME}" "${AGENT_POOL_TIER}"
+      then
+        printf "Updating ACR Task agent pool: ${AGENT_POOL_NAME}, tier ${AGENT_POOL_TIER}, count ${AGENT_POOL_COUNT}, in ACR: ${ACR_NAME}..."
+        az acr agentpool update \
+        --name $AGENT_POOL_NAME \
+        --registry $ACR_NAME \
+        --count $AGENT_POOL_COUNT
+        return
+      else
+        printf "Deleting ACR Task agent pool: ${AGENT_POOL_NAME} in ACR: ${ACR_NAME}..."
+      fi
+    fi
+
+    printf "Creating ACR Task agent pool: ${AGENT_POOL_NAME}, tier ${AGENT_POOL_TIER}, count ${AGENT_POOL_COUNT}, in ACR: ${ACR_NAME}..."
+    az acr agentpool create \
+        --name $AGENT_POOL_NAME \
+        --registry $ACR_NAME \
+        --tier $AGENT_POOL_TIER
+}
+
+function create_agentpool_acr_task() {
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    local AGENT_POOL_NAME="$3"
+    local TASK_YAML="task.yaml"
+    test -f "$TASK_YAML" && rm "$TASK_YAML"
+    cat <<EOF >>${TASK_YAML}
+version: v1.1.0
+stepTimeout: 3600
+steps:
+  - cmd: buildx create --use # start buildkit
+  - cmd: >-
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}}
+      --tag {{.Values.IMAGE}}
+      --tag {{.Values.CLUSTERTYPE_IMAGE}}
+      --tag {{.Values.CLUSTERNAME_IMAGE}}
+      --file {{.Values.DOCKER_FILE_NAME}}
+      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
+      .
+      {{.Values.BUILD_ARGS}}
+EOF
+    printf "Create ACR Task with agent pool: ${TASK_NAME} in ACR: ${ACR_NAME}..."
+    az acr task create \
+        --registry ${ACR_NAME} \
+        --agent-pool "${AGENT_POOL_NAME}" \
+        --name ${TASK_NAME} \
+        --context /dev/null \
+        --file ${TASK_YAML} \
+        --assign-identity [system] \
+        --auth-mode None \
+        --output none
+
+    rm "$TASK_YAML"
+    printf " Done.\n"
+}
 
 function create_internal_acr_task() {
     local TASK_NAME="$1"
@@ -307,6 +395,11 @@ add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGI
 create_internal_acr_task "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 create_role_assignment "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+
+create_agent_pool "${AZ_RESOURCE_ACR_AGENT_POOL_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${AZ_RESOURCE_ACR_AGENT_POOL_TIER}" "${AZ_RESOURCE_ACR_AGENT_POOL_COUNT}"
+create_agentpool_acr_task "${AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${AZ_RESOURCE_ACR_AGENT_POOL_NAME}"
+create_role_assignment "${AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+add_task_credential "${AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
 #run_task # Uncomment this line to test the task
 
