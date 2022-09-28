@@ -114,12 +114,12 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   --------------------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY       : $AZ_RESOURCE_CONTAINER_REGISTRY"
-echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME            : $AZ_RESOURCE_ACR_TASK_NAME";
-echo -e "   -  AZ_RESOURCE_ACR_INTERNAL_TASK_NAME   : $AZ_RESOURCE_ACR_INTERNAL_TASK_NAME";
-echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME : $AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME";
-echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_NAME      : $AZ_RESOURCE_ACR_AGENT_POOL_NAME";
-echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TIER      : $AZ_RESOURCE_ACR_AGENT_POOL_TIER";
-echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_COUNT     : $AZ_RESOURCE_ACR_AGENT_POOL_COUNT";
+echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME            : $AZ_RESOURCE_ACR_TASK_NAME"
+echo -e "   -  AZ_RESOURCE_ACR_INTERNAL_TASK_NAME   : $AZ_RESOURCE_ACR_INTERNAL_TASK_NAME"
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME : $AZ_RESOURCE_ACR_AGENT_POOL_TASK_NAME"
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_NAME      : $AZ_RESOURCE_ACR_AGENT_POOL_NAME"
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TIER      : $AZ_RESOURCE_ACR_AGENT_POOL_TIER"
+echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_COUNT     : $AZ_RESOURCE_ACR_AGENT_POOL_COUNT"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   --------------------------------------------------------------------------------"
