@@ -167,19 +167,17 @@ function create_agent_pool() {
     local AGENT_POOL_TIER="$3"
     local AGENT_POOL_COUNT="$4"
 
-    if agent_pool_exists "${AGENT_POOL_NAME}" "${ACR_NAME}"
-    then
-      if agent_pool_has_correct_tier "${AGENT_POOL_NAME}" "${ACR_NAME}" "${AGENT_POOL_TIER}"
-      then
-        printf "Updating ACR Task agent pool: ${AGENT_POOL_NAME}, tier ${AGENT_POOL_TIER}, count ${AGENT_POOL_COUNT}, in ACR: ${ACR_NAME}..."
-        az acr agentpool update \
-        --name $AGENT_POOL_NAME \
-        --registry $ACR_NAME \
-        --count $AGENT_POOL_COUNT
-        return
-      else
-        printf "Deleting ACR Task agent pool: ${AGENT_POOL_NAME} in ACR: ${ACR_NAME}..."
-      fi
+    if agent_pool_exists "${AGENT_POOL_NAME}" "${ACR_NAME}"; then
+        if agent_pool_has_correct_tier "${AGENT_POOL_NAME}" "${ACR_NAME}" "${AGENT_POOL_TIER}"; then
+            printf "Updating ACR Task agent pool: ${AGENT_POOL_NAME}, tier ${AGENT_POOL_TIER}, count ${AGENT_POOL_COUNT}, in ACR: ${ACR_NAME}..."
+            az acr agentpool update \
+                --name $AGENT_POOL_NAME \
+                --registry $ACR_NAME \
+                --count $AGENT_POOL_COUNT
+            return
+        else
+            printf "Deleting ACR Task agent pool: ${AGENT_POOL_NAME} in ACR: ${ACR_NAME}..."
+        fi
     fi
 
     printf "Creating ACR Task agent pool: ${AGENT_POOL_NAME}, tier ${AGENT_POOL_TIER}, count ${AGENT_POOL_COUNT}, in ACR: ${ACR_NAME}..."
