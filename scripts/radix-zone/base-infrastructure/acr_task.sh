@@ -153,12 +153,11 @@ function agent_pool_has_correct_tier() {
     local AGENT_POOL_NAME="$1"
     local ACR_NAME="$2"
     tier=$(az acr agentpool show --registry ${ACR_NAME} --name "${AGENT_POOL_NAME}" | jq .tier --raw-output)
-    if [[ ${tier} == "${AGENT_POOL_TIER}" ]]
-    then
-      return 0
+    if [[ ${tier} == "${AGENT_POOL_TIER}" ]]; then
+        return 0
     else
-      printf "Current agent pool has tier ${tier}, but desired new tier is ${AGENT_POOL_TIER}. Deleting and recreating agent pool..."
-      return 1
+        printf "Current agent pool has tier ${tier}, but desired new tier is ${AGENT_POOL_TIER}. Deleting and recreating agent pool..."
+        return 1
     fi
 }
 
