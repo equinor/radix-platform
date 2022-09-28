@@ -290,13 +290,10 @@ az network vnet subnet update \
     --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
 printf "Done.\n"
 
-
 kubectl create secret generic ingress-nginx-raw-ip --namespace ingress-nginx \
-            --from-literal=rawIp=$SELECTED_INGRESS_IP_RAW_ADDRESS \
-            --dry-run=client -o yaml |
-            kubectl apply -f -
-
-
+    --from-literal=rawIp=$SELECTED_INGRESS_IP_RAW_ADDRESS \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
 
 kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -

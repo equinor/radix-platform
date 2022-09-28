@@ -57,10 +57,10 @@ printf "Done.\n"
 
 # Exit if cluster does not exist
 printf "\nConnecting kubectl..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || { 
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 1        
+    exit 1
 }
 printf "...Done.\n"
 
@@ -108,7 +108,7 @@ function createARecord() {
 
 
 createARecord $CLUSTER_NAME $SELECTED_INGRESS_IP_RAW_ADDRESS || \
-  printf "ERROR: failed to create A record" >&2
+    printf "ERROR: failed to create A record" >&2
 
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     old_ip=$(az network dns record-set a show --name active-cluster --zone-name $AZ_RESOURCE_DNS --resource-group $AZ_RESOURCE_GROUP_COMMON | jq .aRecords[0].ipv4Address --raw-output)
@@ -147,5 +147,5 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     fi
 
     createARecord active-cluster $SELECTED_INGRESS_IP_RAW_ADDRESS || \
-      printf "ERROR: failed to create A record" >&2
+        printf "ERROR: failed to create A record" >&2
 fi
