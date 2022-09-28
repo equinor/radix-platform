@@ -28,7 +28,6 @@
 # When creating a cluster that will become an active cluster (creating a cluster in advance)
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=aa ./bootstrap.sh
 
-
 #######################################################################################
 ### START
 ###
@@ -113,14 +112,15 @@ if [[ -z "$VNET_DNS_LINK" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
 
-
 #######################################################################################
 ### support functions
 ###
 
 function getAddressSpaceForVNET() {
 
-    local HUB_PEERED_VNET_JSON="$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --vnet-name "$AZ_VNET_HUB_NAME")"
+    local HUB_PEERED_VNET_JSON="$(az network vnet peering list \
+        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+        --vnet-name "$AZ_VNET_HUB_NAME")"
     local HUB_PEERED_VNET_EXISTING="$(echo "$HUB_PEERED_VNET_JSON" | jq --arg HUB_PEERING_NAME "${HUB_PEERING_NAME}" '.[] | select(.name==$HUB_PEERING_NAME)' | jq -r '.remoteAddressSpace.addressPrefixes[0]')"
     if [[ -n "$HUB_PEERED_VNET_EXISTING" ]]; then
         # vnet peering exist from before - use same IP
@@ -141,7 +141,6 @@ function getAddressSpaceForVNET() {
     done
 }
 
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -161,14 +160,8 @@ if [ "$OMNIA_ZONE" = "standalone" ]; then
     VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
     VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
-
-#######################################################################################
-### Get api server whitelist
-###
-
-USER_PROMPT=false CLUSTER_NAME="" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh"
 
 #######################################################################################
 ### Verify task at hand
@@ -222,9 +215,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -242,9 +239,21 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
     # AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
     # AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
     # AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
-    ID_AKS="$(az identity show --name "$MI_AKS" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2> /dev/null)"
-    ID_AKSKUBELET="$(az identity show --name "$MI_AKSKUBELET" --resource-group "$AZ_RESOURCE_GROUP_COMMON" --query 'id' --output tsv 2> /dev/null)"
-    ACR_ID="$(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --query "id" --output tsv)"
+    ID_AKS="$(az identity show \
+        --name "$MI_AKS" \
+        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+        --query 'id' \
+        --output tsv 2>/dev/null)"
+    ID_AKSKUBELET="$(az identity show \
+        --name "$MI_AKSKUBELET" \
+        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+        --query 'id' \
+        --output tsv 2>/dev/null)"
+    ACR_ID="$(az acr show \
+        --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --query "id" \
+        --output tsv)"
 else
     # Credentials are provided from input.
     # Source the file to make the key/value pairs readable as script vars
@@ -280,14 +289,16 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
 
     # list of AVAILABLE public EGRESS ips assigned to the Radix Zone
     echo "Getting list of available public egress ips in $RADIX_ZONE..."
-    AVAILABLE_EGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_EGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
+    AVAILABLE_EGRESS_IPS="$(az network public-ip list \
+        --query "[?publicIpPrefix.id=='${IPPRE_EGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")"
 
     # Select range of egress ips based on OUTBOUND_IP_COUNT
     SELECTED_EGRESS_IPS="$(echo "$AVAILABLE_EGRESS_IPS" | jq '.[0:'$OUTBOUND_IP_COUNT']')"
 
     # list of AVAILABLE public INGRESS ips assigned to the Radix Zone
     printf "Getting list of available public ingress ips in %s..." "$RADIX_ZONE"
-    AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
+    AVAILABLE_INGRESS_IPS="$(az network public-ip list \
+        --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")"
 
     # Select first available ingress ip
     SELECTED_INGRESS_IPS="$(echo "$AVAILABLE_INGRESS_IPS" | jq '.[0]')"
@@ -317,7 +328,6 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         echo "$SELECTED_INGRESS_IPS" | jq -r '.name'
         echo ""
         echo "-----------------------------------------------------------"
-
     fi
 
     echo ""
@@ -326,9 +336,17 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         while true; do
             read -r -p "Is this correct? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                echo "Sounds good, continuing."
+                break
+                ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -337,7 +355,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Create the comma separated string of egress ip resource ids to pass in as --load-balancer-outbound-ips for aks
     while read -r line; do
         EGRESS_IP_ID_LIST+="${line},"
-    done <<< "$(echo ${SELECTED_EGRESS_IPS} | jq -r '.[].id')"
+    done <<<"$(echo ${SELECTED_EGRESS_IPS} | jq -r '.[].id')"
     EGRESS_IP_ID_LIST=${EGRESS_IP_ID_LIST%,} # Remove trailing comma
 fi
 
@@ -345,14 +363,18 @@ fi
 ### Network
 ###
 
-
 echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
 #######################################################################################
 ### Create NSG and update subnet
 ###
 
-NSG_ID=$(az network nsg list --resource-group clusters --query "[?name=='${NSG_NAME}'].id" --subscription "${AZ_SUBSCRIPTION_ID}" --output tsv --only-show-errors)
+NSG_ID="$(az network nsg list \
+    --resource-group clusters \
+    --query "[?name=='${NSG_NAME}'].id" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --output tsv \
+    --only-show-errors)"
 
 if [[ ! ${NSG_ID} ]]; then
     # Create network security group
@@ -381,7 +403,7 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     printf "Flow logs storage account does not exists.\n"
 
     printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
-        az storage account create \
+    az storage account create \
         --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
         --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
@@ -416,7 +438,11 @@ if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
 fi
 
 # Create VNET and associate NSG
-VNET_EXISTS=$(az network vnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --query "[?name=='${VNET_NAME}'].id" --output tsv --only-show-errors)
+VNET_EXISTS="$(az network vnet list \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --query "[?name=='${VNET_NAME}'].id" \
+    --output tsv \
+    --only-show-errors)"
 
 if [[ ! ${VNET_EXISTS} ]]; then
     printf "    Creating azure VNET %s... " "${VNET_NAME}"
@@ -433,25 +459,66 @@ if [[ ! ${VNET_EXISTS} ]]; then
     printf "Done.\n"
 fi
 
-SUBNET_ID=$(az network vnet subnet list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)
-VNET_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$VNET_NAME" --query "id" --output tsv)"
+SUBNET_ID="$(az network vnet subnet list \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --vnet-name "$VNET_NAME" \
+    --query [].id \
+    --output tsv)"
+
+VNET_ID="$(az network vnet show \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$VNET_NAME" \
+    --query "id" \
+    --output tsv)"
 
 # peering VNET to hub-vnet
-HUB_VNET_RESOURCE_ID="$(az network vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$AZ_VNET_HUB_NAME" --query "id" --output tsv)"
+HUB_VNET_RESOURCE_ID="$(az network vnet show \
+    --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+    --name "$AZ_VNET_HUB_NAME" \
+    --query "id" \
+    --output tsv)"
+
 echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-az network vnet peering create --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$VNET_PEERING_NAME" --vnet-name "$VNET_NAME" --remote-vnet "$HUB_VNET_RESOURCE_ID" --allow-vnet-access 2>&1
-az network vnet peering create --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$HUB_PEERING_NAME" --vnet-name "$AZ_VNET_HUB_NAME" --remote-vnet "$VNET_ID" --allow-vnet-access 2>&1
+
+az network vnet peering create \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --name "$VNET_PEERING_NAME" \
+    --vnet-name "$VNET_NAME" \
+    --remote-vnet "$HUB_VNET_RESOURCE_ID" \
+    --allow-vnet-access 2>&1
+
+az network vnet peering create \
+    --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+    --name "$HUB_PEERING_NAME" \
+    --vnet-name "$AZ_VNET_HUB_NAME" \
+    --remote-vnet "$VNET_ID" \
+    --allow-vnet-access 2>&1
 
 function linkPrivateDnsZoneToVNET() {
     local dns_zone=${1}
-    local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$dns_zone" --query "id" --output tsv 2>&1)"
-    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$VNET_DNS_LINK" --zone-name "$dns_zone" --query "type" --output tsv 2>&1)"
+    local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show \
+        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+        --name "$dns_zone" \
+        --query "id" \
+        --output tsv 2>&1)"
+    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show \
+        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+        --name "$VNET_DNS_LINK" \
+        --zone-name "$dns_zone" \
+        --query "type" \
+        --output tsv 2>&1)"
+
     if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
         echo "ERROR: Private DNS Zone ${dns_zone} not found." >&2
     elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
         echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
         # throws error if run twice
-        az network private-dns link vnet create --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" --name "$VNET_DNS_LINK" --zone-name "$dns_zone" --virtual-network "$VNET_ID" -e False 2>&1
+        az network private-dns link vnet create \
+            --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+            --name "$VNET_DNS_LINK" \
+            --zone-name "$dns_zone" \
+            --virtual-network "$VNET_ID" \
+            --registration-enabled False 2>&1
     fi
 }
 
@@ -469,7 +536,6 @@ echo "Bootstrap of advanced network done."
 ###
 
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
-
 
 ###############################################################################
 
@@ -498,6 +564,10 @@ AKS_BASE_OPTIONS=(
     --disable-local-accounts
     --enable-addons azure-keyvault-secrets-provider
     --enable-secret-rotation
+    --enable-cluster-autoscaler
+    --node-count "$NODE_COUNT"
+    --min-count "$MIN_COUNT"
+    --max-count "$MAX_COUNT"
 )
 
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
@@ -505,21 +575,6 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         --load-balancer-outbound-ips "$EGRESS_IP_ID_LIST"
         --load-balancer-outbound-ports "4000"
     )
-fi
-
-if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    AKS_ENV_OPTIONS=(
-        --node-count "$NODE_COUNT"
-    )
-elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
-    AKS_ENV_OPTIONS=(
-        --enable-cluster-autoscaler
-        --node-count "$NODE_COUNT"
-        --min-count "$MIN_COUNT"
-        --max-count "$MAX_COUNT"
-    )
-else
-   echo "Unknown parameter"
 fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
@@ -541,19 +596,36 @@ elif [[ "$CLUSTER_TYPE" = "classicprod" ]]; then
         --vnet-subnet-id "/subscriptions/7790e999-c11c-4f0b-bfdf-bc2fd5c38e91/resourceGroups/S340-NE-network/providers/Microsoft.Network/virtualNetworks/S340-NE-vnet"
     )
 else
-   echo "Unknown parameter"
+    echo "Unknown parameter"
 fi
 
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
+
+#######################################################################################
+### Get api server whitelist
+###
+
+(USER_PROMPT=false CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
 
 echo "Done."
 
 #######################################################################################
 ### Lock cluster and network resources
 ###
+
 if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    az lock create --lock-type CanNotDelete --name "${CLUSTER_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.ContainerService/managedClusters --resource "$CLUSTER_NAME"  &>/dev/null
-    az lock create --lock-type CanNotDelete --name "${VNET_NAME}"-lock --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --resource-type Microsoft.Network/virtualNetworks --resource "$VNET_NAME"  &>/dev/null
+    az lock create \
+        --lock-type CanNotDelete \
+        --name "${CLUSTER_NAME}"-lock \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-type Microsoft.ContainerService/managedClusters \
+        --resource "$CLUSTER_NAME" &>/dev/null
+
+    az lock create --lock-type CanNotDelete \
+        --name "${VNET_NAME}"-lock \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-type Microsoft.Network/virtualNetworks \
+        --resource "$VNET_NAME" &>/dev/null
 fi
 
 #######################################################################################
@@ -567,17 +639,20 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 
 printf "Done.\n"
 
-
 #######################################################################################
 ### Add GPU node pools
 ###
+
 printf "Adding GPU node pools to the cluster... "
 
 az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc6sv3 \
+    --enable-cluster-autoscaler \
     --node-count 0 \
+    --min-count 0 \
+    --max-count 1 \
     --max-pods 110 \
     --node-vm-size Standard_NC6s_v3 \
     --labels sku=gpu gpu=nvidia-v100 gpu-count=1 radix-node-gpu=nvidia-v100 radix-node-gpu-count=1 \
@@ -594,7 +669,10 @@ az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc12sv3 \
+    --enable-cluster-autoscaler \
     --node-count 0 \
+    --min-count 0 \
+    --max-count 1 \
     --max-pods 110 \
     --node-vm-size Standard_NC12s_v3 \
     --labels sku=gpu gpu=nvidia-v100 gpu-count=2 radix-node-gpu=nvidia-v100 radix-node-gpu-count=2 \
@@ -611,7 +689,10 @@ az aks nodepool add \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc24sv3 \
+    --enable-cluster-autoscaler \
     --node-count 0 \
+    --min-count 0 \
+    --max-count 1 \
     --max-pods 110 \
     --node-vm-size Standard_NC24s_v3 \
     --labels sku=gpu gpu=nvidia-v100 gpu-count=4 radix-node-gpu=nvidia-v100 radix-node-gpu-count=4 \
@@ -631,7 +712,6 @@ printf "Done."
 ###
 
 if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
-
     echo ""
     echo "###########################################################"
     echo ""
@@ -643,7 +723,6 @@ if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
     echo "PS: It has been enabled on our subscriptions so no need to do that step."
     echo ""
     echo "###########################################################"
-
 fi
 
 echo ""

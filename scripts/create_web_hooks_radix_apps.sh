@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # PRECONDITIONS
 #
 # It is assumed that:
