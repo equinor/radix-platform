@@ -278,9 +278,6 @@ az network nsg rule create \
 
 printf "Done.\n"
 
-echo "controller:
-  service:
-    loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
 
 printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
 az network vnet subnet update \
@@ -293,8 +290,24 @@ az network vnet subnet update \
     --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
 printf "Done.\n"
 
+
+# TODO: Create new secret ingress-nginx-raw-ip
+# secret shall contain only the IP, nothing else
+# consume this secret later on when creating cluster specific A record
+
+kubectl create secret generic ingress-nginx-raw-ip --namespace ingress-nginx \
+            --from-literal=rawIp=$SELECTED_INGRESS_IP_RAW_ADDRESS \
+            --dry-run=client -o yaml |
+            kubectl apply -f -
+
+
+
 kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -
+
+echo "controller:
+  service:
+    loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
 
 kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
             --from-file=./config \
