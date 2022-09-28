@@ -49,6 +49,25 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
+### Connect kubectl
+###
+
+# Exit if cluster does not exist
+printf "\nConnecting kubectl..."
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || { 
+    # Send message to stderr
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 1        
+}
+printf "...Done.\n"
+
+#######################################################################################
+### Verify cluster access
+###
+verify_cluster_access
+
+
+#######################################################################################
 
 SELECTED_INGRESS_IP_RAW_ADDRESS=$(kubectl get secret --namespace "ingress-nginx" "ingress-nginx-raw-ip" -ojson | jq .data.rawIp --raw-output | base64 -d)
 
