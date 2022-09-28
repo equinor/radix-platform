@@ -5,8 +5,8 @@
 # The script will generate the correct replyUrl to the app based on the app ingress host value, which is why the script also require input ingress name and namespace where the ingress can be found.
 
 # Example 1:
-# AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" WEB_REDIRECT_URI="/application" ./add_reply_url_for_cluster.sh
-# 
+# AAD_APP_NAME="Omnia Radix Web Console" K8S_NAMESPACE="radix-web-console-prod" K8S_INGRESS_NAME="web" REPLY_PATH="/auth-callback" WEB_REDIRECT_URI="/applications" ./add_reply_url_for_cluster.sh
+#
 # Example 2: Using a subshell to avoid polluting parent shell
 # (AAD_APP_NAME="ar-radix-grafana-development" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" ./add_reply_url_for_cluster.sh)
 
@@ -51,7 +51,7 @@ fi
 
 # Source util scripts
 
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source ${script_dir}/utility/util.sh
 
 #######################################################################################
@@ -95,9 +95,16 @@ function updateWebRedirectUris() {
         while true; do
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; break;;
-                [Nn]* ) echo ""; echo "Skipping updating Web RedirectUris."; return 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                break
+                ;;
+            [Nn]*)
+                echo ""
+                echo "Skipping updating Web RedirectUris."
+                return 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -106,7 +113,10 @@ function updateWebRedirectUris() {
         --id "${aadAppId}" \
         --web-redirect-uris ${newWebRedirectUris} \
         --only-show-errors ||
-        { echo "ERROR: Could not update app registration." >&2; return 1; }
+        {
+            echo "ERROR: Could not update app registration." >&2
+            return 1
+        }
 
     echo "Added Web replyUrl \"${additionalWebReplyURL}\" to AAD app \"${AAD_APP_NAME}\"."
     echo ""
@@ -124,7 +134,7 @@ function updateSpaRedirectUris() {
         echo "ERROR: Could not find app registration. Quitting..." >&2
         return 1
     fi
-    
+
     currentSpaRedirectUris=$(az rest --method GET --uri "https://graph.microsoft.com/v1.0/applications/${aadObjId}" | jq -r .spa.redirectUris)
 
     host_name=$(kubectl get ing --namespace "${K8S_NAMESPACE}" "${K8S_INGRESS_NAME}" -o json| jq --raw-output .spec.rules[0].host)
@@ -135,7 +145,7 @@ function updateSpaRedirectUris() {
         echo ""
         return 0
     fi
-    
+
     newSpaRedirectUris=$(echo "${currentSpaRedirectUris}" | jq ". += [\"$additionalSpaReplyURI\"]")
 
     # Ask user
@@ -147,9 +157,16 @@ function updateSpaRedirectUris() {
         while true; do
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; break;;
-                [Nn]* ) echo ""; echo "Skipping updating SpaRedirectUris."; return 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                break
+                ;;
+            [Nn]*)
+                echo ""
+                echo "Skipping updating SpaRedirectUris."
+                return 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi

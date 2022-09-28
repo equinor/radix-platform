@@ -63,28 +63,28 @@ echo "Start install of base components... "
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
-  echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
-  exit 1
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
+    exit 1
 }
 hash kubectl 2>/dev/null || {
-  echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
-  exit 1
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
+    exit 1
 }
 hash helm 2>/dev/null || {
-  echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
-  exit 1
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
+    exit 1
 }
 hash jq 2>/dev/null || {
-  echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
-  exit 1
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
 }
 hash htpasswd 2>/dev/null || {
-  echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
-  exit 1
+    echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
+    exit 1
 }
 hash sqlcmd 2>/dev/null || {
-  echo -e "\nERROR: sqlcmd not found in PATH. Exiting..." >&2
-  exit 1
+    echo -e "\nERROR: sqlcmd not found in PATH. Exiting..." >&2
+    exit 1
 }
 printf "All is good."
 echo ""
@@ -101,19 +101,19 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
-  echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-  exit 1
-else
-  if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
-  fi
-  source "$RADIX_ZONE_ENV"
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-  echo "ERROR: Please provide CLUSTER_NAME" >&2
-  exit 1
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
+    exit 1
 fi
 
 # Source util scripts
@@ -122,7 +122,7 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
-  USER_PROMPT=true
+    USER_PROMPT=true
 fi
 
 #######################################################################################
@@ -151,10 +151,10 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  RADIX_API_PREFIX                 : $RADIX_API_PREFIX"
 echo -e "   -  RADIX_WEBHOOK_PREFIX             : $RADIX_WEBHOOK_PREFIX"
 if [ -n "$FLUX_OVERRIDE_GIT_BRANCH" ]; then
-echo -e "   -  FLUX_OVERRIDE_GIT_BRANCH         : $FLUX_OVERRIDE_GIT_BRANCH"
+    echo -e "   -  FLUX_OVERRIDE_GIT_BRANCH         : $FLUX_OVERRIDE_GIT_BRANCH"
 fi
 if [ -n "$FLUX_OVERRIDE_GIT_DIR" ]; then
-echo -e "   -  FLUX_OVERRIDE_GIT_DIR            : $FLUX_OVERRIDE_GIT_DIR"
+    echo -e "   -  FLUX_OVERRIDE_GIT_DIR            : $FLUX_OVERRIDE_GIT_DIR"
 fi
 echo -e ""
 echo -e "   > WHO:"
@@ -166,15 +166,19 @@ echo -e ""
 echo ""
 
 if [[ $USER_PROMPT == true ]]; then
-  while true; do
-    read -r -p "Is this correct? (Y/n) " yn
-    case $yn in
-      [Yy]* ) break;;
-      [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-      * ) echo "Please answer yes or no.";;
-    esac
-  done
-  echo ""
+    while true; do
+        read -r -p "Is this correct? (Y/n) " yn
+        case $yn in
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
+        esac
+    done
+    echo ""
 fi
 
 #######################################################################################
@@ -184,9 +188,9 @@ fi
 # Exit if cluster does not exist
 printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
-  # Send message to stderr
-  echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-  exit 0
+    # Send message to stderr
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 0
 }
 printf "...Done.\n"
 
@@ -200,7 +204,7 @@ verify_cluster_access
 ### Create flux namespace
 ###
 
-if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
+if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
     printf "\nCreating flux-system namespace..."
     kubectl create namespace flux-system 2>&1 >/dev/null
     printf "...Done"
@@ -348,11 +352,11 @@ echo "Install Flux v2"
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/flux/bootstrap.sh" "${normal}"
 (USER_PROMPT="$USER_PROMPT" \
-  RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
-  CLUSTER_NAME="$CLUSTER_NAME" \
-  OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
-  OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
-  ./flux/bootstrap.sh)
+    RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
+    CLUSTER_NAME="$CLUSTER_NAME" \
+    OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
+    OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
+    ./flux/bootstrap.sh)
 wait
 
 #######################################################################################

@@ -2,13 +2,13 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Tear down of a aks cluster and any related infrastructure (vnet and similar) or configuration that was created to specifically support that cluster.
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -16,12 +16,11 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-# - CREDENTIALS_FILE    : Path to credentials in the form of shell vars. See "Set credentials" for required key/value pairs. 
-
+# - CREDENTIALS_FILE    : Path to credentials in the form of shell vars. See "Set credentials" for required key/value pairs.
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 ./teardown.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 #
@@ -48,8 +47,14 @@ echo "Start teardown of aks instance... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
 
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
@@ -85,7 +90,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
-source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${CLUSTER_TYPE}.env"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
 # Source util scripts
 
@@ -106,7 +111,7 @@ fi
 
 # Define web console variables
 RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE  == "development" ]]; then
+if [[ $CLUSTER_TYPE == "development" ]]; then
     # Development cluster uses QA web-console
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
@@ -155,7 +160,7 @@ if [[ "${VNET}" ]]; then
     VNETLOCK="$(az lock list \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --subscription "$AZ_SUBSCRIPTION_ID" \
-        --resource-type Microsoft.Network/virtualNetworks  \
+        --resource-type Microsoft.Network/virtualNetworks \
         --resource "$VNET_NAME" \
         --query [].name \
         --output tsv \
@@ -176,10 +181,11 @@ if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
     if [ -n "$VNETLOCK" ]; then
         printf "   -  AZ VirtualNetworks       : %s          ${red}Locked${normal} by %s\n" "$VNET_NAME" "$VNETLOCK"
     else
-    printf "   -  AZ VirtualNetworks       : %s          ${grn}unlocked${normal}\n" "$VNET_NAME"
+        printf "   -  AZ VirtualNetworks       : %s          ${grn}unlocked${normal}\n" "$VNET_NAME"
     fi
     echo -e "   -------------------------------------------------------------------"
-    printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"; exit 0;
+    printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"
+    exit 0
 fi
 
 #######################################################################################
@@ -230,9 +236,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -243,8 +253,8 @@ fi
 ###
 
 printf "Verifying that cluster exist and/or the user can access it... "
-# We use az aks get-credentials to test if both the cluster exist and if the user has access to it. 
-   
+# We use az aks get-credentials to test if both the cluster exist and if the user has access to it.
+
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
@@ -252,9 +262,13 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
         while true; do
             read -r -p "Do you want to continue? (Y/n) " yn
             case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*) break ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     else
@@ -303,7 +317,7 @@ APP_REGISTRATION_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CON
 APP_REGISTRATION_OBJ_ID="$(az ad app list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].id --output tsv --only-show-errors)"
 HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
-WEB_REDIRECT_URI="https://${HOST_NAME_WEB_CONSOLE}/application"
+WEB_REDIRECT_URI="https://${HOST_NAME_WEB_CONSOLE}/applications"
 
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
 (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="$WEB_REDIRECT_URI" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")

@@ -242,25 +242,14 @@ AKS_BASE_OPTIONS=(
     --max-pods "$POD_PER_NODE"
     --vnet-subnet-id "$SUBNET_ID"
     --mode System
+    --enable-cluster-autoscaler
+    --node-count "$NODE_COUNT"
+    --min-count "$MIN_COUNT"
+    --max-count "$MAX_COUNT"
 )
 
-if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    AKS_ENV_OPTIONS=(
-        --node-count "$NODE_COUNT"
-    )
-elif [[ "$RADIX_ENVIRONMENT" = "dev" ]]; then
-    AKS_ENV_OPTIONS=(
-        --enable-cluster-autoscaler
-        --node-count "$NODE_COUNT"
-        --min-count "$MIN_COUNT"
-        --max-count "$MAX_COUNT"
-    )
-else
-   echo "Unknown parameter"
-fi
-
 echo "Creating new nodepool nodepool$newnodepool"
-az aks nodepool add "${AKS_BASE_OPTIONS[@]}" "${AKS_ENV_OPTIONS[@]}"
+az aks nodepool add "${AKS_BASE_OPTIONS[@]}"
 
 echo "Modify nodepool$oldnodepool. Disable Autoscaler and mode: User"
 az aks nodepool update --cluster-name "$CLUSTER_NAME" --name "nodepool${oldnodepool}" --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --disable-cluster-autoscaler --mode User
