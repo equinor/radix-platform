@@ -1,4 +1,4 @@
-name: start-cluster
+name: stop-cluster
 on:
   schedule:
     - cron: '30 11 * * 1-5'
