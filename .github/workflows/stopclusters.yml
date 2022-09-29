@@ -1,14 +1,14 @@
 name: start-cluster
-on: [push]
-# on:
-#   schedule:
-#     - cron: '0 6 * * 1-5'
+on:
+  schedule:
+    - cron: '30 11 * * 1-5'
+
 
 permissions:
   id-token: write
   contents: read
 jobs: 
-  build-and-deploy:
+  start-dev-clusters:
     runs-on: ubuntu-latest
     environment: operations
     steps:
@@ -21,10 +21,5 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     - name: Install JQ
       run: sudo apt-get install -y jq
-    - name: 'Run Azure CLI commands'
-      run: |
-          az account show
-          az group list
-          pwd 
-    - name: Running script
-      run: TASK=start .github/workflows/scripts/dailytasks.sh
+    - name: Stop clusters
+      run: TASK=stop .github/workflows/scripts/dailytasks.sh
