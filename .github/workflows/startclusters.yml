@@ -1,10 +1,7 @@
 name: start-cluster
 on:
   schedule:
-    #- cron: '0 6 * * 1-5'
-    - cron: '0,30 * * * *'
-
-
+    - cron: '0 6 * * 1-5'
 permissions:
   id-token: write
   contents: read

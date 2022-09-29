@@ -13,10 +13,8 @@ function stopcluster() {
         CGROUP=$(jq -n "${list}" | jq -r .resourceGroup)
         STATUS=$(jq -n "${list}" | jq -r .powerstate)
         if [ "$STATUS" = "Running" ]; then
-            if [ "$CLUSTER" = "weekly-38" ]; then
-                printf "Stopping cluster $CLUSTER\n"
-                az aks stop --name $CLUSTER --resource-group $CGROUP --no-wait
-            fi
+            printf "Stopping cluster $CLUSTER\n"
+            az aks stop --name $CLUSTER --resource-group $CGROUP --no-wait
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
 }
