@@ -75,6 +75,61 @@ function update_service_principal_credentials_in_az_keyvault() {
     rm -rf "$tmp_file_path"
 }
 
+
+function update_app_credentials_in_az_keyvault() {
+    local name              # Input 1, string
+    local id                # Input 2, string
+    local password          # Input 3, string
+    local description       # Input 4, string, optional
+    local secret_id         # Input 5, string, optional
+    local expiration_date   # Input 6, string, optional
+    local keyvault          # Input 7, string 
+    local tmp_file_path
+    local template_path
+    local script_dir_path
+
+    name="$1"
+    id="$2"
+    password="$3"
+    description="$4"
+    secret_id="$5"
+    expiration_date="$6"
+    keyvault="$7"
+    # tenantId="$(az ad app show --id ${id} --query appOwnerTenantId --output tsv)"
+    script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    template_path="${script_dir_path}/template-credentials.json"
+
+    if [ ! -e "$template_path" ]; then
+        echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}" >&2
+        exit 1
+    fi
+
+    # Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
+    tmp_file_path="${script_dir_path}/${name}.json"
+    cat "$template_path" | jq -r \
+    --arg name "${name}" \
+    --arg id "${id}" \
+    --arg password "${password}" \
+    --arg description "${description}" \
+    --arg tenantId "" \
+    --arg secretId "${secret_id}" \
+    '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId | .secretId=$secretId' > "$tmp_file_path"
+
+    # show result
+    # cat "${tmp_file_path}"
+
+    if [[ -n ${expiration_date} ]]; then
+        expires="--expires ${expiration_date}"
+        echo "${expires}"
+    fi
+
+    # Upload to keyvault
+    az keyvault secret set --vault-name "${keyvault}" --name "${name}" --file "${tmp_file_path}" ${expires} 2>&1 >/dev/null
+
+    # Clean up
+    rm -rf "$tmp_file_path"
+}
+
 function update_ad_app_owners() {
     local name              # Input 1
     local ad_group          # Input 2, optional
@@ -143,7 +198,7 @@ function update_service_principal_owners() {
         ad_group="Radix"
     fi
 
-    sp_obj_id="$(az ad sp list --display-name "${name}" --query [].objectId --output tsv --only-show-errors)"
+    sp_obj_id="$(az ad sp list --display-name "${name}" --query [].id --output tsv --only-show-errors)"
 
     echo ""
     echo "Updating owners of service principal \"${name}\"..."
@@ -201,6 +256,7 @@ function create_service_principal_and_store_credentials() {
         secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
         secret_id="$(echo "${secret}" | jq -r .[].keyId)"
         expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
+        az ad sp update --id "${id}" --set notes="${description}"
         printf " Done.\n"
 
         printf "Update credentials in keyvault..."
