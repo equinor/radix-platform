@@ -53,7 +53,6 @@ printf '%s %s\n' "   -  DATE                             : $(date)"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
 echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
-echo -e "   -  SLACK_WEBHOOK_URL                : $SLACK_WEBHOOK_URL"
 echo -e "   -  ACTION                           : $TASK"
 echo -e "   -------------------------------------------------------------------"
 
