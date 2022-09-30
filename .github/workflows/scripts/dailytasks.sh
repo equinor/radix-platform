@@ -43,9 +43,19 @@ function startcluster() {
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
 }
-printf '%s %s\n' "$(date)"
+
+
+
 CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") | not) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code}]}]')
 SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_SLACK_WEBHOOK" | jq -r .value)"
+echo -e "   ------------------------------------------------------------------"
+printf '%s %s\n' "   -  DATE                             : $(date)"
+echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  SLACK_WEBHOOK_URL                : $SLACK_WEBHOOK_URL"
+echo -e "   -------------------------------------------------------------------"
+
 if [ "$TASK" = "stop" ]; then
     stopcluster
 elif [ "$TASK" = "start" ]; then
