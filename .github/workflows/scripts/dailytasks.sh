@@ -26,7 +26,7 @@ function stopcluster() {
         if [ "$STATUS" = "Running" ]; then
             printf "Stopping cluster $CLUSTER\n"
             #az aks stop --name $CLUSTER --resource-group $CGROUP --no-wait
-            curl -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Action: Stopping cluster '"$CLUSTER"'"}' "$SLACK_WEBHOOK_URL"
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Action: Stopping cluster '"$CLUSTER"'"}' "$SLACK_WEBHOOK_URL" >/dev/null
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
 }
@@ -39,7 +39,7 @@ function startcluster() {
         if [ "$STATUS" != "Running" ]; then
             printf "Starting cluster $CLUSTER\n"
             az aks start --name $CLUSTER --resource-group $CGROUP --no-wait
-            curl -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Action: Starting cluster '"$CLUSTER"'"}' "$SLACK_WEBHOOK_URL"
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Action: Starting cluster '"$CLUSTER"'"}' "$SLACK_WEBHOOK_URL" >/dev/null
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
 }
