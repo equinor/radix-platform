@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <style>
+        @import url('https://eds-static.equinor.com/font/equinor-uprights-vf.css');
+        @import url('https://eds-static.equinor.com/font/equinor-mono.css');
+
+        :root {
+            --base-font-family: Equinor, Arial, sans-serif;
+            --heading-font-family: Equinor, Arial, sans-serif;
+            --monospace-font-family: EquinorMono, Menlo, Consolas, Monaco, monospace;
+            --base-line-height: 1.15;
+            --duration-quick: 0.15s;
+            --duration-slow: 1s;
+            --stacking-global-modal: 3000;
+            --stacking-global-overlay: 2000;
+            --stacking-local-overlay: 1000;
+            --stacking-local-base: 0;
+            --space-1: 1px;
+            --space-2: 0.125rem;
+            --space-3: 0.25rem;
+            --space-4: 0.5rem;
+            --space-5: 1rem;
+            --space-6: 1.5rem;
+            --space-7: 2.5rem;
+            --space-default-gap: var(--space-5);
+            --shadow-level-1: 0 var(--space-2) var(--space-3) rgba(0, 0, 0, 0.05);
+            --shadow-level-2: 0 var(--space-3) var(--space-4) rgba(0, 0, 0, 0.2);
+            --icon-opacity: .75;
+            --layout-header-height: 2.5rem;
+            --layout-max-width: 64rem;
+            --layout-max-width-single-col: calc(var(--layout-max-width) * 2/3);
+            --layout-top-nav-height: 64px;
+            --layout-app-navbar-width: 58px;
+        }
+
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: var(--base-font-family);
+        }
+
+        body {
+            background-color: #f7f7f7;
+        }
+
+        .title {
+            font-size: 24px;
+        }
+
+        .vertical-center {
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            --ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .icon {
+            display: inline-block;
+            height: 10rem;
+        }
+    </style>
+    <title>Server error - Radix Web Console</title>
+</head>
+
+<body>
+    <div class="vertical-center">
+        <svg class="icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                stroke-linejoin="round">
+                <g id="Logo-energy-red" stroke="#FF1243">
+                    <path
+                        d="M 31.156 31.283 C 30.995 28.808 31.621 25.092 33.326 22.369 C 35.64 18.677 39.339 16.512 44.465 16.512 L 44.965 16.512 L 44.965 17.012 C 44.965 27.083 39.714 32.155 31.63 31.75 L 31.185 31.728 L 31.156 31.283 Z"
+                        id="leaf" transform="matrix(0, 1, -1, 0, 61.979266, -13.931787)"
+                        style="stroke: rgb(205, 104, 16);" />
+                    <path
+                        d="M 27 4.5 C 23.667 7.167 21.333 9.833 20 12.5 C 17.923 18.482 24.103 23.755 31.406 23.384 C 36.162 23.142 40.903 19.655 45.023 14.562"
+                        id="stem" transform="matrix(0, 1, -1, 0, 43.466621, -2.466621)"
+                        style="stroke: rgb(205, 104, 16);" />
+                    <path d="M 21.239 33 C 26.906 37 32.572 38.417 38.239 37.25" id="root-1"
+                        style="stroke: rgb(205, 104, 16);" />
+                    <path d="M24,38 C20,41.3333333 16,42.3333333 12,41" id="root-2"
+                        style="stroke: rgb(205, 104, 16);" />
+                    <path d="M20,29 C19,33 16,37 8,38" id="root-3" style="stroke: rgb(205, 104, 16);" />
+                </g>
+            </g>
+        </svg>
+        <p class="title">Oops, something withered!</p>
+        <p>We're sorry. Try refreshing the page.</p>
+        <p style="opacity: 50%; font-size: 16px">
+            If you keep seeing this,
+            <a href="https://equinor.slack.com/messages/CBKM6N2JY">shout at us on Slack</a>.
+        </p>
+    </div>
+</body>
+
+</html>
