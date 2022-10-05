@@ -147,5 +147,6 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     fi
 
     createARecord active-cluster $SELECTED_INGRESS_IP_RAW_ADDRESS || \
-        printf "ERROR: failed to create A record" >&2
+      printf "ERROR: failed to create A record" >&2
 fi
+printf "...Done.\n"
