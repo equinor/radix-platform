@@ -121,7 +121,7 @@ verify_cluster_access
 ERROR_PAGE_CONTENT=$(cat "${ERROR_PAGE}")
 
 printf "\nCreating custom_error_pages for ingress-nginx... "
-cat <<EOF | kubectl apply -f -
+cat <<EOF | kubectl apply -f - 2>&1 >/dev/null
 apiVersion: v1
 kind: ConfigMap
 metadata:
