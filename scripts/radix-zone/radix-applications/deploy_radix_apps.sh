@@ -747,6 +747,37 @@ if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     create_build_deploy_job "radix-vulnerability-scanner-api" "release"
 fi
 
+# Radix ServiceNow Proxy
+
+echo ""
+echo "Deploy radix-servicenow-proxy..."
+
+create_and_register_deploy_key_and_store_credentials \
+    "radix-servicenow-proxy" \
+    "radix-servicenow-proxy" \
+    "equinor" \
+    "${GITHUB_PAT}" \
+    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
+    "" \
+    "Radix@StatoilSRM.onmicrosoft.com" \
+    "main" \
+    "false" \
+    "" \
+    "${DEPLOY_KEY_NAME}"
+
+create_github_webhook_in_repository "radix-servicenow-proxy" "${GITHUB_PAT}"
+
+create_radix_application "radix-servicenow-proxy"
+
+if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
+    # Wait a few seconds until radix-operator can process the RadixRegistration
+    wait_for_app_namespace "radix-servicenow-proxy"
+
+    create_build_deploy_job "radix-servicenow-proxy" "main"
+
+    create_build_deploy_job "radix-servicenow-proxy" "release"
+fi
+
 #######################################################################################
 ### Applications have been deployed. Start configuration.
 ###
