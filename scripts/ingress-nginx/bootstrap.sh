@@ -52,6 +52,11 @@ echo "Start bootstrap of ingress-nginx... "
 ### Check for prerequisites binaries
 ###
 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
@@ -103,6 +108,18 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
+fi
+
+#######################################################################################
+### Resolve dependencies on other scripts
+###
+
+WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CUSTOM_ERROR_PAGES="$WORKDIR_PATH/custom_error_pages.sh"
+if ! [[ -x "$CUSTOM_ERROR_PAGES" ]]; then
+    # Print to stderror
+    echo "ERROR: The custom error pages script is not found or it is not executable in path $CUSTOM_ERROR_PAGES" >&2
 fi
 
 #######################################################################################
@@ -303,10 +320,15 @@ echo "controller:
     loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
 
 kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
-            --from-file=./config \
-            --dry-run=client -o yaml |
-            kubectl apply -f -
+    --from-file=./config \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
 
 rm config
+
+echo "Create custom-backend-errors..."
+printf "%s► Execute %s%s\n" "${grn}" "${CUSTOM_ERROR_PAGES}" "${normal}"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" source "${CUSTOM_ERROR_PAGES}")
+wait # wait for subshell to finish
 
 printf "Done.\n"
