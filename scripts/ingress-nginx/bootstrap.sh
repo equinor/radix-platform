@@ -131,8 +131,6 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-
-
 #######################################################################################
 ### Verify task at hand
 ###
@@ -164,9 +162,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -189,7 +191,6 @@ fi
 ### Verify cluster access
 ###
 verify_cluster_access
-
 
 #######################################################################################
 ### Create secret required by ingress-nginx
@@ -235,9 +236,17 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
         while true; do
             read -r -p "Is this correct? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                echo "Sounds good, continuing."
+                break
+                ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -267,7 +276,10 @@ else
             --tier Regional \
             --query "publicIp.ipAddress" \
             --output tsv \
-            --only-show-errors) || { echo "ERROR: Could not create Public IP. Quitting..." >&2; exit 1; }
+            --only-show-errors) || {
+            echo "ERROR: Could not create Public IP. Quitting..." >&2
+            exit 1
+        }
         printf "Done.\n"
     else
         SELECTED_INGRESS_IP_RAW_ADDRESS="${IP_EXISTS}"
@@ -295,7 +307,6 @@ az network nsg rule create \
 
 printf "Done.\n"
 
-
 printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
 az network vnet subnet update \
     --vnet-name "${VNET_NAME}" \
@@ -307,12 +318,12 @@ az network vnet subnet update \
     --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
 printf "Done.\n"
 
+kubectl create namespace ingress-nginx --dry-run=client -o yaml |
+    kubectl apply -f -
+
 kubectl create secret generic ingress-nginx-raw-ip --namespace ingress-nginx \
     --from-literal=rawIp=$SELECTED_INGRESS_IP_RAW_ADDRESS \
     --dry-run=client -o yaml |
-    kubectl apply -f -
-
-kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -
 
 echo "controller:
