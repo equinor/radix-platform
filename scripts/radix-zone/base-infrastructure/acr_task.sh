@@ -85,6 +85,16 @@ if [[ -z "$AZ_RESOURCE_ACR_TASK_NAME" ]]; then
     exit 1
 fi
 
+if [[ -z "$AZ_RESOURCE_ACR_CACHE_TASK_NAME" ]]; then
+    echo "ERROR: AZ_RESOURCE_ACR_CACHE_TASK_NAME not defined. Exiting..." >&2
+    exit 1
+fi
+
+if [[ -z "$AZ_RESOURCE_ACR_BUILD_ONLY_TASK_NAME" ]]; then
+    echo "ERROR: AZ_RESOURCE_ACR_BUILD_ONLY_TASK_NAME not defined. Exiting..." >&2
+    exit 1
+fi
+
 if [[ -z "$AZ_RESOURCE_ACR_INTERNAL_TASK_NAME" ]]; then
     echo "ERROR: AZ_RESOURCE_ACR_INTERNAL_TASK_NAME not defined. Exiting..." >&2
     exit 1
@@ -116,6 +126,7 @@ echo -e "   --------------------------------------------------------------------
 echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY       : $AZ_RESOURCE_CONTAINER_REGISTRY"
 echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME            : $AZ_RESOURCE_ACR_TASK_NAME"
 echo -e "   -  AZ_RESOURCE_ACR_CACHE_TASK_NAME      : $AZ_RESOURCE_ACR_CACHE_TASK_NAME"
+echo -e "   -  AZ_RESOURCE_ACR_BUILD_ONLY_TASK_NAME : $AZ_RESOURCE_ACR_BUILD_ONLY_TASK_NAME"
 echo -e "   -  AZ_RESOURCE_ACR_INTERNAL_TASK_NAME   : $AZ_RESOURCE_ACR_INTERNAL_TASK_NAME"
 echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_NAME      : $AZ_RESOURCE_ACR_AGENT_POOL_NAME"
 echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TIER      : $AZ_RESOURCE_ACR_AGENT_POOL_TIER"
@@ -208,6 +219,39 @@ steps:
       - {{.Values.IMAGE}}
       - {{.Values.CLUSTERTYPE_IMAGE}}
       - {{.Values.CLUSTERNAME_IMAGE}}
+EOF
+    printf "Create ACR Task with agent pool: ${TASK_NAME} in ACR: ${ACR_NAME}..."
+    az acr task create \
+        --registry ${ACR_NAME} \
+        --agent-pool "${AGENT_POOL_NAME}" \
+        --name ${TASK_NAME} \
+        --context /dev/null \
+        --file ${TASK_YAML} \
+        --assign-identity [system] \
+        --auth-mode None \
+        --output none
+
+    rm "$TASK_YAML"
+    printf " Done.\n"
+}
+
+function create_acr_task_build_only() {
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    local AGENT_POOL_NAME="$3"
+    local TASK_YAML="task.yaml"
+    test -f "$TASK_YAML" && rm "$TASK_YAML"
+    cat <<EOF >>${TASK_YAML}
+version: v1.1.0
+stepTimeout: 3600
+steps:
+  - build: >-
+      --tag {{.Values.IMAGE}}
+      --tag {{.Values.CLUSTERTYPE_IMAGE}}
+      --tag {{.Values.CLUSTERNAME_IMAGE}}
+      --file {{.Values.DOCKER_FILE_NAME}}
+      .
+      {{.Values.BUILD_ARGS}}
 EOF
     printf "Create ACR Task with agent pool: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
@@ -401,6 +445,8 @@ add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGI
 create_acr_task_with_cache "${AZ_RESOURCE_ACR_CACHE_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${AZ_RESOURCE_ACR_AGENT_POOL_NAME}"
 create_role_assignment "${AZ_RESOURCE_ACR_CACHE_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_CACHE_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+
+create_acr_task_build_only "${AZ_RESOURCE_ACR_BUILD_ONLY_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${AZ_RESOURCE_ACR_AGENT_POOL_NAME}"
 
 #run_task # Uncomment this line to test the task
 
