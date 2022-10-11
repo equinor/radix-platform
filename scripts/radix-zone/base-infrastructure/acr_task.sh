@@ -115,6 +115,7 @@ echo -e "   > WHAT:"
 echo -e "   --------------------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY       : $AZ_RESOURCE_CONTAINER_REGISTRY"
 echo -e "   -  AZ_RESOURCE_ACR_TASK_NAME            : $AZ_RESOURCE_ACR_TASK_NAME"
+echo -e "   -  AZ_RESOURCE_ACR_CACHE_TASK_NAME      : $AZ_RESOURCE_ACR_CACHE_TASK_NAME"
 echo -e "   -  AZ_RESOURCE_ACR_INTERNAL_TASK_NAME   : $AZ_RESOURCE_ACR_INTERNAL_TASK_NAME"
 echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_NAME      : $AZ_RESOURCE_ACR_AGENT_POOL_NAME"
 echo -e "   -  AZ_RESOURCE_ACR_AGENT_POOL_TIER      : $AZ_RESOURCE_ACR_AGENT_POOL_TIER"
@@ -207,6 +208,42 @@ steps:
       - {{.Values.IMAGE}}
       - {{.Values.CLUSTERTYPE_IMAGE}}
       - {{.Values.CLUSTERNAME_IMAGE}}
+EOF
+    printf "Create ACR Task with agent pool: ${TASK_NAME} in ACR: ${ACR_NAME}..."
+    az acr task create \
+        --registry ${ACR_NAME} \
+        --agent-pool "${AGENT_POOL_NAME}" \
+        --name ${TASK_NAME} \
+        --context /dev/null \
+        --file ${TASK_YAML} \
+        --assign-identity [system] \
+        --auth-mode None \
+        --output none
+
+    rm "$TASK_YAML"
+    printf " Done.\n"
+}
+
+function create_acr_task_with_cache() {
+    local TASK_NAME="$1"
+    local ACR_NAME="$2"
+    local AGENT_POOL_NAME="$3"
+    local TASK_YAML="task.yaml"
+    test -f "$TASK_YAML" && rm "$TASK_YAML"
+    cat <<EOF >>${TASK_YAML}
+version: v1.1.0
+stepTimeout: 3600
+steps:
+  - cmd: buildx create --use # start buildkit
+  - cmd: >-
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}}
+      --tag {{.Values.IMAGE}}
+      --tag {{.Values.CLUSTERTYPE_IMAGE}}
+      --tag {{.Values.CLUSTERNAME_IMAGE}}
+      --file {{.Values.DOCKER_FILE_NAME}}
+      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
+      .
+      {{.Values.BUILD_ARGS}}
 EOF
     printf "Create ACR Task with agent pool: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
@@ -356,9 +393,14 @@ create_role_assignment "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CO
 add_task_credential "${AZ_RESOURCE_ACR_INTERNAL_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
 create_agent_pool "${AZ_RESOURCE_ACR_AGENT_POOL_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${AZ_RESOURCE_ACR_AGENT_POOL_TIER}" "${AZ_RESOURCE_ACR_AGENT_POOL_COUNT}"
+
 create_acr_task "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${AZ_RESOURCE_ACR_AGENT_POOL_NAME}"
 create_role_assignment "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 add_task_credential "${AZ_RESOURCE_ACR_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+
+create_acr_task_with_cache "${AZ_RESOURCE_ACR_CACHE_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${AZ_RESOURCE_ACR_AGENT_POOL_NAME}"
+create_role_assignment "${AZ_RESOURCE_ACR_CACHE_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
+add_task_credential "${AZ_RESOURCE_ACR_CACHE_TASK_NAME}" "${AZ_RESOURCE_CONTAINER_REGISTRY}"
 
 #run_task # Uncomment this line to test the task
 
