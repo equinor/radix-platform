@@ -287,7 +287,7 @@ steps:
       --file {{.Values.DOCKER_FILE_NAME}}
       --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
       .
-      {{.Values.BUILD_ARGS}}
+      {{.Values.BUILD_ARGS}} {{.Values.SECRET_ARGS}}
 EOF
     printf "Create ACR Task with agent pool: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
