@@ -92,6 +92,14 @@ fi
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
+LIB_ACR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../radix-zone/base-infrastructure/lib_acr.sh"
+if [[ ! -f "$LIB_ACR_PATH" ]]; then
+    echo "ERROR: The dependency LIB_ACR_PATH=$LIB_ACR_PATH is invalid, the file does not exist." >&2
+    exit 1
+else
+    source "$LIB_ACR_PATH"
+fi
+
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -255,6 +263,10 @@ fi
 printf "Verifying that cluster exist and/or the user can access it... "
 # We use az aks get-credentials to test if both the cluster exist and if the user has access to it.
 
+
+cluster_outbound_ip_address=$(get_cluster_outbound_ip $CLUSTER_NAME $AZ_SUBSCRIPTION_ID)
+
+
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
@@ -288,6 +300,20 @@ az aks delete \
     --output none \
     --only-show-errors
 echo "Done."
+
+
+#######################################################################################
+### Delete ACR network rule
+###
+
+echo ""
+echo "Deleting ACR network rule... "
+az acr network-rule remove \
+                --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+                --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+                --subscription "${AZ_SUBSCRIPTION_ID}" \
+                --ip-address "${cluster_outbound_ip_address}"
+
 
 #######################################################################################
 ### Delete Redis Cache
