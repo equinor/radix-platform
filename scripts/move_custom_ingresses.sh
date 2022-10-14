@@ -296,6 +296,23 @@ rm -f config
 printf "Update grafana deployment... "
 kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
 
+#######################################################################################
+### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"
+### Used in GHA to determine which cluster shall be powed on daily
+echo ""
+if [[ $CLUSTER_TYPE  == "development" ]]; then
+    CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) | {name: .name, resourceGroup: .resourceGroup}]}]')
+    while read -r list; do
+        CLUSTER=$(jq -n "${list}" | jq -r .name)
+        CGROUP=$(jq -n "${list}" | jq -r .resourceGroup)
+        printf "Clear tag 'autostartupschedule' on cluster $CLUSTER\n"
+        az aks update --resource-group $CGROUP --name $CLUSTER --tags autostartupschedule="" --no-wait
+    done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
+    printf "Tag cluster $DEST_CLUSTER to autostartupschedule\n"
+    az aks update --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER --tags autostartupschedule="true" --no-wait
+fi
+
+
 echo ""
 echo "Grafana reply-URL has been updated."
 

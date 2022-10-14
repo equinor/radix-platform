@@ -36,7 +36,8 @@ function startcluster() {
         CLUSTER=$(jq -n "${list}" | jq -r .name)
         CGROUP=$(jq -n "${list}" | jq -r .resourceGroup)
         STATUS=$(jq -n "${list}" | jq -r .powerstate)
-        if [ "$STATUS" != "Running" ]; then
+        SCHEDULE=$(jq -n "${list}" | jq -r .autostartupschedule)
+        if [[ "$STATUS" != "Running" && "$SCHEDULE" = "true" ]]; then
             printf "Starting cluster $CLUSTER\n"
             az aks start --name $CLUSTER --resource-group $CGROUP --no-wait
             curl -s -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Action: Starting cluster '"$CLUSTER"'"}' "$SLACK_WEBHOOK_URL" > /dev/null
@@ -46,7 +47,7 @@ function startcluster() {
 
 
 
-CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") | not) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code}]}]')
+CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") | not) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code, autostartupschedule: .tags.autostartupschedule}]}]')
 SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_SLACK_WEBHOOK" | jq -r .value)"
 echo -e "   ------------------------------------------------------------------"
 printf '%s %s\n' "   -  DATE                             : $(date)"
