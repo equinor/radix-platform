@@ -42,6 +42,7 @@ printf "Check for neccesary executables for \"$(basename ${BASH_SOURCE[0]})\"...
 hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
 hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting... " >&2;  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+hash gh 2> /dev/null  || { echo -e "\nERROR: gh (GitHub CLI) not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
 
@@ -135,7 +136,7 @@ fi
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
-
+create_oidc_and_federated_credentials "ar-radix-platform-github-dev-cluster-maintenance" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operation"
 
 
 #######################################################################################

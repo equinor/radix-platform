@@ -1,0 +1,17 @@
+{
+  "federatedCredential": {
+      "audiences": [
+        "api://AzureADTokenExchange"
+      ],
+      "description": "OIDC auth from GitHub Actions to Azure",
+      "issuer": "https://token.actions.githubusercontent.com",
+      "name": "${REPO}-${ENVIRONMENT}",
+      "subject": "repo:equinor/${REPO}:environment:${ENVIRONMENT}"
+  },
+  "roleAssignments": [
+    {
+      "scope": "/subscriptions/${SUBSCRIPTION_ID}",
+      "role": "Contributor"
+    }
+  ]
+}

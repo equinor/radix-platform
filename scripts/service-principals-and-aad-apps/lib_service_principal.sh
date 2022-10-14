@@ -147,13 +147,11 @@ function update_ad_app_owners() {
     fi
 
     id="$(az ad app list --display-name "${name}" --query [].appId --output tsv --only-show-errors)"
+    printf "Updating owners of app registration \"${name}\"..."
 
-    echo ""
-    echo "Updating owners of app registration \"${name}\"..."
+    ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[id,userPrincipalName]" --output tsv --only-show-errors)
 
-    ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[objectId,userPrincipalName]" --output tsv --only-show-errors)
-
-    app_owners=$(az ad app owner list --id ${id} --query "[?[].accountEnabled==true].[objectId,userPrincipalName]" --output tsv --only-show-errors)
+    app_owners=$(az ad app owner list --id "${id}" --query "[?[].accountEnabled==true].[id,userPrincipalName]" --output tsv --only-show-errors)
 
     while IFS=$'\t' read -r -a line; do
         user_object_id=${line[0]}
@@ -176,8 +174,7 @@ function update_ad_app_owners() {
         fi
     done <<< "${app_owners}"
     unset IFS
-
-    echo "Done."
+    printf " Done.\n"
 }
 
 function update_service_principal_owners() {
@@ -200,12 +197,11 @@ function update_service_principal_owners() {
 
     sp_obj_id="$(az ad sp list --display-name "${name}" --query [].id --output tsv --only-show-errors)"
 
-    echo ""
-    echo "Updating owners of service principal \"${name}\"..."
+    printf "Updating owners of service principal \"${name}\"..."
 
-    ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[objectId,userPrincipalName]" --output tsv --only-show-errors)
+    ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[id,userPrincipalName]" --output tsv --only-show-errors)
 
-    sp_owners=$(az ad sp owner list --id ${sp_obj_id} --query "[?[].accountEnabled==true].[objectId,userPrincipalName]" --output tsv --only-show-errors)
+    sp_owners=$(az ad sp owner list --id ${sp_obj_id} --query "[?[].accountEnabled==true].[id,userPrincipalName]" --output tsv --only-show-errors)
 
     while IFS=$'\t' read -r -a line; do
         user_object_id=${line[0]}
@@ -231,7 +227,7 @@ function update_service_principal_owners() {
     done <<< "${sp_owners}"
     unset IFS
 
-    echo "Done."
+    printf " Done.\n"
 }
 
 function create_service_principal_and_store_credentials() {
@@ -272,6 +268,76 @@ function create_service_principal_and_store_credentials() {
     update_service_principal_owners "${name}"
 
     printf "Done.\n"
+}
+
+function create_oidc_and_federated_credentials() {
+    echo ""
+    APP_NAME="$1"
+    export SUBSCRIPTION_ID="$2"
+    export REPO="$3"
+    export ENVIRONMENT="$4"
+    printf "Working on \"${APP_NAME}\"\n"
+    wait_for_pim_app_developer_role
+    wait_for_ad_owner_role
+    app_id=$(az ad app list --filter "displayName eq '$APP_NAME'" --query [].appId --output tsv)
+    if [ -z "$app_id" ]; then
+        printf "creating ${APP_NAME}...\n"
+        app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
+    fi
+
+    #printf "Update owners of app registration..."
+    update_ad_app_owners "${APP_NAME}"
+
+    #printf "Update owners of service principal..."
+    update_service_principal_owners "${APP_NAME}"
+    script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    config=$(envsubst < "${script_dir_path}/oidc.json")
+    printf "Checking if federated identity credential already exists..."
+    fic=$(echo "$config" | jq '.federatedCredential')
+
+    fic_name=$(echo "$fic" | jq -r '.name')
+    fic_id=$(az ad app federated-credential list --id "$app_id" --query "[?name == '$fic_name'].id" --output tsv)
+
+    if [[ -z "$fic_id" ]]; then
+        printf "Creating federated identity credential..."
+        az ad app federated-credential create --id "$app_id" --parameters "$fic" --output none
+        printf " Done.\n"
+    else
+        printf " Done.\n"
+        printf "Updating existing federated identity credential..."
+        az ad app federated-credential update --id "$app_id" --federated-credential-id "$fic_id" --parameters "$fic" --output none
+        printf " Done.\n"
+    fi
+    printf "Checking if service principal already exists..."
+    sp_id=$(az ad sp list --filter "appId eq '$app_id'" --query [].id --output tsv)
+    if [[ -z "$sp_id" ]]; then
+        #printf "Creating service principal..."
+        sp_id=$(az ad sp create --id "$app_id" --query id --output tsv)
+        printf " Done.\n"
+    else
+        printf " Done.\n"
+    fi
+
+    printf "Creating role assignments..."
+    ras=$(echo "$config" | jq -c '.roleAssignments[]')
+    echo "$ras" | while read -r ra; do
+        role=$(echo "$ra" | jq -r '.role')
+        scope=$(echo "$ra" | jq -r '.scope')
+        #echo "Assigning role '$role' at scope '$scope'..."
+        az role assignment create --role Contributor --subscription ${SUBSCRIPTION_ID} --assignee-object-id ${sp_id} --assignee-principal-type ServicePrincipal --scope "${scope}" --output none 2>&1 > /dev/null
+        printf " Done.\n"
+    done
+
+    if ! gh auth status >/dev/null 2>&1; then
+        echo "You need to login: "
+        gh auth login
+    fi
+
+    gh api --method PUT "repos/equinor/${REPO}/environments/${ENVIRONMENT}" 2>&1 >/dev/null
+    echo 'Updating GitHub secrets...'
+    gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
+    gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
+    gh secret set 'AZURE_TENANT_ID' --body $(az ad signed-in-user show --query id -otsv) --repo "equinor/${REPO}" --env "$ENVIRONMENT"
 }
 
 function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
@@ -363,7 +429,7 @@ function exit_if_user_does_not_have_required_ad_role(){
     currentUserRoleAssignment="$(az rest \
         --method GET \
         --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" \
-        | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query objectId -otsv)'")')"
+        | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
 
     if [[ -z "$currentUserRoleAssignment" ]]; then
         echo "You must activate AZ AD role \"Application Developer\" in PIM before using this script. Exiting..." >&2
@@ -371,4 +437,46 @@ function exit_if_user_does_not_have_required_ad_role(){
     fi
 
     printf "Done.\n"
+}
+
+function wait_for_pim_app_developer_role() {
+    local currentUserRoleAssignment
+    printf "Checking if you have required AZ AD role active..."
+    currentUserRoleAssignment="$(az rest \
+        --method GET \
+        --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" \
+        | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
+    
+    if [[ -z "$currentUserRoleAssignment" ]]; then
+        printf "\n\"Application Developer\" in PIM not actived. Please do and wait for the progress dots\n"
+        printf "Waiting."
+        while [[ -z "$currentUserRoleAssignment" ]]; do
+            currentUserRoleAssignment="$(az rest \
+                --method GET \
+                --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" \
+                | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
+            printf "."
+            sleep 5
+        done
+        printf " Done.\n"
+    else
+        printf " Done.\n"
+    fi
+}
+
+function wait_for_ad_owner_role() {
+    local currentownerrole
+    printf "Checking if you have required AZ AD ownership..."
+    currentownerrole="$(az role assignment list --query "[?roleDefinitionName == 'Owner' && principalName == '$(az account show --query user.name -o tsv)']" | jq .[])"
+    if [[ -z "$currentownerrole" ]]; then
+        printf "\n\"Owner\" in Azure resources are not actived. Please do and wait for the progress dots\n"
+        printf "Waiting."
+        while [[ -z "$currentownerrole" ]]; do
+            currentownerrole="$(az role assignment list --query "[?roleDefinitionName == 'Owner' && principalName == '$(az account show --query user.name -o tsv)']" | jq .[])"
+            printf "."
+            sleep 5
+        done
+    else
+        printf " Done.\n"
+    fi
 }
