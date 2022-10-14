@@ -147,14 +147,12 @@ function update_ad_app_owners() {
     fi
 
     id="$(az ad app list --display-name "${name}" --query [].appId --output tsv --only-show-errors)"
-    
-    #echo ""
     printf "Updating owners of app registration \"${name}\"..."
 
     ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[id,userPrincipalName]" --output tsv --only-show-errors)
-    
+
     app_owners=$(az ad app owner list --id "${id}" --query "[?[].accountEnabled==true].[id,userPrincipalName]" --output tsv --only-show-errors)
-    
+
     while IFS=$'\t' read -r -a line; do
         user_object_id=${line[0]}
         user_email=${line[1]}
