@@ -175,7 +175,6 @@ function update_ad_app_owners() {
     done <<< "${app_owners}"
     unset IFS
     printf " Done.\n"
-    #echo "Done."
 }
 
 function update_service_principal_owners() {
