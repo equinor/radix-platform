@@ -298,7 +298,7 @@ kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
 
 #######################################################################################
 ### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"
-### Used in GHA to determine which cluster shall be powed on daily
+### Used in GHA to determine which cluster shall be powered on daily
 echo ""
 if [[ $CLUSTER_TYPE  == "development" ]]; then
     CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) | {name: .name, resourceGroup: .resourceGroup}]}]')
