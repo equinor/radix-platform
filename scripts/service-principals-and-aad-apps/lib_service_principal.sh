@@ -308,7 +308,6 @@ function create_oidc_and_federated_credentials() {
         az ad app federated-credential update --id "$app_id" --federated-credential-id "$fic_id" --parameters "$fic" --output none
         printf " Done.\n"
     fi
-    
     printf "Checking if service principal already exists..."
     sp_id=$(az ad sp list --filter "appId eq '$app_id'" --query [].id --output tsv)
     if [[ -z "$sp_id" ]]; then
