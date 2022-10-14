@@ -480,6 +480,4 @@ function wait_for_ad_owner_role() {
     else
         printf " Done.\n"
     fi
-
-
 }
