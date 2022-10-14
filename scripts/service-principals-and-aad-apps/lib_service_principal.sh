@@ -197,7 +197,6 @@ function update_service_principal_owners() {
 
     sp_obj_id="$(az ad sp list --display-name "${name}" --query [].id --output tsv --only-show-errors)"
 
-    #echo ""
     printf "Updating owners of service principal \"${name}\"..."
 
     ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[id,userPrincipalName]" --output tsv --only-show-errors)
