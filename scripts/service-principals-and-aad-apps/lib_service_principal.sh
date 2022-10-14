@@ -294,10 +294,10 @@ function create_oidc_and_federated_credentials() {
     config=$(envsubst < "${script_dir_path}/oidc.json")
     printf "Checking if federated identity credential already exists..."
     fic=$(echo "$config" | jq '.federatedCredential')
-  
+
     fic_name=$(echo "$fic" | jq -r '.name')
     fic_id=$(az ad app federated-credential list --id "$app_id" --query "[?name == '$fic_name'].id" --output tsv)
- 
+
     if [[ -z "$fic_id" ]]; then
         printf "Creating federated identity credential..."
         az ad app federated-credential create --id "$app_id" --parameters "$fic" --output none
