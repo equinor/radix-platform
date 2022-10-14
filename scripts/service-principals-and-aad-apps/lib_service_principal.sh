@@ -290,7 +290,6 @@ function create_oidc_and_federated_credentials() {
 
     #printf "Update owners of service principal..."
     update_service_principal_owners "${APP_NAME}"
-    
     script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     config=$(envsubst < "${script_dir_path}/oidc.json")
     printf "Checking if federated identity credential already exists..."
