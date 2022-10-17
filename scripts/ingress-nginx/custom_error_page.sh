@@ -4,7 +4,7 @@
 ### PURPOSE
 ###
 
-# Create / update custom_error_pages for ingress-nginx
+# Create / update error page for radix
 
 #######################################################################################
 ### INPUTS
@@ -18,7 +18,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./custom_error_pages.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./custom_error_page.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -89,10 +89,10 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-ERROR_PAGE="${WORKDIR_PATH}/error_page.html"
-if ! [[ -e "${ERROR_PAGE}" ]]; then
+ERROR_PAGE_PATH="${WORKDIR_PATH}/${RADIX_ERROR_PAGE}"
+if ! [[ -e "${ERROR_PAGE_PATH}" ]]; then
     # Print to stderror
-    echo "ERROR: The error_page.html is not found in path ${ERROR_PAGE}" >&2
+    echo "ERROR: The ${RADIX_ERROR_PAGE} is not found in path ${ERROR_PAGE_PATH}" >&2
 fi
 
 #######################################################################################
@@ -118,14 +118,15 @@ verify_cluster_access
 ### Create configmap for ingress-nginx defaultbackend
 ###
 
-ERROR_PAGE_CONTENT=$(cat "${ERROR_PAGE}")
+ERROR_PAGE_CONTENT=$(cat "${ERROR_PAGE_PATH}")
 
-printf "\nCreating custom_error_pages for ingress-nginx... "
+printf "\nCreating ConfigMap for ingress-nginx defaultbackend... "
+# metadata name has to match configMap name in equinor/radix-flux/clusters/development/overlay/third-party/ingress-nginx/ingress-nginx.yaml
 cat <<EOF | kubectl apply -f - 2>&1 >/dev/null
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: custom-error-pages
+  name: custom-error-page
   namespace: ingress-nginx
 data:
   503: |
