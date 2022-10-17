@@ -116,10 +116,10 @@ fi
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-CUSTOM_ERROR_PAGES="$WORKDIR_PATH/custom_error_pages.sh"
-if ! [[ -x "$CUSTOM_ERROR_PAGES" ]]; then
+CUSTOM_ERROR_PAGE_PATH="$WORKDIR_PATH/custom_error_page.sh"
+if ! [[ -x "$CUSTOM_ERROR_PAGE_PATH" ]]; then
     # Print to stderror
-    echo "ERROR: The custom error pages script is not found or it is not executable in path $CUSTOM_ERROR_PAGES" >&2
+    echo "ERROR: The custom error pages script is not found or it is not executable in path $CUSTOM_ERROR_PAGE_PATH" >&2
 fi
 
 #######################################################################################
@@ -338,8 +338,8 @@ kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
 rm config
 
 echo "Create custom-backend-errors..."
-printf "%s► Execute %s%s\n" "${grn}" "${CUSTOM_ERROR_PAGES}" "${normal}"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" source "${CUSTOM_ERROR_PAGES}")
+printf "%s► Execute %s%s\n" "${grn}" "${CUSTOM_ERROR_PAGE_PATH}" "${normal}"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" source "${CUSTOM_ERROR_PAGE_PATH}")
 wait # wait for subshell to finish
 
 printf "Done.\n"
