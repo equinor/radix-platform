@@ -217,8 +217,8 @@ fi
 
 CHECK_APPREG_SECRETS="$WORKDIR_PATH/check_appreg_secrets.sh"
 if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
-  # Print to stderror
-  echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
+    # Print to stderror
+    echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
 fi
 
 CREATE_A_RECORDS_SCRIPT="$WORKDIR_PATH/external-dns-prerequisites/create_a_records.sh"

@@ -22,7 +22,7 @@
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "playground-2", "weekly-93"
 
-# Optional:           
+# Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -41,10 +41,10 @@ echo ""
 # Load dependencies
 LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+    exit 1
 else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
+    source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
 
 # Script vars
@@ -119,8 +119,6 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-
-
 #######################################################################################
 ### Verify task at hand
 ###
@@ -151,9 +149,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -177,7 +179,6 @@ fi
 ###
 verify_cluster_access
 
-
 #######################################################################################
 ### Create secret required by Grafana
 ###
@@ -191,7 +192,7 @@ GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name g
 # Transform clustername to lowercase
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
-# Before moving custom ingresses, the root url should be cluster-specific. 
+# Before moving custom ingresses, the root url should be cluster-specific.
 GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
 
 echo "ingress:

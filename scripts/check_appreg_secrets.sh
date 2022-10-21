@@ -91,7 +91,7 @@ function check_applications() {
     done < <(printf "%s" "${AZAPP}" | jq -c '.[]')
 }
 
-function list_secrets () {
+function list_secrets() {
     while read -r i; do
         SECRET_NAME=$(jq -n "${i}" | jq -r .displayName)
         EXPIRES=$(jq -n "${i}" | jq -r .endDateTime)
@@ -122,7 +122,6 @@ function compareDate() {
         printf "${normal}"
     fi
 }
-
 
 #######################################################################################
 ### Verify task at hand
