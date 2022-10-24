@@ -156,7 +156,7 @@ AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.37.0"
 MAX_AZ_CLI="2.40.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ] || [ $(version $AZ_CLI) -gt $(version "$MAX_AZ_CLI") ]; then
-    printf "Please have your installed version of 'az cli' somewhere between version ${MIN_AZ_CLI} and ${MAX_AZ_CLI} to make script to work. You got version $AZ_CLI\n"
+    printf "Please have your installed version of 'az cli' somewhere between version ${MIN_AZ_CLI} and ${MAX_AZ_CLI} to make script to work. You got version $AZ_CLI.${normal}\n"
     exit 1
 fi
 
