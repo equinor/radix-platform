@@ -40,8 +40,12 @@ hash az 2>/dev/null || {
 
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.37.0"
-if [ $(version ${AZ_CLI}) -lt $(version "${MIN_AZ_CLI}") ]; then
-    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "{$MIN_AZ_CLI}", please update your local installed version "${AZ_CLI}"${normal}\n"
+MAX_AZ_CLI="2.40.0"
+if [ "$(version "${AZ_CLI}")" -lt "$(version "${MIN_AZ_CLI}")" ]; then
+    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "${MIN_AZ_CLI}", please update your local installed version "${AZ_CLI}"${normal}\n"
+    exit 1
+elif [ "$(version "${AZ_CLI}")" -gt "$(version "${MAX_AZ_CLI}")" ]; then
+    printf ""${yel}"Due to breaking changes in higher releases, please downgrade your local installed version to "${MAX_AZ_CLI}"${normal}\n"
     exit 1
 fi
 
