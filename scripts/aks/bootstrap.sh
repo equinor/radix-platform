@@ -35,6 +35,11 @@
 echo ""
 echo "Start bootstrap aks instance... "
 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
