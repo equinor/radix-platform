@@ -2,6 +2,7 @@ name: stop-cluster
 on:
   schedule:
     - cron: '0 16 * * 1-5'      #etc time
+    - cron: '0 18 * * 1-5'      #etc time
 permissions:
   id-token: write
   contents: read
