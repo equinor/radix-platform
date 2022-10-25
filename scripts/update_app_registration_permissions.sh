@@ -16,13 +16,14 @@
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}' ./update_app_registration_permissions.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
 ###
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
@@ -37,12 +38,19 @@ hash az 2>/dev/null || {
     exit 1
 }
 
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.37.0"
+MIN_AZ_CLI="2.41.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
-    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
     exit 1
 fi
+
+printf "Done.\n"
 
 #######################################################################################
 ### Read inputs and configs
@@ -67,8 +75,11 @@ if [[ -z "$PERMISSIONS" ]]; then
 fi
 
 function update_app_registration_permissions() {
-    APP_REGISTRATION_ID="$(az ad sp list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId --output tsv 2> /dev/null)"
-    if [ -z "$APP_REGISTRATION_ID" ]; then printf "    Could not find app registration. Exiting...\n"; return; fi
+    APP_REGISTRATION_ID="$(az ad sp list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId --output tsv 2>/dev/null)"
+    if [ -z "$APP_REGISTRATION_ID" ]; then
+        printf "    Could not find app registration. Exiting...\n"
+        return
+    fi
     CURRENT_API_PERMISSIONS="$(az ad app permission list --id "$APP_REGISTRATION_ID")"
 
     while read -r i; do
@@ -76,15 +87,24 @@ function update_app_registration_permissions() {
         API_ID="$(az ad sp list --filter "displayname eq '$API_NAME'" | jq -r .[].appId)"
         API_PERMISSIONS=$(jq -n "$i" | jq -r '.permissions')
 
-        if [ -z "$API_ID" ]; then printf "    Could not get API_ID. Exiting...\n"; return; fi
-        if [ -z "$API_PERMISSIONS" ]; then printf "    API permissions missing. Exiting...\n"; return; fi
+        if [ -z "$API_ID" ]; then
+            printf "    Could not get API_ID. Exiting...\n"
+            return
+        fi
+        if [ -z "$API_PERMISSIONS" ]; then
+            printf "    API permissions missing. Exiting...\n"
+            return
+        fi
 
         while read -r i; do
             PERMISSION_NAME=$(jq -n "$i" | jq -r .)
             PERMISSION_ID="$(az ad sp show --id "$API_ID" --query "oauth2PermissionScopes[?value=='$PERMISSION_NAME'].id" --output tsv)"
-            CHECK_DUPLICATION=$(jq -n "$CURRENT_API_PERMISSIONS" | jq -r ".[] | .resourceAccess[] | select(.id == \"$PERMISSION_ID\") | .id") 
+            CHECK_DUPLICATION=$(jq -n "$CURRENT_API_PERMISSIONS" | jq -r ".[] | .resourceAccess[] | select(.id == \"$PERMISSION_ID\") | .id")
 
-            if [ -z "$PERMISSION_ID" ]; then printf "    Permission id missing. Exiting...\n"; return; fi
+            if [ -z "$PERMISSION_ID" ]; then
+                printf "    Permission id missing. Exiting...\n"
+                return
+            fi
             if [ -z "$CHECK_DUPLICATION" ]; then
                 printf "    Adding %s %s to %s..." "$API_NAME" "$PERMISSION_NAME" "$APP_REGISTRATION_WEB_CONSOLE"
                 az ad app permission add \
@@ -95,7 +115,7 @@ function update_app_registration_permissions() {
                 printf "Done.\n"
             else
                 printf "    %s %s exist...skipping...\n" "$API_NAME" "$PERMISSION_NAME"
-            fi;
+            fi
 
         done < <(echo "${API_PERMISSIONS[@]}" | jq -c '.[]')
 
