@@ -115,7 +115,7 @@ function updateWebSecret() {
     WEB_SECRET_ENV_FILE="web_secret.env"
 
     echo "OAUTH2_CLIENT_ID=$OAUTH2_PROXY_CLIENT_ID" >>"$WEB_SECRET_ENV_FILE"
-    
+
     kubectl patch secret "$WEB_CONSOLE_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
         --patch "$(kubectl create secret generic "$WEB_CONSOLE_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$WEB_SECRET_ENV_FILE" --dry-run=client -o yaml)"
 
