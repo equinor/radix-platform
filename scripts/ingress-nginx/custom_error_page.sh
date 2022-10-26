@@ -38,10 +38,15 @@ hash az 2>/dev/null || {
     exit 1
 }
 
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.37.0"
-if [ $(version ${AZ_CLI}) -lt $(version "${MIN_AZ_CLI}") ]; then
-    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "{$MIN_AZ_CLI}", please update your local installed version "${AZ_CLI}"${normal}\n"
+MIN_AZ_CLI="2.41.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
     exit 1
 fi
 
@@ -60,8 +65,6 @@ printf "Done.\n"
 #######################################################################################
 ### Read inputs and configs
 ###
-
-# Required inputs
 
 if [[ -z "${RADIX_ZONE_ENV}" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2

@@ -35,14 +35,16 @@
 echo ""
 echo "Start bootstrap aks instance... "
 
+#######################################################################################
+### Check for prerequisites binaries
+###
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
-#######################################################################################
-### Check for prerequisites binaries
-###
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
 echo ""
 printf "Check for neccesary executables... "
@@ -50,21 +52,29 @@ hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
     exit 1
 }
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.41.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    exit 1
+fi
+
 hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
 }
+
 printf "Done.\n"
 
 #######################################################################################
 ### Read inputs and configs
 ###
-
-# Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
@@ -121,8 +131,6 @@ fi
 ### support functions
 ###
 
-function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
-
 function getAddressSpaceForVNET() {
 
     local HUB_PEERED_VNET_JSON="$(az network vnet peering list \
@@ -156,14 +164,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
-AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.37.0"
-MAX_AZ_CLI="2.40.0"
-if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ] || [ $(version $AZ_CLI) -gt $(version "$MAX_AZ_CLI") ]; then
-    printf ""${yel}"Please have your installed version of 'az cli' somewhere between version ${MIN_AZ_CLI} and ${MAX_AZ_CLI} to make script to work. You got version $AZ_CLI.${normal}\n"
-    exit 1
-fi
 
 #######################################################################################
 ### Get unused VNET address prefix
@@ -305,7 +305,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # list of AVAILABLE public EGRESS ips assigned to the Radix Zone
     echo "Getting list of available public egress ips in $RADIX_ZONE..."
     AVAILABLE_EGRESS_IPS="$(az network public-ip list \
-        --query "[?publicIpPrefix.id=='${IPPRE_EGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")"
+        --query "[?publicIPPrefix.id=='${IPPRE_EGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")"
 
     # Select range of egress ips based on OUTBOUND_IP_COUNT
     SELECTED_EGRESS_IPS="$(echo "$AVAILABLE_EGRESS_IPS" | jq '.[0:'$OUTBOUND_IP_COUNT']')"
@@ -313,7 +313,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # list of AVAILABLE public INGRESS ips assigned to the Radix Zone
     printf "Getting list of available public ingress ips in %s..." "$RADIX_ZONE"
     AVAILABLE_INGRESS_IPS="$(az network public-ip list \
-        --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")"
+        --query "[?publicIPPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")"
 
     # Select first available ingress ip
     SELECTED_INGRESS_IPS="$(echo "$AVAILABLE_INGRESS_IPS" | jq '.[0]')"

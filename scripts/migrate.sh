@@ -48,11 +48,15 @@ hash az 2>/dev/null || {
     exit 1
 }
 
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.37.0"
-MAX_AZ_CLI="2.40.0"
-if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ] || [ $(version $AZ_CLI) -gt $(version "$MAX_AZ_CLI") ]; then
-    printf ""${yel}"Please have your installed version of 'az cli' somewhere between version ${MIN_AZ_CLI} and ${MAX_AZ_CLI} to make script to work. You got version $AZ_CLI.${normal}\n"
+MIN_AZ_CLI="2.41.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
     exit 1
 fi
 
@@ -60,38 +64,42 @@ hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
 }
+
 hash envsubst 2>/dev/null || {
     echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
     exit 1
 }
+
 hash helm 2>/dev/null || {
     echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
+
 hash velero 2>/dev/null || {
     echo -e "\nERROR: velero not found in PATH. Exiting..." >&2
     exit 1
 }
-hash jq 2>/dev/null || {
-    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
-    exit 1
-}
+
 hash htpasswd 2>/dev/null || {
     echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
     exit 1
 }
+
 hash flux 2>/dev/null || {
     echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
     exit 1
 }
+
 hash sqlcmd 2>/dev/null || {
     echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
     exit 1
 }
+
 hash kubelogin 2>/dev/null || {
     echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
     exit 1
 }
+
 printf "Done.\n"
 
 #######################################################################################
