@@ -616,6 +616,15 @@ fi
 
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
+
+#######################################################################################
+### Assign Contributor on scope of nodepool RG for AKS managed identity
+###
+
+node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}
+managed_identity_id=$(az identity show --id /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS} --query principalId -o tsv)
+az role assignment create --role Contributor --assignee "$managed_identity_id" --scope $(az group show --name ${node_pool_resource_group} --query id -o tsv)
+
 #######################################################################################
 ### Get api server whitelist
 ###
