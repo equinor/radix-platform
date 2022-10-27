@@ -266,6 +266,19 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+
+#######################################################################################
+### Verifying owner on scope of subscription is activated
+###
+
+printf "Verifying that logged in AAD user has Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription... "
+is_owner=$(az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Owner\$" | wc -l)
+if [[ "$is_owner" != "1" ]]; then
+  echo -e "ERROR: Logged in user is not Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
+  exit 1
+fi
+printf "Done.\n"
+
 #######################################################################################
 ### Verify task at hand
 ###
