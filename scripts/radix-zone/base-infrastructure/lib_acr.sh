@@ -222,7 +222,7 @@ function create_acr_task() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
     local AGENT_POOL_NAME="$3"
-    local TASK_YAML="task.yaml"
+    local TASK_YAML="/tmp/task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
     cat <<EOF >>${TASK_YAML}
 version: v1.1.0
@@ -259,7 +259,7 @@ function create_acr_task_build_only() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
     local AGENT_POOL_NAME="$3"
-    local TASK_YAML="task.yaml"
+    local TASK_YAML="/tmp/task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
     cat <<EOF >>${TASK_YAML}
 version: v1.1.0
@@ -292,7 +292,7 @@ function create_acr_task_with_cache() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
     local AGENT_POOL_NAME="$3"
-    local TASK_YAML="task.yaml"
+    local TASK_YAML="/tmp/task.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
     cat <<EOF >>${TASK_YAML}
 version: v1.1.0
@@ -327,7 +327,7 @@ EOF
 function create_internal_acr_task() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
-    local TASK_YAML="task_internal.yaml"
+    local TASK_YAML="/tmp/task_internal.yaml"
     test -f "$TASK_YAML" && rm "$TASK_YAML"
     cat <<EOF >>${TASK_YAML}
 version: v1.1.0
