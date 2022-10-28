@@ -23,7 +23,7 @@
 ### HOW TO USE
 ###
 
-# KEYVAULT_LIST="radix-vault-dev,radix-vault-prod" ./update_auth_secret.sh
+# KEYVAULT_LIST="radix-vault-dev,radix-vault-prod,radix-vault-c2-prod" ./update_auth_secret.sh
 
 
 #######################################################################################
