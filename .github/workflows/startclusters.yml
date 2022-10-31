@@ -1,7 +1,7 @@
 name: start-cluster
 on:
   schedule:
-    - cron: '0 4 * * 1-5' #etc time
+    - cron: '0 5 * * 1-5' #utc time
 
 permissions:
   id-token: write
