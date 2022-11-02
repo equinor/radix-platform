@@ -317,7 +317,7 @@ kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
 ### Used in GHA to determine which cluster shall be powered on daily
 echo ""
 if [[ $CLUSTER_TYPE == "development" ]]; then
-    CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) | {name: .name, resourceGroup: .resourceGroup}]}]')
+    CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select((.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) and (.powerState.code!="Stopped")) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code}]}]')
     while read -r list; do
         CLUSTER=$(jq -n "${list}" | jq -r .name)
         CGROUP=$(jq -n "${list}" | jq -r .resourceGroup)
