@@ -52,28 +52,43 @@ echo "Start bootstrap of ingress-nginx... "
 ### Check for prerequisites binaries
 ###
 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
     exit 1
 }
-hash kubectl 2>/dev/null || {
-    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
-    exit 1
-}
+
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.41.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    exit 1
+fi
+
+hash kubectl 2>/dev/null || {
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 printf "All is good."
 echo ""
 
 #######################################################################################
 ### Read inputs and configs
 ###
-
-# Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
@@ -106,6 +121,18 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 #######################################################################################
+### Resolve dependencies on other scripts
+###
+
+WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CUSTOM_ERROR_PAGE_PATH="$WORKDIR_PATH/custom_error_page.sh"
+if ! [[ -x "$CUSTOM_ERROR_PAGE_PATH" ]]; then
+    # Print to stderror
+    echo "ERROR: The custom error pages script is not found or it is not executable in path $CUSTOM_ERROR_PAGE_PATH" >&2
+fi
+
+#######################################################################################
 ### Prepare az session
 ###
 
@@ -113,8 +140,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
-
 
 #######################################################################################
 ### Verify task at hand
@@ -147,9 +172,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -173,7 +202,6 @@ fi
 ###
 verify_cluster_access
 
-
 #######################################################################################
 ### Create secret required by ingress-nginx
 ###
@@ -187,7 +215,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
 
     # list of AVAILABLE public ips assigned to the Radix Zone
     echo "Getting list of available public ingress ips in $RADIX_ZONE..."
-    AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
+    AVAILABLE_INGRESS_IPS=$(az network public-ip list --query "[?publicIPPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")
 
     # Select first available ingress ip
     SELECTED_INGRESS_IP="$(echo "$AVAILABLE_INGRESS_IPS" | jq '.[0]')"
@@ -218,9 +246,17 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
         while true; do
             read -r -p "Is this correct? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; echo "Sounds good, continuing."; break;;
-                [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                echo "Sounds good, continuing."
+                break
+                ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
@@ -250,7 +286,10 @@ else
             --tier Regional \
             --query "publicIp.ipAddress" \
             --output tsv \
-            --only-show-errors) || { echo "ERROR: Could not create Public IP. Quitting..." >&2; exit 1; }
+            --only-show-errors) || {
+            echo "ERROR: Could not create Public IP. Quitting..." >&2
+            exit 1
+        }
         printf "Done.\n"
     else
         SELECTED_INGRESS_IP_RAW_ADDRESS="${IP_EXISTS}"
@@ -278,7 +317,6 @@ az network nsg rule create \
 
 printf "Done.\n"
 
-
 printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
 az network vnet subnet update \
     --vnet-name "${VNET_NAME}" \
@@ -290,12 +328,12 @@ az network vnet subnet update \
     --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
 printf "Done.\n"
 
+kubectl create namespace ingress-nginx --dry-run=client -o yaml |
+    kubectl apply -f -
+
 kubectl create secret generic ingress-nginx-raw-ip --namespace ingress-nginx \
     --from-literal=rawIp=$SELECTED_INGRESS_IP_RAW_ADDRESS \
     --dry-run=client -o yaml |
-    kubectl apply -f -
-
-kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -
 
 echo "controller:
@@ -303,10 +341,15 @@ echo "controller:
     loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
 
 kubectl create secret generic ingress-nginx-ip --namespace ingress-nginx \
-            --from-file=./config \
-            --dry-run=client -o yaml |
-            kubectl apply -f -
+    --from-file=./config \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
 
 rm config
+
+echo "Create custom-backend-errors..."
+printf "%s► Execute %s%s\n" "${grn}" "${CUSTOM_ERROR_PAGE_PATH}" "${normal}"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" source "${CUSTOM_ERROR_PAGE_PATH}")
+wait # wait for subshell to finish
 
 printf "Done.\n"

@@ -75,17 +75,17 @@ if [[ ! -f "$LIB_MANAGED_IDENTITY_PATH" ]]; then
 else
     source "$LIB_MANAGED_IDENTITY_PATH"
 fi
+LIB_ACR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../radix-zone/base-infrastructure/lib_acr.sh"
+if [[ ! -f "$LIB_ACR_PATH" ]]; then
+    echo "ERROR: The dependency LIB_ACR_PATH=$LIB_ACR_PATH is invalid, the file does not exist." >&2
+    exit 1
+else
+    source "$LIB_ACR_PATH"
+fi
 AD_APP_MANIFEST_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/manifest-server.json"
 if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
     echo "ERROR: The dependency AD_APP_MANIFEST_PATH=$AD_APP_MANIFEST_PATH is invalid, the file does not exist." >&2
     exit 1
-fi
-update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
-if [[ -f "$update_app_registration_permissions" ]]; then
-    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
-    exit 1
-else
-    source "$update_app_registration_permissions"
 fi
 
 #######################################################################################
@@ -160,6 +160,21 @@ if [[ $USER_PROMPT == true ]]; then
         esac
     done
 fi
+
+
+#######################################################################################
+### App registration permissions
+###
+
+function update_app_registrations(){
+    update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
+    if [[ -f "$update_app_registration_permissions" ]]; then
+        echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
+        exit 1
+    else
+        source "$update_app_registration_permissions"
+    fi
+}
 
 #######################################################################################
 ### Resource groups
@@ -339,115 +354,6 @@ function create_inbound_public_ip_prefix() {
     fi
 }
 
-function create_acr() {
-    # Create ACR
-    if [[ -z $(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
-        printf "Azure Container Registry ${AZ_RESOURCE_CONTAINER_REGISTRY} does not exist.\n"
-        if [[ $USER_PROMPT == true ]]; then
-            while true; do
-                read -p "Create Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
-                case $yn in
-                [Yy]*) break ;;
-                [Nn]*)
-                    echo ""
-                    echo "Return."
-                    return
-                    ;;
-                *) echo "Please answer yes or no." ;;
-                esac
-            done
-        fi
-
-        printf "Creating Azure Container Registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
-        az acr create \
-            --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
-            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-            --sku "Premium" \
-            --location "${AZ_RADIX_ZONE_LOCATION}" \
-            --subscription "${AZ_SUBSCRIPTION_ID}" \
-            --default-action "Deny" \
-            --public-network-enabled "true" \
-            --output none
-        printf "...Done\n"
-    else
-        printf "ACR ${AZ_RESOURCE_CONTAINER_REGISTRY} already exists.\n"
-    fi
-}
-
-function set_access_control_on_acr() {
-    # Grant access for cluster public IP range.
-    printf "Getting Publix IP Prefix..."
-    IP_PREFIX=$(az network public-ip prefix show \
-        --name "${AZ_IPPRE_OUTBOUND_NAME}" \
-        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --query "ipPrefix" \
-        --output tsv)
-    if [[ -z ${IP_PREFIX} ]]; then
-        printf "ERROR: Could not get Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME}.\n"
-        return
-    fi
-    printf " Done.\n"
-
-    if [[ -n $(az acr show --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" --output tsv) ]]; then
-        if [[ -z $(az acr network-rule list --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "ipRules[?ipAddressOrRange=='${IP_PREFIX}'].ipAddressOrRange" --output tsv) ]]; then
-            if [[ $USER_PROMPT == true ]]; then
-                while true; do
-                    read -p "Add network rule to registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}? (Y/n) " yn
-                    case $yn in
-                        [Yy]* ) break;;
-                        [Nn]* ) echo ""; echo "Return."; return;;
-                        * ) echo "Please answer yes or no.";;
-                    esac
-                done
-            fi
-            printf "Adding network rule to registry: ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n"
-            az acr network-rule add \
-                --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
-                --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-                --subscription "${AZ_SUBSCRIPTION_ID}" \
-                --ip-address "${IP_PREFIX}" \
-                --output none
-            printf "...Done\n"
-        else
-            printf "Network rule already exists.\n"
-        fi
-    else
-        printf "ERROR: ACR ${AZ_RESOURCE_CONTAINER_REGISTRY} does not exist.\n"
-    fi
-}
-
-function set_permissions_on_acr() {
-    local scope
-    scope="$(az acr show --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
-
-    # Available roles
-    # https://github.com/Azure/acr/blob/master/docs/roles-and-permissions.md
-    # Note that to be able to use "az acr build" you have to have the role "Contributor".
-
-    local id
-    printf "Working on container registry \"${AZ_RESOURCE_CONTAINER_REGISTRY}\": "
-
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..." # radix-cr-reader-dev
-    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER} --query [].appId --output tsv)"
-    # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
-    # Configure new roles
-    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
-
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..." # radix-cr-cicd-dev
-    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query [].appId --output tsv)"
-    # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
-    # Configure new roles
-    az role assignment create --assignee "${id}" --role Contributor --scope "${scope}" --output none
-
-    printf "...Done\n"
-}
-
-function create_acr_tasks() {
-    ./acr_task.sh
-}
 
 function set_permissions_on_dns() {
     local scope
@@ -680,12 +586,13 @@ END
 ### MAIN
 ###
 
+update_app_registrations
 create_resource_groups
 create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
-#set_access_control_on_acr
+set_access_control_on_acr $AZ_IPPRE_OUTBOUND_NAME $AZ_RESOURCE_GROUP_COMMON $AZ_SUBSCRIPTION_ID $AZ_RESOURCE_CONTAINER_REGISTRY
 create_base_system_users_and_store_credentials
 update_app_registration
 create_managed_identities_and_role_assignments

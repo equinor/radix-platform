@@ -25,19 +25,37 @@
 ### Check for prerequisites binaries
 ###
 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.41.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    exit 1
+fi
+
 printf "Done.\n"
 
 #######################################################################################
 ### Read inputs and configs
 ###
-
-# Required inputs
 
 if [[ -z "${RADIX_ZONE_ENV}" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
@@ -190,7 +208,7 @@ if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     IPPRE_INGRESS_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${AZ_IPPRE_INBOUND_NAME}"
     USED_INGRESS_IP=$(az network public-ip list \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --query "[?publicIpPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup=='mc_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].{name:name, id:id, ipAddress:ipAddress}")
+        --query "[?publicIPPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup=='mc_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].{name:name, id:id, ipAddress:ipAddress}")
     SELECTED_INGRESS_IP="$(echo "${USED_INGRESS_IP}" | jq '.[0]')"
     SELECTED_INGRESS_IP_ID=$(echo "${SELECTED_INGRESS_IP}" | jq -r '.id')
     SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show \

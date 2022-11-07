@@ -31,6 +31,13 @@
 ### START
 ###
 
+echo ""
+echo "Start teardown of aks instance... "
+
+#######################################################################################
+### Check for prerequisites binaries
+###
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
@@ -39,40 +46,40 @@ normal=$(tput sgr0)
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
 echo ""
-echo "Start teardown of aks instance... "
-
-#######################################################################################
-### Check for prerequisites binaries
-###
-
-echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.41.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    exit 1
+fi
+
 hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
 }
-printf "Done.\n"
 
-AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.37.0"
-if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
-    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
-    exit 1
-fi
 hash kubelogin 2>/dev/null || {
     echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
     exit 1
 }
 
+printf "Done.\n"
+
 #######################################################################################
 ### Read inputs and configs
 ###
 
-# Required inputs
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
@@ -91,6 +98,14 @@ fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
+
+LIB_ACR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../radix-zone/base-infrastructure/lib_acr.sh"
+if [[ ! -f "$LIB_ACR_PATH" ]]; then
+    echo "ERROR: The dependency LIB_ACR_PATH=$LIB_ACR_PATH is invalid, the file does not exist." >&2
+    exit 1
+else
+    source "$LIB_ACR_PATH"
+fi
 
 # Source util scripts
 
@@ -255,6 +270,8 @@ fi
 printf "Verifying that cluster exist and/or the user can access it... "
 # We use az aks get-credentials to test if both the cluster exist and if the user has access to it.
 
+cluster_outbound_ip_address=$(get_cluster_outbound_ip $CLUSTER_NAME $AZ_SUBSCRIPTION_ID)
+
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
@@ -288,6 +305,18 @@ az aks delete \
     --output none \
     --only-show-errors
 echo "Done."
+
+#######################################################################################
+### Delete ACR network rule
+###
+
+echo ""
+echo "Deleting ACR network rule... "
+az acr network-rule remove \
+    --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --ip-address "${cluster_outbound_ip_address}"
 
 #######################################################################################
 ### Delete Redis Cache

@@ -119,6 +119,14 @@ fi
 # Source util scripts
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
+LIB_ACR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/radix-zone/base-infrastructure/lib_acr.sh"
+if [[ ! -f "$LIB_ACR_PATH" ]]; then
+    echo "ERROR: The dependency LIB_ACR_PATH=$LIB_ACR_PATH is invalid, the file does not exist." >&2
+    exit 1
+else
+    source "$LIB_ACR_PATH"
+fi
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -346,6 +354,8 @@ wait
 
 #######################################################################################
 ### Install Flux
+
+set_access_control_on_acr $AZ_IPPRE_OUTBOUND_NAME $AZ_RESOURCE_GROUP_COMMON $AZ_SUBSCRIPTION_ID $AZ_RESOURCE_CONTAINER_REGISTRY $MIGRATION_STRATEGY $CLUSTER_NAME
 
 echo ""
 echo "Install Flux v2"

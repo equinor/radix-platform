@@ -48,10 +48,15 @@ hash az 2>/dev/null || {
     exit 1
 }
 
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.37.0"
+MIN_AZ_CLI="2.41.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
-    printf ""${yel}"Due to the deprecation of Azure Active Directory (Azure AD) Graph in version "$MIN_AZ_CLI", please update your local installed version "$AZ_CLI"${normal}\n"
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
     exit 1
 fi
 
@@ -59,38 +64,42 @@ hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
     exit 1
 }
+
 hash envsubst 2>/dev/null || {
     echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
     exit 1
 }
+
 hash helm 2>/dev/null || {
     echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
     exit 1
 }
+
 hash velero 2>/dev/null || {
     echo -e "\nERROR: velero not found in PATH. Exiting..." >&2
     exit 1
 }
-hash jq 2>/dev/null || {
-    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
-    exit 1
-}
+
 hash htpasswd 2>/dev/null || {
     echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
     exit 1
 }
+
 hash flux 2>/dev/null || {
     echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
     exit 1
 }
+
 hash sqlcmd 2>/dev/null || {
     echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
     exit 1
 }
+
 hash kubelogin 2>/dev/null || {
     echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
     exit 1
 }
+
 printf "Done.\n"
 
 #######################################################################################
@@ -217,8 +226,8 @@ fi
 
 CHECK_APPREG_SECRETS="$WORKDIR_PATH/check_appreg_secrets.sh"
 if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
-  # Print to stderror
-  echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
+    # Print to stderror
+    echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
 fi
 
 CREATE_A_RECORDS_SCRIPT="$WORKDIR_PATH/external-dns-prerequisites/create_a_records.sh"

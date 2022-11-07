@@ -15,7 +15,41 @@
 #   WEB_COMPONENT           (Mandatory)
 #   RADIX_WEB_CONSOLE_ENV   (Mandatory)
 
-# Validate mandatory input
+#######################################################################################
+### Check for prerequisites binaries
+###
+
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
+echo ""
+printf "Check for neccesary executables... "
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
+
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
+    exit 1
+}
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.41.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    exit 1
+fi
+
+printf "Done.\n"
+
+#######################################################################################
+### Read inputs and configs
+###
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
@@ -65,8 +99,8 @@ printf "Done.\n"
 #######################################################################################
 ### Verify cluster access
 ###
-verify_cluster_access
 
+verify_cluster_access
 
 function updateIpsEnvVars() {
 
@@ -92,16 +126,15 @@ function updateIpsEnvVars() {
 
     # Get list of IPs for Public IPs assigned to Cluster Type
     printf "Getting list of IPs from Public IP Prefix %s..." "${ippre_name}"
-    IP_PREFIXES="$(az network public-ip list --query "[?publicIpPrefix.id=='${ippre_id}'].ipAddress" --output json)"
+    IP_PREFIXES="$(az network public-ip list --query "[?publicIPPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
     if [[ "${IP_PREFIXES}" == "[]" ]]; then
         echo -e "\nERROR: Found no IPs assigned to the cluster." >&2
         return
     fi
 
-    # Loop through list of IPs and create a comma separated string. 
-    for ippre in $(echo "${IP_PREFIXES}" | jq -c '.[]')
-    do
+    # Loop through list of IPs and create a comma separated string.
+    for ippre in $(echo "${IP_PREFIXES}" | jq -c '.[]'); do
         if [[ -z $IP_LIST ]]; then
             IP_LIST=$(echo "${ippre}" | jq -r '.')
         else
@@ -116,13 +149,13 @@ function updateIpsEnvVars() {
     RADIX_API_FQDN="server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
     while true; do
         API_REQUEST=$(curl -s -X PATCH "https://${RADIX_API_FQDN}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
-        -H "accept: application/json" \
-        -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
-        -H "Content-Type: application/json" \
-        -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
+            -H "accept: application/json" \
+            -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
 
         if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
-            try_nr=$(($try_nr+1))
+            try_nr=$(($try_nr + 1))
             if [ "$try_nr" -lt $MAX_TRIES ]; then
                 sleep_seconds=$(($try_nr * 4))
                 echo -e "\nERROR: Patch request to ${RADIX_API_FQDN} failed. Sleeping ${sleep_seconds} seconds and retrying..." >&2

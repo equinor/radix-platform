@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 
-
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Bootstrap radix service principals: create them and store credentials in az keyvault
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -18,32 +16,41 @@
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
-
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start bootstrap radix service principals... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
 ###
 
 printf "Check for neccesary executables for \"$(basename ${BASH_SOURCE[0]})\"... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting... " >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
+    exit 1
+}
+hash gh 2>/dev/null || {
+    echo -e "\nERROR: gh (GitHub CLI) not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -69,12 +76,11 @@ fi
 # Load dependencies
 LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
+    exit 1
 else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
+    source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -86,8 +92,6 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 exit_if_user_does_not_have_required_ad_role
-
-
 
 #######################################################################################
 ### Verify task at hand
@@ -120,9 +124,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -135,13 +143,11 @@ fi
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
-
-
+create_oidc_and_federated_credentials "ar-radix-platform-github-dev-cluster-maintenance" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operation"
 
 #######################################################################################
 ### END
 ###
-
 
 echo ""
 echo "Bootstrap of radix service principals done!"
