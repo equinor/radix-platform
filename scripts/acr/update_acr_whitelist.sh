@@ -166,7 +166,7 @@ while true; do
 done
 
 for ip_to_add in ${ips_to_add}; do
-  printf "Deleting ${ip_to_add}...\n"
+  printf "Adding ${ip_to_add}...\n"
   az acr network-rule add --ip-address "${ip_to_add}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
 done
 
