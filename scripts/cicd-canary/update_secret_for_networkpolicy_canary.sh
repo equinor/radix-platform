@@ -63,6 +63,11 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+#######################################################################################
+### Verify cluster access
+###
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
+verify_cluster_access
 
 function getApiTokenResource() {
     # Get auth token for Radix API
@@ -210,6 +215,17 @@ function updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret(){
     done
 }
 
+function restartAllEnvironments(){
+    printf "Restart networkpolicy-canary app environments..."
+    getApiTokenResource || return 1
+    getApiToken || return 1
+    getAppEnvironments && getSecret
+    for app_env in $APP_ENVIRONMENTS; do
+        kubectl rollout restart deployment -n radix-networkpolicy-canary-${app_env} web
+    done
+}
+
 ### MAIN
 updateNetworkPolicyCanaryHttpPassword || exit 1
 updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret || exit 1
+restartAllEnvironments || exit 1
