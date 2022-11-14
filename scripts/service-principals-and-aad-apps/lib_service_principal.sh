@@ -41,7 +41,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     description="$4"
     secret_id="$5"
     expiration_date="$6"
-    tenantId="$(az ad sp show --id ${id} --query appOwnerTenantId --output tsv)"
+    tenantId="$(az ad sp show --id ${id} --query appOwnerOrganizationId --output tsv)"
     script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     template_path="${script_dir_path}/template-credentials.json"
 
@@ -95,7 +95,7 @@ function update_app_credentials_in_az_keyvault() {
     secret_id="$5"
     expiration_date="$6"
     keyvault="$7"
-    # tenantId="$(az ad app show --id ${id} --query appOwnerTenantId --output tsv)"
+    # tenantId="$(az ad app show --id ${id} --query appOwnerOrganizationId --output tsv)"
     script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     template_path="${script_dir_path}/template-credentials.json"
 
