@@ -105,6 +105,8 @@ This script requires several secret files that contain `RadixRegistration` objec
 * `radix-github-webhook-radixregistration-values`
 * `radix-public-site-values`
 * `radix-web-console-radixregistration-values`
+* `radix-vulnerability-scanner-api-radixregistration-values`
+* `radix-servicenow-proxy-radixregistration-values`
 
 #### Step 5 Create Github webhooks for Radix apps
 

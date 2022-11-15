@@ -463,8 +463,30 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Used by web console for login and other AD information"
 }
 
+function create_servicenow_proxy_server_app_registration() {
+    create_app_registration_and_service_principal "$APP_REGISTRATION_SERVICENOW_SERVER"
+    set_app_registration_identifier_uris "$APP_REGISTRATION_SERVICENOW_SERVER"
+
+    scopes=$(cat <<-EOF
+[
+    {
+        "value":"Application.Read",
+        "type":"User",
+        "isEnabled":true,
+        "userConsentDescription":"Allows the app to read ServiceNow applications", 
+        "userConsentDisplayName":"Read applications from ServiceNow",
+        "adminConsentDescription":"Allows the app to read ServiceNow applications", 
+        "adminConsentDisplayName":"Read applications from ServiceNow"
+    }
+]
+EOF
+)
+
+    set_app_registration_api_scopes "$APP_REGISTRATION_SERVICENOW_SERVER" "$scopes"
+}
+
 function update_app_registration() {
-    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}{"api": "Azure Kubernetes Service AAD Server","permissions": ["user.read"]}' source "${update_app_registration_permissions}")
+    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}{"api": "Azure Kubernetes Service AAD Server","permissions": ["user.read"]}{"api": "ar-radix-servicenow-proxy-server","permissions": ["Application.Read"]}' source "${update_app_registration_permissions}")
 }
 
 # Create managed identities
@@ -594,6 +616,7 @@ create_inbound_public_ip_prefix
 create_acr
 set_access_control_on_acr $AZ_IPPRE_OUTBOUND_NAME $AZ_RESOURCE_GROUP_COMMON $AZ_SUBSCRIPTION_ID $AZ_RESOURCE_CONTAINER_REGISTRY
 create_base_system_users_and_store_credentials
+create_servicenow_proxy_server_app_registration
 update_app_registration
 create_managed_identities_and_role_assignments
 set_permissions_on_acr

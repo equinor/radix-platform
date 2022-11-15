@@ -79,3 +79,13 @@ RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${
     https://api.github.com/repos/equinor/radix-platform/hooks \
     -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
     echo $RESPONSE | jq
+
+# Webhook for the radix-servicenow-proxy project
+WEBHOOK_HOSTNAME=$(kubectl get ing --namespace radix-github-webhook-prod webhook -o json| jq --raw-output .spec.rules[0].host)
+SHARED_SECRET=$(kubectl get rr radix-servicenow-proxy -o json | jq .spec.sharedSecret)
+echo "Using webhook hostname:" $WEBHOOK_HOSTNAME "and shared secret" $SHARED_SECRET
+
+RESPONSE=$(curl -X POST -H "Content-Type: application/json" -u ${GH_USERNAME}:${GITHUB_PAT_TOKEN} \
+    https://api.github.com/repos/equinor/radix-servicenow-proxy/hooks \
+    -d '{"name":"web", "active": true, "config": { "url": "https://'${WEBHOOK_HOSTNAME}/events/github'", "content_type": "json", "secret": '"${SHARED_SECRET}"' }}') && \
+    echo $RESPONSE | jq 

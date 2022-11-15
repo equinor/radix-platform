@@ -1,17 +1,29 @@
 #!/usr/bin/env bash
 
-# PURPOSE
+#######################################################################################
+### PURPOSE
+###
+
 # Configures the secrets for radix cost allocation API on the cluster given the context.
 
+#######################################################################################
+### HOW TO USE
+###
+
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env ./update_secret_for_cost_allocation_api.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_cost_allocation_api.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env ./update_secret_for_cost_allocation_api.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_cost_allocation_api.sh)
 #
 
-# INPUTS:
-#   RADIX_ZONE_ENV          (Mandatory)
+#######################################################################################
+### INPUTS
+###
+
+# Required:
+# - RADIX_ZONE_ENV      : Path to *.env file
+# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 echo ""
 echo "Updating secret for the radix cost allocation API"
@@ -29,6 +41,11 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
+    exit 1
+fi
+
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -41,6 +58,19 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
+
+#######################################################################################
+### Connect kubectl
+###
+
+# Exit if cluster does not exist
+printf "Connecting kubectl..."
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
+    # Send message to stderr
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 0        
+}
+printf "...Done.\n"
 
 #######################################################################################
 ### Verify cluster access
@@ -99,6 +129,10 @@ function updateSecret() {
 
     rm radix-cost-allocation-api-secrets.env
 
+    echo "Restarting radix-cost-allocation-api... "
+    kubectl rollout restart deployment -n radix-cost-allocation-api-qa
+    kubectl rollout restart deployment -n radix-cost-allocation-api-prod
+    
     echo "Secret updated"
 }
 
