@@ -190,34 +190,39 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
 fi
 
 #######################################################################################
-### CLUSTER?
+### Connect kubectl
 ###
 
-kubectl_context="$(kubectl config current-context)"
-
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
-    echo "kubectl is ready..."
-else
-    echo "ERROR: Please set your kubectl current-context to be $CLUSTER_NAME" >&2
-    exit 1
-fi
+# Exit if cluster does not exist
+printf "Connecting kubectl..."
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
+    # Send message to stderr
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 0
+}
+printf "...Done.\n"
 
 #######################################################################################
 ### Verify cluster access
 ###
+
 verify_cluster_access
 
 printf "\nWorking on namespace..."
-if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]];then
+if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
     kubectl create ns flux-system 2>&1 >/dev/null
 fi
 printf "...Done"
@@ -257,7 +262,7 @@ az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
     --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
     --file sp_credentials.json \
-        2>&1 >/dev/null
+    2>&1 >/dev/null
 
 kubectl create secret docker-registry radix-docker \
     --namespace="flux-system" \
@@ -283,9 +288,8 @@ ASSIGNED_IPS="$(az network public-ip list \
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then
     echo "ERROR: Could not find Public IP of cluster." >&2
 else
-    # Loop through list of IPs and create a comma separated string. 
-    for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]')
-    do
+    # Loop through list of IPs and create a comma separated string.
+    for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]'); do
         if [[ -z $IP_LIST ]]; then
             IP_LIST=$(echo $ipaddress)
         else
@@ -338,14 +342,13 @@ flux bootstrap git \
     --components-extra=image-reflector-controller,image-automation-controller \
     --version="$FLUX_VERSION" \
     --silent
-if [[ "$?" != "0" ]]
-then
-  printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
-  rm "$FLUX_PRIVATE_KEY_NAME"
-  exit 1
+if [[ "$?" != "0" ]]; then
+    printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
+    rm "$FLUX_PRIVATE_KEY_NAME"
+    exit 1
 else
-  rm "$FLUX_PRIVATE_KEY_NAME"
-  echo " Done."
+    rm "$FLUX_PRIVATE_KEY_NAME"
+    echo " Done."
 fi
 
 echo -e ""
