@@ -120,7 +120,10 @@ function resetAppRegistrationPassword() {
         --append \
         --query password \
         --output tsv \
-        --only-show-errors) || { echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_SERVICENOW_CLIENT\"." >&2; return 1; }
+        --only-show-errors) || { 
+        echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_SERVICENOW_CLIENT\"." >&2
+        return 1
+    }
     expiration_date="$(az ad app credential list --id "${APP_REGISTRATION_CLIENT_ID}" --query "sort_by([?displayName=='$displayName'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}" | jq -r .[].endDateTime | sed 's/\..*//')"
     az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${KV_SECRET_SERVICENOW_CLIENT_SECRET}" --value "${password}" --expires "${expiration_date}" --output none || exit
     
