@@ -121,7 +121,6 @@ function updateSecret() {
 
     rm radix-servicenow-proxy-secrets.env
 
-    
     echo "Restarting radix-servicenow-proxy... "
     kubectl rollout restart deployment -n radix-servicenow-proxy-qa
     kubectl rollout restart deployment -n radix-servicenow-proxy-prod
