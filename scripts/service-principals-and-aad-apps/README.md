@@ -132,12 +132,7 @@ Each of them are used by one or multiple clusters and is defined by the OAUTH2_P
 
 ### Refresh Radix ServiceNow Proxy Client app registration credentials
 
-App registration `ar_radix_servicenow_proxy_client` is used by the `radix-servicenow-proxy` application to request an access token valid for bearer authorization with the ServiceNow API.
-
-Each cluster zone+environment has its own secret in this app registration.
-
-1. Refresh app registration secret and store it in keyvault for a specific zone+environment with script [`refresh_ar_radix_servicenow_proxy_client_credentials.sh`](./refresh_ar_radix_servicenow_proxy_client_credentials.sh).
-2. Update the `PROXY_SERVICENOW_CLIENT_SECRET` secret for Radix application `radix-servicenow-proxy` with script [`update_secret_for_radix_servicenow_proxy.sh`](./../update_secret_for_radix_servicenow_proxy.sh). The script updates the secret in qa and prod environments and restarts the deployment.
+See [README.md](../servicenow-proxy/README.md)
 
 
 ## Delete a service principal and related stored credentials

@@ -4,7 +4,7 @@
 ### PURPOSE
 ###
 
-# Update the client secret for servicenow client app registration and store in keyvault.
+# Update keyvault with new API key.
 
 #######################################################################################
 ### INPUTS
@@ -12,23 +12,24 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
+# - API_KEY             : The API key
 
 #######################################################################################
 ### HOW TO USE
 ###
 
 # Example 1:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env ./refresh_servicenow_proxy_client_app_credentials.sh
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env API_KEY=the_key ./refresh_api_key.sh
 
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env ./refresh_servicenow_proxy_client_app_credentials.sh)
+# (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env API_KEY=the_key ./refresh_api_key.sh)
 
 #######################################################################################
 ### START
 ###
 
 echo ""
-echo "Updating secret for the servicenow client app registration"
+echo "Update API key in keyvault"
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -38,10 +39,6 @@ echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
-    exit 1
-}
-hash jq 2>/dev/null || {
-    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
 printf "All is good."
@@ -66,6 +63,11 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+if [[ -z "$API_KEY" ]]; then
+    echo "ERROR: Please provide API_KEY" >&2
+    exit 1
+fi
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -80,7 +82,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Update secret for the servicenow client app registration will use the following configuration:"
+echo -e "Update API key in vekvault:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -88,8 +90,7 @@ echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  KEYVAULT_SECRET                  : $KV_SECRET_SERVICENOW_CLIENT_SECRET"
-echo -e "   -  APP_REGISTRATION_NAME            : $APP_REGISTRATION_SERVICENOW_CLIENT"
+echo -e "   -  KEYVAULT_SECRET                  : $KV_SECRET_SERVICENOW_API_KEY"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -115,30 +116,14 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
-function resetAppRegistrationPassword() {
-    # Generate new secret for App Registration.
-    printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_SERVICENOW_CLIENT\"...\n"
-    APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_SERVICENOW_CLIENT" | jq -r '.[].appId')
-    if [ -z "$APP_REGISTRATION_CLIENT_ID" ]; then
-        echo -e "\nERROR: Could not find app registration \"$APP_REGISTRATION_SERVICENOW_CLIENT\"." >&2; 
-        return 1;
-    fi
-    displayName=${RADIX_ZONE}-${RADIX_ENVIRONMENT}
-    password=$(az ad app credential reset \
-        --id "$APP_REGISTRATION_CLIENT_ID" \
-        --display-name "$displayName" \
-        --append \
-        --query password \
-        --output tsv \
-        --only-show-errors) || { 
-        echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_SERVICENOW_CLIENT\"." >&2
-        return 1
-    }
-    expiration_date="$(az ad app credential list --id "${APP_REGISTRATION_CLIENT_ID}" --query "sort_by([?displayName=='$displayName'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}" | jq -r .[].endDateTime | sed 's/\..*//')"
-    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${KV_SECRET_SERVICENOW_CLIENT_SECRET}" --value "${password}" --expires "${expiration_date}" --output none || exit
-    
-    printf " Done.\n"
-}
+printf "Updating API key in keyvault,,, "
 
-### MAIN
-resetAppRegistrationPassword || exit 1
+expiration_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="12 months") # The API key has no real expiration date
+
+az keyvault secret set \
+    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+    --name "${KV_SECRET_SERVICENOW_API_KEY}" \
+    --value "${API_KEY}" \
+    --expires "${expiration_date}" --output none || exit
+
+printf "Done.\n"
