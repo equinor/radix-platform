@@ -10,6 +10,6 @@ spec:
   deployKey: ${DEPLOY_KEY}
   deployKeyPublic: ${DEPLOY_KEY_PUBLIC}
   machineUser: ${MACHINE_USER}
-  owner: ${OWNER}
   sharedSecret: ${SHARED_SECRET}
-  wbs: ${WBS}
+  configurationItem: ${CONFIGURATION_ITEM}
+

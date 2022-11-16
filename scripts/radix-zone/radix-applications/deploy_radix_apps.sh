@@ -96,11 +96,10 @@ function create_and_register_deploy_key_and_store_credentials() {
     local github_pat        # Input 4
     local ad_groups         # Input 5
     local shared_secret     # Input 6, optional
-    local owner_email       # Input 7, optional
-    local config_branch     # Input 8, optional
-    local machine_user      # Input 9, optional
-    local wbs               # Input 10, optional
-    local deploy_key_name   # Input 11, optional
+    local config_branch     # Input 7, optional
+    local machine_user      # Input 8, optional
+    local deploy_key_name   # Input 9, optional
+    local configuration_item # Input 109, optional
     local template_path
     local check_key
     local private_key
@@ -113,11 +112,10 @@ function create_and_register_deploy_key_and_store_credentials() {
     github_pat="${4}"
     ad_groups="${5}"
     shared_secret="${6}"
-    owner_email="${7:-Radix@StatoilSRM.onmicrosoft.com}"
-    config_branch="${8:-master}"
-    machine_user="${9:-false}"
-    wbs="${10:-no.wbs}"
-    deploy_key_name="${11:-${RADIX_ZONE}-${RADIX_ENVIRONMENT}}"
+    config_branch="${7:-master}"
+    machine_user="${8:-false}"
+    deploy_key_name="${9:-${RADIX_ZONE}-${RADIX_ENVIRONMENT}}"
+    configuration_item="${10}"
 
     if [ -z "${app_name}" ] || [ -z "${repo_name}" ] || [ -z "${repo_organization}" ] || [ -z "${github_pat}" ] || [ -z "${ad_groups}" ]; then
         printf "Missing arguments: "
@@ -194,9 +192,8 @@ function create_and_register_deploy_key_and_store_credentials() {
         --arg deployKeyFingerprint "${key_fingerprint}" \
         --arg deployKeyPublic "${public_key}" \
         --arg machineUser "${machine_user}" \
-        --arg owner "${owner_email}" \
         --arg sharedSecret "${shared_secret}" \
-        --arg wbs "${wbs}" \
+        --arg configurationItem "${configuration_item}" \
         '.name=$name |
         .repository=$repository |
         .adGroups=['$(printf '"%s"\n' "${ad_groups//,/\",\"}")'] |
@@ -207,9 +204,8 @@ function create_and_register_deploy_key_and_store_credentials() {
         .deployKeyFingerprint=$deployKeyFingerprint |
         .deployKeyPublic=$deployKeyPublic |
         .machineUser='"${machine_user}"' |
-        .owner=$owner |
         .sharedSecret=$sharedSecret |
-        .wbs=$wbs' > "$tmp_file_path"
+        .configurationItem=$configurationItem' > "$tmp_file_path"
 
     # 1 year from now, zulu format
     expires=$(date --utc --date "+1 year" +%FT%TZ)
@@ -325,12 +321,11 @@ function create_radix_application() {
             AD_GROUPS="${ad_groups}" \
             CLONE_URL="$(cat ${secret_file} | jq -r .cloneURL)" \
             CONFIG_BRANCH=$(cat ${secret_file} | jq -r .configBranch) \
-            OWNER=$(cat ${secret_file} | jq -r .owner) \
             DEPLOY_KEY=$(printf "|${deploy_key}") \
             DEPLOY_KEY_PUBLIC=$(cat ${secret_file} | jq -r .deployKeyPublic) \
             MACHINE_USER=$(cat ${secret_file} | jq -r .machineUser) \
             SHARED_SECRET=$(cat ${secret_file} | jq -r .sharedSecret) \
-            WBS=$(cat ${secret_file} | jq -r .wbs) \
+            CONFIGURATION_ITEM=$(cat ${secret_file} | jq -r .configurationItem) \
             envsubst < "${script_dir_path}/templates/radix-app-template-rr.yaml" > "${script_dir_path}/${app_name}-rr.yaml"
 
         kubectl apply -f "${script_dir_path}/${app_name}-rr.yaml"
@@ -515,11 +510,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "master" \
     "true" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-github-webhook" "${GITHUB_PAT}"
 
@@ -546,11 +540,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "master" \
     "true" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-api" "${GITHUB_PAT}"
 
@@ -577,11 +570,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "master" \
     "true" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-cost-allocation-api" "${GITHUB_PAT}"
 
@@ -608,11 +600,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "master" \
     "true" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-canary-golang" "${GITHUB_PAT}"
 
@@ -639,11 +630,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d,64b28659-4fe4-4222-8497-85dd7e43e25b,4b8ec60e-714c-4a9d-8e0a-3e4cfb3c3d31" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "main" \
     "true" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-networkpolicy-canary" "${GITHUB_PAT}"
 
@@ -668,11 +658,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "master" \
     "true" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-web-console" "${GITHUB_PAT}"
 
@@ -699,11 +688,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d,ec8c30af-ffb6-4928-9c5c-4abf6ae6f82e" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "main" \
     "true" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-platform" "${GITHUB_PAT}"
 
@@ -728,11 +716,10 @@ create_and_register_deploy_key_and_store_credentials \
     "${GITHUB_PAT}" \
     "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
     "" \
-    "Radix@StatoilSRM.onmicrosoft.com" \
     "master" \
     "false" \
-    "" \
-    "${DEPLOY_KEY_NAME}"
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
 
 create_github_webhook_in_repository "radix-vulnerability-scanner-api" "${GITHUB_PAT}"
 
@@ -745,6 +732,36 @@ if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     create_build_deploy_job "radix-vulnerability-scanner-api" "master"
 
     create_build_deploy_job "radix-vulnerability-scanner-api" "release"
+fi
+
+# Radix ServiceNow Proxy
+
+echo ""
+echo "Deploy radix-servicenow-proxy..."
+
+create_and_register_deploy_key_and_store_credentials \
+    "radix-servicenow-proxy" \
+    "radix-servicenow-proxy" \
+    "equinor" \
+    "${GITHUB_PAT}" \
+    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
+    "" \
+    "main" \
+    "false" \
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
+
+create_github_webhook_in_repository "radix-servicenow-proxy" "${GITHUB_PAT}"
+
+create_radix_application "radix-servicenow-proxy"
+
+if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
+    # Wait a few seconds until radix-operator can process the RadixRegistration
+    wait_for_app_namespace "radix-servicenow-proxy"
+
+    create_build_deploy_job "radix-servicenow-proxy" "main"
+
+    create_build_deploy_job "radix-servicenow-proxy" "release"
 fi
 
 #######################################################################################
@@ -805,41 +822,30 @@ echo "Radix API-s ingress is ready, restarting web console... "
 kubectl delete pods $(kubectl get pods -n "${WEB_CONSOLE_NAMESPACE}" -o custom-columns=':metadata.name' --no-headers | grep web) -n "${WEB_CONSOLE_NAMESPACE}"
 
 ### Set Radix Cost Allocation API secrets
-
-echo ""
-echo "Waiting for radix-cost-allocation-api ingress to be ready so that the API can work properly..."
-while [[ "$(kubectl get ing server -n radix-cost-allocation-api-prod 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-
 echo ""
 echo "For the cost allocation api to work we need to apply secrets"
 wait_for_app_namespace_component_secret "radix-cost-allocation-api-qa" "server"
 wait_for_app_namespace_component_secret "radix-cost-allocation-api-prod" "server"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" "${script_dir_path}/../../update_secret_for_cost_allocation_api.sh")
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_cost_allocation_api.sh")
 wait # wait for subshell to finish
 
 ### Set Radix Vulnerability Scanner API secrets
-
-echo ""
-echo "Waiting for radix-vulnerability-scanner-api ingress to be ready so that the API can work properly..."
-while [[ "$(kubectl get ing server -n radix-vulnerability-scanner-api-prod 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-
 echo ""
 echo "For the vulnerability scanner api to work we need to apply secrets"
 wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-qa" "server"
 wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-prod" "server"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" "${script_dir_path}/../../update_secret_for_vulnerability_scanner_api.sh")
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_vulnerability_scanner_api.sh")
 wait # wait for subshell to finish
 echo ""
-echo "Restarting radix-vulnerability-scanner-api... "
-kubectl rollout restart deployment -n radix-vulnerability-scanner-api-qa
-kubectl rollout restart deployment -n radix-vulnerability-scanner-api-prod
 
+### Set Radix ServiceNow Proxy secrets
+echo ""
+echo "For the Radix ServiceNow Proxy to work we need to apply secrets"
+wait_for_app_namespace_component_secret "radix-servicenow-proxy-qa" "api"
+wait_for_app_namespace_component_secret "radix-servicenow-proxy-prod" "api"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_radix_servicenow_proxy.sh")
+wait # wait for subshell to finish
+echo ""
 
 ### All done
 echo ""

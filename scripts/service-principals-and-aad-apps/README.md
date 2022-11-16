@@ -128,7 +128,12 @@ Each of them are used by one or multiple clusters and is defined by the OAUTH2_P
 1. Update the OAUTH2_CLIENT_PROXY_SECRET for Radix Web Console auth component in all clusters using the app registration
    - Manual: Use Radix Web Console, navigate to the radix-web-console application's `auth` component and update the `OAUTH2_PROXY_CLIENT_SECRET` secret with the newly generated app secret.
    - Script: Run [update_auth_proxy_secret_for_console.sh](./../update_auth_proxy_secret_for_console.sh) to update k8s secret for the `auth` component
-   
+
+
+### Refresh Radix ServiceNow Proxy Client app registration credentials
+
+See [README.md](../servicenow-proxy/README.md)
+
 
 ## Delete a service principal and related stored credentials
 
