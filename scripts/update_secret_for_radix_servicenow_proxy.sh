@@ -93,7 +93,6 @@ function updateSecret() {
         return 1
     fi
 
-
     echo "PROXY_SERVICENOW_API_KEY=$SERVICENOW_API_KEY
     PROXY_SERVICENOW_CLIENT_SECRET=$SERVICENOW_CLIENT_SECRET
     " > radix-servicenow-proxy-secrets.env
