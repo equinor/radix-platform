@@ -28,7 +28,11 @@
 echo ""
 echo "Updating secret for Radix ServiceNow Proxy"
 
-# Validate mandatory input
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
