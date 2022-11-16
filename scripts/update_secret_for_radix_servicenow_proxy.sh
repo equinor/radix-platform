@@ -7,23 +7,27 @@
 # Configures the secrets for Radix ServiceNow Proxy on the cluster given the context.
 
 #######################################################################################
-### HOW TO USE
-###
-
-# Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh
-#
-# Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh)
-#
-
-#######################################################################################
 ### INPUTS
 ###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
+
+#######################################################################################
+### HOW TO USE
+###
+
+# Example 1:
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh
+
+# Example 2: Using a subshell to avoid polluting parent shell
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh)
+
+
+#######################################################################################
+### START
+###
 
 echo ""
 echo "Updating secret for Radix ServiceNow Proxy"
