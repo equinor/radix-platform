@@ -7,23 +7,26 @@
 # Configures the secrets for radix cost allocation API on the cluster given the context.
 
 #######################################################################################
-### HOW TO USE
-###
-
-# Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_cost_allocation_api.sh
-#
-# Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_cost_allocation_api.sh)
-#
-
-#######################################################################################
 ### INPUTS
 ###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
+
+#######################################################################################
+### HOW TO USE
+###
+
+# Example 1:
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_cost_allocation_api.sh
+
+# Example 2: Using a subshell to avoid polluting parent shell
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_cost_allocation_api.sh)
+
+#######################################################################################
+### START
+###
 
 echo ""
 echo "Updating secret for the radix cost allocation API"
