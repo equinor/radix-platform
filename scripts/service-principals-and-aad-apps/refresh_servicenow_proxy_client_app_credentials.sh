@@ -1,21 +1,31 @@
 #!/usr/bin/env bash
 
-# PURPOSE
+#######################################################################################
+### PURPOSE
+###
+
 # Update the client secret for servicenow client app registration and store in keyvault.
+
+#######################################################################################
+### INPUTS
+###
+
+# Required:
+# - RADIX_ZONE_ENV      : Path to *.env file
+
+#######################################################################################
+### HOW TO USE
+###
 
 # Example 1:
 # RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env ./refresh_servicenow_proxy_client_app_credentials.sh
-#
+
 # Example 2: Using a subshell to avoid polluting parent shell
 # (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env ./refresh_servicenow_proxy_client_app_credentials.sh)
-#
 
-# INPUTS:
-#   RADIX_ZONE_ENV          (Mandatory)
-red=$'\e[1;31m'
-grn=$'\e[1;32m'
-yel=$'\e[1;33m'
-normal=$(tput sgr0)
+#######################################################################################
+### START
+###
 
 echo ""
 echo "Updating secret for the servicenow client app registration"
