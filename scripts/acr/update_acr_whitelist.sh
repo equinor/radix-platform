@@ -22,6 +22,9 @@
 
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./update_acr_whitelist.sh
 
+# Add a single IP-mask to existing network rules
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env NEW_IP_MASK=10.0.0.2/31 NEW_IP_LOCATION=test-location ./update_acr_whitelist.sh
+
 #######################################################################################
 ### START
 ###
@@ -64,6 +67,20 @@ else
     source "${RADIX_ZONE_ENV}"
 fi
 
+if [[ -n "${NEW_IP_MASK}" ]]; then
+  if [[ -z "${NEW_IP_LOCATION}" ]]; then
+    printf "\nERROR: NEW_IP_MASK can not be used without NEW_IP_LOCATION" >&2
+    exit 1
+  fi
+fi
+
+if [[ -n "${NEW_IP_LOCATION}" ]]; then
+  if [[ -z "${NEW_IP_MASK}" ]]; then
+    printf "\nERROR: NEW_IP_LOCATION can not be used without NEW_IP_MASK" >&2
+    exit 1
+  fi
+fi
+
 # Optional inputs
 
 if [[ -z "${USER_PROMPT}" ]]; then
@@ -100,12 +117,17 @@ MASTER_ACR_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KE
 #######################################################################################
 ### Run interactive wizard to modify IP whitelist
 ###
+
 MASTER_ACR_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 temp_file_path="/tmp/$(uuidgen)"
-run-interactive-ip-whitelist-wizard "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}"
+
+if [[ -n "${NEW_IP_MASK}" ]]; then
+  add-single-ip-to-whitelist "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}" "${NEW_IP_MASK}" "${NEW_IP_LOCATION}"
+else
+  run-interactive-ip-whitelist-wizard "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}"
+fi
 new_master_acr_ip_whitelist_base64=$(cat ${temp_file_path})
 new_master_acr_ip_whitelist=$(echo ${new_master_acr_ip_whitelist_base64} | base64 -d)
-
 
 #######################################################################################
 ### Calculate which IPs are to be removed, and which IPs are to be added

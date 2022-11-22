@@ -26,6 +26,20 @@ function addwhitelist() {
     done < <(printf "%s" "${ip_whitelist}" | jq -c '.whitelist[]')
 }
 
+function add-single-ip-to-whitelist(){
+    local master_k8s_api_ip_whitelist=$1
+    local temp_file_path=$2
+    local new_ip=$3
+    local new_location=$4
+    local current_k8s_api_ip_whitelist=("{ \"whitelist\": [ ")
+    addwhitelist "${master_k8s_api_ip_whitelist}"
+    current_k8s_api_ip_whitelist+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
+    current_k8s_api_ip_whitelist+=(" ] }")
+    master_k8s_api_ip_whitelist=$(jq <<<"${current_k8s_api_ip_whitelist[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
+    master_k8s_api_ip_whitelist_base64=$(jq <<<"${master_k8s_api_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
+    echo $master_k8s_api_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+}
+
 function run-interactive-ip-whitelist-wizard(){
     local master_k8s_api_ip_whitelist=$1
     local temp_file_path=$2
