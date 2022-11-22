@@ -821,6 +821,20 @@ echo ""
 echo "Radix API-s ingress is ready, restarting web console... "
 kubectl delete pods $(kubectl get pods -n "${WEB_CONSOLE_NAMESPACE}" -o custom-columns=':metadata.name' --no-headers | grep web) -n "${WEB_CONSOLE_NAMESPACE}"
 
+### Set Radix Web Console env vars
+echo ""
+echo "For the web console to work we need to apply env vars for list of all IPs assigned to the cluster type"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" WEB_COMPONENT="${WEB_COMPONENT}" CLUSTER_NAME="${CLUSTER_NAME}" RADIX_WEB_CONSOLE_ENV="qa" "${script_dir_path}/../../update_ips_env_vars_for_console.sh")
+wait # wait for subshell to finish
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" WEB_COMPONENT="${WEB_COMPONENT}" CLUSTER_NAME="${CLUSTER_NAME}" RADIX_WEB_CONSOLE_ENV="prod" "${script_dir_path}/../../update_ips_env_vars_for_console.sh")
+wait # wait for subshell to finish
+
+### Set Radix API env vars
+echo ""
+echo "Update Radix API env vars"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_env_vars_for_radix_api.sh")
+wait
+
 ### Set Radix Cost Allocation API secrets
 echo ""
 echo "For the cost allocation api to work we need to apply secrets"
@@ -836,7 +850,6 @@ wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-qa" "se
 wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-prod" "server"
 (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_vulnerability_scanner_api.sh")
 wait # wait for subshell to finish
-echo ""
 
 ### Set Radix ServiceNow Proxy secrets
 echo ""
@@ -845,7 +858,6 @@ wait_for_app_namespace_component_secret "radix-servicenow-proxy-qa" "api"
 wait_for_app_namespace_component_secret "radix-servicenow-proxy-prod" "api"
 (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_radix_servicenow_proxy.sh")
 wait # wait for subshell to finish
-echo ""
 
 ### All done
 echo ""
