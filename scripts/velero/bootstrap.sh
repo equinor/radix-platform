@@ -156,11 +156,13 @@ echo ""
 echo "Create storage account..."
 az storage account create --name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
     --resource-group "$AZ_VELERO_RESOURCE_GROUP" \
-    --sku Standard_GRS \
     --encryption-services blob \
     --https-only true \
-    --kind BlobStorage \
     --access-tier Hot \
+    --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
+    --sku "${AZ_STORAGEACCOUNT_SKU}" \
+    --kind "${AZ_VELERO_STORAGE_ACCOUNT_KIND}" \
+    --access-tier "${AZ_STORAGEACCOUNT_TIER}"
     2>&1 >/dev/null
 echo "Done."
 

@@ -540,9 +540,12 @@ function create_sql_logs_storageaccount() {
             --name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
             --location "$AZ_RADIX_ZONE_LOCATION" \
-            --sku "Standard_LRS" \
             --subscription "$AZ_SUBSCRIPTION_ID" \
             --only-show-errors
+            --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
+            --sku "${AZ_STORAGEACCOUNT_SKU}" \
+            --kind "${AZ_STORAGEACCOUNT_KIND}" \
+            --access-tier "${AZ_STORAGEACCOUNT_TIER}"
         printf "Done.\n"
     else
         printf "    Storage account exists...skipping\n"
