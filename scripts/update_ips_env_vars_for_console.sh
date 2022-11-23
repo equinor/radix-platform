@@ -86,6 +86,7 @@ echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 
 #######################################################################################
 ### Prepare az session
@@ -103,74 +104,42 @@ printf "Done.\n"
 verify_cluster_access
 
 function updateIpsEnvVars() {
+    local env_var_configmap_name="${1}"
+    local ippre_name="${2}"
 
-    env_var_configmap_name="${1}"
-    ippre_name="${2}"
+    local ip_list
+    local ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
 
-    ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
-
-    # Get auth token for Radix API
-    printf "Getting auth token for Radix API..."
-    API_ACCESS_TOKEN_RESOURCE=$(echo "${OAUTH2_PROXY_SCOPE}" | awk '{print $4}' | sed 's/\/.*//')
-    if [[ -z ${API_ACCESS_TOKEN_RESOURCE} ]]; then
-        echo "ERROR: Could not get Radix API access token resource." >&2
+    # Get resource for access token
+    printf "Getting resource for access token..."
+    local resource=$(echo "${OAUTH2_PROXY_SCOPE}" | awk '{print $4}' | sed 's/\/.*//')
+    if [[ -z ${resource} ]]; then
+        echo "ERROR: Could not get access token resource." >&2
         return
     fi
-
-    API_ACCESS_TOKEN=$(az account get-access-token --resource "${API_ACCESS_TOKEN_RESOURCE}" | jq -r '.accessToken')
-    if [[ -z ${API_ACCESS_TOKEN} ]]; then
-        echo "ERROR: Could not get Radix API access token." >&2
-        return
-    fi
-    printf " Done.\n"
 
     # Get list of IPs for Public IPs assigned to Cluster Type
     printf "Getting list of IPs from Public IP Prefix %s..." "${ippre_name}"
-    IP_PREFIXES="$(az network public-ip list --query "[?publicIPPrefix.id=='${ippre_id}'].ipAddress" --output json)"
+    local ip_prefixes="$(az network public-ip list --query "[?publicIPPrefix.id=='${ippre_id}'].ipAddress" --output json)"
 
-    if [[ "${IP_PREFIXES}" == "[]" ]]; then
+    if [[ "${ip_prefixes}" == "[]" ]]; then
         echo -e "\nERROR: Found no IPs assigned to the cluster." >&2
         return
     fi
 
     # Loop through list of IPs and create a comma separated string.
-    for ippre in $(echo "${IP_PREFIXES}" | jq -c '.[]'); do
-        if [[ -z $IP_LIST ]]; then
-            IP_LIST=$(echo "${ippre}" | jq -r '.')
+    for ippre in $(echo "${ip_prefixes}" | jq -c '.[]'); do
+        if [[ -z $ip_list ]]; then
+            ip_list=$(echo "${ippre}" | jq -r '.')
         else
-            IP_LIST="${IP_LIST},$(echo "${ippre}" | jq -r '.')"
+            ip_list="${ip_list},$(echo "${ippre}" | jq -r '.')"
         fi
     done
     printf " Done.\n"
+    
+    updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${IP_LIST}"
 
-    MAX_TRIES=15
-    try_nr=0
-    printf "Sending PATCH request to Radix API..."
-    RADIX_API_FQDN="server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
-    while true; do
-        API_REQUEST=$(curl -s -X PATCH "https://${RADIX_API_FQDN}/api/v1/applications/radix-web-console/environments/${RADIX_WEB_CONSOLE_ENV}/components/${WEB_COMPONENT}/envvars" \
-            -H "accept: application/json" \
-            -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "[ { \"name\": \"${env_var_configmap_name}\", \"value\": \"${IP_LIST}\" }]")
-
-        if [[ "${API_REQUEST}" != "\"Success\"" ]]; then
-            try_nr=$(($try_nr + 1))
-            if [ "$try_nr" -lt $MAX_TRIES ]; then
-                sleep_seconds=$(($try_nr * 4))
-                echo -e "\nERROR: Patch request to ${RADIX_API_FQDN} failed. Sleeping ${sleep_seconds} seconds and retrying..." >&2
-                sleep $sleep_seconds
-                continue
-            else
-                echo -e "\nERROR: Patch request to ${RADIX_API_FQDN} failed. Out of retries, exiting." >&2
-                return 1
-            fi
-        fi
-        printf " Done.\n"
-        echo "Web component env variable updated with Public IP Prefix IPs."
-        unset IP_LIST
-        break
-    done
+    echo "Web component env variable updated with Public IP Prefix IPs."
 }
 
 ### MAIN

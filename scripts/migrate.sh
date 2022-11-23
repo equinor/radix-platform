@@ -218,6 +218,12 @@ if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
     echo "ERROR: The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
 fi
 
+RADIX_API_ENV_VAR_SCRIPT="$WORKDIR_PATH/update_env_vars_for_radix_api.sh"
+if ! [[ -x "$RADIX_API_ENV_VAR_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The Radix API env-var script is not found or it is not executable in path $RADIX_API_ENV_VAR_SCRIPT" >&2
+fi
+
 CHECK_KEYVAULT_SECRETS="$WORKDIR_PATH/check_keyvault_secrets.sh"
 if ! [[ -x "$CHECK_KEYVAULT_SECRETS" ]]; then
     # Print to stderror
@@ -745,6 +751,13 @@ if [[ -d "${RADIX_ZONE_PATH}" ]]; then
 else
     printf "ERROR: The radix-zone path is not found\n" >&2
 fi
+
+# Update Radix API env vars
+echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$RADIX_API_ENV_VAR_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$RADIX_API_ENV_VAR_SCRIPT")
+wait # wait for subshell to finish
+echo ""
 
 # Check Appreg secrets
 printf "%s► Execute %s%s\n" "${grn}" "$CHECK_APPREG_SECRETS" "${normal}"
