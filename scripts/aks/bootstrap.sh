@@ -422,8 +422,11 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
         --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
         --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
-        --sku "Standard_LRS" \
         --subscription "$AZ_SUBSCRIPTION_ID"
+        --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
+        --sku "${AZ_STORAGEACCOUNT_SKU}" \
+        --kind "${AZ_STORAGEACCOUNT_KIND}" \
+        --access-tier "${AZ_STORAGEACCOUNT_TIER}"
     printf "Done.\n"
 else
     printf "    Storage account exists.\n"
