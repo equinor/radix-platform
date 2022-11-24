@@ -119,12 +119,10 @@ fi
 # Source util scripts
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
-LIB_ACR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/radix-zone/base-infrastructure/lib_acr.sh"
-if [[ ! -f "$LIB_ACR_PATH" ]]; then
-    echo "ERROR: The dependency LIB_ACR_PATH=$LIB_ACR_PATH is invalid, the file does not exist." >&2
+WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
+if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
+    echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT=$WHITELIST_IP_IN_ACR_SCRIPT is invalid, the file does not exist." >&2
     exit 1
-else
-    source "$LIB_ACR_PATH"
 fi
 
 # Optional inputs
@@ -353,9 +351,22 @@ wait
 #
 
 #######################################################################################
-### Install Flux
+### Add ACR network rule
+###
 
-set_access_control_on_acr $AZ_IPPRE_OUTBOUND_NAME $AZ_RESOURCE_GROUP_COMMON $AZ_SUBSCRIPTION_ID $AZ_RESOURCE_CONTAINER_REGISTRY $MIGRATION_STRATEGY $CLUSTER_NAME
+echo "Whitelisting cluster egress IP(s) in ACR network rules"
+echo "Retrieving egress IP range for ${CLUSTER_NAME} cluster..."
+egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON} ${AZ_SUBSCRIPTION_ID})
+echo "Retrieved IP range ${egress_ip_range}."
+# Update ACR IP whitelist with cluster egress IP(s)
+echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=add $WHITELIST_IP_IN_ACR_SCRIPT)
+wait # wait for subshell to finish
+echo ""
+
+#######################################################################################
+### Install Flux
 
 echo ""
 echo "Install Flux v2"

@@ -31,7 +31,7 @@ function add-single-ip-to-whitelist(){
     local temp_file_path=$2
     local new_ip=$3
     local new_location=$4
-    local current_k8s_api_ip_whitelist=("{ \"whitelist\": [ ")
+    current_k8s_api_ip_whitelist=("{ \"whitelist\": [ ")
     addwhitelist "${master_k8s_api_ip_whitelist}"
     current_k8s_api_ip_whitelist+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
     current_k8s_api_ip_whitelist+=(" ] }")
@@ -40,7 +40,20 @@ function add-single-ip-to-whitelist(){
     echo $master_k8s_api_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
 }
 
+function delete-single-ip-from-whitelist(){
+    local master_k8s_api_ip_whitelist=$1
+    local temp_file_path=$2
+    local ip_to_delete=$3
+    local current_k8s_api_ip_whitelist=("{ \"whitelist\": [ ")
+    addwhitelist "${master_k8s_api_ip_whitelist}"
+    current_k8s_api_ip_whitelist+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
+    master_k8s_api_ip_whitelist=$(jq <<<"${current_k8s_api_ip_whitelist[@]}" | jq '.' | jq "del(.whitelist [] | select(.ip == \"${ip_to_delete}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
+    master_k8s_api_ip_whitelist_base64=$(jq <<<"${master_k8s_api_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
+    echo $master_k8s_api_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+}
+
 function run-interactive-ip-whitelist-wizard(){
+    # TODO: refactor all names in this file to omit "k8s_api"
     local master_k8s_api_ip_whitelist=$1
     local temp_file_path=$2
     local i=0
@@ -48,7 +61,7 @@ function run-interactive-ip-whitelist-wizard(){
     local fmt2="%-41s%-45s\n"
     local current_k8s_api_ip_whitelist=("{ \"whitelist\": [ ")
     while true; do
-        printf "\nCurrent k8s API whitelist server configuration:"
+        printf "\nCurrent whitelist configuration:"
         printf "\n"
         printf "\n   > WHERE:"
         printf "\n   ------------------------------------------------------------------"
@@ -57,7 +70,7 @@ function run-interactive-ip-whitelist-wizard(){
         printf "\n   -  AZ_RESOURCE_KEYVAULT             : %s" "${AZ_RESOURCE_KEYVAULT}"
         printf "\n   -  SECRET_NAME                      : %s" "${SECRET_NAME}"
         printf "\n"
-        printf "\n   Please inspect and approve the listed network before your continue:"
+        printf "\n   Please inspect and approve the listed networks before you continue:"
         printf "\n"
         
         listandindex "${master_k8s_api_ip_whitelist}"

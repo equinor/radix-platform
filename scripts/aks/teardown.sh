@@ -310,13 +310,13 @@ echo "Done."
 ### Delete ACR network rule
 ###
 
+# TODO: check WHITELIST_IP_IN_ACR_SCRIPT in start
+# Update ACR IP whitelist with deletion of test cluster egress IP
 echo ""
-echo "Deleting ACR network rule... "
-az acr network-rule remove \
-    --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
-    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --ip-address "${cluster_outbound_ip_address}"
+printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=10.0.0.2/31 IP_LOCATION=$DEST_CLUSTER ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
+wait # wait for subshell to finish
+echo ""
 
 #######################################################################################
 ### Delete Redis Cache
