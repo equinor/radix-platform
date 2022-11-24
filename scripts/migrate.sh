@@ -237,6 +237,28 @@ if ! [[ -x "$CREATE_A_RECORDS_SCRIPT" ]]; then
 fi
 
 #######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+printf "Done.\n"
+
+
+#######################################################################################
+### Verifying owner on scope of subscription is activated
+###
+
+printf "Verifying that logged in AAD user has Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription... "
+is_owner=$(az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Owner\$" | wc -l)
+if [[ "$is_owner" != "1" ]]; then
+  echo -e "ERROR: Logged in user is not Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
+  exit 1
+fi
+printf "Done.\n"
+
+#######################################################################################
 ### Check the migration strategy
 ###
 
@@ -258,26 +280,23 @@ done
 echo ""
 
 #######################################################################################
-### Prepare az session
+### Staging certs on test cluster
 ###
 
-printf "Logging you in to Azure if not already logged in... "
-az account show >/dev/null || az login >/dev/null
-az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
-printf "Done.\n"
-
-
-#######################################################################################
-### Verifying owner on scope of subscription is activated
-###
-
-printf "Verifying that logged in AAD user has Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription... "
-is_owner=$(az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Owner\$" | wc -l)
-if [[ "$is_owner" != "1" ]]; then
-  echo -e "ERROR: Logged in user is not Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
-  exit 1
+STAGING=false
+if [[ ${MIGRATION_STRATEGY} == "at" ]]; then
+    while true; do
+        read -r -e -p "Do you want to use Staging certs on $DEST_CLUSTER? " -i "y" yn
+        case $yn in
+        [Yy]*) 
+            STAGING=true
+            break ;;
+        [Nn]*)  break ;;
+        *) echo "Please answer yes or no." ;;
+        esac
+    done
 fi
-printf "Done.\n"
+echo ""
 
 #######################################################################################
 ### Verify task at hand
@@ -414,7 +433,7 @@ if [[ $install_base_components == true ]]; then
     echo ""
     echo "Installing base components..."
     printf "%s► Execute %s%s\n" "${grn}" "${INSTALL_BASE_COMPONENTS_SCRIPT}" "${normal}"
-    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="${USER_PROMPT}" source "${INSTALL_BASE_COMPONENTS_SCRIPT}")
+    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="${USER_PROMPT}" STAGING="${STAGING}" source "${INSTALL_BASE_COMPONENTS_SCRIPT}")
     wait # wait for subshell to finish
 fi
 
