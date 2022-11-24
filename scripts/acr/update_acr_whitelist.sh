@@ -207,7 +207,7 @@ for ip_to_add in ${ips_to_add}; do
 done
 
 for ip_to_remove in ${ips_to_remove}; do
-  printf "Deleting ${ip_to_remove} to ACR whitelist...\n"
+  printf "Deleting ${ip_to_remove} from ACR whitelist...\n"
   ip_to_remove_no_32_mask=${ip_to_remove%"/32"}
   az acr network-rule remove --ip-address "${ip_to_remove_no_32_mask}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
 done
