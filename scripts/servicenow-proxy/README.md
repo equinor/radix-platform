@@ -14,10 +14,18 @@ Each cluster zone+environment has its own secret for this app registration.
 
 The API key is a common key for the `radix-servicenow-proxy` application in all Radix clusters. When a new key is required, all clusters must be updated.
 
-To request a new API key, read section `How to configure resources like OAuth connectors, backends, products or subscriptions in omniaapimtest and omniaapim?` in [Omnia documentation](https://docs.omnia.equinor.com/services/omniaapim/faq/).
+The Omnia Core Data Team has created a set of two API keys, primary and secondary, to be used with the `radix-servicenow-proxy` application. When the primary key needs to be regenerated, we must update the `radix-servicenow-proxy` application to temporary use the secondary key to prevent service disruption.
 
-1. Store the new key in all keyvaults by running [refresh_api_key](./refresh_api_key.sh) for each Radix zone.
-1. Update the `PROXY_SERVICENOW_API_KEY` secret for Radix application `radix-servicenow-proxy` with script [`update_secret_for_radix_servicenow_proxy.sh`](./../update_secret_for_radix_servicenow_proxy.sh). The script updates the secret in qa and prod environments and restarts the deployment.
+To request a new API key, read section `How to configure resources like OAuth connectors, backends, products or subscriptions in omniaapimtest and omniaapim?` in [Omnia documentation](https://docs.omnia.equinor.com/services/omniaapim/faq/).
+Our API key name is `servicenow-ar-radix-servicenow-proxy-servicenow` and must be specified in the request to the Omnia Core Data Team. Also specify which key, the primary or secondary, to refresh.
+
+Example: Request refresh of API keys
+1. Update the `radix-servicenow-proxy` application to use the `secondary` API key for all clusters with script [`update_secret_for_radix_servicenow_proxy.sh`](./../update_secret_for_radix_servicenow_proxy.sh)
+1. Send a request to update the `primary` key to the Omnia Core Data Team.
+1. Store the new `primary` key in all keyvaults by running [refresh_api_key](./refresh_api_key.sh) for all Radix zones.
+1. Update the `radix-servicenow-proxy` application to use the `primary` API key for all clusters with script [`update_secret_for_radix_servicenow_proxy.sh`](./../update_secret_for_radix_servicenow_proxy.sh)
+1. Send a request to update the `secondary` key to the Omnia Core Data Team.
+1. Store the new `secondary` key in all keyvaults by running [refresh_api_key](./refresh_api_key.sh) for all Radix zones.
 
 
 

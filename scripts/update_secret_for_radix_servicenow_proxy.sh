@@ -14,6 +14,10 @@
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
+# Optional:
+# - USE_SECONDARY_API_KEY : Use the secondary API key? true/false. Default is false.
+
+
 #######################################################################################
 ### HOW TO USE
 ###
@@ -23,6 +27,12 @@
 
 # Example 2: Using a subshell to avoid polluting parent shell
 # (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh)
+
+# Example 1: Use the secondary API key from keyvault
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 USE_SECONDARY_API_KEY=true ./update_secret_for_radix_servicenow_proxy.sh
+
+# Example 2: Use the secondary API key from keyvault, using a subshell to avoid polluting parent shell
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 USE_SECONDARY_API_KEY=true ./update_secret_for_radix_servicenow_proxy.sh)
 
 
 #######################################################################################
@@ -52,6 +62,23 @@ fi
 if [[ -z "$CLUSTER_NAME" ]]; then
     echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
+fi
+
+# Optional inputs
+
+USE_SECONDARY_API_KEY=${USE_SECONDARY_API_KEY:=false}
+VALID_USE_SECONDARY_API_KEY=(true false)
+if [[ ! " ${VALID_USE_SECONDARY_API_KEY[*]} " =~ " $USE_SECONDARY_API_KEY " ]]; then
+    echo "ERROR: USE_SECONDARY_API_KEY must be true or false."  >&2
+    exit 1
+fi
+
+#######################################################################################
+### Build keyvault secret name based on input
+###
+
+if [[ $USE_SECONDARY_API_KEY == true ]]; then
+    KV_SECRET_SERVICENOW_API_KEY+="-secondary"
 fi
 
 # Source util scripts

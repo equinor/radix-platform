@@ -14,15 +14,24 @@
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - API_KEY             : The API key
 
+# Optional:
+# - USE_SECONDARY_API_KEY : Update keyvault secret holding the secondary key? true/false. Default is false.
+
 #######################################################################################
 ### HOW TO USE
 ###
 
-# Example 1:
+# Example 1: Update keyvault secret holding primary API key:
 # RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env API_KEY=the_key ./refresh_api_key.sh
 
-# Example 2: Using a subshell to avoid polluting parent shell
+# Example 2: Update keyvault secret holding primary API key, using a subshell to avoid polluting parent shell
 # (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env API_KEY=the_key ./refresh_api_key.sh)
+
+# Example 3: Update keyvault secret holding secondary API key:
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USE_SECONDARY_API_KEY=true API_KEY=the_key ./refresh_api_key.sh
+
+# Example 4: Update keyvault secret holding secondary API key, using a subshell to avoid polluting parent shell
+# (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USE_SECONDARY_API_KEY=true API_KEY=the_key ./refresh_api_key.sh)
 
 #######################################################################################
 ### START
@@ -49,8 +58,9 @@ echo ""
 ###
 
 USER_PROMPT=${USER_PROMPT:=true}
+USE_SECONDARY_API_KEY=${USE_SECONDARY_API_KEY:=false}
 
-# Validate mandatory input
+# Validate input
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
@@ -68,6 +78,20 @@ if [[ -z "$API_KEY" ]]; then
     exit 1
 fi
 
+VALID_USE_SECONDARY_API_KEY=(true false)
+if [[ ! " ${VALID_USE_SECONDARY_API_KEY[*]} " =~ " $USE_SECONDARY_API_KEY " ]]; then
+    echo "ERROR: USE_SECONDARY_API_KEY must be true or false."  >&2
+    exit 1
+fi
+
+#######################################################################################
+### Build keyvault secret name based on input
+###
+
+if [[ $USE_SECONDARY_API_KEY == true ]]; then
+    KV_SECRET_SERVICENOW_API_KEY+="-secondary"
+fi
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -82,7 +106,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Update API key in vekvault:"
+echo -e "Update API key in keyvault:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -116,7 +140,7 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
-printf "Updating API key in keyvault,,, "
+printf "Updating API key in keyvault... "
 
 expiration_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="12 months") # The API key has no real expiration date
 
