@@ -95,17 +95,17 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
-### CLUSTER?
+### Connect kubectl
 ###
 
-kubectl_context="$(kubectl config current-context)"
-
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
-    echo "kubectl is ready..."
-else
-    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}" >&2
-    exit 1
-fi
+# Exit if cluster does not exist
+printf "Connecting kubectl..."
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
+    # Send message to stderr
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 0
+}
+printf "...Done.\n"
 
 #######################################################################################
 ### Verify cluster access

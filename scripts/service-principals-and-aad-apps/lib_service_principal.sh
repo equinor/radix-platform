@@ -487,6 +487,7 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
     id="$(az ad app list --display-name "${name}" --query '[].appId' --output tsv)"
     password="$(az ad app credential reset --id "${id}" --display-name "rbac" --append --query password --output tsv)"
+    sleep 5
     secret="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
     secret_id="$(echo "${secret}" | jq -r .[].keyId)"
     expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
