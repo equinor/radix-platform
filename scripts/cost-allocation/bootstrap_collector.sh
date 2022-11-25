@@ -56,6 +56,10 @@ hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
     exit 1
 }
+hash flux 2>/dev/null || {
+    echo -e "\nERROR: flux not found in PATH. Exiting..." >&2
+    exit 1
+}
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
@@ -249,6 +253,9 @@ kubectl create secret generic cost-db-secret --namespace radix-cost-allocation \
     --from-file=./radix-cost-allocation-values.yaml \
     --dry-run=client -o yaml |
     kubectl apply -f -
+
+flux reconcile helmrelease --namespace radix-cost-allocation radix-cost-allocation
+kubectl rollout restart deployment radix-cost-allocation --namespace radix-cost-allocation 
 
 rm -f radix-cost-allocation-values.yaml
 

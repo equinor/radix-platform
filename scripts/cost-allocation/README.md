@@ -1,0 +1,11 @@
+# Cost Allocation
+
+## Table of contents
+
+- [Refresh secrets](#Refresh-secrets)
+
+### Refresh secrets
+
+Refreshing secrets for cost-allocation can be done in 2 steps:
+1.	Run [bootstrap.sh](./ bootstrap.sh) with the desired parameters to regenerate password(s) and store it in KV
+2.	Run [update_secret_for_cost_allocation_api.sh](../../ update_secret_for_cost_allocation_api.sh) to restart the component pods and force it to read the updated k8s secret(s)
