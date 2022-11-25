@@ -57,6 +57,11 @@ hash jq 2>/dev/null || {
     exit 1
 }
 
+hash uuidgen 2>/dev/null || {
+    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.41.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
@@ -97,19 +102,16 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
-
-LIB_ACR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../radix-zone/base-infrastructure/lib_acr.sh"
-if [[ ! -f "$LIB_ACR_PATH" ]]; then
-    echo "ERROR: The dependency LIB_ACR_PATH=$LIB_ACR_PATH is invalid, the file does not exist." >&2
-    exit 1
-else
-    source "$LIB_ACR_PATH"
-fi
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/${CLUSTER_TYPE}.env
 
 # Source util scripts
-
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
+if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
+    echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT=$WHITELIST_IP_IN_ACR_SCRIPT is invalid, the file does not exist." >&2
+    exit 1
+fi
 
 # Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
@@ -270,8 +272,6 @@ fi
 printf "Verifying that cluster exist and/or the user can access it... "
 # We use az aks get-credentials to test if both the cluster exist and if the user has access to it.
 
-cluster_outbound_ip_address=$(get_cluster_outbound_ip $CLUSTER_NAME $AZ_SUBSCRIPTION_ID)
-
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
     if [[ $USER_PROMPT == true ]]; then
@@ -294,6 +294,16 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
 }
 printf "Done.\n"
 
+# Determining egress IP of cluster before deletion
+migration_strategy=$(az resource show --id /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME} --query tags.migrationStrategy -o tsv)
+if [[ "${migration_strategy}" == "at" ]]; then
+  echo ""
+  echo "Cluster ${CLUSTER_NAME} is a test cluster. Determining cluster egress IP in order to remove it after cluster deletion..."
+  egress_ip_range=$(get_cluster_outbound_ip ${migration_strategy} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
+  echo ""
+fi
+echo "Done."
+
 # Delete the cluster
 echo ""
 echo "Deleting cluster... "
@@ -310,13 +320,18 @@ echo "Done."
 ### Delete ACR network rule
 ###
 
-# TODO: check WHITELIST_IP_IN_ACR_SCRIPT in start
-# Update ACR IP whitelist with deletion of test cluster egress IP
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=10.0.0.2/31 IP_LOCATION=$DEST_CLUSTER ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
-wait # wait for subshell to finish
-echo ""
+if [[ "${migration_strategy}" == "at" ]]; then
+  echo ""
+  echo "Cluster ${CLUSTER_NAME} is a test cluster. Removing egress IP range ${egress_ip_range} from ACR rules..."
+  printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+  (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
+  wait # wait for subshell to finish
+  echo ""
+else
+  echo "Cluster ${CLUSTER_NAME} is a non-test cluster. Leaving ACR network rules as they are..."
+fi
+echo "Done."
+
 
 #######################################################################################
 ### Delete Redis Cache

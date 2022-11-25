@@ -29,9 +29,9 @@ function verify_cluster_access() {
 function get_cluster_outbound_ip() {
     local migration_strategy=$1
     local cluster_name=$2
-    local az_ipre_outbound_name=$3
-    local az_resource_group_common=$4
-    local az_subscription_id=$5
+    local az_subscription_id=$3
+    local az_ipre_outbound_name=$4
+    local az_resource_group_common=$5
     local ip_prefix
 
     if [[ "${migration_strategy}" == "at" ]]; then

@@ -39,6 +39,11 @@ hash az 2>/dev/null || {
     printf "\n\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+hash uuidgen 2>/dev/null || {
+    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 printf "Done.\n"
 
 #######################################################################################
@@ -601,7 +606,7 @@ function update_acr_whitelist() {
 
     printf "Whitelisting cluster egress IP(s) in ACR network rules\n"
     printf "Retrieving egress IP range for ${CLUSTER_NAME} cluster...\n"
-    local egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON} ${AZ_SUBSCRIPTION_ID})
+    local egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
     printf "Retrieved IP range ${egress_ip_range}.\n"
     # Update ACR IP whitelist with cluster egress IP(s)
     printf "\n"

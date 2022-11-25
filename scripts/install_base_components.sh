@@ -86,6 +86,10 @@ hash sqlcmd 2>/dev/null || {
     echo -e "\nERROR: sqlcmd not found in PATH. Exiting..." >&2
     exit 1
 }
+hash uuidgen 2>/dev/null || {
+    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+    exit 1
+}
 printf "All is good."
 echo ""
 
@@ -356,7 +360,7 @@ wait
 
 echo "Whitelisting cluster egress IP(s) in ACR network rules"
 echo "Retrieving egress IP range for ${CLUSTER_NAME} cluster..."
-egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON} ${AZ_SUBSCRIPTION_ID})
+egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
 echo "Retrieved IP range ${egress_ip_range}."
 # Update ACR IP whitelist with cluster egress IP(s)
 echo ""
