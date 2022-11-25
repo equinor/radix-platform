@@ -8,7 +8,7 @@ function listandindex() {
     while read -r i; do
         location=$(jq -n "${i}" | jq -r .location)
         ip=$(jq -n "${i}" | jq -r .ip)
-        current_k8s_api_ip_whitelist+=("{\"id\":\"${j}\",\"location\":\"${location}\",\"ip\":\"${ip}\"},")
+        current_ip_whitelist+=("{\"id\":\"${j}\",\"location\":\"${location}\",\"ip\":\"${ip}\"},")
         printf "${fmt}" "   (${j})" "${location}" "${ip}"
         ((j=j+1))
     done < <(printf "%s" "${ip_whitelist}" | jq -c '.whitelist[]')
@@ -22,19 +22,45 @@ function addwhitelist() {
     while read -r i; do
         location=$(jq -n "${i}" | jq -r .location)
         ip=$(jq -n "${i}" | jq -r .ip)
-        current_k8s_api_ip_whitelist+=("{\"location\":\"${location}\",\"ip\":\"${ip}\"},")
+        current_ip_whitelist+=("{\"location\":\"${location}\",\"ip\":\"${ip}\"},")
     done < <(printf "%s" "${ip_whitelist}" | jq -c '.whitelist[]')
 }
 
+function add-single-ip-to-whitelist(){
+    local master_ip_whitelist=$1
+    local temp_file_path=$2
+    local new_ip=$3
+    local new_location=$4
+    current_ip_whitelist=("{ \"whitelist\": [ ")
+    addwhitelist "${master_ip_whitelist}"
+    current_ip_whitelist+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
+    current_ip_whitelist+=(" ] }")
+    master_ip_whitelist=$(jq <<<"${current_ip_whitelist[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
+    master_ip_whitelist_base64=$(jq <<<"${master_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
+    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+}
+
+function delete-single-ip-from-whitelist(){
+    local master_ip_whitelist=$1
+    local temp_file_path=$2
+    local ip_to_delete=$3
+    local current_ip_whitelist=("{ \"whitelist\": [ ")
+    addwhitelist "${master_ip_whitelist}"
+    current_ip_whitelist+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
+    master_ip_whitelist=$(jq <<<"${current_ip_whitelist[@]}" | jq '.' | jq "del(.whitelist [] | select(.ip == \"${ip_to_delete}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
+    master_ip_whitelist_base64=$(jq <<<"${master_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
+    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+}
+
 function run-interactive-ip-whitelist-wizard(){
-    local master_k8s_api_ip_whitelist=$1
+    local master_ip_whitelist=$1
     local temp_file_path=$2
     local i=0
     local fmt="%-8s%-33s%-12s\n"
     local fmt2="%-41s%-45s\n"
-    local current_k8s_api_ip_whitelist=("{ \"whitelist\": [ ")
+    local current_ip_whitelist=("{ \"whitelist\": [ ")
     while true; do
-        printf "\nCurrent k8s API whitelist server configuration:"
+        printf "\nCurrent whitelist configuration:"
         printf "\n"
         printf "\n   > WHERE:"
         printf "\n   ------------------------------------------------------------------"
@@ -43,11 +69,11 @@ function run-interactive-ip-whitelist-wizard(){
         printf "\n   -  AZ_RESOURCE_KEYVAULT             : %s" "${AZ_RESOURCE_KEYVAULT}"
         printf "\n   -  SECRET_NAME                      : %s" "${SECRET_NAME}"
         printf "\n"
-        printf "\n   Please inspect and approve the listed network before your continue:"
+        printf "\n   Please inspect and approve the listed networks before you continue:"
         printf "\n"
         
-        listandindex "${master_k8s_api_ip_whitelist}"
-        current_k8s_api_ip_whitelist+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
+        listandindex "${master_ip_whitelist}"
+        current_ip_whitelist+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
         while true; do
             printf "\n"
             read -r -p "Is above list correct? (Y/n) " yn
@@ -97,12 +123,12 @@ function run-interactive-ip-whitelist-wizard(){
             done
 
             printf "\nAdding location %s at %s... " "${new_location}" "${new_ip}"
-            current_k8s_api_ip_whitelist=("{ \"whitelist\": [ ")
-            addwhitelist "${master_k8s_api_ip_whitelist}"
+            current_ip_whitelist=("{ \"whitelist\": [ ")
+            addwhitelist "${master_ip_whitelist}"
             update_keyvault=true
-            current_k8s_api_ip_whitelist+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
-            current_k8s_api_ip_whitelist+=(" ] }")
-            master_k8s_api_ip_whitelist=$(jq <<<"${current_k8s_api_ip_whitelist[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
+            current_ip_whitelist+=("{\"location\":\"${new_location}\",\"ip\":\"${new_ip}\"}")
+            current_ip_whitelist+=(" ] }")
+            master_ip_whitelist=$(jq <<<"${current_ip_whitelist[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
             printf "Done.\n"
             unset addip
         fi
@@ -114,7 +140,7 @@ function run-interactive-ip-whitelist-wizard(){
                 read -r delete_ip
             done
 
-            master_k8s_api_ip_whitelist=$(jq <<<"${current_k8s_api_ip_whitelist[@]}" | jq '.' | jq "del(.whitelist [] | select(.id == \"${delete_ip}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
+            master_ip_whitelist=$(jq <<<"${current_ip_whitelist[@]}" | jq '.' | jq "del(.whitelist [] | select(.id == \"${delete_ip}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
             update_keyvault=true
             unset removeip
         fi
@@ -147,6 +173,6 @@ function run-interactive-ip-whitelist-wizard(){
         fi
     done
 
-    master_k8s_api_ip_whitelist_base64=$(jq <<<"${master_k8s_api_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
-    echo $master_k8s_api_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+    master_ip_whitelist_base64=$(jq <<<"${master_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
+    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
 }

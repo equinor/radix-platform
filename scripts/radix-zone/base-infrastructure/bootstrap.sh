@@ -39,6 +39,11 @@ hash az 2>/dev/null || {
     printf "\n\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+hash uuidgen 2>/dev/null || {
+    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 printf "Done.\n"
 
 #######################################################################################
@@ -81,6 +86,18 @@ if [[ ! -f "$LIB_ACR_PATH" ]]; then
     exit 1
 else
     source "$LIB_ACR_PATH"
+fi
+LIB_UTIL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../utility/util.sh"
+if [[ ! -f "$LIB_UTIL_PATH" ]]; then
+    echo "ERROR: The dependency LIB_UTIL_PATH=$LIB_UTIL_PATH is invalid, the file does not exist." >&2
+    exit 1
+else
+    source "$LIB_UTIL_PATH"
+fi
+WHITELIST_IP_IN_ACR_SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../utility/lib_ip_whitelist.sh"
+if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT_PATH" ]]; then
+    echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT_PATH=$WHITELIST_IP_IN_ACR_SCRIPT_PATH is invalid, the file does not exist." >&2
+    exit 1
 fi
 AD_APP_MANIFEST_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/manifest-server.json"
 if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
@@ -607,6 +624,23 @@ END
     printf "Done.\n"
 }
 
+function update_acr_whitelist() {
+    #######################################################################################
+    ### Add ACR network rule
+    ###
+
+    printf "Whitelisting cluster egress IP(s) in ACR network rules\n"
+    printf "Retrieving egress IP range for ${CLUSTER_NAME} cluster...\n"
+    local egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
+    printf "Retrieved IP range ${egress_ip_range}.\n"
+    # Update ACR IP whitelist with cluster egress IP(s)
+    printf "\n"
+    printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=add $WHITELIST_IP_IN_ACR_SCRIPT)
+    wait # wait for subshell to finish
+    printf "\n"
+}
+
 #######################################################################################
 ### MAIN
 ###
@@ -617,7 +651,7 @@ create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
-set_access_control_on_acr $AZ_IPPRE_OUTBOUND_NAME $AZ_RESOURCE_GROUP_COMMON $AZ_SUBSCRIPTION_ID $AZ_RESOURCE_CONTAINER_REGISTRY
+update_acr_whitelist
 create_base_system_users_and_store_credentials
 create_servicenow_proxy_server_app_registration
 update_app_registration
