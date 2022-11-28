@@ -650,9 +650,9 @@ printf "Done.\n"
 ### Tag cluster with migrationStrategy
 ###
 
-printf "Tagging cluster ${DEST_CLUSTER} with tag migrationStrategy=${MIGRATION_STRATEGY}...\n"
+printf "Tagging cluster ${CLUSTER_NAME} with tag migrationStrategy=${MIGRATION_STRATEGY}...\n"
 az resource tag \
-    --ids /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER}
+    --ids /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME} \
     --tags migrationStrategy="${MIGRATION_STRATEGY}"  &>/dev/null
 printf "Done.\n"
 

@@ -18,7 +18,7 @@
 ###
 
 # App registrations secrets:
-#./check_appreg_secrets.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env ./check_appreg_secrets.sh
 
 #######################################################################################
 ### Read inputs and configs
