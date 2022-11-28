@@ -759,14 +759,15 @@ fi
 if [[ -d "${RADIX_ZONE_PATH}" ]]; then
     for filename in "${RADIX_ZONE_PATH}"/*.env; do
         if [[ "${filename}" == *classic* || "${filename}" == *test* ]]; then continue; fi
-        RADIX_ZONE_ENV="${filename}"
+        radix_zone_env="${filename}"
 
         # Check keyvault secrets
         printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
-        (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
+        (RADIX_ZONE_ENV=${radix_zone_env} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
         wait # wait for subshell to finish
         echo ""
     done
+    unset radix_zone_env
 else
     printf "ERROR: The radix-zone path is not found\n" >&2
 fi
