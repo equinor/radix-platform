@@ -556,6 +556,8 @@ echo "Bootstrap of advanced network done."
 echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
 ###############################################################################
+### Add Usermode pool - System - Tainted
+###
 
 AKS_BASE_OPTIONS=(
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
@@ -581,11 +583,12 @@ AKS_BASE_OPTIONS=(
     --vnet-subnet-id "$SUBNET_ID"
     --disable-local-accounts
     --enable-addons azure-keyvault-secrets-provider
+    --nodepool-name systempool
     --enable-secret-rotation
     --enable-cluster-autoscaler
-    --node-count "$NODE_COUNT"
-    --min-count "$MIN_COUNT"
-    --max-count "$MAX_COUNT"
+    --node-count "2"
+    --min-count "1"
+    --max-count "3"
 )
 
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
@@ -659,8 +662,6 @@ printf "Done.\n"
 
 (USER_PROMPT=false CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
 
-echo "Done."
-
 #######################################################################################
 ### Lock cluster and network resources
 ###
@@ -690,6 +691,34 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 [[ "$(kubectl config current-context)" != "$CLUSTER_NAME" ]] && exit 1
 
 printf "Done.\n"
+
+#######################################################################################
+### Taint the 'systempool'
+###
+echo "Taint the 'systempool'"
+az aks nodepool update --cluster-name "$CLUSTER_NAME" --name systempool --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-taints CriticalAddonsOnly=true:NoSchedule --labels nodepool-type=system nodepoolos=linux app=system-apps  >/dev/null
+printf "Done.\n"
+#######################################################################################
+### Add untainted User nodepool
+###
+
+AKS_USER_OPTIONS=(
+    --cluster-name "$CLUSTER_NAME"
+    --nodepool-name userpool
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --enable-cluster-autoscaler
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --max-count "$MAX_COUNT"
+    --max-pods "$POD_PER_NODE"
+    --min-count "$MIN_COUNT"
+    --mode User
+    --node-count "$NODE_COUNT"
+    --node-osdisk-size "$NODE_DISK_SIZE"
+    --node-vm-size "$NODE_VM_SIZE"
+    --vnet-subnet-id "$SUBNET_ID"
+)
+echo "Create user nodepool"
+az aks nodepool add "${AKS_USER_OPTIONS[@]}"
 
 #######################################################################################
 ### Add GPU node pools

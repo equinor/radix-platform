@@ -41,6 +41,9 @@
 # Specify migration strategy.
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" MIGRATION_STRATEGY="aa" ./install_base_components.sh
 
+# Test cluster with staging certs
+#RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" MIGRATION_STRATEGY="at" STAGING="true" ./install_base_components.sh
+
 # Configure a dev cluster to use custom configs
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="please-work-4" FLUX_OVERRIDE_GIT_BRANCH=testing-something FLUX_OVERRIDE_GIT_DIR=clusters/test-overlay ./install_base_components.sh
 
@@ -135,6 +138,9 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+if [[ -z "$STAGING" ]]; then
+    STAGING=false
+fi
 #######################################################################################
 ### Prepare az session
 ###
@@ -155,6 +161,7 @@ echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  STAGING                          : $STAGING"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
@@ -243,7 +250,7 @@ wait
 
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/bootstrap.sh" "${normal}"
-(USER_PROMPT="false" ./cert-manager/bootstrap.sh)
+(USER_PROMPT="false" STAGING="${STAGING}" ./cert-manager/bootstrap.sh)
 wait
 
 #######################################################################################
