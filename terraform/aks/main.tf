@@ -3,7 +3,7 @@ provider "azurerm" {
 }
 
 locals {
-  whitelist_ips = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  whitelist_ips              = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
   AZ_RESOURCE_GROUP_VNET_HUB = "cluster-vnet-hub-${var.RADIX_ZONE}"
 }
 
@@ -17,7 +17,7 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
   key_vault_id = data.azurerm_key_vault.keyvault_env.id
 }
 
-resource "azurerm_resource_group" "clusters" {
+resource "azurerm_resource_group" "rg_clusters" {
   name     = var.AZ_RESOURCE_GROUP_CLUSTERS
   location = var.AZ_LOCATION
 }
@@ -29,13 +29,13 @@ module "aks" {
   AZ_LOCATION  = var.AZ_LOCATION
 
   # Resource groups
-  AZ_RESOURCE_GROUP_CLUSTERS = azurerm_resource_group.clusters.name
+  AZ_RESOURCE_GROUP_CLUSTERS = azurerm_resource_group.rg_clusters.name
   AZ_RESOURCE_GROUP_COMMON   = var.AZ_RESOURCE_GROUP_COMMON
   AZ_RESOURCE_GROUP_VNET_HUB = local.AZ_RESOURCE_GROUP_VNET_HUB
 
   # network
   # AZ_PRIVATE_DNS_ZONES = var.AZ_PRIVATE_DNS_ZONES
-  whitelist_ips        = length(local.whitelist_ips.whitelist) != 0 ? [for x in local.whitelist_ips.whitelist : x.ip] : null
+  whitelist_ips = length(local.whitelist_ips.whitelist) != 0 ? [for x in local.whitelist_ips.whitelist : x.ip] : null
 
   # AKS
   aks_node_pool_name     = var.aks_node_pool_name
@@ -48,15 +48,15 @@ module "aks" {
   MI_AKS        = var.MI_AKS
 
   # Radix
-  RADIX_ZONE                     = var.RADIX_ZONE
-  RADIX_ENVIRONMENT              = var.RADIX_ENVIRONMENT
+  RADIX_ZONE        = var.RADIX_ZONE
+  RADIX_ENVIRONMENT = var.RADIX_ENVIRONMENT
 }
 
 resource "azurerm_redis_cache" "redis_cache_web_console" {
   count = length(var.RADIX_WEB_CONSOLE_ENVIRONMENTS)
 
   name                          = "${var.cluster_name}-${var.RADIX_WEB_CONSOLE_ENVIRONMENTS[count.index]}"
-  resource_group_name           = var.AZ_RESOURCE_GROUP_CLUSTERS
+  resource_group_name           = azurerm_resource_group.rg_clusters.name
   location                      = var.AZ_LOCATION
   capacity                      = "1"
   family                        = "C"
