@@ -50,7 +50,6 @@ module "aks" {
   # Radix
   RADIX_ZONE                     = var.RADIX_ZONE
   RADIX_ENVIRONMENT              = var.RADIX_ENVIRONMENT
-  RADIX_WEB_CONSOLE_ENVIRONMENTS = var.RADIX_WEB_CONSOLE_ENVIRONMENTS
 }
 
 resource "azurerm_redis_cache" "redis_cache_web_console" {
