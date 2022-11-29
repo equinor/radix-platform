@@ -23,7 +23,7 @@ resource "azurerm_resource_group" "rg_clusters" {
 }
 
 module "aks" {
-  source = "github.com/equinor/radix-terraform-azurerm-aks"
+  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v0.1.0-alpha"
 
   cluster_name = var.cluster_name
   AZ_LOCATION  = var.AZ_LOCATION
