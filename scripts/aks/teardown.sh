@@ -381,14 +381,14 @@ wait # wait for subshell to finish
 ###
 
 #To be deleted
-echo ""
-echo "Deleting Dynatrace integration..."
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/teardown.sh" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
+# echo ""
+# echo "Deleting Dynatrace integration..."
+# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/teardown.sh" "${normal}"
+# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
 
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/dashboard/teardown-dashboard.sh" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
+# echo ""
+# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/dashboard/teardown-dashboard.sh" "${normal}"
+# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
 
 echo "Cleaning up local kube config... "
 kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
