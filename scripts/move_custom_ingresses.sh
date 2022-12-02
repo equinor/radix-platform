@@ -296,7 +296,7 @@ echo "ingress:
   hosts:
   - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
   tls:
-  - secretName: cluster-wildcard-tls-cert
+  - secretName: radix-wildcard-tls-cert
     hosts:
     - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
 env:

@@ -208,7 +208,7 @@ function please_wait_until_rr_synced() {
 function please_wait_until_ra_synced() {
   local resource="ra"
   local allCmd="kubectl get ra --all-namespaces -o custom-columns=':spec.environments[*].name' | tr ',' '\n'"
-  local currentCmd="kubectl get ns --selector=app-wildcard-sync=app-wildcard-tls-cert"
+  local currentCmd="kubectl get ns --selector=radix-wildcard-sync=radix-wildcard-tls-cert"
   # No condition
   local condition="grep ''"
 

@@ -160,11 +160,11 @@ ips_to_add=$(comm -23 <(sort ${desired_ips_file}) <(sort ${current_ips_file}))
 # clean up temp files
 rm $desired_ips_file $current_ips_file $current_ips_file_no_mask $current_ips_file_with_duplicates $temp_file_path
 
-function update-keyvault{
+function update-keyvault() {
   #######################################################################################
   ### Update keyvault with new whitelist
   ###
-  printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
+  echo "\nUpdating keyvault ${AZ_RESOURCE_KEYVAULT}..."
   if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_acr_ip_whitelist_base64}" 2>&1)" == *"ERROR"* ]]; then
       printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
       exit 1
