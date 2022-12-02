@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - 275007-terraform 
     paths:
       - '.github/workflows/sqlLogStorageAccounts.yml'
 
