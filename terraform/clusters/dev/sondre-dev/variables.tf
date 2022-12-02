@@ -18,10 +18,10 @@ variable "AZ_PRIVATE_DNS_ZONES" {
   type        = list(string)
 }
 
-variable "cluster_name" {
-  description = "Cluster name"
-  type        = string
-}
+# variable "cluster_name" {
+#   description = "Cluster name"
+#   type        = string
+# }
 
 variable "aks_node_pool_name" {
   description = "Node pool name"

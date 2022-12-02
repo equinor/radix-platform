@@ -1,4 +1,4 @@
-cluster_name  = "terraform-dev"
+# cluster_name  = "terraform-dev"
 whitelist_ips = [] # This will be set in main.tf
 
 #######################################################################################
@@ -14,9 +14,9 @@ aks_kubernetes_version = "1.23.8"
 ### Zone and cluster settings
 ###
 
-AZ_LOCATION       = "northeurope"
-RADIX_ZONE        = "dev"
-RADIX_ENVIRONMENT = "dev"
+AZ_LOCATION                    = "northeurope"
+RADIX_ZONE                     = "dev"
+RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
 
 #######################################################################################

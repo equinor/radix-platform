@@ -1,12 +1,28 @@
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "s941-tfstate"
+    storage_account_name = "radixinfradev"
+    container_name       = "tfstate"
+    use_azuread_auth     = true
+    key                  = "dev.sondredev.terraform.tfstate"
+  }
+}
+
+# Configure the Microsoft Azure Provider
 provider "azurerm" {
+  # skip_provider_registration = true
   features {}
+  # client_id       = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
+  # subscription_id = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+  # tenant_id       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+  # use_oidc        = true
 }
 
 locals {
   whitelist_ips              = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
   AZ_RESOURCE_GROUP_VNET_HUB = "cluster-vnet-hub-${var.RADIX_ZONE}"
   # cluster_name               = terraform.workspace
-  cluster_name               = var.cluster_name
+  cluster_name = basename(abspath(path.module))
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -25,7 +41,7 @@ resource "azurerm_resource_group" "rg_clusters" {
 }
 
 module "aks" {
-  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v0.1.0-alpha"
+  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=development"
 
   cluster_name = local.cluster_name
   AZ_LOCATION  = var.AZ_LOCATION

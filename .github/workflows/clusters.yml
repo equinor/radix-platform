@@ -3,17 +3,18 @@ on:
   push:
     branches:
       - master
-    # paths:
-    #   - '.github/workflows/sqlLogStorageAccounts.yml'
+    paths:
+      - '.github/workflows/sqlLogStorageAccounts.yml'
 
-# permissions:
-#   id-token: write
-#   contents: read
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
+    environment: operations
 
     # Queue jobs that target the same Terraform configuration.
     concurrency:
