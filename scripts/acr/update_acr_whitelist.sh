@@ -160,7 +160,7 @@ ips_to_add=$(comm -23 <(sort ${desired_ips_file}) <(sort ${current_ips_file}))
 # clean up temp files
 rm $desired_ips_file $current_ips_file $current_ips_file_no_mask $current_ips_file_with_duplicates $temp_file_path
 
-function update-keyvault{
+function update-keyvault(){
   #######################################################################################
   ### Update keyvault with new whitelist
   ###
