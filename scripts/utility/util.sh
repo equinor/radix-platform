@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 function get_credentials () {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
@@ -15,14 +14,12 @@ function get_credentials () {
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 
-
 function verify_cluster_access() {
     printf "\nVerifying cluster access...\n"
     kubectl cluster-info || {
       printf "ERROR: Could not access cluster. Quitting...\n"
       exit 1
     }
-      
     printf " OK\n"
 }
 
@@ -56,7 +53,6 @@ function get_test_cluster_outbound_ip() {
     local dest_cluster=$1
     local az_subscription_id=$2
 
-    
     json_output_file="/tmp/$(uuidgen)"
     az network lb list --subscription ${az_subscription_id} | jq '[.[] | select(.tags | contains ({"aks-managed-cluster-name": "'${dest_cluster}'"}) )]' > $json_output_file
     if [[ $(jq length $json_output_file) != "1" ]]; then
@@ -80,4 +76,46 @@ function get_test_cluster_outbound_ip() {
     echo $(az resource show --id $ip_address_resource_id --query properties.ipAddress -o tsv)
 
     rm $json_output_file $outbound_rules_file $frontend_ip_configurations_file
+}
+
+function check_staging_certs(){
+    echo ""
+    if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
+        dl_certs=()
+        root_certs=("https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x1.pem" "https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x2.pem")
+        count_dl_root_certs=$(echo "${#root_certs[@]}")
+        search_dir=/usr/local/share/ca-certificates
+        i=0
+
+        #Download latest stage root certs and do md5sum of each into array
+        for cert in ${root_certs[@]}; do
+            temp_file_path="/tmp/$(uuidgen)"
+            curl -s $cert -o $temp_file_path
+            md5=($(md5sum ${temp_file_path}))
+            dl_certs+=("${md5}")
+            rm ${temp_file_path}
+        done
+
+        #Compare installed certs with array of downloaded certs
+        for file in "$search_dir"/*
+        do
+            j=0
+            md5=($(md5sum ${file}))
+            for item in "${dl_certs[@]}"; do
+                if [[ $md5 == "$item" ]];then
+                    ((i=i+1))
+                    unset -v 'dl_certs[$j]'
+                fi
+            ((j=j+1))
+            done
+        done
+
+        #Lets do the math
+        if [[ $i -lt $count_dl_root_certs ]]; then
+            echo "It seems that you dont have the staging root certs installed in $search_dir"
+            echo "Visit https://letsencrypt.org/docs/staging-environment/#root-certificates and download the $count_dl_root_certs root certs, and install them in the path above."
+            echo "Next you need to run: sudo update-ca-certificates"
+            exit 0
+        fi
+    fi
 }

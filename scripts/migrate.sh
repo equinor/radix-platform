@@ -294,7 +294,8 @@ if [[ ${MIGRATION_STRATEGY} == "at" ]]; then
     while true; do
         read -r -e -p "Do you want to use Staging certs on $DEST_CLUSTER? " -i "y" yn
         case $yn in
-        [Yy]*) 
+        [Yy]*)
+            check_staging_certs 
             STAGING=true
             break ;;
         [Nn]*)  break ;;
