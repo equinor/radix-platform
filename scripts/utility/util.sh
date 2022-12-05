@@ -84,7 +84,7 @@ function check_staging_certs(){
         dl_certs=()
         root_certs=("https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x1.pem" "https://letsencrypt.org/certs/staging/letsencrypt-stg-root-x2.pem")
         count_dl_root_certs=$(echo "${#root_certs[@]}")
-        search_dir=/usr/local/share/ca-certificates/
+        search_dir=/usr/local/share/ca-certificates
         i=0
 
         #Download latest stage root certs and do md5sum of each into array
