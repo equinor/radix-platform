@@ -1,28 +1,15 @@
 terraform {
-  backend "azurerm" {
-    resource_group_name  = "s941-tfstate"
-    storage_account_name = "radixinfradev"
-    container_name       = "tfstate"
-    use_azuread_auth     = true
-    key                  = "dev.sondredev.terraform.tfstate"
-  }
+  backend "azurerm" {}
 }
 
-# Configure the Microsoft Azure Provider
 provider "azurerm" {
-  # skip_provider_registration = true
   features {}
-  # client_id       = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
-  # subscription_id = "16ede44b-1f74-40a5-b428-46cca9a5741b"
-  # tenant_id       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-  # use_oidc        = true
 }
 
 locals {
-  whitelist_ips              = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
   AZ_RESOURCE_GROUP_VNET_HUB = "cluster-vnet-hub-${var.RADIX_ZONE}"
-  # cluster_name               = terraform.workspace
-  cluster_name = basename(abspath(path.module))
+  cluster_name               = basename(abspath(path.module))
+  whitelist_ips              = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -35,9 +22,8 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
   key_vault_id = data.azurerm_key_vault.keyvault_env.id
 }
 
-resource "azurerm_resource_group" "rg_clusters" {
-  name     = var.AZ_RESOURCE_GROUP_CLUSTERS
-  location = var.AZ_LOCATION
+data "azurerm_resource_group" "rg_clusters" {
+  name = var.AZ_RESOURCE_GROUP_CLUSTERS
 }
 
 module "aks" {
@@ -47,7 +33,7 @@ module "aks" {
   AZ_LOCATION  = var.AZ_LOCATION
 
   # Resource groups
-  AZ_RESOURCE_GROUP_CLUSTERS = azurerm_resource_group.rg_clusters.name
+  AZ_RESOURCE_GROUP_CLUSTERS = data.azurerm_resource_group.rg_clusters.name
   AZ_RESOURCE_GROUP_COMMON   = var.AZ_RESOURCE_GROUP_COMMON
   AZ_RESOURCE_GROUP_VNET_HUB = local.AZ_RESOURCE_GROUP_VNET_HUB
 
@@ -74,7 +60,7 @@ resource "azurerm_redis_cache" "redis_cache_web_console" {
   count = length(var.RADIX_WEB_CONSOLE_ENVIRONMENTS)
 
   name                          = "${local.cluster_name}-${var.RADIX_WEB_CONSOLE_ENVIRONMENTS[count.index]}"
-  resource_group_name           = azurerm_resource_group.rg_clusters.name
+  resource_group_name           = data.azurerm_resource_group.rg_clusters.name
   location                      = var.AZ_LOCATION
   capacity                      = "1"
   family                        = "C"

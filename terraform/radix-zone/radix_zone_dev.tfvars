@@ -1,6 +1,3 @@
-# cluster_name  = "terraform-dev"
-whitelist_ips = [] # This will be set in main.tf
-
 #######################################################################################
 ### AKS
 ###
@@ -23,10 +20,8 @@ RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
 ### Resource groups
 ###
 
-AZ_RESOURCE_GROUP_CLUSTERS = "rg_tf_test" # original "clusters"
+AZ_RESOURCE_GROUP_CLUSTERS = "clusters"
 AZ_RESOURCE_GROUP_COMMON   = "common"
-# AZ_RESOURCE_GROUP_MONITORING="monitoring"
-# AZ_RESOURCE_GROUP_LOGS="Logs-Dev"
 
 #######################################################################################
 ### System users

@@ -18,11 +18,6 @@ variable "AZ_PRIVATE_DNS_ZONES" {
   type        = list(string)
 }
 
-# variable "cluster_name" {
-#   description = "Cluster name"
-#   type        = string
-# }
-
 variable "aks_node_pool_name" {
   description = "Node pool name"
   type        = string
@@ -41,11 +36,6 @@ variable "aks_node_count" {
 variable "aks_kubernetes_version" {
   description = "kubernetes version"
   type        = string
-}
-
-variable "whitelist_ips" {
-  description = "List ipadresses that should be able to access the cluster"
-  type        = list(string)
 }
 
 variable "MI_AKSKUBELET" {
