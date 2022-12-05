@@ -585,6 +585,7 @@ AKS_BASE_OPTIONS=(
     --enable-addons azure-keyvault-secrets-provider
     --nodepool-name systempool
     --enable-secret-rotation
+    --enable-oidc-issuer
     --enable-cluster-autoscaler
     --node-count "2"
     --min-count "1"
