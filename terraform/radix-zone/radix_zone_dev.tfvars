@@ -2,10 +2,10 @@
 ### AKS
 ###
 
-aks_node_pool_name     = "nodepool1"
-aks_node_pool_vm_size  = "Standard_B4ms"
-aks_node_count         = 3
-aks_kubernetes_version = "1.23.8"
+AKS_NODE_POOL_NAME     = "nodepool1"
+AKS_NODE_POOL_VM_SIZE  = "Standard_B4ms"
+AKS_NODE_COUNT         = 3
+AKS_KUBERNETES_VERSION = "1.23.8"
 
 #######################################################################################
 ### Zone and cluster settings
