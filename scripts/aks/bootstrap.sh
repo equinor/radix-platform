@@ -587,9 +587,9 @@ AKS_BASE_OPTIONS=(
     --enable-secret-rotation
     --enable-oidc-issuer
     --enable-cluster-autoscaler
-    --node-count "2"
-    --min-count "1"
-    --max-count "3"
+    --node-count "$SYSTEM_MIN_COUNT"
+    --min-count "$SYSTEM_MIN_COUNT"
+    --max-count "$SYSTEM_MAX_COUNT"
 )
 
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
