@@ -27,7 +27,7 @@ data "azurerm_resource_group" "rg_clusters" {
 }
 
 module "aks" {
-  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v1.0.0"
+  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v2.0.0"
 
   CLUSTER_NAME = local.CLUSTER_NAME
   AZ_LOCATION  = var.AZ_LOCATION
@@ -42,10 +42,14 @@ module "aks" {
   WHITELIST_IPS = length(local.WHITELIST_IPS.whitelist) != 0 ? [for x in local.WHITELIST_IPS.whitelist : x.ip] : null
 
   # AKS
-  AKS_NODE_POOL_NAME     = var.AKS_NODE_POOL_NAME
-  AKS_NODE_POOL_VM_SIZE  = var.AKS_NODE_POOL_VM_SIZE
-  AKS_NODE_COUNT         = var.AKS_NODE_COUNT
-  AKS_KUBERNETES_VERSION = var.AKS_KUBERNETES_VERSION
+  AKS_KUBERNETES_VERSION    = var.AKS_KUBERNETES_VERSION
+  AKS_NODE_POOL_VM_SIZE     = var.AKS_NODE_POOL_VM_SIZE
+  AKS_SYSTEM_NODE_MAX_COUNT = var.AKS_SYSTEM_NODE_MAX_COUNT
+  AKS_SYSTEM_NODE_MIN_COUNT = var.AKS_SYSTEM_NODE_MIN_COUNT
+  AKS_SYSTEM_NODE_POOL_NAME = var.AKS_SYSTEM_NODE_POOL_NAME
+  AKS_USER_NODE_MAX_COUNT   = var.AKS_USER_NODE_MAX_COUNT
+  AKS_USER_NODE_MIN_COUNT   = var.AKS_USER_NODE_MIN_COUNT
+  AKS_USER_NODE_POOL_NAME   = var.AKS_USER_NODE_POOL_NAME
 
   # Manage identity
   MI_AKSKUBELET = var.MI_AKSKUBELET

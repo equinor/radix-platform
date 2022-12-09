@@ -2,10 +2,14 @@
 ### AKS
 ###
 
-AKS_NODE_POOL_NAME     = "nodepool1"
-AKS_NODE_POOL_VM_SIZE  = "Standard_B4ms"
-AKS_NODE_COUNT         = 3
-AKS_KUBERNETES_VERSION = "1.23.8"
+AKS_KUBERNETES_VERSION    = "1.23.8"
+AKS_NODE_POOL_VM_SIZE     = "Standard_B4ms"
+AKS_SYSTEM_NODE_MAX_COUNT = "2"
+AKS_SYSTEM_NODE_MIN_COUNT = "1"
+AKS_SYSTEM_NODE_POOL_NAME = "systempool"
+AKS_USER_NODE_MAX_COUNT   = "5"
+AKS_USER_NODE_MIN_COUNT   = "2"
+AKS_USER_NODE_POOL_NAME   = "userpool"
 
 #######################################################################################
 ### Zone and cluster settings
