@@ -18,22 +18,42 @@ variable "AZ_PRIVATE_DNS_ZONES" {
   type        = list(string)
 }
 
-variable "aks_node_pool_name" {
-  description = "Node pool name"
+variable "AKS_SYSTEM_NODE_POOL_NAME" {
+  description = "The name of the Node Pool which should be created within the Kubernetes Cluster"
   type        = string
 }
 
-variable "aks_node_pool_vm_size" {
-  description = "VM type"
+variable "AKS_USER_NODE_POOL_NAME" {
+  description = "The name of the Node Pool which should be created within the Kubernetes Cluster"
   type        = string
 }
 
-variable "aks_node_count" {
-  description = "Number of nodes"
-  type        = number
+variable "AKS_NODE_POOL_VM_SIZE" {
+  description = "The SKU which should be used for the Virtual Machines used in this Node Pool"
+  type        = string
 }
 
-variable "aks_kubernetes_version" {
+variable "AKS_SYSTEM_NODE_MIN_COUNT" {
+  description = "The minimum number of nodes which should exist in this Node Pool"
+  type = number
+}
+
+variable "AKS_SYSTEM_NODE_MAX_COUNT" {
+  description = "The maximum number of nodes which should exist in this Node Pool"
+  type = number
+}
+
+variable "AKS_USER_NODE_MIN_COUNT" {
+  description = "The minimum number of nodes which should exist in this Node Pool"
+  type = number
+}
+
+variable "AKS_USER_NODE_MAX_COUNT" {
+  description = "The maximum number of nodes which should exist in this Node Pool"
+  type = number
+}
+
+variable "AKS_KUBERNETES_VERSION" {
   description = "kubernetes version"
   type        = string
 }
