@@ -220,7 +220,7 @@ spec:
   tls:
   - hosts:
     - prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
-    secretName: cluster-wildcard-tls-cert
+    secretName: radix-wildcard-tls-cert
 EOF
 
 # Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in flux chart)
@@ -249,5 +249,5 @@ spec:
   tls:
   - hosts:
     - prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
-    secretName: cluster-wildcard-tls-cert
+    secretName: radix-wildcard-tls-cert
 EOF

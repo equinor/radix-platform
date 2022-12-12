@@ -322,9 +322,7 @@ function applyManifests() {
 
     # (echo "#!/bin/sh";
     # echo "cat <<EOF >>${TMP_DIR}/translated-manifests.yaml";
-    # cat $WORK_DIR/manifests/active-cluster-wildcard-tls-cert.yaml | cat;
-    # cat $WORK_DIR/manifests/app-wildcard-tls-cert.yaml | cat;
-    # cat $WORK_DIR/manifests/cluster-wildcard-tls-cert.yaml | cat;
+    # cat $WORK_DIR/manifests/radix-wildcard-tls-cert.yaml | cat;
     # echo "";
     # echo "EOF";)>${TMP_DIR}/heredoc.sh && chmod +x ${TMP_DIR}/heredoc.sh
 

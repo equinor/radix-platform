@@ -200,7 +200,7 @@ echo "ingress:
   hosts:
   - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
   tls:
-  - secretName: cluster-wildcard-tls-cert
+  - secretName: radix-wildcard-tls-cert
     hosts:
     - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
 env:
@@ -230,7 +230,7 @@ kubectl create secret generic grafana-secrets \
 #   --version v6.12.0 \
 #   --set ingress.hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
 #   --set ingress.tls[0].hosts[0]=grafana."$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS" \
-#   --set ingress.tls[0].secretName=cluster-wildcard-tls-cert \
+#   --set ingress.tls[0].secretName=radix-wildcard-tls-cert \
 #   --set env.GF_SERVER_ROOT_URL=$GF_SERVER_ROOT_URL
 
 printf "Done.\n"

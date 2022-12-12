@@ -257,8 +257,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
         --set namespace="$RADIX_NAMESPACE" \
         --set component="$RADIX_APP_COMPONENT" \
         --set componentPort="$RADIX_APP_COMPONENT_PORT" \
-        --set authSecret="$RADIX_AUTH_SECRET" \
-        --set enableAutoTLS=true \
+        --set authSecret="$RADIX_AUTH_SECRET"
         2>&1 >/dev/null
 
     printf "Done."
