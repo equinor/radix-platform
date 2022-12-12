@@ -65,8 +65,7 @@ helm upgrade --install radix-ingress-"$RADIX_APP_ALIAS_NAME" "$RADIX_HELM_REPO"/
     --set application="$RADIX_APP_NAME" \
     --set namespace="$RADIX_APP_NAMESPACE" \
     --set component="$RADIX_APP_COMPONENT" \
-    --set componentPort="$RADIX_APP_COMPONENT_PORT" \
-    --set enableAutoTLS=true
+    --set componentPort="$RADIX_APP_COMPONENT_PORT"
 
 ```
 
