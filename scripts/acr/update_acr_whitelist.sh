@@ -7,7 +7,6 @@
 # ACR should be configured with restricted access.
 # This script let's you interactively modify a list of whitelisted IPs in our key vault and optionally apply this list as ACR network rules.
 
-
 #######################################################################################
 ### INPUTS
 ###
@@ -15,6 +14,8 @@
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
 
+# Optional:
+# - USER_PROMPT             : Is human interaction is required to run script? true/false. Default is true.
 
 #######################################################################################
 ### HOW TO USE
@@ -71,21 +72,21 @@ else
 fi
 
 if [[ -n "${IP_MASK}" ]]; then
-  if [[ "${ACTION}" != "add" && "${ACTION}" != "delete" ]]; then
-    printf "\nERROR: ACTION must be either 'add' or 'delete'." >&2
-    exit 1
-  fi
-  if [[ -z "${IP_LOCATION}" ]] && [[ "${ACTION}" == "add" ]]; then
-    printf "\nERROR: IP_MASK can not be used without IP_LOCATION when adding an entry." >&2
-    exit 1
-  fi
+    if [[ "${ACTION}" != "add" && "${ACTION}" != "delete" ]]; then
+        printf "\nERROR: ACTION must be either 'add' or 'delete'." >&2
+        exit 1
+    fi
+    if [[ -z "${IP_LOCATION}" ]] && [[ "${ACTION}" == "add" ]]; then
+        printf "\nERROR: IP_MASK can not be used without IP_LOCATION when adding an entry." >&2
+        exit 1
+    fi
 fi
 
 if [[ -n "${IP_LOCATION}" ]]; then
-  if [[ -z "${IP_MASK}" ]]; then
-    printf "\nERROR: IP_LOCATION can not be used without IP_MASK" >&2
-    exit 1
-  fi
+    if [[ -z "${IP_MASK}" ]]; then
+        printf "\nERROR: IP_LOCATION can not be used without IP_MASK" >&2
+        exit 1
+    fi
 fi
 
 # Optional inputs
@@ -114,12 +115,10 @@ printf "Done.\n"
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_ip_whitelist.sh
 
-
 #######################################################################################
 ### Fetch ACR IP whitelist from key vault
 ###
 MASTER_ACR_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
-
 
 #######################################################################################
 ### Run interactive wizard to modify IP whitelist
@@ -129,13 +128,13 @@ MASTER_ACR_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KE
 temp_file_path="/tmp/$(uuidgen)"
 
 if [[ -n "${IP_MASK}" ]]; then
-  if [[ "${ACTION}" == "add" ]]; then
-    add-single-ip-to-whitelist "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}" "${IP_MASK}" "${IP_LOCATION}"
-  else
-    delete-single-ip-from-whitelist "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}" "${IP_MASK}"
-  fi
+    if [[ "${ACTION}" == "add" ]]; then
+        add-single-ip-to-whitelist "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}" "${IP_MASK}" "${IP_LOCATION}"
+    else
+        delete-single-ip-from-whitelist "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}" "${IP_MASK}"
+    fi
 else
-  run-interactive-ip-whitelist-wizard "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}"
+    run-interactive-ip-whitelist-wizard "${MASTER_ACR_IP_WHITELIST}" "${temp_file_path}"
 fi
 new_master_acr_ip_whitelist_base64=$(cat ${temp_file_path})
 new_master_acr_ip_whitelist=$(echo ${new_master_acr_ip_whitelist_base64} | base64 -d)
@@ -156,29 +155,28 @@ cat ${current_ips_file_with_duplicates} | sort | uniq > ${current_ips_file}
 ips_to_remove=$(comm -23 <(sort ${current_ips_file}) <(sort ${desired_ips_file}))
 ips_to_add=$(comm -23 <(sort ${desired_ips_file}) <(sort ${current_ips_file}))
 
-
 # clean up temp files
 rm $desired_ips_file $current_ips_file $current_ips_file_no_mask $current_ips_file_with_duplicates $temp_file_path
 
-function update-keyvault(){
-  #######################################################################################
-  ### Update keyvault with new whitelist
-  ###
-  printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
-  if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_acr_ip_whitelist_base64}" 2>&1)" == *"ERROR"* ]]; then
-      printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
-      exit 1
-  fi
-  printf "Done.\n"
+#######################################################################################
+### Update keyvault with new whitelist
+###
+
+function update-keyvault() {
+    printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
+    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_acr_ip_whitelist_base64}" 2>&1)" == *"ERROR"* ]]; then
+        printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
+        exit 1
+    fi
+    printf "Done.\n"
 }
 
 if [[ $(echo "${ips_to_add}${ips_to_remove}" | wc -c) -le 1 ]]; then
-  printf "No changes to apply to ACR whitelist.\n"
-  update-keyvault
-  printf "Done.\n"
-  exit 0
+    printf "No changes to apply to ACR whitelist.\n"
+    update-keyvault
+    printf "Done.\n"
+    exit 0
 fi
-
 
 #######################################################################################
 ### Update ACR with new whitelist
@@ -186,34 +184,36 @@ fi
 
 printf "\nUpdating ACR ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n\n"
 
-while true; do
-    printf "Deleting these IPs\n${ips_to_remove}\n\n"
-    printf "Adding these IPs\n${ips_to_add}\n\n"
-    read -r -p "Proceed with operation? (Y/n) " yn
-    case ${yn} in
-    [Yy]*)
-        whitelist_ok=true
-        break
-        ;;
-    [Nn]*)
-        whitelist_ok=false
-        exit 1
-        ;;
-    *) printf "\nPlease answer yes or no.\n" ;;
-    esac
-done
+if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        printf "Deleting these IPs\n${ips_to_remove}\n\n"
+        printf "Adding these IPs\n${ips_to_add}\n\n"
+        read -r -p "Proceed with operation? (Y/n) " yn
+        case ${yn} in
+        [Yy]*)
+            whitelist_ok=true
+            break
+            ;;
+        [Nn]*)
+            whitelist_ok=false
+            exit 1
+            ;;
+        *) printf "\nPlease answer yes or no.\n" ;;
+        esac
+    done
+fi
 
 update-keyvault
 
 for ip_to_add in ${ips_to_add}; do
-  printf "Adding ${ip_to_add} to ACR whitelist...\n"
-  az acr network-rule add --ip-address "${ip_to_add}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
+    printf "Adding ${ip_to_add} to ACR whitelist...\n"
+    az acr network-rule add --ip-address "${ip_to_add}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
 done
 
 for ip_to_remove in ${ips_to_remove}; do
-  printf "Deleting ${ip_to_remove} from ACR whitelist...\n"
-  ip_to_remove_no_32_mask=${ip_to_remove%"/32"}
-  az acr network-rule remove --ip-address "${ip_to_remove_no_32_mask}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
+    printf "Deleting ${ip_to_remove} from ACR whitelist...\n"
+    ip_to_remove_no_32_mask=${ip_to_remove%"/32"}
+    az acr network-rule remove --ip-address "${ip_to_remove_no_32_mask}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
 done
 
 printf "Done.\n"
