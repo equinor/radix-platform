@@ -66,7 +66,7 @@ function get_test_cluster_outbound_ip() {
         return 1
     fi
     frontend_ip_configurations_file="/tmp/$(uuidgen)"
-    cat $outbound_rules_file | jq -r .[0].frontendIpConfigurations > $frontend_ip_configurations_file
+    cat $outbound_rules_file | jq -r .[0].frontendIPConfigurations > $frontend_ip_configurations_file
     if [[ $(jq length $frontend_ip_configurations_file) != "1" ]]; then
         printf "ERROR: Expected exactly 1 frontendIpConfiguration associated with outbound rule in LB for $dest_cluster, but found $(jq length $frontend_ip_configurations_file). You must manually add network rule to allow traffic to ACR from $dest_cluster" >&2 
         return 1
