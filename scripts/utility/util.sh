@@ -56,19 +56,22 @@ function get_test_cluster_outbound_ip() {
     json_output_file="/tmp/$(uuidgen)"
     az network lb list --subscription ${az_subscription_id} | jq '[.[] | select(.tags | contains ({"aks-managed-cluster-name": "'${dest_cluster}'"}) )]' > $json_output_file
     if [[ $(jq length $json_output_file) != "1" ]]; then
-        printf "ERROR: Expected exactly 1 LB associated with cluster $dest_cluster, but found $(jq length $json_output_file). You must manually add network rule to allow traffic to ACR from $dest_cluster" >&2
+        printf "ERROR: Expected exactly 1 LB associated with cluster $dest_cluster, but found $(jq length $json_output_file)" >&2
+        rm $json_output_file $outbound_rules_file $frontend_ip_configurations_file
         return 1
     fi
     outbound_rules_file="/tmp/$(uuidgen)"
     cat $json_output_file | jq -r .[0].outboundRules > $outbound_rules_file
     if [[ $(jq length $outbound_rules_file) != "1" ]]; then
-        printf "ERROR: Expected exactly 1 outbound rule associated with LB in $dest_cluster, but found $(jq length $outbound_rules_file). You must manually add network rule to allow traffic to ACR from $dest_cluster" >&2
+        printf "ERROR: Expected exactly 1 outbound rule associated with LB in $dest_cluster, but found $(jq length $outbound_rules_file)" >&2
+        rm $json_output_file $outbound_rules_file $frontend_ip_configurations_file
         return 1
     fi
     frontend_ip_configurations_file="/tmp/$(uuidgen)"
-    cat $outbound_rules_file | jq -r .[0].frontendIpConfigurations > $frontend_ip_configurations_file
+    cat $outbound_rules_file | jq -r .[0].frontendIPConfigurations > $frontend_ip_configurations_file
     if [[ $(jq length $frontend_ip_configurations_file) != "1" ]]; then
-        printf "ERROR: Expected exactly 1 frontendIpConfiguration associated with outbound rule in LB for $dest_cluster, but found $(jq length $frontend_ip_configurations_file). You must manually add network rule to allow traffic to ACR from $dest_cluster" >&2 
+        printf "ERROR: Expected exactly 1 frontendIPConfiguration associated with outbound rule in LB for $dest_cluster, but found $(jq length $frontend_ip_configurations_file)" >&2 
+        rm $json_output_file $outbound_rules_file $frontend_ip_configurations_file
         return 1
     fi
     frontend_ip_configurations_id=$(cat $frontend_ip_configurations_file | jq -r .[0].id)
