@@ -16,6 +16,7 @@ AKS_USER_NODE_POOL_NAME   = "userpool"
 ###
 
 AZ_LOCATION                    = "northeurope"
+CLUSTER_TYPE                   = "development"
 RADIX_ZONE                     = "dev"
 RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
@@ -26,6 +27,12 @@ RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
 
 AZ_RESOURCE_GROUP_CLUSTERS = "clusters"
 AZ_RESOURCE_GROUP_COMMON   = "common"
+
+#######################################################################################
+### Shared environment, az region and az subscription
+###
+
+AZ_SUBSCRIPTION_ID="16ede44b-1f74-40a5-b428-46cca9a5741b"
 
 #######################################################################################
 ### System users

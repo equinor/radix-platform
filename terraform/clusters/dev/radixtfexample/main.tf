@@ -7,9 +7,12 @@ provider "azurerm" {
 }
 
 locals {
-  AZ_RESOURCE_GROUP_VNET_HUB = "cluster-vnet-hub-${var.RADIX_ZONE}"
-  CLUSTER_NAME               = basename(abspath(path.module))
-  WHITELIST_IPS              = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  AZ_RESOURCE_GROUP_VNET_HUB     = "cluster-vnet-hub-${var.RADIX_ZONE}"
+  CLUSTER_NAME                   = basename(abspath(path.module))
+  WHITELIST_IPS                  = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  AZ_IPPRE_OUTBOUND_NAME         = "ippre-radix-aks-${var.CLUSTER_TYPE}-${var.AZ_LOCATION}-001"
+  RADIX_PLATFORM_REPOSITORY_PATH = "../../../.."
+  TERRAFORM_ROOT_PATH            = "../../.."
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -24,6 +27,62 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
 
 data "azurerm_resource_group" "rg_clusters" {
   name = var.AZ_RESOURCE_GROUP_CLUSTERS
+}
+
+resource "null_resource" "add_whitelist_acr" {
+  depends_on = [
+    module.aks
+  ]
+
+  provisioner "local-exec" {
+    when        = create
+    interpreter = ["/bin/bash", "-c"]
+    working_dir = path.root
+    command     = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
+
+    environment = {
+      RADIX_ZONE_ENV = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/radix-zone/radix_zone_${var.RADIX_ZONE}.env"
+      USER_PROMPT    = "false"
+      IP_MASK        = data.external.egress_ip.result.egress_ip,
+      IP_LOCATION    = local.CLUSTER_NAME,
+      ACTION         = "add"
+    }
+  }
+}
+
+resource "null_resource" "delete_whitelist_acr" {
+  triggers = {
+    "IP_MASK" = data.external.egress_ip.result.egress_ip
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    interpreter = ["/bin/bash", "-c"]
+    working_dir = path.root
+    command     = "../../../../scripts/acr/update_acr_whitelist.sh"
+
+    environment = {
+      RADIX_ZONE_ENV = "../../../../scripts/radix-zone/radix_zone_dev.env"
+      USER_PROMPT    = "false"
+      IP_MASK        = self.triggers.IP_MASK
+      ACTION         = "delete"
+    }
+  }
+}
+
+data "external" "egress_ip" {
+  depends_on = [
+    module.aks
+  ]
+
+  program = ["bash", "${local.TERRAFORM_ROOT_PATH}/scripts/get_egress_ip.sh"]
+
+  query = {
+    AZ_IPPRE_OUTBOUND_NAME   = local.AZ_IPPRE_OUTBOUND_NAME
+    AZ_RESOURCE_GROUP_COMMON = var.AZ_RESOURCE_GROUP_COMMON
+    AZ_SUBSCRIPTION_ID       = var.AZ_SUBSCRIPTION_ID
+    CLUSTER_NAME             = local.CLUSTER_NAME
+  }
 }
 
 module "aks" {
