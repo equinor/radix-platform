@@ -18,6 +18,11 @@ variable "AZ_PRIVATE_DNS_ZONES" {
   type        = list(string)
 }
 
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+
 variable "AKS_SYSTEM_NODE_POOL_NAME" {
   description = "The name of the Node Pool which should be created within the Kubernetes Cluster"
   type        = string
@@ -55,6 +60,11 @@ variable "AKS_USER_NODE_MAX_COUNT" {
 
 variable "AKS_KUBERNETES_VERSION" {
   description = "kubernetes version"
+  type        = string
+}
+
+variable "CLUSTER_TYPE" {
+  description = "cluster type"
   type        = string
 }
 
