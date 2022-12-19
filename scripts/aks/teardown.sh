@@ -152,7 +152,6 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/teardown.sh" 
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/dashboard/teardown-dashboard.sh" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="true" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
-exit 0
 
 #######################################################################################
 ### Check if cluster or network resources are locked
