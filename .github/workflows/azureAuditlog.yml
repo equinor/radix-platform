@@ -1,19 +1,20 @@
 name: AzureAuditLogs
 
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - '.github/workflows/azureAuditlog.yml'
-      - 'arm-templates/azureAuditLogStorageAccount.json'
+on: [workflow_dispatch]
+# on:
+#   push:
+#     branches:
+#       - master
+#     paths:
+#       - '.github/workflows/azureAuditlog.yml'
+#       - 'arm-templates/azureAuditLogStorageAccount.json'
       
-  pull_request:
-    branches:
-      - master
-    paths:
-      - '.github/workflows/azureAuditlog.yml'
-      - 'arm-templates/azureAuditLogStorageAccount.json'
+#   pull_request:
+#     branches:
+#       - master
+#     paths:
+#       - '.github/workflows/azureAuditlog.yml'
+#       - 'arm-templates/azureAuditLogStorageAccount.json'
 
 env:
   # Prod

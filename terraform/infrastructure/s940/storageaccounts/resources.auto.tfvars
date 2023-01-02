@@ -10,6 +10,7 @@ storage_accounts = {
     name          = "costallocationprodsqllog"
     rg_name       = "cost-allocation"
     allow_nested_items_to_be_public = false
+    backup_center = true
   }
   "radixflowlogsc2prod" = {
     name          = "radixflowlogsc2prod"

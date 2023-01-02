@@ -2,6 +2,14 @@ provider "azurerm" {
   features {}
 }
 
+locals {
+  backup_location = "azure_backup_vault_${var.storage_accounts.location.name}"
+  
+}
+# rule_mapping = {
+#   backup_location = "azure_backup_vault_${var.storage_accounts.location}"
+# }
+
 variable "storage_accounts" {
   type = map(object({
     name                              = string                          # Mandatory
@@ -72,6 +80,20 @@ resource "azurerm_storage_account" "storageaccounts" {
   }
 }
 
+output "myvalue" {
+  value = local.backup_location
+}
+
+# ##########################################################################################
+# # Role assignment
+# resource "azurerm_role_assignment" "az_roleassignemnt" {
+#   for_each             = { for mykey in compact([for mykey, myvalue in var.storage_accounts : myvalue.backup_center ? mykey : ""]) : mykey => var.storage_accounts[mykey] }
+#   scope                = azurerm_storage_account.storageaccounts[each.key].id
+#   role_definition_name = "Storage Account Backup Contributor"
+#   #principal_id         = azurerm_data_protection_backup_vault.azure_backup_vault_northeurope.identity[0].principal_id
+#   principal_id         = azurerm_data_protection_backup_vault.local.backup_location.storage_accounts.location.identity[0].principal_id
+#   depends_on           = [azurerm_storage_account.storageaccounts]
+# }
 # ##########################################################################################
 # # Role assignment
 
