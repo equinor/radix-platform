@@ -1,0 +1,59 @@
+name: Migrate cluster
+on:
+  workflow_dispatch:
+    inputs:
+
+      environment:
+        description: "Cluster environment"
+        required: true
+        type: choice
+        options:
+          - "dev"
+          - "playground"
+          - "prod"
+          - "c2"
+
+      target:
+        description: "Target"
+        required: true
+        type: string
+        default: weekly-01
+
+      destination:
+        description: "Destination"
+        required: true
+        type: string
+        default: weekly-02
+
+jobs:
+  Migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Copy cluster
+        run: ARGS="-r" TARGET="./terraform/clusters/${{ inputs.environment }}/${{ inputs.target }}" DESTINATION="./terraform/clusters/${{ inputs.environment }}/${{ inputs.destination }}" .github/workflows/scripts/copy.sh
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          assignees: equinor/omnia-radix
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          body: |
+            **${{ github.workflow }}:**
+
+            Target: ${{ inputs.target }}
+            Destination: ${{ inputs.destination }}
+
+            Label/Relabel PR with `deploy` to start terraform planing actions.
+
+            `Merge pull request` to apply terraform.
+          branch: migrate_${{ inputs.target }}_${{ inputs.destination }}
+          commit-message: "[Migrate] Copy: ${{ inputs.target }} -> ${{ inputs.destination }}"
+          committer: GitHub <noreply@github.com>
+          delete-branch: true
+          labels: |
+            ${{ inputs.environment }}
+          reviewers: equinor/omnia-radix
+          title: '[Migrate] Target: ${{ inputs.target }}, Destination: ${{ inputs.destination }}'
+          token: ${{ github.token }}
