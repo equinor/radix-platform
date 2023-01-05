@@ -1,0 +1,22 @@
+name: Storage Accounts
+on:
+  workflow_dispatch:
+    inputs:
+      subscription:
+        description: "Subscription"
+        required: true
+        type: choice
+        options:
+          - "s940"
+          - "s941"
+
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: List files in the repository ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
+        run: |
+          ls ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
+      #- run: echo "🍏 This job's status is ${{ job.status }}."
