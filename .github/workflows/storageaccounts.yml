@@ -20,7 +20,7 @@ env:
   # ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
   # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   # ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  # container_name: infrastructure
+  container_name: infrastructure
   key: terraform.tfstate
   resource_group_name: ${{ inputs.subscription }}-tfstate
   storage_account_name: ${{ inputs.subscription }}radixinfra
