@@ -56,11 +56,12 @@ jobs:
       - name: Where am I
         run: |
           pwd
+      - name: ls (here)
+        run: |
+          ls -lh
       - name: Terraform Validate
         run: terraform validate
-      
-      
       # - name: Terraform Plan
-      #   run: terraform plan 
+      #   run: terraform plan --var-file=../../../radix-zone/radix_zone_dev.tfvars
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
