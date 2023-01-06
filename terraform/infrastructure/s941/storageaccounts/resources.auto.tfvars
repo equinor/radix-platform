@@ -1,14 +1,4 @@
 storage_accounts = {
-  "radixazauditlogsdev" = {
-    name          = "radixazauditlogsdev"
-    rg_name       = "rg-radix-shared-dev"
-    backup_center = true
-    life_cycle    = false
-    # versioning_enabled = true
-    # change_feed_enabled = true
-    allow_nested_items_to_be_public = true
-    location      = "norwayeast"
-  }
   "radixflowlogsdev" = {
     name          = "radixflowlogsdev"
     rg_name       = "Logs-Dev"
@@ -21,10 +11,9 @@ storage_accounts = {
   "radixinfradev" = {
     name          = "radixinfradev"
     rg_name       = "s941-tfstate"
-    backup_center = true
+    backup_center = false
     # life_cycle    = true
     # versioning_enabled = true
-    # change_feed_enabled = true
     repl          = "GRS"
     kind          = "BlobStorage"
     shared_access_key_enabled = false
@@ -34,7 +23,7 @@ storage_accounts = {
   }
   "radixvelerodev" = {
     name          = "radixvelerodev"
-    rg_name       = "Velero_Backups"
+    rg_name       = "backups"
     backup_center = false
     # life_cycle    = true
     # versioning_enabled = true
@@ -44,6 +33,7 @@ storage_accounts = {
     container_delete_retention_policy = true
     allow_nested_items_to_be_public = true
     delete_retention_policy = true
+    life_cycle = false
   }
   "s941sqllogsdev" = {
     name          = "s941sqllogsdev"

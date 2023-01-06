@@ -31,7 +31,7 @@ variable "storage_accounts" {
     shared_access_key_enabled         = optional(bool, true)
     delete_retention_policy           = optional(bool, false)           # Must be true if kind = "BlobStorage" and want "Enable soft delete for blobs"
     versioning_enabled                = optional(bool, true)            #
-    change_feed_enabled               = optional(bool, true)
+    change_feed_enabled               = optional(bool, false)
     blobstorage_backup                = optional(bool, false)
   }))
   default = {}
