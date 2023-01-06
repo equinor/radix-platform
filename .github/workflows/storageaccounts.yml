@@ -29,6 +29,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ $terraform_version }}
+          terraform_version: ${{ env.terraform_version }}
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
