@@ -77,6 +77,13 @@ jobs:
       resource_group_name: s941-tfstate
       storage_account_name: radixinfra${{ inputs.radix_environment }}
 
+    outputs:
+      tf-fmt: ${{ steps.fmt.outcome }}
+      tf-init: ${{ steps.init.outcome }}
+      tf-validate: ${{ steps.validate.outputs.stdout }}
+      tf-plan: ${{ steps.plan.outcome }}
+      tf-plan-stdout: ${{ steps.plan.outputs.stdout }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -87,9 +94,11 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
 
       - name: Terraform Format
+        id: fmt
         run: terraform fmt -check
 
       - name: Terraform Init
+        id: init
         run: |
           terraform init \
           -backend-config='container_name=${{ env.container_name }}' \
@@ -98,12 +107,37 @@ jobs:
           -backend-config='storage_account_name=${{ env.storage_account_name }}'
 
       - name: Terraform Validate
+        id: validate
         run: terraform validate
 
       - name: Terraform Plan
+        id: plan
         if: github.event_name == 'pull_request'
-        run: terraform plan --var-file=../../../radix-zone/radix_zone_dev.tfvars
+        run: terraform plan --var-file=../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -lock=false
 
       - name: Terraform Apply
         if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
-        run: terraform apply --var-file=../../../radix-zone/radix_zone_dev.tfvars -auto-approve
+        run: terraform apply --var-file=../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve -lock=false
+  Create_comment:
+    needs: [Terraform]
+    name: Create comment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            #### Directory: \`${{ inputs.working_directory }}\`
+            #### Terraform Format and Style 🖌\`${{ needs.Terraform.outputs.tf-fmt }}\`
+            #### Terraform Initialization ⚙️\`${{ needs.Terraform.outputs.tf-init }}\`
+            #### Terraform Validation 🤖\`${{ needs.Terraform.outputs.tf-validate }}\`
+            #### Terraform Plan 📖\`${{ needs.Terraform.outputs.tf-plan }}\`
+            
+            <details><summary>Show Plan</summary>
+            
+            \`\`\`${{ needs.Terraform.outputs.tf-plan-stdout }}\`\`\`
+            
+            </details>
+            
