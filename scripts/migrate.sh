@@ -188,6 +188,12 @@ if ! [[ -x "$WEB_CONSOLE_EGRESS_IP_SCRIPT" ]]; then
     echo "ERROR: The web console egress ip script is not found or it is not executable in path $WEB_CONSOLE_EGRESS_IP_SCRIPT" >&2
 fi
 
+WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT="$WORKDIR_PATH/update_cluster_oidc_issuer_env_vars_for_console.sh"
+if ! [[ -x "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The web console cluster oidc issuer script is not found or it is not executable in path $WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" >&2
+fi
+
 MOVE_CUSTOM_INGRESSES_SCRIPT="$WORKDIR_PATH/move_custom_ingresses.sh"
 if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
     # Print to stderror
@@ -668,6 +674,13 @@ printf "Done.\n"
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
+wait # wait for subshell to finish
+echo ""
+
+# Update web console web component with cluster oidc issuer url
+echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
