@@ -44,6 +44,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Terraform Init
+        working-directory: ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
         run: |
           terraform init \
           -backend-config='container_name=${{ env.container_name }}' \
@@ -60,8 +61,10 @@ jobs:
         run: |
           ls -lh
       - name: Terraform Validate
+        working-directory: ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
         run: terraform validate
       - name: Terraform Plan
-        run: terraform plan --var-file=./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts/terraform.tfstate
+        working-directory: ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
+        run: terraform plan
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
