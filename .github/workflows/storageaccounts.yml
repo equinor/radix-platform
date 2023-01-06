@@ -53,9 +53,14 @@ jobs:
       - name: List files in the repository ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
         run: |
           ls ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
+      - name: Where am I
+        run: |
+          pwd
       - name: Terraform Validate
         run: terraform validate
-      - name: Terraform Plan
-        run: terraform plan
+      
+      
+      # - name: Terraform Plan
+      #   run: terraform plan 
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
