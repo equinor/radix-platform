@@ -55,5 +55,7 @@ jobs:
           ls ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
       - name: Terraform Validate
         run: terraform validate
+      - name: Terraform Plan
+        run: terraform plan
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
