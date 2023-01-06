@@ -9,14 +9,24 @@ on:
         options:
           - "s940"
           - "s941"
+          - "ABC"
+
+      destination:
+        description: "Destination"
+        required: true
+        type: string
+        default: weekly-02
 
 jobs:
-  Explore-GitHub-Actions:
+  StorageAccounts:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: List files in the repository ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
-        run: |
-          ls ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
+      - uses: actions/checkout@v3
+      - name: Copy Storage Accounts config
+        run: ARGS="-r" TARGET="./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts" DESTINATION="./terraform/clusters/${{ inputs.environment }}/${{ inputs.destination }}" .github/workflows/scripts/copy.sh
+      # - name: Check out repository code
+      #   uses: actions/checkout@v3
+      # - name: List files in the repository ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
+      #   run: |
+      #     ls ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
       #- run: echo "🍏 This job's status is ${{ job.status }}."
