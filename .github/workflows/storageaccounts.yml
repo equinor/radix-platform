@@ -61,7 +61,7 @@ jobs:
           ls -lh
       - name: Terraform Validate
         run: terraform validate
-      # - name: Terraform Plan
-      #   run: terraform plan --var-file=../../../radix-zone/radix_zone_dev.tfvars
+      - name: Terraform Plan
+        run: terraform plan --var-file=./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts/terraform.tfstate
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
