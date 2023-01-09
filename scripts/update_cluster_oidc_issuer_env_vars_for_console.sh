@@ -100,13 +100,13 @@ if [[ -z ${resource} ]]; then
     exit
 fi
 printf " Done.\n"
-echo $cluster_oidc_issuer_url
-# updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "qa" "web" "cluster_oidc_issuer_url" "${cluster_oidc_issuer_url}" || exit
-# updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "prod" "web" "cluster_oidc_issuer_url" "${cluster_oidc_issuer_url}" || exit
+
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "qa" "web" "CLUSTER_OIDC_ISSUER_URL" "${cluster_oidc_issuer_url}" || exit
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "prod" "web" "CLUSTER_OIDC_ISSUER_URL" "${cluster_oidc_issuer_url}" || exit
 
 # Restart Radix Web Console deployment
 printf "Restarting Radix Web Console...\n"
-# kubectl rollout restart deployment -n radix-web-console-qa web
-# kubectl rollout restart deployment -n radix-web-console-prod web
+kubectl rollout restart deployment -n radix-web-console-qa web
+kubectl rollout restart deployment -n radix-web-console-prod web
 
 echo "Done."
