@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # PURPOSE
-# Updates oidcIssuerProfile.issuerUrl assigned to the AKS cluster to the environment variable cluster_oidc_issuer_url $(of the web component of Radix Web Console.
+# Sets CLUSTER_OIDC_ISSUER_URL environment variable of Radix Web Console with value in oidcIssuerProfile.issuerUrl assigned to the AKS cluster.
 
 # Example 1:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_cluster_oidc_issuer_env_vars_for_console.sh
