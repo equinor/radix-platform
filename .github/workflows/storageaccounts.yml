@@ -46,7 +46,7 @@ jobs:
       #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
       #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Terraform Init
-        working-directory: ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
+        working-directory: ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts/lab
         run: |
           terraform init \
           -backend-config='container_name=${{ env.container_name }}' \
