@@ -93,9 +93,17 @@ function verify_current_cluster() {
     echo $current_context | grep playground || prompt_for_confirmation "Are you 100% sure? Current context, $current_context, is NOT playground! (Y/n)"
 }
 
+function clean-up-binary() {
+  echo "cleaning up ${bin_dir}..." >&2
+  bin_dir=$1
+  rm -r $bin_dir
+}
+
+
 bin_dir="/tmp/$(uuidgen)"
+# the trap function intercepts the SIGINT signal (CTRL+C) and cleans up downloaded binary before exiting
+trap "clean-up-binary $bin_dir && exit 2" 2
 download_latest_rx_cleanup $bin_dir
 verify_current_cluster $bin_dir
 list_and_stop_inactive_rrs $bin_dir
 list_and_delete_inactive_rrs $bin_dir
-echo "rm -r $bin_dir"
