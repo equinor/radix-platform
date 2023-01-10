@@ -25,6 +25,7 @@ env:
   key: terraform.tfstate
   resource_group_name: ${{ inputs.subscription }}-tfstate
   storage_account_name: ${{ inputs.subscription }}radixinfra
+  path: storageaccounts
 
 
 jobs:
@@ -49,7 +50,8 @@ jobs:
         run: |
           terraform init \
           -backend-config='container_name=${{ env.container_name }}' \
-          -backend-config='key=storageaccounts/${{ env.key }}' \
+          -backend-config='path=${{ env.path }}' \
+          -backend-config='key=${{ env.key }}' \
           -backend-config='resource_group_name=${{ env.resource_group_name }}' \
           -backend-config='storage_account_name=${{ env.storage_account_name }}'
       # - name: List files in the repository ./terraform/infrastructure/${{ inputs.subscription }}/storageaccounts
