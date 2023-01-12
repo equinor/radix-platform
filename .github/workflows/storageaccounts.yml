@@ -47,6 +47,9 @@ jobs:
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
+      - name: Sleep for 60 seconds
+        run: sleep 60s
+        shell: bash
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Setup Terraform
