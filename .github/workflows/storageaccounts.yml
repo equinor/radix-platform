@@ -28,6 +28,26 @@ env:
   key: terraform.tfstate
 
 jobs:
+  OpenFW:
+      runs-on: ubuntu-latest
+      environment: operations
+      steps:
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Public IP
+        id: ip
+        uses: haythem/public-ip@v1.2
+      - name: Print Public IP
+        run: |
+          echo $
+      - name: Add GitHub IP to StorageAccount
+        run: |
+          az storage account network-rule add --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address --cidr $
+
   StorageAccounts:
     runs-on: ubuntu-latest
     environment: operations
