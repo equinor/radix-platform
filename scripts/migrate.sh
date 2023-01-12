@@ -100,6 +100,11 @@ hash kubelogin 2>/dev/null || {
     exit 1
 }
 
+hash uuidgen 2>/dev/null || {
+    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 printf "Done.\n"
 
 #######################################################################################
