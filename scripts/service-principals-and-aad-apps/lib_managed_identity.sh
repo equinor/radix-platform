@@ -92,6 +92,7 @@ function create_role_assignment_for_identity() {
 
     # Return if missing inputs.
     [ $# -ne 3 ] && { printf "missing inputs.\n"; return; }
+
     testID="$(az rest \
         --method GET \
         --url "https://graph.microsoft.com/v1.0/servicePrincipals?\$filter=appId eq '$(az identity show --name ${id_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query clientId --output tsv 2>/dev/null)'" \
