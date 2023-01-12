@@ -41,6 +41,7 @@ normal=$(tput sgr0)
 echo ""
 echo "Start bootstrap of radix-cicd-canary... "
 
+script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #######################################################################################
 ### Check for prerequisites binaries
 ###
@@ -63,6 +64,13 @@ hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
+
+CREATE_MANAGED_IDENTITY_SCRIPT="$script_dir_path/scaling/create-managed-identity.sh"
+if ! [[ -x "$CREATE_MANAGED_IDENTITY_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The restore apps script is not found or it is not executable in path $CREATE_MANAGED_IDENTITY_SCRIPT" >&2
+fi
+
 printf "All is good."
 echo ""
 
@@ -87,8 +95,6 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
-
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Source util scripts
 
@@ -168,5 +174,10 @@ kubectl create secret generic canary-secrets --namespace radix-cicd-canary \
     kubectl apply -f -
 
 rm -f $YAML_SECRET_FILE
+
+# create managed identity and RBAC settings to allow for scheduled scaling
+printf "%s► Execute %s%s\n" "${grn}" "$CREATE_MANAGED_IDENTITY_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME="${CLUSTER_NAME}" ${CREATE_MANAGED_IDENTITY_SCRIPT})
+wait # wait for subshell to finish
 
 echo "Done."
