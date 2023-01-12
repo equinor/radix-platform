@@ -47,5 +47,6 @@ jobs:
         kubelogin-version: 'latest'
     - name: "Scale to 0"
       run: |
-        $GITHUB_WORKSPACE/.github/workflows/scripts/scale-cicd-canary.sh "0"
-  
+        slack_webhook_url="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_SLACK_WEBHOOK" | jq -r .value)"
+        $GITHUB_WORKSPACE/.github/workflows/scripts/scale-cicd-canary.sh "0" "${slack_webhook_url}" "GitHub Action: Stopping radix-cicd-canary in cluster "
+        
