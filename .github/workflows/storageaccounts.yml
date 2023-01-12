@@ -40,13 +40,13 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Public IP
         id: ip
-        uses: haythem/public-ip@v1.2
+        uses: haythem/public-ip@v1.3
       - name: Print Public IP
         run: |
-          echo $
+          echo ${{ steps.ip.outputs.ipv4 }}
       - name: Add GitHub IP to StorageAccount
         run: |
-          az storage account network-rule add --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address --cidr $
+          az storage account network-rule add --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
 
   StorageAccounts:
     runs-on: ubuntu-latest
