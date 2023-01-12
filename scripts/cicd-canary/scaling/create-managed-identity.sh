@@ -212,4 +212,3 @@ create-role-assignment ${mi_object_id}
 create-role-and-rolebinding
 modify-role-binding ${mi_object_id}
 add-federated-gh-credentials ${mi_name} "master"
-add-federated-gh-credentials ${mi_name} "259748-schedule-scaling-of-cicd-canary"
