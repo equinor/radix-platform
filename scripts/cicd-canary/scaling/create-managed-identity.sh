@@ -140,21 +140,6 @@ function get-mi-object-id {
     printf "Done\n"
 }
 
-function create-role-assignment {
-    # TODO: DevOps issue 259748, downgrade Contributor role when new role is ready
-    local object_id=$1
-    printf "Assigning role to ${object_id} on scope of ${AZ_RESOURCE_GROUP_CLUSTERS}...\n"
-    az role assignment create \
-        --assignee-object-id $object_id \
-        --assignee-principal-type ServicePrincipal \
-        --role Contributor \
-        --scope /subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS} || {
-            echo -e "ERROR: Could not assign role to ${object_id}." >&2
-            exit 1
-        }
-    printf "Done\n"
-}
-
 function modify-role-binding {
     local object_id=$1
     printf "Modifying rolebinding to grant scaler role to MI ${object_id}...\n"
@@ -177,7 +162,8 @@ function add-federated-gh-credentials {
         --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
         --audiences "api://AzureADTokenExchange" \
         --issuer https://token.actions.githubusercontent.com \
-        --subject repo:equinor/radix-platform:ref:refs/heads/${branch} || {        
+        --subject repo:equinor/radix-platform:ref:refs/heads/${branch} \
+        --only-show-errors >/dev/null || {        
             echo -e "ERROR: Could not add federated GH credentials to managed identity ${mi_name}." >&2
             exit 1
         }
@@ -198,6 +184,20 @@ function create-role-and-rolebinding {
     printf "Done\n"
 }
 
+function set-kv-policy {
+    local object_id=$1
+    printf "Creating vault access policy on ${AZ_RESOURCE_KEYVAULT} for ${object_id}...\n"
+    az keyvault set-policy \
+        --name ${AZ_RESOURCE_KEYVAULT} \
+        --secret-permissions get \
+        --object-id ${object_id} \
+        --only-show-errors >/dev/null || {        
+            echo -e "ERROR: Could not create vault access policy on ${AZ_RESOURCE_KEYVAULT}." >&2
+            exit 1
+        }
+    printf "Done\n"
+}
+
 mi_name=radix-cicd-canary-scaler
 mi-exists ${mi_name} || { 
         create_managed_identity ${mi_name}
@@ -208,7 +208,10 @@ tmp_file_name="/tmp/$(uuidgen)"
 get-mi-object-id ${tmp_file_name} ${mi_name}
 mi_object_id=$(cat ${tmp_file_name})
 rm ${tmp_file_name}
-create-role-assignment ${mi_object_id}
+# TODO: DevOps issue 259748, downgrade Contributor role when new role is ready
+# https://github.com/equinor/Solum/issues/10900
+create_role_assignment_for_identity "${mi_name}" "Contributor" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+set-kv-policy "${mi_object_id}"
 create-role-and-rolebinding
 modify-role-binding ${mi_object_id}
 add-federated-gh-credentials ${mi_name} "master"

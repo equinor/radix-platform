@@ -1,5 +1,7 @@
 #!/bin/bash
 nr_of_replicas=$1
+slack_webhook_url=$2
+msg_prefix="$3"
 for cluster_entry in `az aks list -ojson | jq -r '.[] | "\(.id)#\(.powerState.code)"' --raw-output`; do
     resource_group=$(echo $cluster_entry | awk -F# '{print $1}' | awk -F/ '{print $5}')
     cluster_name=$(echo $cluster_entry | awk -F# '{print $1}' | awk -F/ '{print $(NF)}')
@@ -22,4 +24,7 @@ for cluster_entry in `az aks list -ojson | jq -r '.[] | "\(.id)#\(.powerState.co
         --resource-group ${resource_group} \
         --subscription ${subscription_id} \
         --command "kubectl scale deployment radix-cicd-canary --replicas=${nr_of_replicas} -n radix-cicd-canary"
+    if [[ -n "${slack_webhook_url}" ]]; then
+        curl -s -X POST -H 'Content-type: application/json' --data '{"text":"'"${msg_prefix}$cluster_name"'"}' "$slack_webhook_url" > /dev/null
+    fi
 done
