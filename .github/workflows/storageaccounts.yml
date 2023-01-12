@@ -28,7 +28,7 @@ env:
   key: terraform.tfstate
 
 jobs:
-  OpenFW:
+  StorageAccounts:
       runs-on: ubuntu-latest
       environment: operations
       steps:
@@ -41,17 +41,12 @@ jobs:
       - name: Public IP
         id: ip
         uses: haythem/public-ip@v1.3
-      - name: Print Public IP
-        run: |
-          echo ${{ steps.ip.outputs.ipv4 }}
+      # - name: Print Public IP
+      #   run: |
+      #     echo ${{ steps.ip.outputs.ipv4 }}
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
-
-  StorageAccounts:
-    runs-on: ubuntu-latest
-    environment: operations
-    steps:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Setup Terraform
@@ -72,5 +67,8 @@ jobs:
       - name: Terraform Plan
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
         run: terraform plan -lock=false
+      - name: Revoke GitHub IP to StorageAccount
+        run: |
+          az storage account network-rule remove --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
