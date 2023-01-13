@@ -11,6 +11,7 @@ storage_accounts = {
     repl          = "GRS"
     kind          = "BlobStorage"
     shared_access_key_enabled = false
+    firewall      = false
   }
   "radixvelerodev" = {
     name          = "radixvelerodev"
@@ -18,6 +19,7 @@ storage_accounts = {
     backup_center = false
     repl          = "GRS"
     kind          = "BlobStorage"
+    ip_rule       = ["213.236.148.45", "85.19.71.228", "143.97.110.1", "143.97.2.129", "143.97.2.35", "89.8.223.195", "46.9.11.90", "92.220.195.12", "92.221.72.153", "92.221.167.86", "92.221.23.247", "92.221.74.49", "92.221.25.155"]
   }
   "s941radixinfra" = {
     name          = "s941radixinfra"

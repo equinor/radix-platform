@@ -16,6 +16,8 @@ locals {
   # }
 }
 
+##########################################################################################
+# Variables
 variable "storage_accounts" {
   type = map(object({
     name          = string                          # Mandatory
@@ -26,58 +28,66 @@ variable "storage_accounts" {
     tier          = optional(string, "Standard")    # Optional
     backup_center = optional(bool, false)           # Optional      
     life_cycle    = optional(bool, true)
-    #firewall                          = optional(bool, false)
-    #fw_rule                           = optional(string, "")
+    firewall                          = optional(bool, true)
+    ip_rule                           = optional(list(string), ["143.97.110.1"])
     container_delete_retention_policy = optional(bool, true)
     tags                              = optional(map(string), {})
     allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration | Allow Blob public access
-    shared_access_key_enabled         = optional(bool, true) #Config
-    cross_tenant_replication_enabled  = optional(bool, true) #Config
-    delete_retention_policy           = optional(bool, true) # Must be true if kind = "BlobStorage" and want "Enable soft delete for blobs"
-    versioning_enabled                = optional(bool, true) #
+    shared_access_key_enabled         = optional(bool, true)
+    cross_tenant_replication_enabled  = optional(bool, true)
+    delete_retention_policy           = optional(bool, true)
+    versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
   }))
   default = {}
 }
-
-# variable "vnet_name" {
-#   description = "Name of the vnet to import."
-#   type        = list(string)
-#   default     = ["vnet-hub","vnet-hub"]
-# }
-
-# variable "vnet_rg" {
-#   description = "Name of the resource grep related to the vnet_name."
-#   type        = list(string)
-#   default     = ["cluster-vnet-hub-dev","cluster-vnet-hub-playground"]
-# }
-
-# variable "additional_tags" {
-#   default     = { "ServiceNow-App" : "OMNIA RADIX", "WBS" : "wbs-123" }
-#   description = "Additional resource tags"
-#   type        = map(string)
-# }
-
 variable "vnets" {
   type = map(object({
     vnet_name   = string
-    rg_name     = string
+    rg_name     = optional(string, "clusters")
     subnet_name = string
   }))
   default = {
-    "hub_dev" = {
-      vnet_name   = "vnet-hub"
-      rg_name     = "cluster-vnet-hub-dev"
-      subnet_name = "private-links"
+    "vnet-anneli-test" = {
+      vnet_name   = "vnet-anneli-test"
+      subnet_name = "subnet-anneli-test"
     }
-    "hub_playground" = {
-      vnet_name   = "vnet-hub"
-      rg_name     = "cluster-vnet-hub-playground"
-      subnet_name = "private-links"
+    "vnet-magnus-test" = {
+      vnet_name   = "vnet-magnus-test"
+      subnet_name = "subnet-magnus-test"
+    }
+    "vnet-playground-07" = {
+      vnet_name   = "vnet-playground-07"
+      subnet_name = "subnet-playground-07"
+    }
+    "vnet-weekly-02" = {
+      vnet_name   = "vnet-weekly-02"
+      subnet_name = "subnet-weekly-02"
+    }
+    "vnet-weekly-52" = {
+      vnet_name   = "vnet-weekly-52"
+      subnet_name = "subnet-weekly-52"
     }
   }
 }
 
+##########################################################################################
+# Virtual Network
+data "azurerm_virtual_network" "vnets" {
+  for_each            = var.vnets
+  name                = each.value["vnet_name"]
+  resource_group_name = each.value["rg_name"]
+}
+
+data "azurerm_subnet" "subnets" {
+  for_each             = var.vnets
+  name                 = each.value["subnet_name"]
+  resource_group_name  = each.value["rg_name"]
+  virtual_network_name = each.value["vnet_name"]
+}
+
+##########################################################################################
+# Storage Accounts
 resource "azurerm_storage_account" "storageaccounts" {
   for_each                         = var.storage_accounts
   name                             = each.value["name"]
@@ -122,41 +132,21 @@ resource "azurerm_storage_account" "storageaccounts" {
   }
 }
 
-# data "azurerm_virtual_network" "vnets" {
-#   for_each            = var.vnets
-#   name                = each.value["vnet_name"]
-#   resource_group_name = each.value["rg_name"]
-# }
+##########################################################################################
+# Network rules
 
-# data "azurerm_subnet" "subnets" {
-#   for_each             = var.vnets
-#   name                 = "private-links"
-#   resource_group_name  = each.value["rg_name"]
-#   virtual_network_name = each.value["vnet_name"]
-# }
+resource "azurerm_storage_account_network_rules" "network_rule" {
+  for_each = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
+  storage_account_id         = azurerm_storage_account.storageaccounts[each.key].id
+  default_action             = "Deny"
+  ip_rules                   = each.value["ip_rule"]
+  virtual_network_subnet_ids = values(data.azurerm_subnet.subnets)[*].id
+  bypass                     = ["AzureServices"]
+}
 
-# resource "azurerm_storage_account_network_rules" "network_rule" {
-#   for_each = { for mykey in compact([for mykey, myvalue in var.storage_accounts : myvalue.firewall ? mykey : ""]) : mykey => var.storage_accounts[mykey] }
-
-#   storage_account_id         = azurerm_storage_account.storageaccounts[each.key].id
-#   default_action             = "Deny"
-#   ip_rules                   = []
-#   virtual_network_subnet_ids = [data.azurerm_subnet.subnets[each.value["fw_rule"]].id]
-#   bypass                     = ["AzureServices"]
-#   depends_on                 = [data.azurerm_subnet.subnets]
-# }
-
-# output "virtual_network_subnet_ids" {
-#   value = data.azurerm_subnet.subnets["hub_dev"].id
-# }
-
-# output "storageaccount" {
-#   value = var.storage_accounts
-# }
-
-
+##########################################################################################
+# Role assignment
 resource "azurerm_role_assignment" "northeurope" {
-  #for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center ? key : ""]) : key => var.storage_accounts[key] }
   for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center ? key : false && value.location == "northeurope" ? key : false && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   scope                = azurerm_storage_account.storageaccounts[each.key].id
   role_definition_name = "Storage Account Backup Contributor"
@@ -164,8 +154,10 @@ resource "azurerm_role_assignment" "northeurope" {
   depends_on           = [azurerm_storage_account.storageaccounts]
 }
 
+##########################################################################################
+# Blob Protection
+
 resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
-  #for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center ? key : ""]) : key => var.storage_accounts[key] }
   for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center ? key : false && value.location == "northeurope" ? key : false && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
@@ -175,8 +167,8 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
   depends_on         = [azurerm_role_assignment.northeurope]
 }
 
-# ##########################################################################################
-# # Management Policy
+###########################################################################################
+# Management Policy
 
 resource "azurerm_storage_management_policy" "sapolicy" {
   for_each           = { for key in compact([for key, value in var.storage_accounts : value.life_cycle ? key : ""]) : key => var.storage_accounts[key] }
@@ -194,7 +186,6 @@ resource "azurerm_storage_management_policy" "sapolicy" {
       }
       base_blob {
         tier_to_cool_after_days_since_modification_greater_than = 30
-        #tier_to_archive_after_days_since_last_tier_change_greater_than = 7
         delete_after_days_since_modification_greater_than = 90
       }
     }
@@ -223,98 +214,3 @@ resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   retention_duration = "P30D"
 }
-##########################################################################################
-# Virtual Network
-
-# Dynamic
-
-
-
-
-# data "azurerm_virtual_network" "vnet" {
-#   for_each = toset(var.vnet_name)
-#   name = each.value
-#   resource_group_name = data.azurerm_virtual_network.vnet[each.key].id
-#    #name                = data.azurerm_virtual_network.var.vnet[each.key].name
-#   #resource_group_name = data.azurerm_resource_group.cluster_vnet_hub_dev.name
-#   #resource_group_name = data.azurerm_resource_group[each.key]
-#   #for_each = toset(var.vnet_name)
-#   #name                = "vnet-hub"
-#   #resource_group_name = data.azurerm_resource_group.cluster_vnet_hub_dev.name
-#   #location            = data.azurerm_resource_group.cluster_vnet_hub_dev.location
-#   #address_space       = [var.address_space]
-
-#   # dynamic "subnet" {
-#   #   for_each = zipmap(var.subnet_names,var.subnet_prefixes)
-#   #     content {
-#   #         name = subnet.key
-#   #         address_prefix = subnet.value
-#   #     }
-#   # }
-# }
-
-################
-# Dynamic
-
-
-
-# data "azurerm_virtual_network" "vnets" {
-#   for_each = zipmap(var.vnet_name,var.vnet_rg)
-
-#   #name  = each.vnet.name
-#   #resource_group_name = data.azurerm_resource_group.resourcegroups[each.key].name
-
-
-# }
-
-# data "azurerm_virtual_network" "vnets" {
-#   for_each = zipmap(var.vnet_name,var.vnet_rg)
-#     name = each.key
-#     resource_group_name = data.azurerm_resource_group.resourcegroups[each.key].name
-
-#   #name     = each.value
-#   #resource_group_name = data.azurerm_resource_group.resourcegroups[each.key].name
-# }
-
-# data "azurerm_virtual_network" "vnets" {
-#   for_each = zipmap(var.vnet_name,var.vnet_rg)
-#   name = each.key
-#   resource_group_name = data.azurerm_resource_group.cluster_vnet_hub_dev.name
-# }
-
-################
-# Static
-
-# data "azurerm_virtual_network" "vnet" {
-#   name = "vnet-hub"
-#   resource_group_name = data.azurerm_resource_group.cluster_vnet_hub_dev.name
-# }
-
-
-
-# data "azurerm_subnet" "subnet" {
-#     name = "private-links"
-#     resource_group_name = data.azurerm_resource_group.cluster_vnet_hub_dev.name
-#     virtual_network_name = data.azurerm_virtual_network.vnet.name
-# }
-
-
-# resource "azurerm_storage_account_network_rules" "network_rules" {
-#   storage_account_id = data.azurerm_storage_account.radixblobfusetestdev.id
-
-#   default_action             = "Deny"
-#   ip_rules                   = []
-#   virtual_network_subnet_ids = [data.azurerm_subnet.subnet.id]
-#   bypass                     = ["AzureServices"]
-# }
-
-#Not used
-#  resource "azurerm_storage_account_network_rules" "network_rules" {
-#   storage_account_id = data.azurerm_storage_account.radixblobfusetestdev.id
-
-#   default_action             = "Allow"
-#   ip_rules                   = ["127.0.0.1"]
-#   virtual_network_subnet_ids = [data.azurerm_subnet.subnet.id]
-#   bypass                     = ["Metrics"]
-# }
-
