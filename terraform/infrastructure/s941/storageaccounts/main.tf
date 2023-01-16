@@ -20,14 +20,14 @@ locals {
 # Variables
 variable "storage_accounts" {
   type = map(object({
-    name          = string                          # Mandatory
-    rg_name       = string                          # Mandatory
-    location      = optional(string, "northeurope") # Optional
-    kind          = optional(string, "StorageV2")   # Optional
-    repl          = optional(string, "LRS")         # Optional
-    tier          = optional(string, "Standard")    # Optional
-    backup_center = optional(bool, false)           # Optional      
-    life_cycle    = optional(bool, true)
+    name                              = string                          # Mandatory
+    rg_name                           = string                          # Mandatory
+    location                          = optional(string, "northeurope") # Optional
+    kind                              = optional(string, "StorageV2")   # Optional
+    repl                              = optional(string, "LRS")         # Optional
+    tier                              = optional(string, "Standard")    # Optional
+    backup_center                     = optional(bool, false)           # Optional      
+    life_cycle                        = optional(bool, true)
     firewall                          = optional(bool, true)
     ip_rule                           = optional(list(string), ["143.97.110.1"])
     container_delete_retention_policy = optional(bool, true)
@@ -136,7 +136,7 @@ resource "azurerm_storage_account" "storageaccounts" {
 # Network rules
 
 resource "azurerm_storage_account_network_rules" "network_rule" {
-  for_each = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
+  for_each                   = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
   storage_account_id         = azurerm_storage_account.storageaccounts[each.key].id
   default_action             = "Deny"
   ip_rules                   = each.value["ip_rule"]
@@ -147,7 +147,7 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
 ##########################################################################################
 # Role assignment
 resource "azurerm_role_assignment" "northeurope" {
-  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center ? key : false && value.location == "northeurope" ? key : false && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center == true && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   scope                = azurerm_storage_account.storageaccounts[each.key].id
   role_definition_name = "Storage Account Backup Contributor"
   principal_id         = azurerm_data_protection_backup_vault.northeurope.identity[0].principal_id
@@ -158,7 +158,7 @@ resource "azurerm_role_assignment" "northeurope" {
 # Blob Protection
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center ? key : false && value.location == "northeurope" ? key : false && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center == true && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   location           = each.value.location
@@ -186,7 +186,7 @@ resource "azurerm_storage_management_policy" "sapolicy" {
       }
       base_blob {
         tier_to_cool_after_days_since_modification_greater_than = 30
-        delete_after_days_since_modification_greater_than = 90
+        delete_after_days_since_modification_greater_than       = 90
       }
     }
   }
