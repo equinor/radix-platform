@@ -147,7 +147,7 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
 ##########################################################################################
 # Role assignment
 resource "azurerm_role_assignment" "northeurope" {
-  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center == true && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   scope                = azurerm_storage_account.storageaccounts[each.key].id
   role_definition_name = "Storage Account Backup Contributor"
   principal_id         = azurerm_data_protection_backup_vault.northeurope.identity[0].principal_id
@@ -158,7 +158,7 @@ resource "azurerm_role_assignment" "northeurope" {
 # Blob Protection
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center == true && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   location           = each.value.location
