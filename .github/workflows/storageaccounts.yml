@@ -30,7 +30,7 @@ env:
 jobs:
   StorageAccounts:
       runs-on: ubuntu-latest
-      environment: operations
+      environment: ${{ inputs.subscription }}
       steps:
       - name: 'Az login'
         uses: azure/login@v1
