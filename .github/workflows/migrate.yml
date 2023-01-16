@@ -57,3 +57,4 @@ jobs:
           reviewers: equinor/omnia-radix
           title: '[Migrate] Target: ${{ inputs.target }}, Destination: ${{ inputs.destination }}'
           token: ${{ github.token }}
+          

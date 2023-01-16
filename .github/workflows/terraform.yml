@@ -67,6 +67,7 @@ jobs:
     # Configure OIDC authentication to Azure using environment variables.
     # Required by the AzureRM backend and provider.
     env:
+      root_src: '../../../../'
       ARM_USE_OIDC: true
       ARM_USE_AZUREAD: true
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -82,7 +83,7 @@ jobs:
       tf-init: ${{ steps.init.outcome }}
       tf-validate: ${{ steps.validate.outputs.stdout }}
       tf-plan: ${{ steps.plan.outcome }}
-      tf-plan-stdout: ${{ steps.plan.outputs.stdout }}
+      plan: ${{ steps.get_content.outputs.plan }}
 
     steps:
       - name: Checkout
@@ -92,6 +93,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ inputs.terraform_version }}
+          terraform_wrapper: false
 
       - name: Terraform Format
         id: fmt
@@ -108,16 +110,70 @@ jobs:
 
       - name: Terraform Validate
         id: validate
-        run: terraform validate
+        run: terraform validate -no-color
 
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
-        run: terraform plan --var-file=../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -lock=false
+        run: |
+          terraform plan --var-file=${{ env.root_src }}/terraform/radix-zone/radix_zone_dev.tfvars -lock=false -no-color -out tf.plan
+        continue-on-error: true
 
-      - name: Terraform Apply
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
-        run: terraform apply --var-file=../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve -lock=false
+      - name: Terraform Show
+        id: show
+        run: terraform show -no-color tf.plan 2>&1 > /tmp/plan.txt
+
+      - name: Get content
+        id: get_content
+        run: |
+          plan=$(cat /tmp/plan.txt)
+
+          create=""
+          createOut=""
+
+          destroy=""
+          destroyOut=""
+
+          update=""
+          updateOut=""
+
+          changesOut=""
+          # create="The following resources will be created <br/>"
+          # destroy="The following resources will be destroyed <br/>"
+          # update="The following resources will be updated <br/>"
+
+          while read -r line; do
+            if [[ "$line" == *"will be created"* ]]; then
+              create+="${line//"# "/"+ "} <br/>"
+            elif [[ "$line" == *"will be destroyed"* ]]; then
+              destroy+="${line//"# "/"- "} <br/>"
+            elif [[ "$line" == *"will be updated in-place"* ]]; then
+              update+="${line//"# "/"~ "} <br/>"
+            fi
+          done < <(echo "${plan}")
+
+          numberOfChanges=$((${#create} + ${#destroy} + ${#update}))
+
+          if [ ${#create} -gt 0 ]; then
+            createOut+="The following resources will be created <br/> ${create}"
+          fi
+
+          if [ ${#destroy} -gt 0 ]; then
+            destroyOut+="The following resources will be destroyed <br/> ${destroy}"
+          fi
+
+          if [ ${#update} -gt 0 ]; then
+            updateOut+="The following resources will be updated <br/> ${update}"
+          fi
+
+          if [ ${#numberOfChanges} -eq 0 ]; then
+            changesOut+="No changes. Your infrastructure matches the configuration. <br/>"
+          fi
+
+          out+="$createOut $destroyOut $updateOut $changesOut"
+
+          echo "plan=$(echo ${out})" >> $GITHUB_OUTPUT
+
   Create_comment:
     needs: [Terraform]
     name: Create comment
@@ -129,15 +185,12 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            #### Directory: \`${{ inputs.working_directory }}\`
-            #### Terraform Format and Style 🖌\`${{ needs.Terraform.outputs.tf-fmt }}\`
-            #### Terraform Initialization ⚙️\`${{ needs.Terraform.outputs.tf-init }}\`
-            #### Terraform Validation 🤖\`${{ needs.Terraform.outputs.tf-validate }}\`
-            #### Terraform Plan 📖\`${{ needs.Terraform.outputs.tf-plan }}\`
-            
+            #### Directory: ${{ inputs.working_directory }}
+            #### Terraform Format and Style 🖌 ${{ needs.Terraform.outputs.tf-fmt }}
+            #### Terraform Initialization ⚙️ ${{ needs.Terraform.outputs.tf-init }}
+            #### Terraform Validation 🤖 ${{ needs.Terraform.outputs.tf-validate }}
+            #### Terraform Plan 📖 ${{ needs.Terraform.outputs.tf-plan }}
+
             <details><summary>Show Plan</summary>
-            
-            \`\`\`${{ needs.Terraform.outputs.tf-plan-stdout }}\`\`\`
-            
+            ${{ needs.Terraform.outputs.plan }}
             </details>
-            
