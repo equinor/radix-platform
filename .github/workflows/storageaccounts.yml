@@ -43,7 +43,7 @@ jobs:
         uses: haythem/public-ip@v1.3
       - name: Add GitHub IP to StorageAccount
         run: |
-          az storage account network-rule add --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
+          az storage account network-rule add --resource-group "${{ inputs.subscription }}-tfstate" --account-name "${{ inputs.subscription }}radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
       - name: Lets sleep for 30 seconds for FW rule to complete
         run: sleep 30s
         shell: bash
@@ -69,6 +69,6 @@ jobs:
         run: terraform plan -lock=false
       - name: Revoke GitHub IP on StorageAccount
         run: |
-          az storage account network-rule remove --resource-group "s941-tfstate" --account-name "s941radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
+          az storage account network-rule remove --resource-group "${{ inputs.subscription }}-tfstate" --account-name "${{ inputs.subscription }}radixinfra" --ip-address ${{ steps.ip.outputs.ipv4 }}
       
       # - run: echo "🍏 This job's status is ${{ job.status }}."
