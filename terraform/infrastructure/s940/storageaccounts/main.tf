@@ -7,11 +7,15 @@ provider "azurerm" {
 }
 
 locals {
-
+  WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  # rule_mapping = {
+  #     change_feed_enabled = var.address_space
+  #     private = "${data.http.my_ip.body}/32"
+  #     subnet = var.subnet_prefixes[0]
+  #     all = "*"
+  # }
+  sensitive = true
 }
-# rule_mapping = {
-#   backup_location = "azure_backup_vault_${var.storage_accounts.location}"
-# }
 
 ##########################################################################################
 # Variables
@@ -25,9 +29,8 @@ variable "storage_accounts" {
     repl                              = optional(string, "LRS")         # Optional
     tier                              = optional(string, "Standard")    # Optional
     backup_center                     = optional(bool, false)           # Optional      
-    life_cycle                        = optional(bool, false)
-    firewall                          = optional(bool, false)
-    ip_rule                           = optional(list(string), ["143.97.110.1"])
+    life_cycle                        = optional(bool, true)
+    firewall                          = optional(bool, true)
     container_delete_retention_policy = optional(bool, true)
     tags                              = optional(map(string), {})
     allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration | Allow Blob public access
@@ -40,6 +43,18 @@ variable "storage_accounts" {
   default = {}
 }
 
+data "azurerm_key_vault" "keyvault_env" {
+  #name                = "radix-vault-${var.RADIX_ENVIRONMENT}"
+  #resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
+  name                = "radix-vault-prod"
+  resource_group_name = "common"
+}
+
+data "azurerm_key_vault_secret" "whitelist_ips" {
+  name         = "kubernetes-api-server-whitelist-ips-prod"
+  key_vault_id = data.azurerm_key_vault.keyvault_env.id
+}
+
 variable "vnets" {
   type = map(object({
     vnet_name   = string
@@ -47,17 +62,12 @@ variable "vnets" {
     subnet_name = string
   }))
   default = {
-    "vnet-c2-prod-34" = {
-      vnet_name   = "vnet-c2-prod-34"
-      subnet_name = "subnet-c2-prod-34"
-      rg_name     = "clusters-westeurope"
-    }
-    "vnet-eu-34" = {
-      vnet_name   = "vnet-eu-34"
-      subnet_name = "subnet-eu-34"
-    }
   }
 }
+
+# output "azurerm_key_vault_secret_value" {
+#value = local.iplist
+# }
 
 ##########################################################################################
 # Virtual Network
@@ -74,7 +84,8 @@ data "azurerm_subnet" "subnets" {
   virtual_network_name = each.value["vnet_name"]
 }
 
-
+##########################################################################################
+# Storage Accounts
 resource "azurerm_storage_account" "storageaccounts" {
   for_each                         = var.storage_accounts
   name                             = each.value["name"]
@@ -126,7 +137,7 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
   for_each                   = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
   storage_account_id         = azurerm_storage_account.storageaccounts[each.key].id
   default_action             = "Deny"
-  ip_rules                   = each.value["ip_rule"]
+  ip_rules                   = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
   virtual_network_subnet_ids = values(data.azurerm_subnet.subnets)[*].id
   bypass                     = ["AzureServices"]
 }
@@ -153,7 +164,7 @@ resource "azurerm_role_assignment" "westeurope" {
 # Blob Protection
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "northeurope" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   location           = each.value.location
@@ -163,7 +174,7 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
 }
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "westeurope" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "westeurope" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "westeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.westeurope.id
   location           = each.value.location

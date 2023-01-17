@@ -1,23 +1,25 @@
 terraform {
   backend "azurerm" {}
 }
+
 provider "azurerm" {
   features {}
 }
 
 locals {
-
-  # stgaccts = jsondecode(file("salist.json"))
+  WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
   # rule_mapping = {
   #     change_feed_enabled = var.address_space
   #     private = "${data.http.my_ip.body}/32"
   #     subnet = var.subnet_prefixes[0]
   #     all = "*"
   # }
+  sensitive = true
 }
 
 ##########################################################################################
 # Variables
+
 variable "storage_accounts" {
   type = map(object({
     name                              = string                          # Mandatory
@@ -29,7 +31,6 @@ variable "storage_accounts" {
     backup_center                     = optional(bool, false)           # Optional      
     life_cycle                        = optional(bool, true)
     firewall                          = optional(bool, true)
-    ip_rule                           = optional(list(string), ["143.97.110.1"])
     container_delete_retention_policy = optional(bool, true)
     tags                              = optional(map(string), {})
     allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration | Allow Blob public access
@@ -41,6 +42,19 @@ variable "storage_accounts" {
   }))
   default = {}
 }
+
+data "azurerm_key_vault" "keyvault_env" {
+  #name                = "radix-vault-${var.RADIX_ENVIRONMENT}"
+  #resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
+  name                = "radix-vault-dev"
+  resource_group_name = "common"
+}
+
+data "azurerm_key_vault_secret" "whitelist_ips" {
+  name         = "kubernetes-api-server-whitelist-ips-dev"
+  key_vault_id = data.azurerm_key_vault.keyvault_env.id
+}
+
 variable "vnets" {
   type = map(object({
     vnet_name   = string
@@ -48,28 +62,12 @@ variable "vnets" {
     subnet_name = string
   }))
   default = {
-    "vnet-anneli-test" = {
-      vnet_name   = "vnet-anneli-test"
-      subnet_name = "subnet-anneli-test"
-    }
-    "vnet-magnus-test" = {
-      vnet_name   = "vnet-magnus-test"
-      subnet_name = "subnet-magnus-test"
-    }
-    "vnet-playground-07" = {
-      vnet_name   = "vnet-playground-07"
-      subnet_name = "subnet-playground-07"
-    }
-    "vnet-weekly-02" = {
-      vnet_name   = "vnet-weekly-02"
-      subnet_name = "subnet-weekly-02"
-    }
-    "vnet-weekly-52" = {
-      vnet_name   = "vnet-weekly-52"
-      subnet_name = "subnet-weekly-52"
-    }
   }
 }
+
+# output "azurerm_key_vault_secret_value" {
+#value = local.iplist
+# }
 
 ##########################################################################################
 # Virtual Network
@@ -102,7 +100,7 @@ resource "azurerm_storage_account" "storageaccounts" {
   tags                             = each.value["tags"]
 
   dynamic "blob_properties" {
-    for_each = each.value["kind"] == "BlobStorage" ? [1] : [0]
+    for_each = each.value["kind"] == "*Storage" ? [1] : [0]
 
     content {
       change_feed_enabled = each.value["change_feed_enabled"]
@@ -139,7 +137,7 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
   for_each                   = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
   storage_account_id         = azurerm_storage_account.storageaccounts[each.key].id
   default_action             = "Deny"
-  ip_rules                   = each.value["ip_rule"]
+  ip_rules                   = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
   virtual_network_subnet_ids = values(data.azurerm_subnet.subnets)[*].id
   bypass                     = ["AzureServices"]
 }
@@ -214,3 +212,4 @@ resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   retention_duration = "P30D"
 }
+
