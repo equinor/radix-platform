@@ -121,10 +121,12 @@ jobs:
 
       - name: Terraform Show
         id: show
+        if: github.event_name == 'pull_request'
         run: terraform show -no-color tf.plan 2>&1 > /tmp/plan.txt
 
       - name: Get content
         id: get_content
+        if: github.event_name == 'pull_request'
         run: |
           plan=$(cat /tmp/plan.txt)
 
@@ -174,19 +176,27 @@ jobs:
 
           echo "plan=$(echo ${out})" >> $GITHUB_OUTPUT
 
-          
+      # Needed for AZ use in terraform
+      - name: Az CLI login
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
       - name: Terraform Apply
         if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
         run: terraform apply --var-file=../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve -lock=false
 
   Create_comment:
+    if: github.event_name == 'pull_request'
     needs: [Terraform]
     name: Create comment
     runs-on: ubuntu-latest
     steps:
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v2
-        if: github.event_name == 'pull_request'
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
