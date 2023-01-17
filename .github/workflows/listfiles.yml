@@ -7,6 +7,8 @@ on:
       - "terraform/clusters/**"
   pull_request:
     types: [labeled, opened, synchronize, reopened]
+    paths:
+      - "terraform/clusters/**"
 jobs:
   Get_radix_environment:
     if: contains(github.event.pull_request.labels.*.name, 'deploy') || github.event_name == 'push'
