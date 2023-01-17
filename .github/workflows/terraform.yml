@@ -112,6 +112,14 @@ jobs:
         id: validate
         run: terraform validate -no-color
 
+      # Needed for AZ use in terraform
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
@@ -175,15 +183,6 @@ jobs:
           out+="$createOut $destroyOut $updateOut $changesOut"
 
           echo "plan=$(echo ${out})" >> $GITHUB_OUTPUT
-
-      # Needed for AZ use in terraform
-      - name: Az CLI login
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
 
       - name: Terraform Apply
         if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'

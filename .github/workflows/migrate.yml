@@ -45,7 +45,7 @@ jobs:
             Target: ${{ inputs.target }}
             Destination: ${{ inputs.destination }}
 
-            Label/Relabel PR with `deploy` to start terraform planing actions.
+            Label/Relabel PR with `deploy` to start terraform planning actions.
 
             `Merge pull request` to apply terraform.
           branch: migrate_${{ inputs.target }}_${{ inputs.destination }}
