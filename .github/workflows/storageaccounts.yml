@@ -74,12 +74,19 @@ jobs:
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
         run: terraform plan -lock=false
       - name: Terraform Apply
-        run: | 
-          if $DRYRUN == 'false';then
-            echo "This was just a dry run.."
-          else
-            echo "Terraform Apply 🍏"
-          fi
+        if: ($DRYRUN == 'false')
+        run: |
+          echo "Terraform Apply 🍏"
+      # - name: Terraform Apply
+      #   if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
+      #   run: terraform apply --var-file=../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve -lock=false
+      # - name: Terraform Apply
+      #   run: | 
+      #     if $DRYRUN == 'false';then
+      #       echo "This was just a dry run.."
+      #     else
+      #       echo "Terraform Apply 🍏"
+      #     fi
       - name: Revoke GitHub IP on StorageAccount
         run: |
           az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }}
