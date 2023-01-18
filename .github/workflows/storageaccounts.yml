@@ -49,7 +49,7 @@ jobs:
         uses: haythem/public-ip@v1.3
       - name: Add GitHub IP to StorageAccount
         run: |
-          az storage account network-rule add --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }}
+          az storage account network-rule add --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }} >/dev/null
       - name: Lets sleep for 30 seconds for FW rule to complete
         run: sleep 30s
         shell: bash
