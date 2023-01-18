@@ -75,7 +75,7 @@ jobs:
         run: terraform plan -lock=false
       - name: Terraform Apply
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
-        if: ${{ inputs.terraformapply  == 'true' }}
+        if: inputs.terraformapply
         run: |
           echo "You checked the Terraform Apply option 🍏"
 
