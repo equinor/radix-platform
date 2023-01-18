@@ -31,6 +31,7 @@ env:
   container_name: infrastructure
   path: storageaccounts
   key: terraform.tfstate
+  DRYRUN: ${{ inputs.dryrun }}
 
 jobs:
   StorageAccounts:
@@ -72,13 +73,13 @@ jobs:
       - name: Terraform Plan
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
         run: terraform plan -lock=false
-      - name: Revoke GitHub IP on StorageAccount
-        run: |
-          az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }}
       - name: Terraform Apply
         run: | 
-          if ${{ inputs.dryrun }} == false;then
+          if ${{ env.DRYRUN }} == false;then
             echo "Terraform Apply 🍏"
           else
             echo "This was just a dry run.."
           fi
+      - name: Revoke GitHub IP on StorageAccount
+        run: |
+          az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }}
