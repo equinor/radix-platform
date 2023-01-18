@@ -76,18 +76,7 @@ jobs:
       - name: Terraform Apply
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
         if: inputs.terraformapply
-        run: |
-          echo "You checked the Terraform Apply option 🍏"
-
-        #run: terraform apply -auto-approve -lock=false
-      # - name: Terraform Apply
-      #   run: | 
-      #     if $DRYRUN == 'false';then
-      #       echo "This was just a dry run.."
-      #     else
-      #       echo "Terraform Apply 🍏"
-      #     fi
+        run: terraform apply -auto-approve -lock=false
       - name: Revoke GitHub IP on StorageAccount
         run: |
           az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }}
-#(github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
