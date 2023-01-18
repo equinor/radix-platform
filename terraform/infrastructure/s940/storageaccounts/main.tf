@@ -191,7 +191,7 @@ resource "azurerm_storage_management_policy" "sapolicy" {
   storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
 
   rule {
-    name    = "Lifecycle-dev"
+    name    = "Lifecycle-platform"
     enabled = true
     filters {
       blob_types = ["blockBlob"]
