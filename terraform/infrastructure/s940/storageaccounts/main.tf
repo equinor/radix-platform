@@ -100,7 +100,7 @@ resource "azurerm_storage_account" "storageaccounts" {
   tags                             = each.value["tags"]
 
   dynamic "blob_properties" {
-    for_each = each.value["kind"] == "*Storage" ? [1] : [0]
+    for_each = each.value["kind"] == "BlobStorage" || each.value["kind"] == "Storage" ? [1] : [0]
 
     content {
       change_feed_enabled = each.value["change_feed_enabled"]
