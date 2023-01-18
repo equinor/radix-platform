@@ -75,10 +75,10 @@ jobs:
         run: terraform plan -lock=false
       - name: Terraform Apply
         run: | 
-          if $DRYRUN == 'true';then
-            echo "Terraform Apply 🍏"
-          else
+          if $DRYRUN == 'false';then
             echo "This was just a dry run.."
+          else
+            echo "Terraform Apply 🍏"
           fi
       - name: Revoke GitHub IP on StorageAccount
         run: |
