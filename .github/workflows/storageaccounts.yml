@@ -77,7 +77,7 @@ jobs:
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
         if: ${{ inputs.terraformapply }} == 'true'
         run: |
-          echo "Terraform Apply 🍏"
+          echo "You unchecked the Terraform Apply option 🍏"
 
         #run: terraform apply -auto-approve -lock=false
       # - name: Terraform Apply
