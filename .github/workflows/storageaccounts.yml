@@ -78,4 +78,7 @@ jobs:
       - name: Terraform Apply
         run: | 
           if: ${{ inputs.dryrun }} == 'false';then
-          echo "Terraform Apply 🍏"
+            echo "Terraform Apply 🍏"
+          else
+            echo "This was just a dry run.."
+          fi
