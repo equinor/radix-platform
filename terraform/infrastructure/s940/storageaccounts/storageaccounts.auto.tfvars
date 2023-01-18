@@ -15,7 +15,7 @@ storage_accounts = {
     name          = "radixflowlogsc2prod"
     rg_name       = "logs-westeurope"
     location      = "westeurope"
-    #backup_center = true
+    backup_center = true
     firewall      = false
     life_cycle    = false
   }
