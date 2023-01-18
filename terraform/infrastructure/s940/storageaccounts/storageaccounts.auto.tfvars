@@ -22,14 +22,14 @@ storage_accounts = {
   "radixflowlogsprod" = {
     name          = "radixflowlogsprod"
     rg_name       = "Logs"
-    #backup_center = true
+    backup_center = true
     firewall      = false
     life_cycle    = false
   }
   "radixgrafanabackup" = {
     name          = "radixgrafanabackup"
     rg_name       = "monitoring"
-    #backup_center = true
+    backup_center = true
     life_cycle    = true
     firewall      = false
   }
@@ -38,7 +38,7 @@ storage_accounts = {
     rg_name       = "rg-radix-shared-prod"
     location      = "norwayeast"
     life_cycle    = true
-    #backup_center = true
+    backup_center = true
     firewall      = false
   }
   "radixveleroc2prod" = {
@@ -62,14 +62,14 @@ storage_accounts = {
     name          = "s940sqllogsc2prod"
     rg_name       = "common-westeurope"
     location      = "westeurope"
-    #backup_center = true
+    backup_center = true
     firewall      = false
     life_cycle    = false
   }
   "s940sqllogsprod" = {
     name          = "s940sqllogsprod"
     rg_name       = "common"
-    #backup_center = true
+    backup_center = true
     firewall      = false
     life_cycle    = false
   }
