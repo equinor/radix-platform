@@ -160,6 +160,14 @@ resource "azurerm_role_assignment" "westeurope" {
   depends_on           = [azurerm_storage_account.storageaccounts]
 }
 
+resource "azurerm_role_assignment" "norwayeast" {
+  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "norwayeast" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  scope                = azurerm_storage_account.storageaccounts[each.key].id
+  role_definition_name = "Storage Account Backup Contributor"
+  principal_id         = azurerm_data_protection_backup_vault.norwayeast.identity[0].principal_id
+  depends_on           = [azurerm_storage_account.storageaccounts]
+}
+
 ##########################################################################################
 # Blob Protection
 
@@ -181,6 +189,16 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "westeurope" {
   storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
   backup_policy_id   = azurerm_data_protection_backup_policy_blob_storage.westeurope.id
   depends_on         = [azurerm_role_assignment.westeurope]
+}
+
+resource "azurerm_data_protection_backup_instance_blob_storage" "norwayeast" {
+  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "norwayeast" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  name               = each.value.name
+  vault_id           = azurerm_data_protection_backup_vault.norwayeast.id
+  location           = each.value.location
+  storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
+  backup_policy_id   = azurerm_data_protection_backup_policy_blob_storage.norwayeast.id
+  depends_on         = [azurerm_role_assignment.norwayeast]
 }
 
 ###########################################################################################
@@ -233,6 +251,17 @@ resource "azurerm_data_protection_backup_vault" "westeurope" {
   }
 }
 
+resource "azurerm_data_protection_backup_vault" "norwayeast" {
+  name                = "s940-azure-backup-vault-norwayeast"
+  resource_group_name = "backups"
+  location            = "norwayeast"
+  datastore_type      = "VaultStore"
+  redundancy          = "LocallyRedundant"
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
 ##########################################################################################
 # Protection Backup Policy
 
@@ -245,5 +274,11 @@ resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
 resource "azurerm_data_protection_backup_policy_blob_storage" "westeurope" {
   name               = "s940-azure-blob-backuppolicy-westeurope"
   vault_id           = azurerm_data_protection_backup_vault.westeurope.id
+  retention_duration = "P30D"
+}
+
+resource "azurerm_data_protection_backup_policy_blob_storage" "norwayeast" {
+  name               = "s940-azure-blob-backuppolicy-norwayeast"
+  vault_id           = azurerm_data_protection_backup_vault.norwayeast.id
   retention_duration = "P30D"
 }
