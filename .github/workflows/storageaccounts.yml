@@ -79,4 +79,4 @@ jobs:
         run: terraform apply -auto-approve -lock=false
       - name: Revoke GitHub IP on StorageAccount
         run: |
-          az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }}
+          az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }} >/dev/null
