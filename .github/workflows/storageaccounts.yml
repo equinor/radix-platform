@@ -76,6 +76,6 @@ jobs:
         run: |
           az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }}
       - name: Terraform Apply
-        if: ${{ inputs.dryrun }} == 'false'
-        run: |
+        run: | 
+          if: ${{ inputs.dryrun }} == 'false';then
           echo "Terraform Apply 🍏"
