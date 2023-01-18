@@ -47,6 +47,7 @@ storage_accounts = {
     location      = "westeurope"
     repl          = "GRS"
     kind          = "BlobStorage"
+    backup_center = false
     firewall      = false
     life_cycle    = false
   }
@@ -55,6 +56,7 @@ storage_accounts = {
     rg_name       = "backups"
     repl          = "LRS"
     kind          = "BlobStorage"
+    backup_center = false
     firewall      = false
     life_cycle    = false
   }
