@@ -1,9 +1,12 @@
 storage_accounts = {
-  # "backupsstorageaccount" = {
-  #   name          = "backupsstorageaccount"
-  #   rg_name       = "monitoring"
-  #   kind          = "Storage"
-  # }
+  "backupsstorageaccount" = {
+    name          = "backupsstorageaccount"
+    rg_name       = "monitoring"
+    kind          = "Storage"
+    backup_center = false
+    firewall      = false
+    life_cycle    = false
+  }
   "costallocationprodsqllog" = {
     name          = "costallocationprodsqllog"
     rg_name       = "cost-allocation"
@@ -56,6 +59,14 @@ storage_accounts = {
     rg_name       = "backups"
     repl          = "LRS"
     kind          = "BlobStorage"
+    backup_center = false
+    firewall      = false
+    life_cycle    = false
+  }
+  "s940radixinfra" = {
+    name          = "s940radixinfra"
+    rg_name       = "s940-tfstate"
+    repl          = "RAGRS"
     backup_center = false
     firewall      = false
     life_cycle    = false
