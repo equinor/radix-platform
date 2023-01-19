@@ -69,7 +69,7 @@ storage_accounts = {
     name          = "s940radixinfra"
     rg_name       = "s940-tfstate"
     repl          = "RAGRS"
-    backup_center = false
+    backup_center = true
     firewall      = false
     life_cycle    = false
   }
