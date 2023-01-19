@@ -1,11 +1,13 @@
 storage_accounts = {
   "backupsstorageaccount" = {
-    name          = "backupsstorageaccount"
-    rg_name       = "monitoring"
-    kind          = "Storage"
-    backup_center = false
-    firewall      = false
-    life_cycle    = false
+    name                = "backupsstorageaccount"
+    rg_name             = "monitoring"
+    kind                = "Storage"
+    change_feed_enabled = false
+    versioning_enabled  = false
+    backup_center       = false
+    firewall            = false
+    life_cycle          = false
   }
   "costallocationprodsqllog" = {
     name          = "costallocationprodsqllog"
