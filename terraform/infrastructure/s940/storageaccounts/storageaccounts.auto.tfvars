@@ -62,7 +62,7 @@ storage_accounts = {
     repl          = "LRS"
     kind          = "BlobStorage"
     backup_center = false
-    firewall      = false
+    firewall      = true
     life_cycle    = false
   }
   "s940radixinfra" = {
