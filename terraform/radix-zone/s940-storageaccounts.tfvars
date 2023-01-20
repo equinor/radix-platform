@@ -49,7 +49,7 @@ storage_accounts = {
   "radixveleroprod" = {
     name          = "radixveleroprod"
     rg_name       = "backups"
-    repl          = "LRS"
+    repl          = "GRS"
     kind          = "BlobStorage"
     backup_center = false
   }
