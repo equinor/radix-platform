@@ -73,11 +73,11 @@ jobs:
       - name: Terraform Plan
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
         if: inputs.terraformapply == false
-        run: terraform plan -lock=false
+        run: terraform plan –var-file ../../../radix-zone/${{ inputs.subscription }}-storageaccounts.tfvars –var-file ../../../radix-zone/${{ inputs.subscription }}-vnets.tfvars -lock=false
       - name: Terraform Apply
         working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
         if: (inputs.terraformapply && github.ref == 'refs/heads/master')
-        run: terraform apply -auto-approve -lock=false
+        run: terraform apply –var-file ../../../radix-zone/${{ inputs.subscription }}-storageaccounts.tfvars –var-file ../../../radix-zone/${{ inputs.subscription }}-vnets.tfvars -auto-approve -lock=false
       - name: Revoke GitHub IP on StorageAccount
         run: |
           az storage account network-rule remove --resource-group "${{ env.resource_group_name }}" --account-name "${{ env.storage_account_name }}" --ip-address ${{ steps.ip.outputs.ipv4 }} >/dev/null

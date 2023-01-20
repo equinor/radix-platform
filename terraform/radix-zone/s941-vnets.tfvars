@@ -1,12 +1,4 @@
 vnets = {
-  "vnet-anneli-test" = {
-    vnet_name   = "vnet-anneli-test"
-    subnet_name = "subnet-anneli-test"
-  }
-  "vnet-magnus-test" = {
-    vnet_name   = "vnet-magnus-test"
-    subnet_name = "subnet-magnus-test"
-  }
   "vnet-playground-07" = {
     vnet_name   = "vnet-playground-07"
     subnet_name = "subnet-playground-07"

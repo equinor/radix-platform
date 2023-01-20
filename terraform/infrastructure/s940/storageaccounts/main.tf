@@ -98,13 +98,14 @@ resource "azurerm_storage_account" "storageaccounts" {
   cross_tenant_replication_enabled = each.value["cross_tenant_replication_enabled"]
   shared_access_key_enabled        = each.value["shared_access_key_enabled"]
   tags                             = each.value["tags"]
-
+  
   dynamic "blob_properties" {
     for_each = each.value["kind"] == "BlobStorage" || each.value["kind"] == "Storage" ? [1] : [0]
 
     content {
       change_feed_enabled = each.value["change_feed_enabled"]
       versioning_enabled  = each.value["versioning_enabled"]
+      
 
       dynamic "container_delete_retention_policy" {
         for_each = each.value["container_delete_retention_policy"] == true ? [30] : []
@@ -122,6 +123,13 @@ resource "azurerm_storage_account" "storageaccounts" {
       }
       dynamic "restore_policy" {
         for_each = each.value["backup_center"] == true ? [30] : []
+        content {
+          days = restore_policy.value
+        }
+      }
+
+      dynamic "change_feed_retention_in_days" {
+        for_each = each.value["backup_center"] == true ? [35] : []
         content {
           days = restore_policy.value
         }

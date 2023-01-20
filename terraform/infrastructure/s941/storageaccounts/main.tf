@@ -126,6 +126,13 @@ resource "azurerm_storage_account" "storageaccounts" {
           days = restore_policy.value
         }
       }
+
+      dynamic "change_feed_retention_in_days" {
+        for_each = each.value["backup_center"] == true ? [35] : []
+        content {
+          days = restore_policy.value
+        }
+      }
     }
   }
 }
