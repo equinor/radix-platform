@@ -64,6 +64,10 @@ hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
+hash envsubst 2>/dev/null || {
+    echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
+    exit 1
+}
 printf "All is good."
 echo ""
 
@@ -123,9 +127,36 @@ printf "...Done.\n"
 ###
 verify_cluster_access
 
+AKS_COMMAND_RUNNER_ROLE_NAME="Radix Azure Kubernetes Service Command Runner"
+
 function mi-exists {
     local mi_name=$1
     az identity show --name ${mi_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} >/dev/null 2>&1 || (printf "MI ${mi_name} does not exist, creating...\n" && return 1)
+}
+
+function create-az-command-runner-role {
+    local temp_file="/tmp/$(uuidgen)"
+    cat <<EOF >>${temp_file}
+    {
+        "Name": "${AKS_COMMAND_RUNNER_ROLE_NAME}",
+        "Id": "",
+        "IsCustom": true,
+        "Description": "Can execute 'az aks command invoke' on AKS cluster.",
+        "Actions": [
+            "Microsoft.ContainerService/managedClusters/listClusterUserCredential/action",
+            "Microsoft.ContainerService/managedClusters/read",
+            "Microsoft.ContainerService/managedClusters/runCommand/action",
+            "Microsoft.ContainerService/managedclusters/commandResults/read"
+        ],
+        "AssignableScopes": [
+            "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b",
+            "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a"
+        ]
+    }
+EOF
+    create_custom_role "${temp_file}" "${role_name}"
+    rm ${temp_file}
+    printf "Done\n"
 }
 
 function get-mi-object-id {
@@ -204,13 +235,14 @@ mi-exists ${mi_name} || {
         client_id=$(az identity show --name ${mi_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query clientId -o tsv)
         printf "${yel}""WARNING: New managed identity's client ID, ${client_id}, must be added to GitHub Actions workflow config file, ${AZ_SUBSCRIPTION_NAME}-${AZ_LOCATION}.cfg${normal}\n" >&2 
     }
+create-az-command-runner-role
 tmp_file_name="/tmp/$(uuidgen)"
 get-mi-object-id ${tmp_file_name} ${mi_name}
 mi_object_id=$(cat ${tmp_file_name})
 rm ${tmp_file_name}
 # TODO: DevOps issue 259748, downgrade Contributor role when new role is ready
 # https://github.com/equinor/Solum/issues/10900
-create_role_assignment_for_identity "${mi_name}" "Contributor" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+create_role_assignment_for_identity "${mi_name}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
 set-kv-policy "${mi_object_id}"
 create-role-and-rolebinding
 modify-role-binding ${mi_object_id}
