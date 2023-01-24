@@ -118,6 +118,26 @@ function create_role_assignment_for_identity() {
     fi
 }
 
+function create_custom_role() {
+    custom_role_json_file=$1
+    role_name=$2
+    role_definition=$(az role definition list --name "$role_name" --query [].assignableScopes[] --output tsv)
+    if [[ -z ${role_definition} ]]; then
+        printf "Creating role definition..."
+        az role definition create --role-definition "@${custom_role_json_file}" 2>/dev/null
+        while [ -z "$(az role definition list --query "[?roleName=='$role_name'].name" -otsv)" ]; do
+            sleep 5
+            printf "."
+        done
+        printf "...Done.\n"
+    elif [[ ! ${role_definition[@]} =~ ${AZ_SUBSCRIPTION_ID} ]]; then
+        echo "ERROR: Role definition exists, but subscription ${AZ_SUBSCRIPTION_ID} is not an assignable scope. This script does not update it, so it must be done manually." >&2
+        return
+    else
+        echo "$role_name role definition exists."
+    fi
+}
+
 
 #######################################################################################
 ### END
