@@ -13,6 +13,15 @@ on:
           - "prod"
           - "c2"
 
+      migration_strategy:
+        description: "migration strategy"
+        required: true
+        type: choice
+        options:
+          - "at"
+          - "aa"
+        default: at
+
       target:
         description: "Target"
         required: true
@@ -31,7 +40,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Copy cluster
-        run: ARGS="-r" TARGET="./terraform/clusters/${{ inputs.environment }}/${{ inputs.target }}" DESTINATION="./terraform/clusters/${{ inputs.environment }}/${{ inputs.destination }}" .github/workflows/scripts/copy.sh
+        run: |
+          ARGS="-r" \
+          ENVIRONMENT="${{ inputs.environment }}" \
+          MIGRATION_STRATEGY="${{ inputs.migration_strategy }}" \
+          TARGET_NAME="${{ inputs.target }}" \
+          DESTINATION_NAME="${{ inputs.destination }}" \
+          .github/workflows/scripts/copy.sh
 
       - name: Create Pull Request
         id: cpr
