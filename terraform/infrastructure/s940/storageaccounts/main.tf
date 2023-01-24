@@ -8,47 +8,6 @@ provider "azurerm" {
 
 locals {
   WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
-  # rule_mapping = {
-  #     change_feed_enabled = var.address_space
-  #     private = "${data.http.my_ip.body}/32"
-  #     subnet = var.subnet_prefixes[0]
-  #     all = "*"
-  # }
-  sensitive = true
-}
-
-variable "RADIX_ZONE" {
-  type = string
-}
-
-variable "AZ_RESOURCE_GROUP_COMMON" {
-  type = string
-}
-##########################################################################################
-# Variables
-
-variable "storage_accounts" {
-  type = map(object({
-    name                              = string                          # Mandatory
-    rg_name                           = string                          # Mandatory
-    location                          = optional(string, "northeurope") # Optional
-    kind                              = optional(string, "StorageV2")   # Optional
-    repl                              = optional(string, "LRS")         # Optional
-    tier                              = optional(string, "Standard")    # Optional
-    backup_center                     = optional(bool, false)           # Optional      
-    life_cycle                        = optional(bool, true)
-    firewall                          = optional(bool, true)
-    container_delete_retention_policy = optional(bool, true)
-    tags                              = optional(map(string), {})
-    allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration | Allow Blob public access
-    shared_access_key_enabled         = optional(bool, true)
-    cross_tenant_replication_enabled  = optional(bool, true)
-    delete_retention_policy           = optional(bool, true)
-    versioning_enabled                = optional(bool, true)
-    change_feed_enabled               = optional(bool, true)
-    change_feed_days                  = optional(number, 35)
-  }))
-  default = {}
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -61,22 +20,10 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
   key_vault_id = data.azurerm_key_vault.keyvault_env.id
 }
 
-variable "vnets" {
-  type = map(object({
-    vnet_name   = string
-    rg_name     = optional(string, "clusters")
-    subnet_name = string
-  }))
-  default = {
-  }
-}
+#######################################################################################
+### Virtual Network
+###
 
-# output "azurerm_key_vault_secret_value" {
-#value = local.iplist
-# }
-
-##########################################################################################
-# Virtual Network
 data "azurerm_virtual_network" "vnets" {
   for_each            = var.vnets
   name                = each.value["vnet_name"]
@@ -90,8 +37,10 @@ data "azurerm_subnet" "subnets" {
   virtual_network_name = each.value["vnet_name"]
 }
 
-##########################################################################################
-# Storage Accounts
+#######################################################################################
+### Storage Accounts
+###
+
 resource "azurerm_storage_account" "storageaccounts" {
   for_each                         = var.storage_accounts
   name                             = each.value["name"]
@@ -137,8 +86,9 @@ resource "azurerm_storage_account" "storageaccounts" {
   }
 }
 
-##########################################################################################
-# Network rules
+#######################################################################################
+### Network rules
+###
 
 resource "azurerm_storage_account_network_rules" "network_rule" {
   for_each                   = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
@@ -149,10 +99,12 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
   bypass                     = ["AzureServices"]
 }
 
-##########################################################################################
-# Role assignment
+#######################################################################################
+### Role assignment
+###
+
 resource "azurerm_role_assignment" "northeurope" {
-  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   scope                = azurerm_storage_account.storageaccounts[each.key].id
   role_definition_name = "Storage Account Backup Contributor"
   principal_id         = azurerm_data_protection_backup_vault.northeurope.identity[0].principal_id
@@ -167,11 +119,12 @@ resource "azurerm_role_assignment" "westeurope" {
   depends_on           = [azurerm_storage_account.storageaccounts]
 }
 
-##########################################################################################
-# Blob Protection
+#######################################################################################
+### Blob Protection
+###
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "northeurope" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   location           = each.value.location
@@ -191,8 +144,9 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "westeurope" {
 }
 
 
-###########################################################################################
-# Management Policy
+#######################################################################################
+### Management Policy
+###
 
 resource "azurerm_storage_management_policy" "sapolicy" {
   for_each           = { for key in compact([for key, value in var.storage_accounts : value.life_cycle ? key : ""]) : key => var.storage_accounts[key] }
@@ -216,12 +170,14 @@ resource "azurerm_storage_management_policy" "sapolicy" {
   }
 }
 
-##########################################################################################
-# Protection Vault
+#######################################################################################
+### Protection Vault
+###
+
 resource "azurerm_data_protection_backup_vault" "northeurope" {
-  name                = "s940-backupvault-northeurope"
+  name                = "s940-backupvault-${var.AZ_LOCATION}"
   resource_group_name = "backups"
-  location            = "northeurope"
+  location            = var.AZ_LOCATION
   datastore_type      = "VaultStore"
   redundancy          = "LocallyRedundant"
   identity {
@@ -240,10 +196,12 @@ resource "azurerm_data_protection_backup_vault" "westeurope" {
   }
 }
 
-##########################################################################################
-# Protection Backup Policy
+#######################################################################################
+### Protection Backup Policy
+###
+
 resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
-  name               = "s940-backuppolicy-northeurope"
+  name               = "s940-backuppolicy-${var.AZ_LOCATION}"
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   retention_duration = "P30D"
 }
@@ -253,5 +211,3 @@ resource "azurerm_data_protection_backup_policy_blob_storage" "westeurope" {
   vault_id           = azurerm_data_protection_backup_vault.westeurope.id
   retention_duration = "P30D"
 }
-
-
