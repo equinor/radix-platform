@@ -133,7 +133,7 @@ data "external" "egress_ip" {
 }
 
 module "aks" {
-  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v3.0.0"
+  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v4.0.0"
 
   CLUSTER_NAME       = local.CLUSTER_NAME
   MIGRATION_STRATEGY = local.MIGRATION_STRATEGY
