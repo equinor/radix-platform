@@ -1,13 +1,4 @@
 storage_accounts = {
-  "backupsstorageaccount" = {
-    name                = "backupsstorageaccount"
-    rg_name             = "monitoring"
-    kind                = "Storage"
-    change_feed_enabled = false
-    versioning_enabled  = false
-    backup_center       = false
-    life_cycle          = false
-  }
   "costallocationprodsqllog" = {
     name          = "costallocationprodsqllog"
     rg_name       = "cost-allocation"
@@ -35,8 +26,8 @@ storage_accounts = {
     name          = "radixsqllogsprod"
     rg_name       = "rg-radix-shared-prod"
     location      = "norwayeast"
-    backup_center = true
-    firewall      = false     # Only resources in northeurope, westeurope can be ACL-ed to virtual networks in northeurope.."
+    backup_center = false
+    firewall      = false # Only resources in northeurope, westeurope can be ACL-ed to virtual networks in northeurope.."
   }
   "radixveleroc2prod" = {
     name          = "radixveleroc2prod"
@@ -49,7 +40,7 @@ storage_accounts = {
   "radixveleroprod" = {
     name          = "radixveleroprod"
     rg_name       = "backups"
-    repl          = "GRS"
+    repl          = "LRS"
     kind          = "BlobStorage"
     backup_center = false
   }

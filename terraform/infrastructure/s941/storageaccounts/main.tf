@@ -1,6 +1,6 @@
-terraform {
-  backend "azurerm" {}
-}
+# terraform {
+#   backend "azurerm" {}
+# }
 
 provider "azurerm" {
   features {}
@@ -17,6 +17,13 @@ locals {
   sensitive = true
 }
 
+variable "RADIX_ZONE" {
+  type = string
+}
+
+variable "AZ_RESOURCE_GROUP_COMMON" {
+  type = string
+}
 ##########################################################################################
 # Variables
 
@@ -39,19 +46,18 @@ variable "storage_accounts" {
     delete_retention_policy           = optional(bool, true)
     versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
+    change_feed_days                  = optional(number, 35)
   }))
   default = {}
 }
 
 data "azurerm_key_vault" "keyvault_env" {
-  #name                = "radix-vault-${var.RADIX_ENVIRONMENT}"
-  #resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
-  name                = "radix-vault-dev"
-  resource_group_name = "common"
+  name                = "radix-vault-${var.RADIX_ZONE}"
+  resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
 }
 
 data "azurerm_key_vault_secret" "whitelist_ips" {
-  name         = "kubernetes-api-server-whitelist-ips-dev"
+  name         = "kubernetes-api-server-whitelist-ips-${var.RADIX_ZONE}"
   key_vault_id = data.azurerm_key_vault.keyvault_env.id
 }
 
@@ -100,11 +106,12 @@ resource "azurerm_storage_account" "storageaccounts" {
   tags                             = each.value["tags"]
 
   dynamic "blob_properties" {
-    for_each = each.value["kind"] == "*Storage" ? [1] : [0]
+    for_each = each.value["kind"] == "BlobStorage" || each.value["kind"] == "Storage" ? [1] : [0]
 
     content {
-      change_feed_enabled = each.value["change_feed_enabled"]
-      versioning_enabled  = each.value["versioning_enabled"]
+      change_feed_enabled           = each.value["change_feed_enabled"]
+      versioning_enabled            = each.value["versioning_enabled"]
+      change_feed_retention_in_days = each.value["change_feed_days"]
 
       dynamic "container_delete_retention_policy" {
         for_each = each.value["container_delete_retention_policy"] == true ? [30] : []
@@ -122,13 +129,6 @@ resource "azurerm_storage_account" "storageaccounts" {
       }
       dynamic "restore_policy" {
         for_each = each.value["backup_center"] == true ? [30] : []
-        content {
-          days = restore_policy.value
-        }
-      }
-
-      dynamic "change_feed_retention_in_days" {
-        for_each = each.value["backup_center"] == true ? [35] : []
         content {
           days = restore_policy.value
         }
@@ -180,7 +180,7 @@ resource "azurerm_storage_management_policy" "sapolicy" {
   storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
 
   rule {
-    name    = "Lifecycle-dev"
+    name    = "lifecycle-${var.RADIX_ZONE}"
     enabled = true
     filters {
       blob_types = ["blockBlob"]
@@ -201,7 +201,7 @@ resource "azurerm_storage_management_policy" "sapolicy" {
 # Protection Vault
 
 resource "azurerm_data_protection_backup_vault" "northeurope" {
-  name                = "s941-azure-backup-vault-northeurope"
+  name                = "s941-backupvault-northeurope"
   resource_group_name = "backups"
   location            = "northeurope"
   datastore_type      = "VaultStore"
@@ -215,7 +215,7 @@ resource "azurerm_data_protection_backup_vault" "northeurope" {
 # Protection Backup Policy
 
 resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
-  name               = "s941-azure-blob-backuppolicy-northeurope"
+  name               = "s941-backuppolicy-northeurope"
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   retention_duration = "P30D"
 }

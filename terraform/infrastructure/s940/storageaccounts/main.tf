@@ -17,6 +17,13 @@ locals {
   sensitive = true
 }
 
+variable "RADIX_ZONE" {
+  type = string
+}
+
+variable "AZ_RESOURCE_GROUP_COMMON" {
+  type = string
+}
 ##########################################################################################
 # Variables
 
@@ -39,19 +46,18 @@ variable "storage_accounts" {
     delete_retention_policy           = optional(bool, true)
     versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
+    change_feed_days                  = optional(number, 35)
   }))
   default = {}
 }
 
 data "azurerm_key_vault" "keyvault_env" {
-  #name                = "radix-vault-${var.RADIX_ENVIRONMENT}"
-  #resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
-  name                = "radix-vault-prod"
-  resource_group_name = "common"
+  name                = "radix-vault-${var.RADIX_ZONE}"
+  resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
 }
 
 data "azurerm_key_vault_secret" "whitelist_ips" {
-  name         = "kubernetes-api-server-whitelist-ips-prod"
+  name         = "kubernetes-api-server-whitelist-ips-${var.RADIX_ZONE}"
   key_vault_id = data.azurerm_key_vault.keyvault_env.id
 }
 
@@ -98,14 +104,14 @@ resource "azurerm_storage_account" "storageaccounts" {
   cross_tenant_replication_enabled = each.value["cross_tenant_replication_enabled"]
   shared_access_key_enabled        = each.value["shared_access_key_enabled"]
   tags                             = each.value["tags"]
-  
+
   dynamic "blob_properties" {
     for_each = each.value["kind"] == "BlobStorage" || each.value["kind"] == "Storage" ? [1] : [0]
 
     content {
-      change_feed_enabled = each.value["change_feed_enabled"]
-      versioning_enabled  = each.value["versioning_enabled"]
-      
+      change_feed_enabled           = each.value["change_feed_enabled"]
+      versioning_enabled            = each.value["versioning_enabled"]
+      change_feed_retention_in_days = each.value["change_feed_days"]
 
       dynamic "container_delete_retention_policy" {
         for_each = each.value["container_delete_retention_policy"] == true ? [30] : []
@@ -123,13 +129,6 @@ resource "azurerm_storage_account" "storageaccounts" {
       }
       dynamic "restore_policy" {
         for_each = each.value["backup_center"] == true ? [30] : []
-        content {
-          days = restore_policy.value
-        }
-      }
-
-      dynamic "change_feed_retention_in_days" {
-        for_each = each.value["backup_center"] == true ? [35] : []
         content {
           days = restore_policy.value
         }
@@ -168,14 +167,6 @@ resource "azurerm_role_assignment" "westeurope" {
   depends_on           = [azurerm_storage_account.storageaccounts]
 }
 
-resource "azurerm_role_assignment" "norwayeast" {
-  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "norwayeast" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
-  scope                = azurerm_storage_account.storageaccounts[each.key].id
-  role_definition_name = "Storage Account Backup Contributor"
-  principal_id         = azurerm_data_protection_backup_vault.norwayeast.identity[0].principal_id
-  depends_on           = [azurerm_storage_account.storageaccounts]
-}
-
 ##########################################################################################
 # Blob Protection
 
@@ -199,15 +190,6 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "westeurope" {
   depends_on         = [azurerm_role_assignment.westeurope]
 }
 
-resource "azurerm_data_protection_backup_instance_blob_storage" "norwayeast" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == "norwayeast" && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
-  name               = each.value.name
-  vault_id           = azurerm_data_protection_backup_vault.norwayeast.id
-  location           = each.value.location
-  storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
-  backup_policy_id   = azurerm_data_protection_backup_policy_blob_storage.norwayeast.id
-  depends_on         = [azurerm_role_assignment.norwayeast]
-}
 
 ###########################################################################################
 # Management Policy
@@ -217,7 +199,7 @@ resource "azurerm_storage_management_policy" "sapolicy" {
   storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
 
   rule {
-    name    = "Lifecycle-platform"
+    name    = "lifecycle-${var.RADIX_ZONE}"
     enabled = true
     filters {
       blob_types = ["blockBlob"]
@@ -236,9 +218,8 @@ resource "azurerm_storage_management_policy" "sapolicy" {
 
 ##########################################################################################
 # Protection Vault
-
 resource "azurerm_data_protection_backup_vault" "northeurope" {
-  name                = "s940-azure-backup-vault-northeurope"
+  name                = "s940-backupvault-northeurope"
   resource_group_name = "backups"
   location            = "northeurope"
   datastore_type      = "VaultStore"
@@ -249,7 +230,7 @@ resource "azurerm_data_protection_backup_vault" "northeurope" {
 }
 
 resource "azurerm_data_protection_backup_vault" "westeurope" {
-  name                = "s940-azure-backup-vault-westeurope"
+  name                = "s940-backupvault-westeurope"
   resource_group_name = "backups"
   location            = "westeurope"
   datastore_type      = "VaultStore"
@@ -259,34 +240,18 @@ resource "azurerm_data_protection_backup_vault" "westeurope" {
   }
 }
 
-resource "azurerm_data_protection_backup_vault" "norwayeast" {
-  name                = "s940-azure-backup-vault-norwayeast"
-  resource_group_name = "backups"
-  location            = "norwayeast"
-  datastore_type      = "VaultStore"
-  redundancy          = "LocallyRedundant"
-  identity {
-    type = "SystemAssigned"
-  }
-}
-
 ##########################################################################################
 # Protection Backup Policy
-
 resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
-  name               = "s940-azure-blob-backuppolicy-northeurope"
+  name               = "s940-backuppolicy-northeurope"
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   retention_duration = "P30D"
 }
 
 resource "azurerm_data_protection_backup_policy_blob_storage" "westeurope" {
-  name               = "s940-azure-blob-backuppolicy-westeurope"
+  name               = "s940-backuppolicy-westeurope"
   vault_id           = azurerm_data_protection_backup_vault.westeurope.id
   retention_duration = "P30D"
 }
 
-resource "azurerm_data_protection_backup_policy_blob_storage" "norwayeast" {
-  name               = "s940-azure-blob-backuppolicy-norwayeast"
-  vault_id           = azurerm_data_protection_backup_vault.norwayeast.id
-  retention_duration = "P30D"
-}
+
