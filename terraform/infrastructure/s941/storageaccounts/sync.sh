@@ -23,7 +23,7 @@ if [[ ${ACTION} == "checkin" ]]; then
     echo ""
 elif [[ ${ACTION} == "checkout" ]]; then
     echo ""
-    echo "Uploadring terraform.state file..."
+    echo "Uploading terraform.state file..."
     #azcopy copy terraform.state 'https://s941radixinfra.blob.core.windows.net/tfstate/storageaccounts/terraform.tfstate'
     azcopy copy terraform.tfstate 'https://s941radixinfra.blob.core.windows.net/infrastructure/storageaccounts/terraform.tfstate'
     echo ""
