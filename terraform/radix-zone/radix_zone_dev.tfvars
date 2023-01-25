@@ -68,4 +68,3 @@ AZ_PRIVATE_DNS_ZONES = [
   "privatelink.vaultcore.azure.net",
   "private.radix.equinor.com"
 ]
-

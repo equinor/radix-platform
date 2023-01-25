@@ -55,8 +55,9 @@ locals {
   AZ_IPPRE_OUTBOUND_NAME         = "ippre-radix-aks-${var.CLUSTER_TYPE}-${var.AZ_LOCATION}-001"
   AZ_RESOURCE_GROUP_VNET_HUB     = "cluster-vnet-hub-${var.RADIX_ZONE}"
   CLUSTER_NAME                   = basename(abspath(path.module))
-  RADIX_PLATFORM_REPOSITORY_PATH = "../../../.."
-  TERRAFORM_ROOT_PATH            = "../../.."
+  MIGRATION_STRATEGY             = basename(abspath("../${path.module}"))
+  RADIX_PLATFORM_REPOSITORY_PATH = "../../../../.."
+  TERRAFORM_ROOT_PATH            = "../../../.."
   WHITELIST_IPS                  = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
 }
 
@@ -104,10 +105,10 @@ resource "null_resource" "delete_whitelist_acr" {
     when        = destroy
     interpreter = ["/bin/bash", "-c"]
     working_dir = path.root
-    command     = "../../../../scripts/acr/update_acr_whitelist.sh"
+    command     = "../../../../../scripts/acr/update_acr_whitelist.sh"
 
     environment = {
-      RADIX_ZONE_ENV = "../../../../scripts/radix-zone/radix_zone_dev.env"
+      RADIX_ZONE_ENV = "../../../../../scripts/radix-zone/radix_zone_dev.env"
       USER_PROMPT    = "false"
       IP_MASK        = self.triggers.IP_MASK
       ACTION         = "delete"
@@ -127,14 +128,18 @@ data "external" "egress_ip" {
     AZ_RESOURCE_GROUP_COMMON = var.AZ_RESOURCE_GROUP_COMMON
     AZ_SUBSCRIPTION_ID       = var.AZ_SUBSCRIPTION_ID
     CLUSTER_NAME             = local.CLUSTER_NAME
+    MIGRATION_STRATEGY       = local.MIGRATION_STRATEGY
   }
 }
 
 module "aks" {
-  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v3.0.0"
+  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v4.0.0"
 
-  CLUSTER_NAME = local.CLUSTER_NAME
-  AZ_LOCATION  = var.AZ_LOCATION
+  CLUSTER_NAME       = local.CLUSTER_NAME
+  MIGRATION_STRATEGY = local.MIGRATION_STRATEGY
+  AZ_LOCATION        = var.AZ_LOCATION
+  AZ_SUBSCRIPTION_ID = var.AZ_SUBSCRIPTION_ID
+  CLUSTER_TYPE       = var.CLUSTER_TYPE
 
   # Resource groups
   AZ_RESOURCE_GROUP_CLUSTERS = data.azurerm_resource_group.rg_clusters.name
