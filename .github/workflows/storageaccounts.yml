@@ -17,14 +17,6 @@ on:
         required: true
         default: false
 
-      environment:
-        description: "Cluster environment"
-        required: true
-        type: choice
-        options:
-          - "dev"
-          - "prod"
-
     secrets:
       AZURE_CLIENT_ID:
         description: The client ID of the Azure AD service principal to use for authenticating to Azure.
@@ -38,12 +30,32 @@ on:
         description: The ID of the Azure tenant to create the resources in.
         required: true
 
+    env:
+      container_name: infrastructure
+      foo: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}
 
 jobs:
+  GetEnvironment:
+    name: GetEnvironments
+    runs-on: ubuntu-latest
+
+    outputs:
+      radix_environment: ${{ steps.GetEnvironments.outputs.radix_environment }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-matrix
+        name: Get radix environment
+        run: echo "radix_environment=$(ls ${{ env.foo }} | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+
   StorageAccounts:
+    needs: GetEnvironment
     name: StorageAccounts
     runs-on: ubuntu-latest
     environment: ${{ inputs.subscription }}
+    strategy:
+      matrix:
+        radix_environment: ${{ fromJson(needs.GetEnvironment.outputs.radix_environment) }}
 
     # Set permissions required to login to Azure using OIDC.
     permissions:
@@ -53,7 +65,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ env.path }}
+        working-directory: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}/${{ matrix.radix_environment }}/${{ env.path }}
 
     # Configure OIDC authentication to Azure using environment variables.
     # Required by the AzureRM backend and provider.
@@ -69,7 +81,7 @@ jobs:
       container_name: infrastructure
       path: storageaccounts
       key: terraform.tfstate
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
