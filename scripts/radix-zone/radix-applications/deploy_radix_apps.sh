@@ -828,6 +828,8 @@ echo "For the web console to work we need to apply env vars for list of all IPs 
 wait # wait for subshell to finish
 (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" WEB_COMPONENT="${WEB_COMPONENT}" CLUSTER_NAME="${CLUSTER_NAME}" RADIX_WEB_CONSOLE_ENV="prod" "${script_dir_path}/../../update_ips_env_vars_for_console.sh")
 wait # wait for subshell to finish
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_cluster_oidc_issuer_env_vars_for_console.sh")
+wait
 
 ### Set Radix API env vars
 echo ""

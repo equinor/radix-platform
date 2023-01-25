@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # PURPOSE
-# Sets the value of RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM from Radix Zone to the environment variable REQUIRE_APP_CONFIGURATION_ITEM of the server component of Radix API.
+# Sets CLUSTER_OIDC_ISSUER_URL environment variable of Radix Web Console with value in oidcIssuerProfile.issuerUrl assigned to the AKS cluster.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_cluster_oidc_issuer_env_vars_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_cluster_oidc_issuer_env_vars_for_console.sh)
 #
 
 # INPUTS:
@@ -91,6 +91,8 @@ verify_cluster_access
 
 ### MAIN
 
+cluster_oidc_issuer_url=$(az aks show --resource-group=$AZ_RESOURCE_GROUP_CLUSTERS --name=$CLUSTER_NAME  --query=oidcIssuerProfile.issuerUrl --output tsv) || exit
+
 printf "Getting resource to be used to get access token for requests to Radix API..."
 resource=$(echo "${OAUTH2_PROXY_SCOPE}" | awk '{print $4}' | sed 's/\/.*//')
 if [[ -z ${resource} ]]; then
@@ -99,12 +101,12 @@ if [[ -z ${resource} ]]; then
 fi
 printf " Done.\n"
 
-updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" || exit
-updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" || exit
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "qa" "web" "CLUSTER_OIDC_ISSUER_URL" "${cluster_oidc_issuer_url}" || exit
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "prod" "web" "CLUSTER_OIDC_ISSUER_URL" "${cluster_oidc_issuer_url}" || exit
 
-# Restart Radix API deployment
-printf "Restarting Radix API...\n"
-kubectl rollout restart deployment -n radix-api-qa server
-kubectl rollout restart deployment -n radix-api-prod server
+# Restart Radix Web Console deployment
+printf "Restarting Radix Web Console...\n"
+kubectl rollout restart deployment -n radix-web-console-qa web
+kubectl rollout restart deployment -n radix-web-console-prod web
 
 echo "Done."
