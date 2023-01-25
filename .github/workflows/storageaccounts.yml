@@ -54,7 +54,7 @@ jobs:
     environment: ${{ inputs.subscription }}
     strategy:
       matrix:
-        radix_environment: ${{ fromJson(needs.GetEnvironment.outputs.radix_environment) }}
+        radix_environment: ["prod"] # ${{ fromJson(needs.GetEnvironment.outputs.radix_environment) }}
 
     # Set permissions required to login to Azure using OIDC.
     permissions:
