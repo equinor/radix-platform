@@ -126,14 +126,14 @@ jobs:
         if: inputs.terraformapply == false
         run: |
           terraform plan \
-            --var-file=../../../radix-zone/radix_zone_${{ inputs.inputs.environment }}.tfvars \
+            --var-file=../../../../radix-zone/radix_zone_${{ matrix.radix_environment }}.tfvars \
             -lock=false
 
       - name: Terraform Apply
         if: (inputs.terraformapply && github.ref == 'refs/heads/master')
         run: |
           terraform apply \
-            --var-file=../../../radix-zone/radix_zone_${{ inputs.inputs.environment }}.tfvars \
+            --var-file=../../../../radix-zone/radix_zone_${{ matrix.radix_environment }}.tfvars \
             -auto-approve \
             -lock=false
 
