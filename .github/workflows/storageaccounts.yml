@@ -23,9 +23,7 @@ on:
         type: choice
         options:
           - "dev"
-          - "playground"
           - "prod"
-          - "c2"
 
     secrets:
       AZURE_CLIENT_ID:
