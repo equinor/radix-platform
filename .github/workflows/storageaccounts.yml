@@ -54,7 +54,7 @@ jobs:
     environment: ${{ inputs.subscription }}
     strategy:
       matrix:
-        radix_environment: ["prod"] # ${{ fromJson(needs.GetEnvironment.outputs.radix_environment) }}
+        radix_environment: ["dev"] # ${{ fromJson(needs.GetEnvironment.outputs.radix_environment) }}
 
     # Set permissions required to login to Azure using OIDC.
     permissions:
@@ -85,6 +85,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: 'Az login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Get GitHub Public IP
         id: github_public_ip
         uses: haythem/public-ip@v1.3
@@ -114,13 +121,6 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
-
-      - name: 'Az login'
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Terraform Plan
         if: inputs.terraformapply == false
