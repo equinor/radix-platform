@@ -32,7 +32,6 @@ on:
 
     env:
       container_name: infrastructure
-      foo: ./terraform/${{ env.container_name }}/${{ inputs.subscription }}
 
 jobs:
   GetEnvironment:
@@ -46,7 +45,7 @@ jobs:
       - uses: actions/checkout@v3
       - id: set-matrix
         name: Get radix environment
-        run: echo "radix_environment=$(ls ${{ env.foo }} | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "radix_environment=$(ls ./terraform/${{ env.container_name }}/${{ inputs.subscription }} | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   StorageAccounts:
     needs: GetEnvironment
