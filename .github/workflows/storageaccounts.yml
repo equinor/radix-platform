@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      radix_environment: ${{ steps.GetEnvironments.outputs.radix_environment }}
+      radix_environment: ${{ steps.set-matrix.outputs.radix_environment }}
 
     steps:
       - uses: actions/checkout@v3
