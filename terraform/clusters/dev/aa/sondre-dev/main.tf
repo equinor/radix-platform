@@ -98,20 +98,22 @@ resource "null_resource" "add_whitelist_acr" {
 
 resource "null_resource" "delete_whitelist_acr" {
   triggers = {
-    "IP_MASK" = data.external.egress_ip.result.egress_ip
+    "IP_MASK"            = data.external.egress_ip.result.egress_ip
+    "MIGRATION_STRATEGY" = local.MIGRATION_STRATEGY
   }
 
   provisioner "local-exec" {
     when        = destroy
     interpreter = ["/bin/bash", "-c"]
     working_dir = path.root
-    command     = "../../../../../scripts/acr/update_acr_whitelist.sh"
+    command     = "../../../../scripts/delete_whitelist_acr.sh"
 
     environment = {
-      RADIX_ZONE_ENV = "../../../../../scripts/radix-zone/radix_zone_dev.env"
-      USER_PROMPT    = "false"
-      IP_MASK        = self.triggers.IP_MASK
-      ACTION         = "delete"
+      RADIX_ZONE_ENV     = "radix-zone/radix_zone_dev.env"
+      USER_PROMPT        = "false"
+      IP_MASK            = self.triggers.IP_MASK
+      ACTION             = "delete"
+      MIGRATION_STRATEGY = self.triggers.MIGRATION_STRATEGY
     }
   }
 }
