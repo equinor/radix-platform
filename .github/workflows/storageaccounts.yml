@@ -30,8 +30,8 @@ on:
         description: The ID of the Azure tenant to create the resources in.
         required: true
 
-    env:
-      container_name: infrastructure
+env:
+  container_name: infrastructure
 
 jobs:
   GetEnvironment:
@@ -54,7 +54,7 @@ jobs:
     environment: ${{ inputs.subscription }}
     strategy:
       matrix:
-        radix_environment: ["dev"] # ${{ fromJson(needs.GetEnvironment.outputs.radix_environment) }}
+        radix_environment: ${{ fromJson(needs.GetEnvironment.outputs.radix_environment) }}
 
     # Set permissions required to login to Azure using OIDC.
     permissions:
@@ -77,7 +77,6 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       resource_group_name: ${{ inputs.subscription }}-tfstate
       storage_account_name: ${{ inputs.subscription }}radixinfra
-      container_name: infrastructure
       path: storageaccounts
       key: terraform.tfstate
 
