@@ -18,11 +18,13 @@ function check_deps() {
 
 function parse_input() {
     eval "$(jq -r '@sh "
+    MIGRATION_STRATEGY=\(.MIGRATION_STRATEGY)
     CLUSTER_NAME=\(.CLUSTER_NAME)
     AZ_SUBSCRIPTION_ID=\(.AZ_SUBSCRIPTION_ID)
     AZ_IPPRE_OUTBOUND_NAME=\(.AZ_IPPRE_OUTBOUND_NAME)
     AZ_RESOURCE_GROUP_COMMON=\(.AZ_RESOURCE_GROUP_COMMON)
     "')"
+    if [[ -z "${MIGRATION_STRATEGY}" ]]; then export MIGRATION_STRATEGY=none; fi
     if [[ -z "${CLUSTER_NAME}" ]]; then export CLUSTER_NAME=none; fi
     if [[ -z "${AZ_SUBSCRIPTION_ID}" ]]; then export AZ_SUBSCRIPTION_ID=none; fi
     if [[ -z "${AZ_IPPRE_OUTBOUND_NAME}" ]]; then export AZ_IPPRE_OUTBOUND_NAME=none; fi
@@ -32,7 +34,7 @@ function parse_input() {
 function getEgressIp() {
     local egress_ip="$(
         get_cluster_outbound_ip \
-            at \
+            "${MIGRATION_STRATEGY}" \
             "${CLUSTER_NAME}" \
             "${AZ_SUBSCRIPTION_ID}" \
             "${AZ_IPPRE_OUTBOUND_NAME}" \

@@ -1,3 +1,20 @@
+#######################################################################################
+### Zone and cluster settings
+###
+
+RADIX_ZONE = "prod"
+
+#######################################################################################
+### Resource groups
+###
+
+AZ_LOCATION              = "northeurope"
+AZ_RESOURCE_GROUP_COMMON = "common"
+
+#######################################################################################
+### Storage Accounts
+###
+
 storage_accounts = {
   "costallocationprodsqllog" = {
     name          = "costallocationprodsqllog"
@@ -21,13 +38,6 @@ storage_accounts = {
     name          = "radixgrafanabackup"
     rg_name       = "monitoring"
     backup_center = true
-  }
-  "radixsqllogsprod" = {
-    name          = "radixsqllogsprod"
-    rg_name       = "rg-radix-shared-prod"
-    location      = "norwayeast"
-    backup_center = false
-    firewall      = false # Only resources in northeurope, westeurope can be ACL-ed to virtual networks in northeurope.."
   }
   "radixveleroc2prod" = {
     name          = "radixveleroc2prod"
@@ -62,5 +72,26 @@ storage_accounts = {
     rg_name       = "common"
     backup_center = true
     life_cycle    = false
+  }
+}
+
+#######################################################################################
+### Virtual networks
+###
+
+vnets = {
+  "vnet-c2-prod-34" = {
+    vnet_name   = "vnet-c2-prod-34"
+    subnet_name = "subnet-c2-prod-34"
+    rg_name     = "clusters-westeurope"
+  }
+  "vnet-eu-34" = {
+    vnet_name   = "vnet-eu-34"
+    subnet_name = "subnet-eu-34"
+  }
+  "aks-vnet-35748448" = {
+    vnet_name   = "aks-vnet-35748448"
+    subnet_name = "aks-subnet"
+    rg_name     = "MC_monitoring_ext-mon-14_northeurope"
   }
 }

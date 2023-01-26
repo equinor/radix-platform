@@ -122,3 +122,9 @@ function check_staging_certs(){
         fi
     fi
 }
+
+get_latest_release() {
+  # retrieves latest release version from a GitHub repository. Assumes the version has format v<version>.<major_version>.<minor_version>
+  # this function does not use the more convenient GitHub API in order to circumvent rate limiting
+  curl -sL https://github.com/$1/releases/latest | grep -E "/tree/" | grep -E "v[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}" -o | head -1
+}

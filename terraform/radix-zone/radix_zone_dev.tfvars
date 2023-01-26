@@ -32,7 +32,7 @@ AZ_RESOURCE_GROUP_COMMON   = "common"
 ### Shared environment, az region and az subscription
 ###
 
-AZ_SUBSCRIPTION_ID="16ede44b-1f74-40a5-b428-46cca9a5741b"
+AZ_SUBSCRIPTION_ID = "16ede44b-1f74-40a5-b428-46cca9a5741b"
 
 #######################################################################################
 ### System users
@@ -69,3 +69,66 @@ AZ_PRIVATE_DNS_ZONES = [
   "private.radix.equinor.com"
 ]
 
+#######################################################################################
+### Storage Accounts
+###
+
+storage_accounts = {
+  "radixflowlogsdev" = {
+    name          = "radixflowlogsdev"
+    rg_name       = "Logs-Dev"
+    backup_center = true
+  }
+  "radixinfradev" = {
+    name                      = "radixinfradev"
+    rg_name                   = "s941-tfstate"
+    backup_center             = false
+    repl                      = "GRS"
+    kind                      = "BlobStorage"
+    shared_access_key_enabled = false
+    firewall                  = false
+  }
+  "radixvelerodev" = {
+    name          = "radixvelerodev"
+    rg_name       = "backups"
+    backup_center = false
+    repl          = "GRS"
+    kind          = "BlobStorage"
+  }
+  "s941radixinfra" = {
+    name                            = "s941radixinfra"
+    rg_name                         = "s941-tfstate"
+    backup_center                   = true
+    repl                            = "RAGRS"
+    allow_nested_items_to_be_public = false
+  }
+  "s941sqllogsdev" = {
+    name          = "s941sqllogsdev"
+    rg_name       = "common"
+    backup_center = true
+  }
+  "s941sqllogsplayground" = {
+    name          = "s941sqllogsplayground"
+    rg_name       = "common"
+    backup_center = true
+  }
+}
+
+#######################################################################################
+### Virtual networks
+###
+
+vnets = {
+  "vnet-playground-07" = {
+    vnet_name   = "vnet-playground-07"
+    subnet_name = "subnet-playground-07"
+  }
+  "vnet-weekly-03" = {
+    vnet_name   = "vnet-weekly-03"
+    subnet_name = "subnet-weekly-03"
+  }
+  "vnet-weekly-04" = {
+    vnet_name   = "vnet-weekly-04"
+    subnet_name = "subnet-weekly-04"
+  }
+}

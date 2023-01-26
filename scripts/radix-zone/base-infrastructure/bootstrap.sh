@@ -414,11 +414,11 @@ function set_permissions_on_dns() {
 
 function create_dns_role_definition_for_cert_manager() {
     # Create DNS TXT Contributor role to be used by Cert Manager
-    CUSTOM_DNS_ROLE_JSON="cert-mananger-custom-dns-role.json"
-    test -f "$CUSTOM_DNS_ROLE_JSON" && rm "$CUSTOM_DNS_ROLE_JSON"
-    cat <<EOF >>${CUSTOM_DNS_ROLE_JSON}
+    temp_file_role_definition="/tmp/$(uuidgen)"
+    role_name="DNS TXT Contributor"
+    cat <<EOF >>${temp_file_role_definition}
     {
-        "Name": "DNS TXT Contributor",
+        "Name": "${role_name}",
         "Id": "",
         "IsCustom": true,
         "Description": "Can manage DNS TXT records only.",
@@ -438,27 +438,13 @@ function create_dns_role_definition_for_cert_manager() {
         ]
     }
 EOF
-    ROLE_DEFINITION=$(az role definition list --name "DNS TXT Contributor" --query [].assignableScopes[] --output tsv)
-    if [[ -z ${ROLE_DEFINITION} ]]; then
-        printf "Creating DNS TXT Contributor role definition..."
-        az role definition create --role-definition "$CUSTOM_DNS_ROLE_JSON" 2>/dev/null
-        rm "$CUSTOM_DNS_ROLE_JSON"
-        while [ -z "$(az role definition list --query "[?roleName=='$ROLENAME'].name" -otsv)" ]; do
-            sleep 5
-            printf "."
-        done
-        printf "...Done.\n"
-    elif [[ ! ${ROLE_DEFINITION[@]} =~ ${AZ_SUBSCRIPTION_ID} ]]; then
-        echo "ERROR: Role definition exists, but subscription ${AZ_SUBSCRIPTION_ID} is not an assignable scope. This script does not update it, so it must be done manually." >&2
-        return
-    else
-        echo "DNS TXT Contributor role definition exists."
-    fi
+    create_custom_role "${temp_file_role_definition}" "${role_name}"
+    rm "${temp_file_role_definition}"
 
     printf "Creating role assignment..."
     az role assignment create \
         --assignee "$APP_ID" \
-        --role "$ROLENAME" \
+        --role "$role_name" \
         --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/dnszones/${AZ_RESOURCE_DNS}" \
         2>/dev/null
     printf "...Done.\n"

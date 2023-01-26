@@ -40,22 +40,22 @@ variable "AKS_NODE_POOL_VM_SIZE" {
 
 variable "AKS_SYSTEM_NODE_MIN_COUNT" {
   description = "The minimum number of nodes which should exist in this Node Pool"
-  type = number
+  type        = number
 }
 
 variable "AKS_SYSTEM_NODE_MAX_COUNT" {
   description = "The maximum number of nodes which should exist in this Node Pool"
-  type = number
+  type        = number
 }
 
 variable "AKS_USER_NODE_MIN_COUNT" {
   description = "The minimum number of nodes which should exist in this Node Pool"
-  type = number
+  type        = number
 }
 
 variable "AKS_USER_NODE_MAX_COUNT" {
   description = "The maximum number of nodes which should exist in this Node Pool"
-  type = number
+  type        = number
 }
 
 variable "AKS_KUBERNETES_VERSION" {
