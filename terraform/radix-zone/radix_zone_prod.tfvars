@@ -39,13 +39,6 @@ storage_accounts = {
     rg_name       = "monitoring"
     backup_center = true
   }
-  "radixsqllogsprod" = {
-    name          = "radixsqllogsprod"
-    rg_name       = "rg-radix-shared-prod"
-    location      = "norwayeast"
-    backup_center = false
-    firewall      = false # Only resources in northeurope, westeurope can be ACL-ed to virtual networks in northeurope.."
-  }
   "radixveleroc2prod" = {
     name          = "radixveleroc2prod"
     rg_name       = "backups"
