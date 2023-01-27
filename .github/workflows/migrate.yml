@@ -3,6 +3,15 @@ on:
   workflow_dispatch:
     inputs:
 
+      subscription:
+        description: "Subscription"
+        required: true
+        type: choice
+        options:
+          - "s940"
+          - "s941"
+        default: s941
+
       environment:
         description: "Cluster environment"
         required: true
@@ -44,6 +53,7 @@ jobs:
           ARGS="-r" \
           ENVIRONMENT="${{ inputs.environment }}" \
           MIGRATION_STRATEGY="${{ inputs.migration_strategy }}" \
+          SUBSCRIPTION="${{ inputs.subscription }}" \
           TARGET_NAME="${{ inputs.target }}" \
           DESTINATION_NAME="${{ inputs.destination }}" \
           .github/workflows/scripts/copy.sh
