@@ -18,6 +18,11 @@ on:
         type: string
         required: true
 
+      subscription:
+        description: The subscription to deploy in
+        type: string
+        required: true
+
       terraform_version:
         description: The version of Terraform to install.
         type: string
@@ -67,16 +72,16 @@ jobs:
     # Configure OIDC authentication to Azure using environment variables.
     # Required by the AzureRM backend and provider.
     env:
-      root_src: '../../../../..'
+      root_src: '../../../../../..'
       ARM_USE_OIDC: true
       ARM_USE_AZUREAD: true
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      container_name: tfstate
+      container_name: clusters
       key: ${{ inputs.radix_environment }}.${{ inputs.cluster_name }}.terraform.tfstate
-      resource_group_name: s941-tfstate
-      storage_account_name: radixinfra${{ inputs.radix_environment }}
+      resource_group_name: ${{ inputs.subscription }}-tfstate
+      storage_account_name: ${{ inputs.subscription }}radixinfra
 
     outputs:
       tf-fmt: ${{ steps.fmt.outcome }}
@@ -88,6 +93,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        uses: haythem/public-ip@v1.3
+
+      - name: Add GitHub IP to StorageAccount
+        run: |
+          az storage account network-rule add \
+            --resource-group "${{ env.resource_group_name }}" \
+            --account-name "${{ env.storage_account_name }}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        run: sleep 30s
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -103,28 +129,24 @@ jobs:
         id: init
         run: |
           terraform init \
-          -backend-config='container_name=${{ env.container_name }}' \
-          -backend-config='key=${{ env.key }}' \
-          -backend-config='resource_group_name=${{ env.resource_group_name }}' \
-          -backend-config='storage_account_name=${{ env.storage_account_name }}'
+            -backend-config='container_name=${{ env.container_name }}' \
+            -backend-config='key=${{ env.key }}' \
+            -backend-config='resource_group_name=${{ env.resource_group_name }}' \
+            -backend-config='storage_account_name=${{ env.storage_account_name }}'
 
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
 
-      # Needed for AZ use in terraform
-      - name: Az CLI login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
         run: |
-          terraform plan --var-file=${{ env.root_src }}/terraform/radix-zone/radix_zone_dev.tfvars -lock=false -no-color -out tf.plan
+          terraform plan \
+            --var-file=${{ env.root_src }}/terraform/radix-zone/radix_zone_dev.tfvars \
+            -lock=false \
+            -no-color \
+            -out tf.plan
         continue-on-error: true
 
       - name: Terraform Show
@@ -186,7 +208,14 @@ jobs:
 
       - name: Terraform Apply
         if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
-        run: terraform apply --var-file=../../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve -lock=false
+        run: terraform apply --var-file=../../../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve -lock=false
+
+      - name: Revoke GitHub IP on StorageAccount
+        run: |
+          az storage account network-rule remove \
+            --resource-group "${{ env.resource_group_name }}" \
+            --account-name "${{ env.storage_account_name }}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
   Create_comment:
     if: github.event_name == 'pull_request'

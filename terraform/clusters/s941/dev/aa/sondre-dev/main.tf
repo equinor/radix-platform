@@ -56,8 +56,8 @@ locals {
   AZ_RESOURCE_GROUP_VNET_HUB     = "cluster-vnet-hub-${var.RADIX_ZONE}"
   CLUSTER_NAME                   = basename(abspath(path.module))
   MIGRATION_STRATEGY             = basename(abspath("../${path.module}"))
-  RADIX_PLATFORM_REPOSITORY_PATH = "../../../../.."
-  TERRAFORM_ROOT_PATH            = "../../../.."
+  RADIX_PLATFORM_REPOSITORY_PATH = "../../../../../.."
+  TERRAFORM_ROOT_PATH            = "../../../../.."
   WHITELIST_IPS                  = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
 }
 
@@ -106,7 +106,7 @@ resource "null_resource" "delete_whitelist_acr" {
     when        = destroy
     interpreter = ["/bin/bash", "-c"]
     working_dir = path.root
-    command     = "../../../../scripts/delete_whitelist_acr.sh"
+    command     = "../../../../../scripts/delete_whitelist_acr.sh"
 
     environment = {
       RADIX_ZONE_ENV     = "radix-zone/radix_zone_dev.env"
