@@ -12,6 +12,81 @@ AZ_LOCATION              = "northeurope"
 AZ_RESOURCE_GROUP_COMMON = "common"
 
 #######################################################################################
+### Resouce Groups
+###
+
+resource_groups = {
+  "backups" = {
+    name = "backups"
+  }
+  "cluster-vnet-hub-prod" = {
+    name = "cluster-vnet-hub-prod"
+  }
+  "clusters" = {
+    name = "clusters"
+  }
+  "common" = {
+    name = "common"
+  }
+  "cost-allocation" = {
+    name = "cost-allocation"
+  }
+  "monitoring" = {
+    name = "monitoring"
+  }
+  "s940-tfstate" = {
+    name = "s940-tfstate"
+  }
+  "vulnerability-scan" = {
+    name = "vulnerability-scan"
+  }
+  "clusters-westeurope" = {
+    name     = "clusters-westeurope"
+    location = "westeurope"
+  }
+  "common-westeurope" = {
+    name     = "common-westeurope"
+    location = "westeurope"
+  }
+  "cost-allocation-westeurope" = {
+    name     = "cost-allocation-westeurope"
+    location = "westeurope"
+  }
+  "dashboards" = {
+    name     = "dashboards"
+    location = "westeurope"
+  }
+  "Logs" = {
+    name     = "Logs"
+    location = "westeurope"
+  }
+  "logs-westeurope" = {
+    name     = "logs-westeurope"
+    location = "westeurope"
+  }
+  "monitoring-westeurope" = {
+    name     = "monitoring-westeurope"
+    location = "westeurope"
+  }
+  "radix-private-links-c2-prod" = {
+    name     = "radix-private-links-c2-prod"
+    location = "westeurope"
+  }
+  "rg-protection-we" = {
+    name     = "rg-protection-we"
+    location = "westeurope"
+  }
+  "S940-log" = {
+    name     = "S940-log"
+    location = "westeurope"
+  }
+  "vulnerability-scan-westeurope" = {
+    name     = "vulnerability-scan-westeurope"
+    location = "westeurope"
+  }
+}
+
+#######################################################################################
 ### Storage Accounts
 ###
 
