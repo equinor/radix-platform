@@ -22,7 +22,4 @@ resource "azurerm_mssql_database" "mssql_database" {
   sku_name          = each.value["sku_name"]
   zone_redundant    = each.value["zone_redundant"]
   tags              = each.value["tags"]
-
-
 }
-
