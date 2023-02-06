@@ -151,6 +151,58 @@ storage_accounts = {
 }
 
 #######################################################################################
+### SQL Server
+###
+
+sql_server = {
+  "sql-radix-cost-allocation-c2-prod" = {
+    name    = "sql-radix-cost-allocation-c2-prod"
+    rg_name = "cost-allocation-westeurope"
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name    = "sql-radix-cost-allocation-prod"
+    rg_name = "cost-allocation"
+  }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name    = "sql-radix-vulnerability-scan-c2-prod"
+    rg_name = "vulnerability-scan-westeurope"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name    = "sql-radix-vulnerability-scan-prod"
+    rg_name = "vulnerability-scan"
+  }
+}
+
+#######################################################################################
+### SQL Database
+###
+sql_database = {
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-c2-prod"
+    sku_name = "S0"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name    = "radix-vulnerability-scan"
+    server  = "sql-radix-vulnerability-scan-prod"
+  }
+  "sql-radix-cost-allocation-c2-prod" = {
+    name     = "sqldb-radix-cost-allocation"
+    server   = "sql-radix-cost-allocation-c2-prod"
+    sku_name = "S0"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name    = "sqldb-radix-cost-allocation"
+    server  = "sql-radix-cost-allocation-prod"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+}
+#######################################################################################
 ### Virtual networks
 ###
 
