@@ -59,6 +59,7 @@ locals {
   RADIX_PLATFORM_REPOSITORY_PATH = "../../../../../.."
   TERRAFORM_ROOT_PATH            = "../../../../.."
   WHITELIST_IPS                  = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  TAGS                           = local.MIGRATION_STRATEGY == "aa" ? { "autostartupschedule " = "true" } : {}
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -135,13 +136,14 @@ data "external" "egress_ip" {
 }
 
 module "aks" {
-  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v4.0.0"
+  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v4.1.0"
 
   CLUSTER_NAME       = local.CLUSTER_NAME
   MIGRATION_STRATEGY = local.MIGRATION_STRATEGY
   AZ_LOCATION        = var.AZ_LOCATION
   AZ_SUBSCRIPTION_ID = var.AZ_SUBSCRIPTION_ID
   CLUSTER_TYPE       = var.CLUSTER_TYPE
+  TAGS               = local.TAGS
 
   # Resource groups
   AZ_RESOURCE_GROUP_CLUSTERS = data.azurerm_resource_group.rg_clusters.name
