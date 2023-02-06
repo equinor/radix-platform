@@ -180,7 +180,6 @@ sql_database = {
   "sql-radix-vulnerability-scan-c2-prod" = {
     name     = "radix-vulnerability-scan"
     server   = "sql-radix-vulnerability-scan-c2-prod"
-    sku_name = "S0"
   }
   "sql-radix-vulnerability-scan-prod" = {
     name    = "radix-vulnerability-scan"
@@ -189,7 +188,6 @@ sql_database = {
   "sql-radix-cost-allocation-c2-prod" = {
     name     = "sqldb-radix-cost-allocation"
     server   = "sql-radix-cost-allocation-c2-prod"
-    sku_name = "S0"
     tags = {
       "displayName" = "Database"
     }
