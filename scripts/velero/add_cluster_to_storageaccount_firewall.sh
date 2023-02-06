@@ -14,9 +14,6 @@
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
-# Optional:
-# - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-
 #######################################################################################
 ### HOW TO USE
 ### 
@@ -64,12 +61,6 @@ fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../aks/${CLUSTER_TYPE}.env"
-
-# Optional inputs
-
-if [[ -z "$USER_PROMPT" ]]; then
-    USER_PROMPT=true
-fi
 
 #######################################################################################
 ### Prepare az session

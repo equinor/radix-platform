@@ -530,7 +530,7 @@ wait # wait for subshell to finish
 echo ""
 echo "Adding cluster to storageaccount firewall..."
 printf "%s► Execute %s%s\n" "${grn}" "$ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT")
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT")
 wait # wait for subshell to finish
 
 # Wait for velero to be deployed from flux
