@@ -198,7 +198,7 @@ jobs:
             updateOut+="The following resources will be updated <br/> ${update}"
           fi
 
-          if [ ${#numberOfChanges} -eq 0 ]; then
+          if [ ${numberOfChanges} -eq 0 ]; then
             changesOut+="No changes. Your infrastructure matches the configuration. <br/>"
           fi
 
