@@ -100,3 +100,8 @@ variable "RADIX_WEB_CONSOLE_ENVIRONMENTS" {
   description = "A list of environments for web console"
   type        = list(string)
 }
+
+variable "TAGS" {
+  description = "tags"
+  type        = map(string)
+}
