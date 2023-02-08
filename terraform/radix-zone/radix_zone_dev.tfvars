@@ -159,6 +159,91 @@ storage_accounts = {
 }
 
 #######################################################################################
+### SQL Server
+###
+
+sql_server = {
+  "sql-radix-cost-allocation-dev" = {
+    name    = "sql-radix-cost-allocation-dev"
+    rg_name = "cost-allocation"
+    db_admin = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
+  }
+  "sql-radix-cost-allocation-playground" = {
+    name    = "sql-radix-cost-allocation-playground"
+    rg_name = "cost-allocation"
+    db_admin = "radix-cost-allocation-db-admin-playground"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
+  }
+  "sql-radix-vulnerability-scan-dev" = {
+    name    = "sql-radix-vulnerability-scan-dev"
+    rg_name = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin"
+    identity = false
+  }
+  "sql-radix-vulnerability-scan-playground" = {
+    name    = "sql-radix-vulnerability-scan-playground"
+    rg_name = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin-playground"
+    identity = false
+  }
+}
+
+#######################################################################################
+### SQL Database
+###
+
+sql_database = {
+  "sql-radix-cost-allocation-dev" = {
+    name     = "sqldb-radix-cost-allocation"
+    server   = "sql-radix-cost-allocation-dev"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-cost-allocation-playground" = {
+    name    = "sqldb-radix-cost-allocation"
+    server  = "sql-radix-cost-allocation-playground"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-vulnerability-scan-dev" = {
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-dev"
+  }
+  "sql-radix-vulnerability-scan-playground" = {
+    name    = "radix-vulnerability-scan"
+    server  = "sql-radix-vulnerability-scan-playground"
+  }
+}
+
+#######################################################################################
+### Key Vault
+###
+
+key_vault = {
+  "cadb-admin-dev" = {
+    name = "radix-cost-allocation-db-admin"
+  }
+  "cadb-admin-playground" = {
+    name = "radix-cost-allocation-db-admin-playground"
+  }
+  "vs-db-admin-dev" = {
+    name = "radix-vulnerability-scan-db-admin"
+  }
+  "vs-db-admin-playground" = {
+    name = "radix-vulnerability-scan-db-admin-playground"
+  }
+}
+
+#######################################################################################
 ### Virtual networks
 ###
 
