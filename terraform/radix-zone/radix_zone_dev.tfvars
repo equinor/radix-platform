@@ -71,6 +71,50 @@ AZ_PRIVATE_DNS_ZONES = [
 ]
 
 #######################################################################################
+### Resouce Groups
+###
+
+resource_groups = {
+  "backups" = {
+    name = "backups"
+  }
+  "clusters" = {
+    name = "clusters"
+  }
+  "cluster-vnet-hub-dev" = {
+    name = "cluster-vnet-hub-dev"
+  }
+  "cluster-vnet-hub-playground" = {
+    name = "cluster-vnet-hub-playground"
+  }
+  "common" = {
+    name = "common"
+  }
+  "cost-allocation" = {
+    name = "cost-allocation"
+  }
+  "dashboards" = {
+    name = "dashboards"
+  }
+  "monitoring" = {
+    name = "monitoring"
+  }
+  "S941-log" = {
+    name = "S941-log"
+    location = "westeurope"
+  }
+  "s941-tfstate" = {
+    name = "s941-tfstate"
+  }
+  "Logs-Dev" = {
+    name = "Logs-Dev"
+  }
+  "vulnerability-scan" = {
+    name = "vulnerability-scan"
+  }
+}
+
+#######################################################################################
 ### Storage Accounts
 ###
 
