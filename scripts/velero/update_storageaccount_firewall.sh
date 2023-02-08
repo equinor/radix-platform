@@ -18,7 +18,12 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./add_cluster_to_storageaccount_firewall.sh
+# add
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ACTION="add" ./update_storageaccount_firewall.sh
+
+# delete
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ACTION="delete" ./update_storageaccount_firewall.sh
+
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -59,6 +64,11 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+if [ "${ACTION}" != "add" ] && [ "${ACTION}" != "delete" ]; then
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
+    exit 1
+fi
+
 # Read the cluster config that correnspond to selected environment in the zone config.
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../aks/${CLUSTER_TYPE}.env"
 
@@ -83,21 +93,40 @@ subnetId=$(az network vnet subnet show \
     --output tsv \
     --only-show-errors)
 
-printf "\nAdding Microsoft.Storage to subnet...\n "
-az network vnet subnet update \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --vnet-name "${VNET_NAME}" \
-    --name "${SUBNET_NAME}" \
-    --service-endpoints "Microsoft.Storage" \
-    --output tsv \
-    --only-show-errors
-printf "Done.\n"
+function add-subnet-to-firewall() {
+    printf "\nAdding Microsoft.Storage to subnet...\n "
+    az network vnet subnet update \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --vnet-name "${VNET_NAME}" \
+        --name "${SUBNET_NAME}" \
+        --service-endpoints "Microsoft.Storage" \
+        --output tsv \
+        --only-show-errors
+    printf "Done.\n"
 
-printf "\nAdding subnet to storage account...\n "
-az storage account network-rule add \
-    --resource-group "${AZ_VELERO_RESOURCE_GROUP}" \
-    --account-name "${AZ_VELERO_STORAGE_ACCOUNT_ID}" \
-    --subnet "${subnetId}" \
-    --output tsv \
-    --only-show-errors
-printf "Done.\n"
+    printf "\nAdding subnet to storage account...\n "
+    az storage account network-rule add \
+        --resource-group "${AZ_VELERO_RESOURCE_GROUP}" \
+        --account-name "${AZ_VELERO_STORAGE_ACCOUNT_ID}" \
+        --subnet "${subnetId}" \
+        --output tsv \
+        --only-show-errors
+    printf "Done.\n"
+}
+
+function delete-subnet-from-firewall() {
+    printf "\nRemoving subnet from storage account...\n "
+    az storage account network-rule remove \
+        --account-name "${AZ_VELERO_STORAGE_ACCOUNT_ID}" \
+        --resource-group "${AZ_VELERO_RESOURCE_GROUP}" \
+        --subnet "${subnetId}" \
+        --output tsv \
+        --only-show-errors
+    printf "Done.\n"
+}
+
+if [[ "${ACTION}" == "add" ]]; then
+    add-subnet-to-firewall
+elif [[ "${ACTION}" == "delete" ]]; then
+    delete-subnet-from-firewall
+fi

@@ -181,10 +181,10 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
-ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT="$WORKDIR_PATH/velero/add_cluster_to_storageaccount_firewall.sh"
-if ! [[ -x "$ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT" ]]; then
+UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT="$WORKDIR_PATH/velero/update_storageaccount_firewall.sh"
+if ! [[ -x "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" ]]; then
     # Print to stderror
-    echo "ERROR: The add cluster to storageaccount firewall script is not found or it is not executable in path $ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT" >&2
+    echo "ERROR: The update storageaccount firewall script is not found or it is not executable in path $UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" >&2
 fi
 
 ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/add_reply_url_for_cluster.sh"
@@ -528,9 +528,9 @@ printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 wait # wait for subshell to finish
 
 echo ""
-echo "Adding cluster to storageaccount firewall..."
-printf "%s► Execute %s%s\n" "${grn}" "$ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$ADD_CLUSTER_TO_STORAGEACCOUNT_FIREWALL_SCRIPT")
+echo "Updating storageaccount firewall..."
+printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" ACTION="add" source "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT")
 wait # wait for subshell to finish
 
 # Wait for velero to be deployed from flux
