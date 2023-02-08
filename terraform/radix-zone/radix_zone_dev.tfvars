@@ -100,7 +100,7 @@ resource_groups = {
     name = "monitoring"
   }
   "S941-log" = {
-    name = "S941-log"
+    name     = "S941-log"
     location = "westeurope"
   }
   "s941-tfstate" = {
