@@ -183,8 +183,8 @@ sql_database = {
     sku_name = "S0"
   }
   "sql-radix-vulnerability-scan-prod" = {
-    name    = "radix-vulnerability-scan"
-    server  = "sql-radix-vulnerability-scan-prod"
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-prod"
   }
   "sql-radix-cost-allocation-c2-prod" = {
     name     = "sqldb-radix-cost-allocation"
@@ -195,8 +195,8 @@ sql_database = {
     }
   }
   "sql-radix-cost-allocation-prod" = {
-    name    = "sqldb-radix-cost-allocation"
-    server  = "sql-radix-cost-allocation-prod"
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-prod"
     tags = {
       "displayName" = "Database"
     }
