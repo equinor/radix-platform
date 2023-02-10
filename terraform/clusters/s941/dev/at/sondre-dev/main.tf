@@ -78,7 +78,8 @@ data "azurerm_resource_group" "rg_clusters" {
 
 resource "null_resource" "add_whitelist_acr" {
   depends_on = [
-    module.aks
+    module.aks,
+    data.external.egress_ip
   ]
 
   provisioner "local-exec" {
@@ -98,6 +99,10 @@ resource "null_resource" "add_whitelist_acr" {
 }
 
 resource "null_resource" "delete_whitelist_acr" {
+  depends_on = [
+    data.external.egress_ip
+  ]
+
   triggers = {
     "IP_MASK"            = data.external.egress_ip.result.egress_ip
     "MIGRATION_STRATEGY" = local.MIGRATION_STRATEGY
