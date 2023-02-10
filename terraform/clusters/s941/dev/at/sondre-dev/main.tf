@@ -59,7 +59,7 @@ locals {
   RADIX_PLATFORM_REPOSITORY_PATH = "../../../../../.."
   TERRAFORM_ROOT_PATH            = "../../../../.."
   WHITELIST_IPS                  = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
-  TAGS                           = local.MIGRATION_STRATEGY == "aa" ? { "autostartupschedule " = "true" } : {}
+  TAGS                           = local.MIGRATION_STRATEGY == "aa" ? var.TAGS : {}
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -101,6 +101,7 @@ resource "null_resource" "delete_whitelist_acr" {
   triggers = {
     "IP_MASK"            = data.external.egress_ip.result.egress_ip
     "MIGRATION_STRATEGY" = local.MIGRATION_STRATEGY
+    "RADIX_ZONE_ENV"     = "radix-zone/radix_zone_${var.RADIX_ZONE}.env"
   }
 
   provisioner "local-exec" {
@@ -110,11 +111,51 @@ resource "null_resource" "delete_whitelist_acr" {
     command     = "../../../../../scripts/delete_whitelist_acr.sh"
 
     environment = {
-      RADIX_ZONE_ENV     = "radix-zone/radix_zone_dev.env"
+      RADIX_ZONE_ENV     = self.triggers.RADIX_ZONE_ENV
       USER_PROMPT        = "false"
       IP_MASK            = self.triggers.IP_MASK
       ACTION             = "delete"
       MIGRATION_STRATEGY = self.triggers.MIGRATION_STRATEGY
+    }
+  }
+}
+
+resource "null_resource" "add_storageaccount_firewall" {
+  depends_on = [
+    module.aks
+  ]
+
+  provisioner "local-exec" {
+    when        = create
+    interpreter = ["/bin/bash", "-c"]
+    working_dir = path.root
+    command     = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/velero/update_storageaccount_firewall.sh"
+
+    environment = {
+      RADIX_ZONE_ENV = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/radix-zone/radix_zone_${var.RADIX_ZONE}.env"
+      CLUSTER_NAME   = "${local.CLUSTER_NAME}"
+      ACTION         = "add"
+    }
+  }
+}
+
+resource "null_resource" "delete_storageaccount_firewall" {
+  triggers = {
+    "CLUSTER_NAME"                   = local.CLUSTER_NAME
+    "RADIX_ZONE_ENV"                 = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/radix-zone/radix_zone_${var.RADIX_ZONE}.env"
+    "update_storageaccount_firewall" = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/velero/update_storageaccount_firewall.sh"
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    interpreter = ["/bin/bash", "-c"]
+    working_dir = path.root
+    command     = self.triggers.update_storageaccount_firewall
+
+    environment = {
+      RADIX_ZONE_ENV = self.triggers.RADIX_ZONE_ENV
+      CLUSTER_NAME   = self.triggers.CLUSTER_NAME
+      ACTION         = "delete"
     }
   }
 }

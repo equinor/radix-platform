@@ -2,7 +2,7 @@
 ### AKS
 ###
 
-AKS_KUBERNETES_VERSION    = "1.23.8"
+AKS_KUBERNETES_VERSION    = "1.23.12"
 AKS_NODE_POOL_VM_SIZE     = "Standard_B4ms"
 AKS_SYSTEM_NODE_MAX_COUNT = "2"
 AKS_SYSTEM_NODE_MIN_COUNT = "1"
@@ -10,6 +10,7 @@ AKS_SYSTEM_NODE_POOL_NAME = "systempool"
 AKS_USER_NODE_MAX_COUNT   = "5"
 AKS_USER_NODE_MIN_COUNT   = "2"
 AKS_USER_NODE_POOL_NAME   = "userpool"
+TAGS                      = { "autostartupschedule " = "true" }
 
 #######################################################################################
 ### Zone and cluster settings
@@ -99,7 +100,7 @@ resource_groups = {
     name = "monitoring"
   }
   "S941-log" = {
-    name = "S941-log"
+    name     = "S941-log"
     location = "westeurope"
   }
   "s941-tfstate" = {
