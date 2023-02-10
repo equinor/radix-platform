@@ -27,18 +27,18 @@ variable "identity" {
 
 variable "sql_server" {
   type = map(object({
-    administrator_login           = optional(string, "radix")
-    location                      = optional(string, "northeurope")
-    minimum_tls_version           = optional(string, "1.2")
-    name                          = string
-    rg_name                       = string
-    tags                          = optional(map(string), {})
-    version                       = optional(string, "12.0")
-    azuread_administrator         = optional(object({
+    administrator_login = optional(string, "radix")
+    location            = optional(string, "northeurope")
+    minimum_tls_version = optional(string, "1.2")
+    name                = string
+    rg_name             = string
+    tags                = optional(map(string), {})
+    version             = optional(string, "12.0")
+    azuread_administrator = optional(object({
       azuread_authentication_only = optional(bool, false)
     }), {})
     identity = optional(bool, true)
-    db_admin                      = string  # Used in azurerm_key_vault_secret
+    db_admin = string # Used in azurerm_key_vault_secret
   }))
   default = {}
 }
@@ -59,16 +59,16 @@ variable "sql_database" {
 
 variable "key_vault" {
   type = map(object({
-    name            = string
-    rg_name         = string
+    name    = string
+    rg_name = string
   }))
   default = {}
 }
 
 variable "key_secrets" {
   type = map(object({
-    name            = string
-    vault         = string
+    name  = string
+    vault = string
   }))
   default = {}
 }

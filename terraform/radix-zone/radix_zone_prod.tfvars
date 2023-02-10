@@ -156,10 +156,10 @@ storage_accounts = {
 
 sql_server = {
   "sql-radix-cost-allocation-c2-prod" = {
-    name     = "sql-radix-cost-allocation-c2-prod"
-    rg_name  = "cost-allocation-westeurope"
-    location = "westeurope"
-    db_admin = "radix-cost-allocation-db-admin"
+    name                = "sql-radix-cost-allocation-c2-prod"
+    rg_name             = "cost-allocation-westeurope"
+    location            = "westeurope"
+    db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
     tags = {
       "displayName" = "SqlServer"
@@ -167,9 +167,9 @@ sql_server = {
     identity = false
   }
   "sql-radix-cost-allocation-prod" = {
-    name     = "sql-radix-cost-allocation-prod"
-    rg_name  = "cost-allocation"
-    db_admin = "radix-cost-allocation-db-admin"
+    name                = "sql-radix-cost-allocation-prod"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
     tags = {
       "displayName" = "SqlServer"
@@ -190,31 +190,31 @@ sql_server = {
 }
 
 key_vault = {
-   "radix-vault-c2-prod" = {
-    name = "radix-vault-c2-prod"
+  "radix-vault-c2-prod" = {
+    name    = "radix-vault-c2-prod"
     rg_name = "common-westeurope"
   }
   "radix-vault-prod" = {
-    name = "radix-vault-prod"
+    name    = "radix-vault-prod"
     rg_name = "common"
   }
 }
 
 key_secrets = {
   "sql-radix-cost-allocation-c2-prod" = {
-    name = "radix-cost-allocation-db-admin"
+    name  = "radix-cost-allocation-db-admin"
     vault = "radix-vault-c2-prod"
   }
   "sql-radix-cost-allocation-prod" = {
-    name = "radix-cost-allocation-db-admin"
+    name  = "radix-cost-allocation-db-admin"
     vault = "radix-vault-prod"
   }
   "sql-radix-vulnerability-scan-c2-prod" = {
-    name = "radix-vulnerability-scan-db-admin"
+    name  = "radix-vulnerability-scan-db-admin"
     vault = "radix-vault-c2-prod"
   }
   "sql-radix-vulnerability-scan-prod" = {
-    name = "radix-vulnerability-scan-db-admin"
+    name  = "radix-vulnerability-scan-db-admin"
     vault = "radix-vault-prod"
   }
 }

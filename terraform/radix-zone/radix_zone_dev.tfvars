@@ -165,32 +165,32 @@ storage_accounts = {
 
 sql_server = {
   "sql-radix-cost-allocation-dev" = {
-    name    = "sql-radix-cost-allocation-dev"
-    rg_name = "cost-allocation"
-    db_admin = "radix-cost-allocation-db-admin"
+    name                = "sql-radix-cost-allocation-dev"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
     tags = {
       "displayName" = "SqlServer"
     }
   }
   "sql-radix-cost-allocation-playground" = {
-    name    = "sql-radix-cost-allocation-playground"
-    rg_name = "cost-allocation"
-    db_admin = "radix-cost-allocation-db-admin-playground"
+    name                = "sql-radix-cost-allocation-playground"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin-playground"
     minimum_tls_version = "Disabled"
     tags = {
       "displayName" = "SqlServer"
     }
   }
   "sql-radix-vulnerability-scan-dev" = {
-    name    = "sql-radix-vulnerability-scan-dev"
-    rg_name = "vulnerability-scan"
+    name     = "sql-radix-vulnerability-scan-dev"
+    rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
   }
   "sql-radix-vulnerability-scan-playground" = {
-    name    = "sql-radix-vulnerability-scan-playground"
-    rg_name = "vulnerability-scan"
+    name     = "sql-radix-vulnerability-scan-playground"
+    rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin-playground"
     identity = false
   }
@@ -202,26 +202,26 @@ sql_server = {
 
 sql_database = {
   "sql-radix-cost-allocation-dev" = {
-    name     = "sqldb-radix-cost-allocation"
-    server   = "sql-radix-cost-allocation-dev"
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-dev"
     tags = {
       "displayName" = "Database"
     }
   }
   "sql-radix-cost-allocation-playground" = {
-    name    = "sqldb-radix-cost-allocation"
-    server  = "sql-radix-cost-allocation-playground"
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-playground"
     tags = {
       "displayName" = "Database"
     }
   }
   "sql-radix-vulnerability-scan-dev" = {
-    name     = "radix-vulnerability-scan"
-    server   = "sql-radix-vulnerability-scan-dev"
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-dev"
   }
   "sql-radix-vulnerability-scan-playground" = {
-    name    = "radix-vulnerability-scan"
-    server  = "sql-radix-vulnerability-scan-playground"
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-playground"
   }
 }
 
