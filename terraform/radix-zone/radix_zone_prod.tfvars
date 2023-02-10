@@ -156,36 +156,74 @@ storage_accounts = {
 
 sql_server = {
   "sql-radix-cost-allocation-c2-prod" = {
-    name    = "sql-radix-cost-allocation-c2-prod"
-    rg_name = "cost-allocation-westeurope"
+    name                = "sql-radix-cost-allocation-c2-prod"
+    rg_name             = "cost-allocation-westeurope"
+    location            = "westeurope"
+    db_admin            = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
+    identity = false
   }
   "sql-radix-cost-allocation-prod" = {
-    name    = "sql-radix-cost-allocation-prod"
-    rg_name = "cost-allocation"
+    name                = "sql-radix-cost-allocation-prod"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
   }
   "sql-radix-vulnerability-scan-c2-prod" = {
-    name    = "sql-radix-vulnerability-scan-c2-prod"
-    rg_name = "vulnerability-scan-westeurope"
+    name     = "sql-radix-vulnerability-scan-c2-prod"
+    rg_name  = "vulnerability-scan-westeurope"
+    location = "westeurope"
+    db_admin = "radix-vulnerability-scan-db-admin"
+    identity = false
   }
   "sql-radix-vulnerability-scan-prod" = {
-    name    = "sql-radix-vulnerability-scan-prod"
-    rg_name = "vulnerability-scan"
+    name     = "sql-radix-vulnerability-scan-prod"
+    rg_name  = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin"
   }
 }
+
+key_vault = {
+  "radix-vault-c2-prod" = {
+    name    = "radix-vault-c2-prod"
+    rg_name = "common-westeurope"
+  }
+  "radix-vault-prod" = {
+    name    = "radix-vault-prod"
+    rg_name = "common"
+  }
+}
+
+key_secrets = {
+  "sql-radix-cost-allocation-c2-prod" = {
+    name  = "radix-cost-allocation-db-admin"
+    vault = "radix-vault-c2-prod"
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name  = "radix-cost-allocation-db-admin"
+    vault = "radix-vault-prod"
+  }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name  = "radix-vulnerability-scan-db-admin"
+    vault = "radix-vault-c2-prod"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name  = "radix-vulnerability-scan-db-admin"
+    vault = "radix-vault-prod"
+  }
+}
+
 
 #######################################################################################
 ### SQL Database
 ###
 sql_database = {
-  "sql-radix-vulnerability-scan-c2-prod" = {
-    name     = "radix-vulnerability-scan"
-    server   = "sql-radix-vulnerability-scan-c2-prod"
-    sku_name = "S0"
-  }
-  "sql-radix-vulnerability-scan-prod" = {
-    name   = "radix-vulnerability-scan"
-    server = "sql-radix-vulnerability-scan-prod"
-  }
   "sql-radix-cost-allocation-c2-prod" = {
     name     = "sqldb-radix-cost-allocation"
     server   = "sql-radix-cost-allocation-c2-prod"
@@ -201,7 +239,17 @@ sql_database = {
       "displayName" = "Database"
     }
   }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-c2-prod"
+    sku_name = "S0"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-prod"
+  }
 }
+
 #######################################################################################
 ### Virtual networks
 ###
