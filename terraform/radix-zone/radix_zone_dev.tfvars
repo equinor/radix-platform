@@ -34,6 +34,7 @@ AZ_RESOURCE_GROUP_COMMON   = "common"
 ###
 
 AZ_SUBSCRIPTION_ID = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 
 #######################################################################################
 ### System users
@@ -262,3 +263,15 @@ vnets = {
     subnet_name = "subnet-weekly-04"
   }
 }
+
+#######################################################################################
+### Service principal
+###
+
+SP_GITHUB_DEV_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
+
+#######################################################################################
+### Keyvaults
+###
+
+KV_RADIX_VAULT_DEV = "radix-vault-dev"
