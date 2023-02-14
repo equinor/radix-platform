@@ -15,12 +15,20 @@ function updateComponentEnvVar() {
         return 1
     fi
 
+    if [[ -z "$STAGING" ]]; then
+        STAGING=false
+        curl_command="curl"
+    elif [[ $STAGING ]]; then
+        curl_command="curl --cacert /usr/local/share/ca-certificates/letsencrypt-stg-root-x1.pem"
+    fi
+
     local max_retries=15
     local try_nr=0
     printf "Sending PATCH request to Radix API..."
-    
+
     while true; do
-        curl -X PATCH "https://${radix_api_fqdn}/api/v1/applications/${app}/environments/${env}/components/${component}/envvars" \
+        $curl_command \
+            -X PATCH "https://${radix_api_fqdn}/api/v1/applications/${app}/environments/${env}/components/${component}/envvars" \
             -f \
             -H "accept: application/json" \
             -H "Authorization: Bearer ${access_token}" \
@@ -39,7 +47,7 @@ function updateComponentEnvVar() {
                 return 1
             fi
         fi
-        
+
         break
     done
 
