@@ -15,6 +15,9 @@
 #   WEB_COMPONENT           (Mandatory)
 #   RADIX_WEB_CONSOLE_ENV   (Mandatory)
 
+# Optional:
+# - STAGING         : Whether or not to use staging certificate. true/false. Default false.
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
@@ -88,6 +91,12 @@ echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 
+# Optional inputs
+
+if [[ -z "$STAGING" ]]; then
+    STAGING=false
+fi
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -143,8 +152,8 @@ function updateIpsEnvVars() {
 }
 
 ### MAIN
-updateIpsEnvVars "${EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_OUTBOUND_NAME}" || exit 1
-updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAME}" || exit 1
+updateIpsEnvVars "${EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_OUTBOUND_NAME}" STAGING="$STAGING" || exit 1
+updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAME}" STAGING="$STAGING" || exit 1
 
 # Restart deployment for web component
 printf "Restarting web deployment...\n"
