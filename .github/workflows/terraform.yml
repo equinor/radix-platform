@@ -202,7 +202,7 @@ jobs:
             changesOut+="No changes. Your infrastructure matches the configuration. <br/>"
           fi
 
-          out+="$createOut $destroyOut $updateOut $changesOut"
+          out="$createOut $destroyOut $updateOut $changesOut"
 
           echo "plan=$(echo ${out})" >> $GITHUB_OUTPUT
 
