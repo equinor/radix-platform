@@ -226,24 +226,111 @@ sql_database = {
 }
 
 #######################################################################################
+### MYSQL Flexible Server
+###
+
+mysql_flexible_server = {
+  "s941-radix-grafana-dev" = {
+    name  = "s941-radix-grafana-dev"
+    fw_rule = false
+    fw_secret = "S941-radix-grafana-dev-admin-password"
+  }
+#  "s941-radix-grafana-playground" = {
+#     name  = "s941-radix-grafana-playground"
+#     fw_rule = false
+#     fw_secret = "S941-radix-grafana-playground-admin-password"
+#   }
+
+}
+
+#######################################################################################
+### MYSQL Server
+###
+
+mysql_server = {
+  "mysql-radix-grafana-dev" = {
+    name  = "mysql-radix-grafana-dev"
+    fw_rule = true
+    fw_secret = "mysql-radix-grafana-dev-ip"
+  }
+
+}
+
+#######################################################################################
 ### Key Vault
 ###
 
 key_vault = {
-  "cadb-admin-dev" = {
-    name = "radix-cost-allocation-db-admin"
+  "kv-radix-monitoring-dev" = {
+    name    = "kv-radix-monitoring-dev"
+    rg_name = "monitoring"
   }
-  "cadb-admin-playground" = {
-    name = "radix-cost-allocation-db-admin-playground"
+    "radix-vault-dev" = {
+    name    = "radix-vault-dev"
+    rg_name = "common"
   }
-  "vs-db-admin-dev" = {
-    name = "radix-vulnerability-scan-db-admin"
+  # "cadb-admin-dev" = {
+  #   name = "radix-cost-allocation-db-admin"
+  # }
+  # "cadb-admin-playground" = {
+  #   name = "radix-cost-allocation-db-admin-playsS941_radixground"
+  # }
+  # "vs-db-admin-dev" = {
+  #   name = "radix-vulnerability-scan-db-admin"
+  # }
+  # "vs-db-admin-playground" = {sS941_radix
+  #   name = "radix-vulnerability-scan-db-admin-playground"
+  # }
+}
+
+key_secrets = {
+  "mysql-radix-grafana-dev" = {
+    name  = "grafana-database-password"
+    vault = "kv-radix-monitoring-dev"
   }
-  "vs-db-admin-playground" = {
-    name = "radix-vulnerability-scan-db-admin-playground"
+  "mysql-radix-grafana-dev-ip" = {
+    name  = "mysql-radix-grafana-dev-ip"
+    vault = "kv-radix-monitoring-dev"
+  }
+  "s941-radix-grafana-dev" = {
+    name  = "S941-radix-grafana-dev-admin-password"
+    vault = "kv-radix-monitoring-dev"
+  }
+  "s941-radix-grafana-playground" = {
+    name  = "S941-radix-grafana-playground-admin-password"
+    vault = "kv-radix-monitoring-dev"
   }
 }
 
+
+firewall_rules = {
+  "equinor-wifi" = {
+    start_ip_address = "143.97.110.1"
+    end_ip_address = "143.97.110.1"
+  }
+  "equinor_north_europe" = {
+    start_ip_address = "40.85.141.13"
+    end_ip_address = "40.85.141.13"
+  }
+  "ext-mon-dev" = {
+    start_ip_address = "20.54.47.154"
+    end_ip_address = "20.54.47.154"
+  }
+  "runnerIp" = {
+    start_ip_address = "20.36.193.46"
+    end_ip_address = "20.36.193.46"
+  }
+  "weekly-42-b" = {
+    start_ip_address = "20.67.128.243"
+    end_ip_address = "20.67.128.243"
+  }
+  "Enable-Azure-services" = {
+    start_ip_address = "0.0.0.0"
+    end_ip_address = "0.0.0.0"
+  }
+
+
+}
 #######################################################################################
 ### Virtual networks
 ###
