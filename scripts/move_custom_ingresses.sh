@@ -325,7 +325,7 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
         az aks update --resource-group $CGROUP --name $CLUSTER --tags autostartupschedule="" --no-wait
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
     printf "Tag cluster $DEST_CLUSTER to autostartupschedule\n"
-    az aks update --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER --tags autostartupschedule="true" --no-wait
+    az resource tag --ids /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER} --tags autostartupschedule=true --is-incremental
 fi
 
 echo ""
