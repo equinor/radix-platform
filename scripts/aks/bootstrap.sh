@@ -654,7 +654,7 @@ printf "Done.\n"
 printf "Tagging cluster ${CLUSTER_NAME} with tag migrationStrategy=${MIGRATION_STRATEGY}...\n"
 az resource tag \
     --ids /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME} \
-    --tags migrationStrategy="${MIGRATION_STRATEGY}"  &>/dev/null
+    --tags migrationStrategy="${MIGRATION_STRATEGY}" --is-incremental  &>/dev/null
 printf "Done.\n"
 
 #######################################################################################
