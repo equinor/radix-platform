@@ -31,14 +31,14 @@ on:
           - "aa"
         default: at
 
-      target:
-        description: "Target"
+      source_cluster:
+        description: "Source cluster"
         required: true
         type: string
         default: weekly-01
 
-      destination:
-        description: "Destination"
+      dest_cluster:
+        description: "Destination cluster"
         required: true
         type: string
         default: weekly-02
@@ -54,8 +54,8 @@ jobs:
           ENVIRONMENT="${{ inputs.environment }}" \
           MIGRATION_STRATEGY="${{ inputs.migration_strategy }}" \
           SUBSCRIPTION="${{ inputs.subscription }}" \
-          TARGET_NAME="${{ inputs.target }}" \
-          DESTINATION_NAME="${{ inputs.destination }}" \
+          SOURCE_CLUSTER="${{ inputs.source_cluster }}" \
+          DEST_CLUSTER="${{ inputs.dest_cluster }}" \
           .github/workflows/scripts/copy.sh
 
       - name: Create Pull Request
@@ -67,18 +67,18 @@ jobs:
           body: |
             **${{ github.workflow }}:**
 
-            Target: ${{ inputs.target }}
-            Destination: ${{ inputs.destination }}
+            SOURCE_CLUSTER: ${{ inputs.source_cluster }}
+            DEST_CLUSTER: ${{ inputs.dest_cluster }}
 
             Label/Relabel PR with `deploy` to start terraform planning actions.
 
             `Merge pull request` to apply terraform.
-          branch: migrate_${{ inputs.target }}_${{ inputs.destination }}
-          commit-message: "[Migrate] Copy: ${{ inputs.target }} -> ${{ inputs.destination }}"
+          branch: migrate_${{ inputs.source_cluster }}_${{ inputs.dest_cluster }}
+          commit-message: "[Migrate] SOURCE_CLUSTER: ${{ inputs.source_cluster }}, DEST_CLUSTER: ${{ inputs.dest_cluster }}"
           committer: GitHub <noreply@github.com>
           delete-branch: true
           labels: |
             ${{ inputs.environment }}
           reviewers: equinor/omnia-radix
-          title: '[Migrate] Target: ${{ inputs.target }}, Destination: ${{ inputs.destination }}'
+          title: '[Migrate] SOURCE_CLUSTER: ${{ inputs.source_cluster }}, DEST_CLUSTER: ${{ inputs.dest_cluster }}'
           token: ${{ github.token }}
