@@ -59,7 +59,7 @@ locals {
   RADIX_PLATFORM_REPOSITORY_PATH = "../../../../../.."
   TERRAFORM_ROOT_PATH            = "../../../../.."
   WHITELIST_IPS                  = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
-  TAGS                           = local.MIGRATION_STRATEGY == "aa" ? var.TAGS : {}
+  TAGS_AA                           = local.MIGRATION_STRATEGY == "aa" ? var.TAGS_AA : var.TAGS_AT
 }
 
 data "azurerm_key_vault" "keyvault_env" {
