@@ -101,7 +101,12 @@ variable "RADIX_WEB_CONSOLE_ENVIRONMENTS" {
   type        = list(string)
 }
 
-variable "TAGS" {
-  description = "tags"
+variable "TAGS_AA" {
+  description = "Active cluster tags"
+  type        = map(string)
+}
+
+variable "TAGS_AT" {
+  description = "Active test cluster tags"
   type        = map(string)
 }

@@ -10,7 +10,8 @@ AKS_SYSTEM_NODE_POOL_NAME = "systempool"
 AKS_USER_NODE_MAX_COUNT   = "5"
 AKS_USER_NODE_MIN_COUNT   = "2"
 AKS_USER_NODE_POOL_NAME   = "userpool"
-TAGS                      = { "autostartupschedule " = "true" }
+TAGS_AA                   = { "autostartupschedule " = "true", "migrationStrategy" = "aa" }
+TAGS_AT                   = { "autostartupschedule " = "false", "migrationStrategy" = "at" }
 
 #######################################################################################
 ### Zone and cluster settings
