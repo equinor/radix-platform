@@ -38,6 +38,12 @@ AZ_SUBSCRIPTION_ID = "16ede44b-1f74-40a5-b428-46cca9a5741b"
 AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 
 #######################################################################################
+### AAD
+###
+
+AAD_RADIX_GROUP = "radix"
+
+#######################################################################################
 ### System users
 ###
 
@@ -161,6 +167,16 @@ storage_accounts = {
   }
 }
 
+SA_INFRASTRUCTURE = {
+  "s941radixinfra" = {
+    name                            = "s941radixinfra"
+    rg_name                         = "s941-tfstate"
+    backup_center                   = true
+    repl                            = "RAGRS"
+    allow_nested_items_to_be_public = false
+  }
+}
+
 #######################################################################################
 ### SQL Server
 ###
@@ -269,6 +285,7 @@ vnets = {
 ### Service principal
 ###
 
+APP_GITHUB_DEV_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance"
 SP_GITHUB_DEV_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
 
 #######################################################################################
@@ -276,3 +293,11 @@ SP_GITHUB_DEV_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
 ###
 
 KV_RADIX_VAULT_DEV = "radix-vault-dev"
+
+#######################################################################################
+### Github
+###
+
+GH_ORGANIZATION = "equinor"
+GH_REPOSITORY   = "radix-platform"
+GH_ENVIRONMENT  = "operations"
