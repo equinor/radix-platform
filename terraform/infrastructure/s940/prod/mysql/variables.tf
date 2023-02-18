@@ -4,7 +4,7 @@ variable "mysql_flexible_server" {
     name                  = string
     rg_name               = optional(string, "monitoring")
     location              = optional(string, "northeurope")
-    administrator_login   = optional(string, "radixadmin@radixgrafana")
+    administrator_login   = optional(string, "radixadmin")
     backup_retention_days = optional(number, 7)
     sku_name              = optional(string, "B_Standard_B1ms")
     version               = optional(string, "5.7")

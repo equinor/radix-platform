@@ -200,6 +200,19 @@ key_vault = {
   }
 }
 
+#######################################################################################
+### MYSQL Flexible Server
+###
+
+mysql_flexible_server = {
+  "s941-radix-grafana-dev" = {
+    name  = "s941-radix-grafana-dev"
+  }
+  "s941-radix-grafana-playground" = {
+    name  = "s941-radix-grafana-playground"
+  }
+}
+
 key_secrets = {
   "sql-radix-cost-allocation-c2-prod" = {
     name  = "radix-cost-allocation-db-admin"

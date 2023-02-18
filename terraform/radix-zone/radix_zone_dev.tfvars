@@ -232,15 +232,10 @@ sql_database = {
 mysql_flexible_server = {
   "s941-radix-grafana-dev" = {
     name  = "s941-radix-grafana-dev"
-    fw_rule = false
-    fw_secret = "S941-radix-grafana-dev-admin-password"
   }
-#  "s941-radix-grafana-playground" = {
-#     name  = "s941-radix-grafana-playground"
-#     fw_rule = false
-#     fw_secret = "S941-radix-grafana-playground-admin-password"
-#   }
-
+  "s941-radix-grafana-playground" = {
+    name  = "s941-radix-grafana-playground"
+  }
 }
 
 #######################################################################################
@@ -251,7 +246,7 @@ mysql_server = {
   "mysql-radix-grafana-dev" = {
     name  = "mysql-radix-grafana-dev"
     fw_rule = true
-    fw_secret = "mysql-radix-grafana-dev-ip"
+    kv_secret = "grafana-database-password"
   }
 
 }
@@ -269,37 +264,23 @@ key_vault = {
     name    = "radix-vault-dev"
     rg_name = "common"
   }
-  # "cadb-admin-dev" = {
-  #   name = "radix-cost-allocation-db-admin"
-  # }
-  # "cadb-admin-playground" = {
-  #   name = "radix-cost-allocation-db-admin-playsS941_radixground"
-  # }
-  # "vs-db-admin-dev" = {
-  #   name = "radix-vulnerability-scan-db-admin"
-  # }
-  # "vs-db-admin-playground" = {sS941_radix
-  #   name = "radix-vulnerability-scan-db-admin-playground"
-  # }
+    "kv-radix-monitoring-dev" = {
+    name    = "kv-radix-monitoring-dev"
+    rg_name = "monitoring"
+  }
 }
 
 key_secrets = {
   "mysql-radix-grafana-dev" = {
-    name  = "grafana-database-password"
-    vault = "kv-radix-monitoring-dev"
   }
-  "mysql-radix-grafana-dev-ip" = {
-    name  = "mysql-radix-grafana-dev-ip"
-    vault = "kv-radix-monitoring-dev"
-  }
+
   "s941-radix-grafana-dev" = {
-    name  = "S941-radix-grafana-dev-admin-password"
-    vault = "kv-radix-monitoring-dev"
+
   }
   "s941-radix-grafana-playground" = {
-    name  = "S941-radix-grafana-playground-admin-password"
-    vault = "kv-radix-monitoring-dev"
+
   }
+
 }
 
 
