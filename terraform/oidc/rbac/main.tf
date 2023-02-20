@@ -34,9 +34,23 @@ resource "azuread_service_principal" "SP_GITHUB_DEV_CLUSTER" {
   owners                       = azuread_application.APP_GITHUB_DEV_CLUSTER.owners
 }
 
-resource "azurerm_role_assignment" "SP_GITHUB_DEV_CLUSTER_ROLE" {
+resource "azurerm_role_assignment" "RA_CONTRIBUTOR_ROLE" {
   scope                = data.azurerm_subscription.AZ_SUBSCRIPTION.id
   role_definition_name = "Contributor"
+  principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
+}
+
+resource "azurerm_role_assignment" "RA_STORAGE_BLOB_DATA_OWNER" {
+  for_each             = var.SA_INFRASTRUCTURE
+  scope                = azurerm_storage_account.SA_INFRASTRUCTURE[each.key].id
+  role_definition_name = "Storage Blob Data Owner"
+  principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
+}
+
+resource "azurerm_role_assignment" "RA_USER_ACCESS_ADMINISTRATOR" {
+  for_each             = var.SA_INFRASTRUCTURE
+  scope                = azurerm_storage_account.SA_INFRASTRUCTURE[each.key].id
+  role_definition_name = "User Access Administrator"
   principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
 }
 
