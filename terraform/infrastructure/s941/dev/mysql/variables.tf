@@ -4,12 +4,13 @@ variable "mysql_flexible_server" {
     name                  = string
     rg_name               = optional(string, "monitoring")
     location              = optional(string, "northeurope")
-    administrator_login   = optional(string, "radixadmin@radixgrafana")
+    administrator_login   = optional(string, "radixadmin")
     backup_retention_days = optional(number, 7)
     sku_name              = optional(string, "B_Standard_B1ms")
     version               = optional(string, "5.7")
     zone                  = optional(number, 2)
-    #vault                 = optional(string, "radix-vault-dev") # Vault that keeps the secret
+    secret                = string
+    vault                 = optional(string, "kv-radix-monitoring-dev") # Vault that keeps the secret
     #secret                = optional(string, "grafana-database-password")
   }))
   default = {}
@@ -30,6 +31,8 @@ variable "mysql_server" {
     ssl_minimal_tls_version_enforced = optional(string, "TLSEnforcementDisabled")
     storage_mb          = optional(number, 102400)
     tags                = optional(map(string), {})
+    secret              = string
+    vault                 = optional(string, "kv-radix-monitoring-dev") # Vault that keeps the secret
     # vault               = optional(string, "radix-vault-dev") # Vault that keeps the secret
     # fw_rule             = optional(bool,false)
     # secret              = optional(string, "grafana-database-password")

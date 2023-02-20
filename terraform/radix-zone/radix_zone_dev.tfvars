@@ -232,9 +232,12 @@ sql_database = {
 mysql_flexible_server = {
   "s941-radix-grafana-dev" = {
     name  = "s941-radix-grafana-dev"
+    secret = "s941-radix-grafana-dev-mysql-admin-pwd"
   }
   "s941-radix-grafana-playground" = {
     name  = "s941-radix-grafana-playground"
+    secret = "s941-radix-grafana-playground-mysql-admin-pwd"
+    
   }
 }
 
@@ -246,7 +249,7 @@ mysql_server = {
   "mysql-radix-grafana-dev" = {
     name  = "mysql-radix-grafana-dev"
     fw_rule = true
-    kv_secret = "grafana-database-password"
+    secret = "mysql-grafana-dev-admin-password"
   }
 
 }
@@ -269,21 +272,6 @@ key_vault = {
     rg_name = "monitoring"
   }
 }
-
-key_secrets = {
-  "mysql-radix-grafana-dev" = {
-  }
-
-  "s941-radix-grafana-dev" = {
-
-  }
-  "s941-radix-grafana-playground" = {
-
-  }
-
-}
-
-
 firewall_rules = {
   "equinor-wifi" = {
     start_ip_address = "143.97.110.1"
