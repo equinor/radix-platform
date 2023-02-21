@@ -1,15 +1,4 @@
-## PURPOSE
-
-Creates:
-
-- Service Principal
-  - roles
-    - Subscription
-      - Contributor
-- Application
-  - Federated identity
-
-## How to use
+## How to use (locally)
 
 Run below commands to Initialize terraform in current directory
 
