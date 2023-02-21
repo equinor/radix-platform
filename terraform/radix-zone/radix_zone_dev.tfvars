@@ -38,6 +38,12 @@ AZ_SUBSCRIPTION_ID = "16ede44b-1f74-40a5-b428-46cca9a5741b"
 AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 
 #######################################################################################
+### AAD
+###
+
+AAD_RADIX_GROUP = "radix"
+
+#######################################################################################
 ### System users
 ###
 
@@ -46,6 +52,7 @@ MI_AKSKUBELET = [{
   id        = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-development-northeurope"
   object_id = "89541870-e10a-403c-8d4c-d80e92dd5eb7"
 }]
+
 MI_AKS = [{
   client_id = "1ff97b0f-f824-47d9-a98f-a045b6a759bc"
   id        = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-development-northeurope",
@@ -139,6 +146,7 @@ storage_accounts = {
     backup_center                   = true
     repl                            = "RAGRS"
     allow_nested_items_to_be_public = false
+    create_with_rbac                = true
     firewall                        = false
   }
   "s941radixvelerodev" = {
@@ -268,10 +276,19 @@ vnets = {
 ### Service principal
 ###
 
-SP_GITHUB_DEV_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
+APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance"
+SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
 
 #######################################################################################
 ### Keyvaults
 ###
 
-KV_RADIX_VAULT_DEV = "radix-vault-dev"
+KV_RADIX_VAULT = "radix-vault-dev"
+
+#######################################################################################
+### Github
+###
+
+GH_ORGANIZATION = "equinor"
+GH_REPOSITORY   = "radix-platform"
+GH_ENVIRONMENT  = "operations"
