@@ -25,23 +25,6 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
 }
 
 #######################################################################################
-### Virtual Network
-###
-
-data "azurerm_virtual_network" "vnets" {
-  for_each            = var.vnets
-  name                = each.value["vnet_name"]
-  resource_group_name = each.value["rg_name"]
-}
-
-data "azurerm_subnet" "subnets" {
-  for_each             = var.vnets
-  name                 = each.value["subnet_name"]
-  resource_group_name  = each.value["rg_name"]
-  virtual_network_name = each.value["vnet_name"]
-}
-
-#######################################################################################
 ### Storage Accounts
 ###
 
@@ -99,7 +82,6 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
   storage_account_id         = azurerm_storage_account.storageaccounts[each.key].id
   default_action             = "Deny"
   ip_rules                   = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
-  virtual_network_subnet_ids = values(data.azurerm_subnet.subnets)[*].id
   bypass                     = ["AzureServices"]
 }
 

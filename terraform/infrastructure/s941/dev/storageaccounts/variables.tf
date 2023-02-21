@@ -37,11 +37,4 @@ variable "storage_accounts" {
   default = {}
 }
 
-variable "vnets" {
-  type = map(object({
-    vnet_name   = string
-    rg_name     = optional(string, "clusters")
-    subnet_name = string
-  }))
-  default = {}
-}
+
