@@ -47,6 +47,7 @@ variable "SA_INFRASTRUCTURE" {
     versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
     change_feed_days                  = optional(number, 35)
+    skip_creation                     = optional(bool, false)
   }))
   default = {}
 }

@@ -146,6 +146,14 @@ storage_accounts = {
     repl                            = "RAGRS"
     allow_nested_items_to_be_public = false
     skip_creation                   = true
+    firewall                        = false
+  }
+  "s941radixvelerodev" = {
+    name                            = "s941radixvelerodev"
+    rg_name                         = "backups"
+    backup_center                   = true
+    repl                            = "GRS"
+    allow_nested_items_to_be_public = false
   }
   "s941sqllogsdev" = {
     name          = "s941sqllogsdev"
