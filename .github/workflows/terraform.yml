@@ -86,7 +86,7 @@ jobs:
     outputs:
       tf-fmt: ${{ steps.fmt.outcome }}
       tf-init: ${{ steps.init.outcome }}
-      tf-validate: ${{ steps.validate.outputs.stdout }}
+      tf-validate: ${{ steps.validate.outcome }}
       tf-plan: ${{ steps.plan.outcome }}
       plan: ${{ steps.get_content.outputs.plan }}
 
@@ -144,7 +144,6 @@ jobs:
         run: |
           terraform plan \
             --var-file=${{ env.root_src }}/terraform/radix-zone/radix_zone_dev.tfvars \
-            -lock=false \
             -no-color \
             -out tf.plan
         continue-on-error: true
@@ -162,17 +161,11 @@ jobs:
 
           create=""
           createOut=""
-
           destroy=""
           destroyOut=""
-
           update=""
           updateOut=""
-
           changesOut=""
-          # create="The following resources will be created <br/>"
-          # destroy="The following resources will be destroyed <br/>"
-          # update="The following resources will be updated <br/>"
 
           while read -r line; do
             if [[ "$line" == *"will be created"* ]]; then
@@ -198,17 +191,17 @@ jobs:
             updateOut+="The following resources will be updated <br/> ${update}"
           fi
 
-          if [ ${#numberOfChanges} -eq 0 ]; then
+          if [ ${numberOfChanges} -eq 0 ]; then
             changesOut+="No changes. Your infrastructure matches the configuration. <br/>"
           fi
 
-          out+="$createOut $destroyOut $updateOut $changesOut"
+          out="$createOut $destroyOut $updateOut $changesOut"
 
           echo "plan=$(echo ${out})" >> $GITHUB_OUTPUT
 
       - name: Terraform Apply
         if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule'
-        run: terraform apply --var-file=../../../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve -lock=false
+        run: terraform apply --var-file=../../../../../radix-zone/radix_zone_${{ inputs.radix_environment }}.tfvars -auto-approve
 
       - name: Revoke GitHub IP on StorageAccount
         run: |

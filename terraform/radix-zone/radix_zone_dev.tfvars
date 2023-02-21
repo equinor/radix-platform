@@ -2,7 +2,7 @@
 ### AKS
 ###
 
-AKS_KUBERNETES_VERSION    = "1.23.8"
+AKS_KUBERNETES_VERSION    = "1.23.12"
 AKS_NODE_POOL_VM_SIZE     = "Standard_B4ms"
 AKS_SYSTEM_NODE_MAX_COUNT = "2"
 AKS_SYSTEM_NODE_MIN_COUNT = "1"
@@ -10,6 +10,8 @@ AKS_SYSTEM_NODE_POOL_NAME = "systempool"
 AKS_USER_NODE_MAX_COUNT   = "5"
 AKS_USER_NODE_MIN_COUNT   = "2"
 AKS_USER_NODE_POOL_NAME   = "userpool"
+TAGS_AA                   = { "autostartupschedule " = "true", "migrationStrategy" = "aa" }
+TAGS_AT                   = { "autostartupschedule " = "false", "migrationStrategy" = "at" }
 
 #######################################################################################
 ### Zone and cluster settings
@@ -33,6 +35,7 @@ AZ_RESOURCE_GROUP_COMMON   = "common"
 ###
 
 AZ_SUBSCRIPTION_ID = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 
 #######################################################################################
 ### System users
@@ -68,6 +71,50 @@ AZ_PRIVATE_DNS_ZONES = [
   "privatelink.vaultcore.azure.net",
   "private.radix.equinor.com"
 ]
+
+#######################################################################################
+### Resouce Groups
+###
+
+resource_groups = {
+  "backups" = {
+    name = "backups"
+  }
+  "clusters" = {
+    name = "clusters"
+  }
+  "cluster-vnet-hub-dev" = {
+    name = "cluster-vnet-hub-dev"
+  }
+  "cluster-vnet-hub-playground" = {
+    name = "cluster-vnet-hub-playground"
+  }
+  "common" = {
+    name = "common"
+  }
+  "cost-allocation" = {
+    name = "cost-allocation"
+  }
+  "dashboards" = {
+    name = "dashboards"
+  }
+  "monitoring" = {
+    name = "monitoring"
+  }
+  "S941-log" = {
+    name     = "S941-log"
+    location = "westeurope"
+  }
+  "s941-tfstate" = {
+    name = "s941-tfstate"
+  }
+  "Logs-Dev" = {
+    name = "Logs-Dev"
+  }
+  "vulnerability-scan" = {
+    name = "vulnerability-scan"
+  }
+}
 
 #######################################################################################
 ### Storage Accounts
@@ -113,3 +160,118 @@ storage_accounts = {
   }
 }
 
+#######################################################################################
+### SQL Server
+###
+
+sql_server = {
+  "sql-radix-cost-allocation-dev" = {
+    name                = "sql-radix-cost-allocation-dev"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
+  }
+  "sql-radix-cost-allocation-playground" = {
+    name                = "sql-radix-cost-allocation-playground"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin-playground"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
+  }
+  "sql-radix-vulnerability-scan-dev" = {
+    name     = "sql-radix-vulnerability-scan-dev"
+    rg_name  = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin"
+    identity = false
+  }
+  "sql-radix-vulnerability-scan-playground" = {
+    name     = "sql-radix-vulnerability-scan-playground"
+    rg_name  = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin-playground"
+    identity = false
+  }
+}
+
+#######################################################################################
+### SQL Database
+###
+
+sql_database = {
+  "sql-radix-cost-allocation-dev" = {
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-dev"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-cost-allocation-playground" = {
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-playground"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-vulnerability-scan-dev" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-dev"
+  }
+  "sql-radix-vulnerability-scan-playground" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-playground"
+  }
+}
+
+#######################################################################################
+### Key Vault
+###
+
+key_vault = {
+  "cadb-admin-dev" = {
+    name = "radix-cost-allocation-db-admin"
+  }
+  "cadb-admin-playground" = {
+    name = "radix-cost-allocation-db-admin-playground"
+  }
+  "vs-db-admin-dev" = {
+    name = "radix-vulnerability-scan-db-admin"
+  }
+  "vs-db-admin-playground" = {
+    name = "radix-vulnerability-scan-db-admin-playground"
+  }
+}
+
+#######################################################################################
+### Virtual networks
+###
+
+vnets = {
+  "vnet-playground-07" = {
+    vnet_name   = "vnet-playground-07"
+    subnet_name = "subnet-playground-07"
+  }
+  "vnet-weekly-03" = {
+    vnet_name   = "vnet-weekly-03"
+    subnet_name = "subnet-weekly-03"
+  }
+  "vnet-weekly-04" = {
+    vnet_name   = "vnet-weekly-04"
+    subnet_name = "subnet-weekly-04"
+  }
+}
+
+#######################################################################################
+### Service principal
+###
+
+SP_GITHUB_DEV_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
+
+#######################################################################################
+### Keyvaults
+###
+
+KV_RADIX_VAULT_DEV = "radix-vault-dev"

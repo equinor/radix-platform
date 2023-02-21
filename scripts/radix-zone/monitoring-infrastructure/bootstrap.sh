@@ -164,8 +164,10 @@ function create_keyvault(){
 
 create_resource_groups
 create_keyvault
-create_monitoring_service_principal "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
-create_grafana_azure_secret "$APP_REGISTRATION_GRAFANA" "radix-grafana-azure" "Grafana Azure secret"
+create_monitoring_service_principal "$APP_REGISTRATION_MONITORING" "Grafana Azure integration"
+create_monitoring_ar_secret "$APP_REGISTRATION_MONITORING" "radix-grafana-azure" "Grafana Azure secret"
+create_monitoring_service_principal "$APP_REGISTRATION_GRAFANA" "Grafana Oauth, main app for user authentication to Grafana"
+create_monitoring_ar_secret "$APP_REGISTRATION_GRAFANA" "$APP_REGISTRATION_GRAFANA" "Grafana OAuth secret"
 create_grafana_mysql
 
 echo ""

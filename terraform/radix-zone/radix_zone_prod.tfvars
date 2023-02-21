@@ -12,6 +12,81 @@ AZ_LOCATION              = "northeurope"
 AZ_RESOURCE_GROUP_COMMON = "common"
 
 #######################################################################################
+### Resouce Groups
+###
+
+resource_groups = {
+  "backups" = {
+    name = "backups"
+  }
+  "cluster-vnet-hub-prod" = {
+    name = "cluster-vnet-hub-prod"
+  }
+  "clusters" = {
+    name = "clusters"
+  }
+  "common" = {
+    name = "common"
+  }
+  "cost-allocation" = {
+    name = "cost-allocation"
+  }
+  "monitoring" = {
+    name = "monitoring"
+  }
+  "s940-tfstate" = {
+    name = "s940-tfstate"
+  }
+  "vulnerability-scan" = {
+    name = "vulnerability-scan"
+  }
+  "clusters-westeurope" = {
+    name     = "clusters-westeurope"
+    location = "westeurope"
+  }
+  "common-westeurope" = {
+    name     = "common-westeurope"
+    location = "westeurope"
+  }
+  "cost-allocation-westeurope" = {
+    name     = "cost-allocation-westeurope"
+    location = "westeurope"
+  }
+  "dashboards" = {
+    name     = "dashboards"
+    location = "westeurope"
+  }
+  "Logs" = {
+    name     = "Logs"
+    location = "westeurope"
+  }
+  "logs-westeurope" = {
+    name     = "logs-westeurope"
+    location = "westeurope"
+  }
+  "monitoring-westeurope" = {
+    name     = "monitoring-westeurope"
+    location = "westeurope"
+  }
+  "radix-private-links-c2-prod" = {
+    name     = "radix-private-links-c2-prod"
+    location = "westeurope"
+  }
+  "rg-protection-we" = {
+    name     = "rg-protection-we"
+    location = "westeurope"
+  }
+  "S940-log" = {
+    name     = "S940-log"
+    location = "westeurope"
+  }
+  "vulnerability-scan-westeurope" = {
+    name     = "vulnerability-scan-westeurope"
+    location = "westeurope"
+  }
+}
+
+#######################################################################################
 ### Storage Accounts
 ###
 
@@ -72,6 +147,106 @@ storage_accounts = {
     rg_name       = "common"
     backup_center = true
     life_cycle    = false
+  }
+}
+
+#######################################################################################
+### SQL Server
+###
+
+sql_server = {
+  "sql-radix-cost-allocation-c2-prod" = {
+    name                = "sql-radix-cost-allocation-c2-prod"
+    rg_name             = "cost-allocation-westeurope"
+    location            = "westeurope"
+    db_admin            = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
+    identity = false
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name                = "sql-radix-cost-allocation-prod"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
+  }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name     = "sql-radix-vulnerability-scan-c2-prod"
+    rg_name  = "vulnerability-scan-westeurope"
+    location = "westeurope"
+    db_admin = "radix-vulnerability-scan-db-admin"
+    identity = false
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name     = "sql-radix-vulnerability-scan-prod"
+    rg_name  = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin"
+  }
+}
+
+key_vault = {
+  "radix-vault-c2-prod" = {
+    name    = "radix-vault-c2-prod"
+    rg_name = "common-westeurope"
+  }
+  "radix-vault-prod" = {
+    name    = "radix-vault-prod"
+    rg_name = "common"
+  }
+}
+
+key_secrets = {
+  "sql-radix-cost-allocation-c2-prod" = {
+    name  = "radix-cost-allocation-db-admin"
+    vault = "radix-vault-c2-prod"
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name  = "radix-cost-allocation-db-admin"
+    vault = "radix-vault-prod"
+  }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name  = "radix-vulnerability-scan-db-admin"
+    vault = "radix-vault-c2-prod"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name  = "radix-vulnerability-scan-db-admin"
+    vault = "radix-vault-prod"
+  }
+}
+
+
+#######################################################################################
+### SQL Database
+###
+sql_database = {
+  "sql-radix-cost-allocation-c2-prod" = {
+    name     = "sqldb-radix-cost-allocation"
+    server   = "sql-radix-cost-allocation-c2-prod"
+    sku_name = "S0"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-prod"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-c2-prod"
+    sku_name = "S0"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-prod"
   }
 }
 
