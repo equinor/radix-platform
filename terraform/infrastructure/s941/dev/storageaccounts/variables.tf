@@ -33,15 +33,7 @@ variable "storage_accounts" {
     versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
     change_feed_days                  = optional(number, 35)
-  }))
-  default = {}
-}
-
-variable "vnets" {
-  type = map(object({
-    vnet_name   = string
-    rg_name     = optional(string, "clusters")
-    subnet_name = string
+    skip_creation                     = optional(bool, false)
   }))
   default = {}
 }

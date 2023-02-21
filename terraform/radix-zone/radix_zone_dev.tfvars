@@ -132,15 +132,6 @@ storage_accounts = {
     rg_name       = "Logs-Dev"
     backup_center = true
   }
-  "radixinfradev" = {
-    name                      = "radixinfradev"
-    rg_name                   = "s941-tfstate"
-    backup_center             = false
-    repl                      = "GRS"
-    kind                      = "BlobStorage"
-    shared_access_key_enabled = false
-    firewall                  = false
-  }
   "radixvelerodev" = {
     name          = "radixvelerodev"
     rg_name       = "backups"
@@ -154,6 +145,7 @@ storage_accounts = {
     backup_center                   = true
     repl                            = "RAGRS"
     allow_nested_items_to_be_public = false
+    skip_creation                   = true
   }
   "s941sqllogsdev" = {
     name          = "s941sqllogsdev"
@@ -174,6 +166,7 @@ SA_INFRASTRUCTURE = {
     backup_center                   = true
     repl                            = "RAGRS"
     allow_nested_items_to_be_public = false
+    skip_creation                   = true
   }
 }
 
