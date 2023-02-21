@@ -27,7 +27,7 @@ variable "GH_ENVIRONMENT" {
   type        = string
 }
 
-variable "SA_INFRASTRUCTURE" {
+variable "storage_accounts" {
   type = map(object({
     name                              = string                          # Mandatory
     rg_name                           = string                          # Mandatory
@@ -47,7 +47,7 @@ variable "SA_INFRASTRUCTURE" {
     versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
     change_feed_days                  = optional(number, 35)
-    skip_creation                     = optional(bool, false)
+    create_with_rbac                  = optional(bool, false)
   }))
   default = {}
 }

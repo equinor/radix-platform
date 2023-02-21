@@ -41,14 +41,14 @@ resource "azurerm_role_assignment" "RA_CONTRIBUTOR_ROLE" {
 }
 
 resource "azurerm_role_assignment" "RA_STORAGE_BLOB_DATA_OWNER" {
-  for_each             = var.SA_INFRASTRUCTURE
+  for_each             = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
   scope                = azurerm_storage_account.SA_INFRASTRUCTURE[each.key].id
   role_definition_name = "Storage Blob Data Owner"
   principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
 }
 
 resource "azurerm_role_assignment" "RA_USER_ACCESS_ADMINISTRATOR" {
-  for_each             = var.SA_INFRASTRUCTURE
+  for_each             = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
   scope                = azurerm_storage_account.SA_INFRASTRUCTURE[each.key].id
   role_definition_name = "User Access Administrator"
   principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
@@ -66,7 +66,7 @@ resource "azuread_application_federated_identity_credential" "APP_GITHUB_DEV_CLU
 }
 
 resource "azurerm_storage_account" "SA_INFRASTRUCTURE" {
-  for_each                         = var.SA_INFRASTRUCTURE
+  for_each                         = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
   name                             = each.value["name"]
   resource_group_name              = each.value["rg_name"]
   location                         = each.value["location"]
@@ -88,6 +88,7 @@ resource "azurerm_storage_account" "SA_INFRASTRUCTURE" {
 
       dynamic "container_delete_retention_policy" {
         for_each = each.value["container_delete_retention_policy"] == true ? [30] : []
+
         content {
           days = container_delete_retention_policy.value
         }
@@ -100,8 +101,10 @@ resource "azurerm_storage_account" "SA_INFRASTRUCTURE" {
           days = delete_retention_policy.value
         }
       }
+
       dynamic "restore_policy" {
         for_each = each.value["backup_center"] == true ? [30] : []
+
         content {
           days = restore_policy.value
         }
@@ -111,13 +114,13 @@ resource "azurerm_storage_account" "SA_INFRASTRUCTURE" {
 }
 
 resource "azurerm_storage_container" "SA_INFRASTRUCTURE_CONTAINER_CLUSTERS" {
-  for_each             = var.SA_INFRASTRUCTURE
+  for_each             = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
   storage_account_name = each.value["name"]
   name                 = "clusters"
 }
 
 resource "azurerm_storage_container" "SA_INFRASTRUCTURE_CONTAINER_INFRASTRUCTURE" {
-  for_each             = var.SA_INFRASTRUCTURE
+  for_each             = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
   storage_account_name = each.value["name"]
   name                 = "infrastructure"
 }

@@ -52,6 +52,7 @@ MI_AKSKUBELET = [{
   id        = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-development-northeurope"
   object_id = "89541870-e10a-403c-8d4c-d80e92dd5eb7"
 }]
+
 MI_AKS = [{
   client_id = "1ff97b0f-f824-47d9-a98f-a045b6a759bc"
   id        = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-development-northeurope",
@@ -145,7 +146,7 @@ storage_accounts = {
     backup_center                   = true
     repl                            = "RAGRS"
     allow_nested_items_to_be_public = false
-    skip_creation                   = true
+    create_with_rbac                = true
     firewall                        = false
   }
   "s941radixvelerodev" = {
@@ -164,17 +165,6 @@ storage_accounts = {
     name          = "s941sqllogsplayground"
     rg_name       = "common"
     backup_center = true
-  }
-}
-
-SA_INFRASTRUCTURE = {
-  "s941radixinfra" = {
-    name                            = "s941radixinfra"
-    rg_name                         = "s941-tfstate"
-    backup_center                   = true
-    repl                            = "RAGRS"
-    allow_nested_items_to_be_public = false
-    skip_creation                   = true
   }
 }
 

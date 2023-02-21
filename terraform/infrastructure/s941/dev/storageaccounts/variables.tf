@@ -33,7 +33,7 @@ variable "storage_accounts" {
     versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
     change_feed_days                  = optional(number, 35)
-    skip_creation                     = optional(bool, false)
+    create_with_rbac                  = optional(bool, false)
   }))
   default = {}
 }
