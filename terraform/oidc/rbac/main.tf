@@ -16,8 +16,8 @@ data "azuread_group" "radix_group" {
   display_name = var.AAD_RADIX_GROUP
 }
 
-resource "azuread_application" "APP_GITHUB_DEV_CLUSTER" {
-  display_name     = var.APP_GITHUB_DEV_CLUSTER_NAME
+resource "azuread_application" "APP_GITHUB_ACTION_CLUSTER" {
+  display_name     = var.APP_GITHUB_ACTION_CLUSTER_NAME
   owners           = data.azuread_group.radix_group.members
   sign_in_audience = "AzureADandPersonalMicrosoftAccount"
 
@@ -28,34 +28,34 @@ resource "azuread_application" "APP_GITHUB_DEV_CLUSTER" {
   }
 }
 
-resource "azuread_service_principal" "SP_GITHUB_DEV_CLUSTER" {
-  application_id               = azuread_application.APP_GITHUB_DEV_CLUSTER.application_id
+resource "azuread_service_principal" "SP_GITHUB_ACTION_CLUSTER" {
+  application_id               = azuread_application.APP_GITHUB_ACTION_CLUSTER.application_id
   app_role_assignment_required = false
-  owners                       = azuread_application.APP_GITHUB_DEV_CLUSTER.owners
+  owners                       = azuread_application.APP_GITHUB_ACTION_CLUSTER.owners
 }
 
 resource "azurerm_role_assignment" "RA_CONTRIBUTOR_ROLE" {
   scope                = data.azurerm_subscription.AZ_SUBSCRIPTION.id
   role_definition_name = "Contributor"
-  principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
+  principal_id         = azuread_service_principal.SP_GITHUB_ACTION_CLUSTER.object_id
 }
 
 resource "azurerm_role_assignment" "RA_STORAGE_BLOB_DATA_OWNER" {
   for_each             = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
   scope                = azurerm_storage_account.SA_INFRASTRUCTURE[each.key].id
   role_definition_name = "Storage Blob Data Owner"
-  principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
+  principal_id         = azuread_service_principal.SP_GITHUB_ACTION_CLUSTER.object_id
 }
 
 resource "azurerm_role_assignment" "RA_USER_ACCESS_ADMINISTRATOR" {
   for_each             = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
   scope                = azurerm_storage_account.SA_INFRASTRUCTURE[each.key].id
   role_definition_name = "User Access Administrator"
-  principal_id         = azuread_service_principal.SP_GITHUB_DEV_CLUSTER.object_id
+  principal_id         = azuread_service_principal.SP_GITHUB_ACTION_CLUSTER.object_id
 }
 
 resource "azuread_application_federated_identity_credential" "APP_GITHUB_DEV_CLUSTER_FED" {
-  application_object_id = azuread_application.APP_GITHUB_DEV_CLUSTER.object_id
+  application_object_id = azuread_application.APP_GITHUB_ACTION_CLUSTER.object_id
   display_name          = "${var.GH_REPOSITORY}-${var.GH_ENVIRONMENT}"
   description           = "Allow Github to authenticate"
   audiences             = ["api://AzureADTokenExchange"]

@@ -3,7 +3,7 @@ variable "AAD_RADIX_GROUP" {
   type        = string
 }
 
-variable "APP_GITHUB_DEV_CLUSTER_NAME" {
+variable "APP_GITHUB_ACTION_CLUSTER_NAME" {
   description = "Application name"
   type        = string
 }
