@@ -79,15 +79,15 @@ storage_accounts = {
     rg_name       = "Logs-Dev"
     backup_center = true
   }
-  "radixinfradev" = {
-    name                      = "radixinfradev"
-    rg_name                   = "s941-tfstate"
-    backup_center             = false
-    repl                      = "GRS"
-    kind                      = "BlobStorage"
-    shared_access_key_enabled = false
-    firewall                  = false
-  }
+  # "radixinfradev" = {
+  #   name                      = "radixinfradev"
+  #   rg_name                   = "s941-tfstate"
+  #   backup_center             = false
+  #   repl                      = "GRS"
+  #   kind                      = "BlobStorage"
+  #   shared_access_key_enabled = false
+  #   firewall                  = false
+  # }
   "radixvelerodev" = {
     name          = "radixvelerodev"
     rg_name       = "backups"
@@ -100,6 +100,14 @@ storage_accounts = {
     rg_name                         = "s941-tfstate"
     backup_center                   = true
     repl                            = "RAGRS"
+    allow_nested_items_to_be_public = false
+    firewall                        = false
+  }
+  "s941radixvelerodev" = {
+    name                            = "s941radixvelerodev"
+    rg_name                         = "backups"
+    backup_center                   = true
+    repl                            = "GRS"
     allow_nested_items_to_be_public = false
   }
   "s941sqllogsdev" = {
@@ -123,12 +131,12 @@ vnets = {
     vnet_name   = "vnet-playground-07"
     subnet_name = "subnet-playground-07"
   }
-  "vnet-weekly-03" = {
-    vnet_name   = "vnet-weekly-03"
-    subnet_name = "subnet-weekly-03"
+  "vnet-weekly-07" = {
+    vnet_name   = "vnet-weekly-07"
+    subnet_name = "subnet-weekly-07"
   }
-  "vnet-weekly-04" = {
-    vnet_name   = "vnet-weekly-04"
-    subnet_name = "subnet-weekly-04"
+  "vnet-weekly-08" = {
+    vnet_name   = "vnet-weekly-08"
+    subnet_name = "subnet-weekly-08"
   }
 }
