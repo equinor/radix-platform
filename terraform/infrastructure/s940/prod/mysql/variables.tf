@@ -1,4 +1,3 @@
-#az mysql flexible-server list-skus --location northeurope -o table
 variable "mysql_flexible_server" {
   type = map(object({
     name                  = string
@@ -11,31 +10,24 @@ variable "mysql_flexible_server" {
     zone                  = optional(number, 2)
     secret                = string
     vault                 = optional(string, "kv-radix-monitoring-prod") # Vault that keeps the secret
-    #secret                = optional(string, "grafana-database-password")
   }))
   default = {}
 }
 
-
-
-#az mysql server list-skus --location northeurope -o table
 variable "mysql_server" {
   description = "Legacy Mysql servers"
   type = map(object({
-    name                = string
-    rg_name             = optional(string, "monitoring")
-    location            = optional(string, "northeurope")
-    administrator_login = optional(string, "radixadmin")
-    sku_name            = optional(string, "B_Gen5_1")
-    version             = optional(string, "5.7")
+    name                             = string
+    rg_name                          = optional(string, "monitoring")
+    location                         = optional(string, "northeurope")
+    administrator_login              = optional(string, "radixadmin")
+    sku_name                         = optional(string, "B_Gen5_1")
+    version                          = optional(string, "5.7")
     ssl_minimal_tls_version_enforced = optional(string, "TLSEnforcementDisabled")
-    storage_mb          = optional(number, 102400)
-    tags                = optional(map(string), {})
-    secret              = string
-    vault                 = optional(string, "kv-radix-monitoring-prod") # Vault that keeps the secret
-    # vault               = optional(string, "radix-vault-dev") # Vault that keeps the secret
-    # fw_rule             = optional(bool,false)
-    # secret              = optional(string, "grafana-database-password")
+    storage_mb                       = optional(number, 102400)
+    tags                             = optional(map(string), {})
+    secret                           = string
+    vault                            = optional(string, "kv-radix-monitoring-prod") # Vault that keeps the secret
   }))
   default = {}
 }
@@ -57,6 +49,7 @@ variable "key_vault" {
   }))
   default = {}
 }
+
 variable "key_secrets" {
   description = "Name of secrets in a Keyvault."
   type = map(object({
