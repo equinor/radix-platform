@@ -135,6 +135,8 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e "   -  APP_REGISTRATION_GRAFANA         : $APP_REGISTRATION_GRAFANA"
+echo -e "   -  AZ_RESOURCE_GROUP_MONITORING     : $AZ_RESOURCE_GROUP_MONITORING "
+echo -e "   -  AZ_RESOURCE_MON_KEYVAULT         : $AZ_RESOURCE_MON_KEYVAULT "
 echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
 echo -e ""
 echo -e "   > WHO:"
@@ -185,9 +187,9 @@ verify_cluster_access
 
 echo "Install secret grafana-secret in cluster"
 
-GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
-GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
-GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name grafana-database-password | jq -r .value)"
+GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
+GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
+GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name grafana-database-password | jq -r .value)"
 
 # Transform clustername to lowercase
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"

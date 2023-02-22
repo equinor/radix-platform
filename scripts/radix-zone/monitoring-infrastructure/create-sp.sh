@@ -131,7 +131,7 @@ function create_monitoring_service_principal() {
         echo "${name} exists.\n"
     fi
 
-    echo "Update owners of app registration..."
+    echo "Update owners of app registration...."
     update_ad_app_owners "${name}"
 
     echo "Update owners of service principal..."
@@ -145,7 +145,7 @@ function create_monitoring_service_principal() {
     echo "Done.\n"
 }
 
-function create_grafana_azure_secret(){    
+function create_monitoring_ar_secret(){    
     local name          # Input 1
     local secretname    # Input 2
     local description   # Input 3, optional
@@ -166,9 +166,3 @@ function create_grafana_azure_secret(){
     echo "Update credentials in keyvault..."
     update_app_credentials_in_az_keyvault "${secretname}" "${id}" "${password}" "${description}" "${secret_id}" ${expiration_date} "${AZ_RESOURCE_MON_KEYVAULT}"
 }
-
-
-echo "Create Service Principal for Monitoring..."
-create_monitoring_service_principal "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
-create_grafana_azure_secret "$APP_REGISTRATION_GRAFANA" "radix-grafana-azure" "Grafana Azure secret"
-echo "...Done."

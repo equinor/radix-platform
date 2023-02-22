@@ -10,7 +10,8 @@ AKS_SYSTEM_NODE_POOL_NAME = "systempool"
 AKS_USER_NODE_MAX_COUNT   = "5"
 AKS_USER_NODE_MIN_COUNT   = "2"
 AKS_USER_NODE_POOL_NAME   = "userpool"
-TAGS                      = { "autostartupschedule " = "true" }
+TAGS_AA                   = { "autostartupschedule " = "true", "migrationStrategy" = "aa" }
+TAGS_AT                   = { "autostartupschedule " = "false", "migrationStrategy" = "at" }
 
 #######################################################################################
 ### Zone and cluster settings
@@ -34,6 +35,7 @@ AZ_RESOURCE_GROUP_COMMON   = "common"
 ###
 
 AZ_SUBSCRIPTION_ID = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 
 #######################################################################################
 ### System users
@@ -124,15 +126,6 @@ storage_accounts = {
     rg_name       = "Logs-Dev"
     backup_center = true
   }
-  "radixinfradev" = {
-    name                      = "radixinfradev"
-    rg_name                   = "s941-tfstate"
-    backup_center             = false
-    repl                      = "GRS"
-    kind                      = "BlobStorage"
-    shared_access_key_enabled = false
-    firewall                  = false
-  }
   "radixvelerodev" = {
     name          = "radixvelerodev"
     rg_name       = "backups"
@@ -145,6 +138,14 @@ storage_accounts = {
     rg_name                         = "s941-tfstate"
     backup_center                   = true
     repl                            = "RAGRS"
+    allow_nested_items_to_be_public = false
+    firewall                        = false
+  }
+  "s941radixvelerodev" = {
+    name                            = "s941radixvelerodev"
+    rg_name                         = "backups"
+    backup_center                   = true
+    repl                            = "GRS"
     allow_nested_items_to_be_public = false
   }
   "s941sqllogsdev" = {
@@ -318,3 +319,15 @@ vnets = {
     subnet_name = "subnet-weekly-04"
   }
 }
+
+#######################################################################################
+### Service principal
+###
+
+SP_GITHUB_DEV_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
+
+#######################################################################################
+### Keyvaults
+###
+
+KV_RADIX_VAULT_DEV = "radix-vault-dev"
