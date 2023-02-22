@@ -232,13 +232,12 @@ sql_database = {
 
 mysql_flexible_server = {
   "s941-radix-grafana-dev" = {
-    name  = "s941-radix-grafana-dev"
+    name   = "s941-radix-grafana-dev"
     secret = "s941-radix-grafana-dev-mysql-admin-pwd"
   }
   "s941-radix-grafana-playground" = {
-    name  = "s941-radix-grafana-playground"
+    name   = "s941-radix-grafana-playground"
     secret = "s941-radix-grafana-playground-mysql-admin-pwd"
-    
   }
 }
 
@@ -248,11 +247,10 @@ mysql_flexible_server = {
 
 mysql_server = {
   "mysql-radix-grafana-dev" = {
-    name  = "mysql-radix-grafana-dev"
+    name    = "mysql-radix-grafana-dev"
     fw_rule = true
-    secret = "mysql-grafana-dev-admin-password"
+    secret  = "mysql-grafana-dev-admin-password"
   }
-
 }
 
 #######################################################################################
@@ -264,11 +262,11 @@ key_vault = {
     name    = "kv-radix-monitoring-dev"
     rg_name = "monitoring"
   }
-    "radix-vault-dev" = {
+  "radix-vault-dev" = {
     name    = "radix-vault-dev"
     rg_name = "common"
   }
-    "kv-radix-monitoring-dev" = {
+  "kv-radix-monitoring-dev" = {
     name    = "kv-radix-monitoring-dev"
     rg_name = "monitoring"
   }
@@ -277,47 +275,27 @@ key_vault = {
 firewall_rules = {
   "equinor-wifi" = {
     start_ip_address = "143.97.110.1"
-    end_ip_address = "143.97.110.1"
+    end_ip_address   = "143.97.110.1"
   }
   "equinor_north_europe" = {
     start_ip_address = "40.85.141.13"
-    end_ip_address = "40.85.141.13"
+    end_ip_address   = "40.85.141.13"
   }
   "ext-mon-dev" = {
     start_ip_address = "20.54.47.154"
-    end_ip_address = "20.54.47.154"
+    end_ip_address   = "20.54.47.154"
   }
   "runnerIp" = {
     start_ip_address = "20.36.193.46"
-    end_ip_address = "20.36.193.46"
+    end_ip_address   = "20.36.193.46"
   }
   "weekly-42-b" = {
     start_ip_address = "20.67.128.243"
-    end_ip_address = "20.67.128.243"
+    end_ip_address   = "20.67.128.243"
   }
   "Enable-Azure-services" = {
     start_ip_address = "0.0.0.0"
-    end_ip_address = "0.0.0.0"
-  }
-
-
-}
-#######################################################################################
-### Virtual networks
-###
-
-vnets = {
-  "vnet-playground-07" = {
-    vnet_name   = "vnet-playground-07"
-    subnet_name = "subnet-playground-07"
-  }
-  "vnet-weekly-03" = {
-    vnet_name   = "vnet-weekly-03"
-    subnet_name = "subnet-weekly-03"
-  }
-  "vnet-weekly-04" = {
-    vnet_name   = "vnet-weekly-04"
-    subnet_name = "subnet-weekly-04"
+    end_ip_address   = "0.0.0.0"
   }
 }
 

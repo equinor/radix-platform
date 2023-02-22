@@ -206,19 +206,17 @@ sql_server = {
 
 mysql_flexible_server = {
   "s940-radix-grafana-c2-prod" = {
-    name  = "s940-radix-grafana-c2-prod"
+    name     = "s940-radix-grafana-c2-prod"
     location = "westeurope"
-    secret = "s940-radix-grafana-c2-prod-mysql-admin-pwd"
+    secret   = "s940-radix-grafana-c2-prod-mysql-admin-pwd"
   }
   "s940-radix-grafana-extmon-prod" = {
-    name  = "s940-radix-grafana-extmon-prod"
+    name   = "s940-radix-grafana-extmon-prod"
     secret = "s940-radix-grafana-extmon-prod-mysql-admin-pwd"
-    
   }
   "s940-radix-grafana-platform-prod" = {
-    name  = "s940-radix-grafana-platform-prod"
+    name   = "s940-radix-grafana-platform-prod"
     secret = "s940-radix-grafana-platform-prod-mysql-admin-pwd"
-    
   }
 }
 
@@ -251,35 +249,34 @@ key_vault = {
     rg_name = "monitoring"
   }
 }
+
 firewall_rules = {
   "equinor-wifi" = {
     start_ip_address = "143.97.110.1"
-    end_ip_address = "143.97.110.1"
+    end_ip_address   = "143.97.110.1"
   }
   "bouvet-trondheim" = {
     start_ip_address = "85.19.71.228"
-    end_ip_address = "85.19.71.228"
+    end_ip_address   = "85.19.71.228"
   }
   "equinor_vpn" = {
     start_ip_address = "143.97.2.35"
-    end_ip_address = "143.97.2.35"
+    end_ip_address   = "143.97.2.35"
   }
   "equinor_wifi" = {
     start_ip_address = "143.97.2.129"
-    end_ip_address = "143.97.2.129"
+    end_ip_address   = "143.97.2.129"
   }
   "Enable-Azure-services" = {
     start_ip_address = "0.0.0.0"
-    end_ip_address = "0.0.0.0"
+    end_ip_address   = "0.0.0.0"
   }
-
-
 }
-
 
 #######################################################################################
 ### SQL Database
 ###
+
 sql_database = {
   "sql-radix-cost-allocation-c2-prod" = {
     name     = "sqldb-radix-cost-allocation"
