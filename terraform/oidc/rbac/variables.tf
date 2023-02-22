@@ -1,15 +1,29 @@
-variable "AZ_LOCATION" {
-  description = "The location to create the resources in."
+variable "AAD_RADIX_GROUP" {
+  description = "Radix group name"
   type        = string
 }
 
-variable "AZ_RESOURCE_GROUP_COMMON" {
-  description = "Resource group name for common"
+variable "APP_GITHUB_ACTION_CLUSTER_NAME" {
+  description = "Application name"
   type        = string
 }
 
-variable "RADIX_ZONE" {
-  description = "Radix zone"
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+variable "GH_ORGANIZATION" {
+  description = "Github organization"
+  type        = string
+}
+
+variable "GH_REPOSITORY" {
+  description = "Github repository"
+  type        = string
+}
+
+variable "GH_ENVIRONMENT" {
+  description = "Github environment"
   type        = string
 }
 

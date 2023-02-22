@@ -8,12 +8,12 @@ variable "AZ_RESOURCE_GROUP_COMMON" {
   type        = string
 }
 
-variable "SP_GITHUB_DEV_CLUSTER_CLIENT_ID" {
+variable "SP_GITHUB_ACTION_CLUSTER_CLIENT_ID" {
   description = "Service principal"
   type        = string
 }
 
-variable "KV_RADIX_VAULT_DEV" {
-  description = "Radix development keyvault"
+variable "KV_RADIX_VAULT" {
+  description = "Radix keyvault"
   type        = string
 }
