@@ -273,6 +273,7 @@ key_vault = {
     rg_name = "monitoring"
   }
 }
+
 firewall_rules = {
   "equinor-wifi" = {
     start_ip_address = "143.97.110.1"
