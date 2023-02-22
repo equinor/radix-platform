@@ -10,10 +10,6 @@ locals {
   WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
 }
 
-#######################################################################################
-### Variables
-###
-
 data "azurerm_key_vault" "keyvault_env" {
   name                = "radix-vault-${var.RADIX_ZONE}"
   resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
