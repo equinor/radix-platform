@@ -13,7 +13,7 @@ variable "sql_database" {
     collation      = optional(string, "SQL_Latin1_General_CP1_CI_AS")
     max_size_gb    = optional(number, 250)
     read_scale     = optional(bool, false)
-    sku_name       = optional(string, "S3")
+    sku_name       = optional(string, "S0")
     zone_redundant = optional(bool, false)
     tags           = optional(map(string), {})
   }))
