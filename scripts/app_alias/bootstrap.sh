@@ -84,6 +84,14 @@ fi
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
+LIB_DNS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/dns/lib_dns.sh"
+if ! [[ -x "$LIB_DNS_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The lib dns script is not found or it is not executable in path $LIB_DNS_SCRIPT" >&2
+else
+    source $LIB_DNS_SCRIPT
+fi
+
 # Optional inputs
 
 if [[ -z "$RADIX_APP_ENVIRONMENT" ]]; then
@@ -165,6 +173,15 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONFIG_DIR="${WORK_DIR}/configs"
 
+# Get cluster IP
+cluster_ip=$(kubectl get secret --namespace "ingress-nginx" "ingress-nginx-raw-ip" -ojson | jq .data.rawIp --raw-output | base64 --decode)
+# Create A records in the dns zone
+create-a-record "@" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "300" # creating the "@"-record, i.e. e.g. dev.radix.equinor.com.
+create-a-record "*" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" # creating wildcard record to match all FQDNs in active-cluster ingresses
+create-a-record "*.app" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" # creating wildcard record to match all FQDNs in "app alias" ingresses
+
+
+# iterate over configs for selected Radix components and apply ingress objects with custom names
 for alias_config in "$CONFIG_DIR"/*.env; do
     [ -e "$alias_config" ] || continue
     
@@ -186,7 +203,6 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     echo -e "   Processing alias \"${RADIX_APP_ALIAS_NAME}\" config:"
     echo -e ""
     echo -e "   - AZ_RESOURCE_DNS              : $AZ_RESOURCE_DNS"
-    echo -e "   - RADIX_APP_CNAME              : $RADIX_APP_CNAME"
     echo -e "   - RADIX_APP_ALIAS_NAME         : $RADIX_APP_ALIAS_NAME"
     echo -e "   - RADIX_APP_ALIAS_URL          : $RADIX_APP_ALIAS_URL"
     echo -e "   - RADIX_APP_NAME               : $RADIX_APP_NAME"
@@ -198,48 +214,6 @@ for alias_config in "$CONFIG_DIR"/*.env; do
 
     echo -e ""
     printf "     Working..."
-
-    # Get cluster IP
-    CLUSTER_IP=$(kubectl get secret --namespace "ingress-nginx" "ingress-nginx-raw-ip" -ojson | jq .data.rawIp --raw-output | base64 --decode)
-
-    # Create alias in the dns zone
-    if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
-        # Check if "@" record exists
-        FIND_RECORD=$(az network dns record-set a show \
-            --name "$RADIX_APP_ALIAS_NAME" \
-            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-            --zone-name "$AZ_RESOURCE_DNS" \
-            --query name \
-            --output tsv \
-            2>/dev/null)
-        if [[ $FIND_RECORD = "" ]]; then
-            # Create "@" record
-            az network dns record-set a add-record \
-                --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-                --zone-name "$AZ_RESOURCE_DNS" \
-                --record-set-name "$RADIX_APP_ALIAS_NAME" \
-                --ipv4-address "$CLUSTER_IP" \
-                --if-none-match \
-                --ttl 300 \
-                2>&1 >/dev/null
-        else
-            # Update "@" record
-            az network dns record-set a update \
-                --name "$RADIX_APP_ALIAS_NAME" \
-                --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-                --zone-name "$AZ_RESOURCE_DNS" \
-                --set aRecords[0].ipv4Address="$CLUSTER_IP" \
-                2>&1 >/dev/null
-        fi
-    else
-        az network dns record-set cname set-record \
-            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-            --zone-name "$AZ_RESOURCE_DNS" \
-            --record-set-name "$RADIX_APP_ALIAS_NAME" \
-            --cname "$RADIX_APP_CNAME" \
-            --ttl 300 \
-            2>&1 >/dev/null
-    fi
 
     # # Create ingress object in the cluster
     if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
