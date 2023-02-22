@@ -149,4 +149,10 @@ while read -r line; do
 done <<< "${TXT_RECORDS}"
 wait
 
+az network dns record-set a delete \
+        --name "*.${CLUSTER_NAME}" \
+        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --zone-name ${AZ_RESOURCE_DNS} \
+        --yes
+
 echo "Deleted DNS records for cluster."

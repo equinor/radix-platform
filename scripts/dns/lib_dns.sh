@@ -23,6 +23,7 @@ function create-a-record(){
             --if-none-match \
             --ttl $ttl \
             2>&1 >/dev/null
+        return
     else
         # Update "@" record
         az network dns record-set a update \
@@ -32,5 +33,6 @@ function create-a-record(){
             --set aRecords[0].ipv4Address="$cluster_ip" \
             --ttl $ttl \
             2>&1 >/dev/null
+        return
     fi
 }

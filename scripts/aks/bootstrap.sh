@@ -706,7 +706,9 @@ printf "Done.\n"
 ### Add wildcard cluster specific DNS record
 ###
 cluster_ip=$(echo $SELECTED_INGRESS_IPS  | jq .ipAddress --raw-output)
-create-a-record "*.${CLUSTER_NAME}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" # creating wildcard record to match all FQDNs in cluster specific ingresses
+create-a-record "*.${CLUSTER_NAME}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
+      echo "ERROR: failed to create A record ${record}.${AZ_RESOURCE_DNS}" >&2
+  }
 
 #######################################################################################
 ### Taint the 'systempool'
