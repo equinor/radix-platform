@@ -31,7 +31,6 @@ function create-a-record(){
             --resource-group "$rg" \
             --zone-name "$zone_name" \
             --set aRecords[0].ipv4Address="$cluster_ip" \
-            --ttl $ttl \
             2>&1 >/dev/null
         return
     fi

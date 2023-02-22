@@ -21,13 +21,13 @@
 ###
 
 # To run this script from terminal:
-# RADIX_ZONE_ENV=aa.env ./delete_dns_entries_for_cluster.sh
+# CLUSTER_NAME=weekly-xx RADIX_ZONE_ENV=aa.env ./delete_dns_entries_for_cluster.sh
 
 # Example: Delete from dev
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./delete_dns_entries_for_cluster.sh
+# CLUSTER_NAME=weekly-01 RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./delete_dns_entries_for_cluster.sh
 
 # Example: Delete from playground
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_playground.env ./delete_dns_entries_for_cluster.sh
+# CLUSTER_NAME=playground-07 RADIX_ZONE_ENV=../radix-zone/radix_zone_playground.env ./delete_dns_entries_for_cluster.sh
 
 #######################################################################################
 ### Validate mandatory input

@@ -707,7 +707,7 @@ printf "Done.\n"
 ###
 cluster_ip=$(echo $SELECTED_INGRESS_IPS  | jq .ipAddress --raw-output)
 create-a-record "*.${CLUSTER_NAME}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
-      echo "ERROR: failed to create A record ${record}.${AZ_RESOURCE_DNS}" >&2
+      echo "ERROR: failed to create A record *.${CLUSTER_NAME}" >&2
   }
 
 #######################################################################################
