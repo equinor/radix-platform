@@ -11,7 +11,7 @@ data "azuread_group" "developers" {
   security_enabled = true
 }
 
-data "azurerm_key_vault" "keyvault_env" {
+data "azurerm_key_vault" "keyvault" {
   name                = "radix-vault-${var.RADIX_ZONE}"
   resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
 }
@@ -19,7 +19,7 @@ data "azurerm_key_vault" "keyvault_env" {
 data "azurerm_key_vault_secret" "keyvault_secrets" {
   for_each     = var.sql_server
   name         = each.value["db_admin"]
-  key_vault_id = data.azurerm_key_vault.keyvault_env.id
+  key_vault_id = data.azurerm_key_vault.keyvault.id
 }
 
 resource "azurerm_mssql_server" "sqlserver" {
@@ -50,7 +50,6 @@ resource "azurerm_mssql_server" "sqlserver" {
       type         = "SystemAssigned"
     }
   }
-
 }
 
 resource "azurerm_mssql_database" "mssql_database" {
