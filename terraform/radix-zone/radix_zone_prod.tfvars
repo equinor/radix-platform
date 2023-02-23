@@ -195,6 +195,21 @@ storage_accounts = {
     rg_name       = "s940-tfstate"
     repl          = "RAGRS"
     backup_center = true
+    firewall      = false
+    create_with_rbac = true
+  }
+  "s940radixveleroc2" = {
+    name          = "s940radixveleroc2"
+    rg_name       = "backups"
+    location      = "westeurope"
+    repl          = "GRS"
+    backup_center = true
+  }
+  "s940radixveleroprod" = {
+    name          = "s940radixveleroprod"
+    rg_name       = "backups"
+    repl          = "GRS"
+    backup_center = true
   }
   "s940sqllogsc2prod" = {
     name          = "s940sqllogsc2prod"
