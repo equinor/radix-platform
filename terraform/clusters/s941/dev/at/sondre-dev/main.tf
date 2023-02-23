@@ -59,6 +59,7 @@ locals {
   RADIX_PLATFORM_REPOSITORY_PATH = "../../../../../.."
   TERRAFORM_ROOT_PATH            = "../../../../.."
   WHITELIST_IPS                  = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  TAGS                           = local.MIGRATION_STRATEGY == "aa" ? var.TAGS_AA : var.TAGS_AT
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -77,7 +78,8 @@ data "azurerm_resource_group" "rg_clusters" {
 
 resource "null_resource" "add_whitelist_acr" {
   depends_on = [
-    module.aks
+    module.aks,
+    data.external.egress_ip
   ]
 
   provisioner "local-exec" {
@@ -97,9 +99,14 @@ resource "null_resource" "add_whitelist_acr" {
 }
 
 resource "null_resource" "delete_whitelist_acr" {
+  depends_on = [
+    data.external.egress_ip
+  ]
+
   triggers = {
     "IP_MASK"            = data.external.egress_ip.result.egress_ip
     "MIGRATION_STRATEGY" = local.MIGRATION_STRATEGY
+    "RADIX_ZONE_ENV"     = "radix-zone/radix_zone_${var.RADIX_ZONE}.env"
   }
 
   provisioner "local-exec" {
@@ -109,11 +116,51 @@ resource "null_resource" "delete_whitelist_acr" {
     command     = "../../../../../scripts/delete_whitelist_acr.sh"
 
     environment = {
-      RADIX_ZONE_ENV     = "radix-zone/radix_zone_dev.env"
+      RADIX_ZONE_ENV     = self.triggers.RADIX_ZONE_ENV
       USER_PROMPT        = "false"
       IP_MASK            = self.triggers.IP_MASK
       ACTION             = "delete"
       MIGRATION_STRATEGY = self.triggers.MIGRATION_STRATEGY
+    }
+  }
+}
+
+resource "null_resource" "add_storageaccount_firewall" {
+  depends_on = [
+    module.aks
+  ]
+
+  provisioner "local-exec" {
+    when        = create
+    interpreter = ["/bin/bash", "-c"]
+    working_dir = path.root
+    command     = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/velero/update_storageaccount_firewall.sh"
+
+    environment = {
+      RADIX_ZONE_ENV = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/radix-zone/radix_zone_${var.RADIX_ZONE}.env"
+      CLUSTER_NAME   = "${local.CLUSTER_NAME}"
+      ACTION         = "add"
+    }
+  }
+}
+
+resource "null_resource" "delete_storageaccount_firewall" {
+  triggers = {
+    "CLUSTER_NAME"                   = local.CLUSTER_NAME
+    "RADIX_ZONE_ENV"                 = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/radix-zone/radix_zone_${var.RADIX_ZONE}.env"
+    "update_storageaccount_firewall" = "${local.RADIX_PLATFORM_REPOSITORY_PATH}/scripts/velero/update_storageaccount_firewall.sh"
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    interpreter = ["/bin/bash", "-c"]
+    working_dir = path.root
+    command     = self.triggers.update_storageaccount_firewall
+
+    environment = {
+      RADIX_ZONE_ENV = self.triggers.RADIX_ZONE_ENV
+      CLUSTER_NAME   = self.triggers.CLUSTER_NAME
+      ACTION         = "delete"
     }
   }
 }
@@ -135,13 +182,14 @@ data "external" "egress_ip" {
 }
 
 module "aks" {
-  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v4.0.0"
+  source = "github.com/equinor/radix-terraform-azurerm-aks?ref=v4.1.0"
 
   CLUSTER_NAME       = local.CLUSTER_NAME
   MIGRATION_STRATEGY = local.MIGRATION_STRATEGY
   AZ_LOCATION        = var.AZ_LOCATION
   AZ_SUBSCRIPTION_ID = var.AZ_SUBSCRIPTION_ID
   CLUSTER_TYPE       = var.CLUSTER_TYPE
+  TAGS               = local.TAGS
 
   # Resource groups
   AZ_RESOURCE_GROUP_CLUSTERS = data.azurerm_resource_group.rg_clusters.name

@@ -25,28 +25,17 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
 }
 
 #######################################################################################
-### Virtual Network
-###
-
-data "azurerm_virtual_network" "vnets" {
-  for_each            = var.vnets
-  name                = each.value["vnet_name"]
-  resource_group_name = each.value["rg_name"]
-}
-
-data "azurerm_subnet" "subnets" {
-  for_each             = var.vnets
-  name                 = each.value["subnet_name"]
-  resource_group_name  = each.value["rg_name"]
-  virtual_network_name = each.value["vnet_name"]
-}
-
-#######################################################################################
 ### Storage Accounts
 ###
 
+data "azurerm_storage_account" "storageaccounts" {
+  for_each            = { for key in compact([for key, value in var.storage_accounts : value.create_with_rbac ? key : ""]) : key => var.storage_accounts[key] }
+  name                = each.value["name"]
+  resource_group_name = each.value["rg_name"]
+}
+
 resource "azurerm_storage_account" "storageaccounts" {
-  for_each                         = var.storage_accounts
+  for_each                         = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if !value["create_with_rbac"] }
   name                             = each.value["name"]
   resource_group_name              = each.value["rg_name"]
   location                         = each.value["location"]
@@ -68,6 +57,7 @@ resource "azurerm_storage_account" "storageaccounts" {
 
       dynamic "container_delete_retention_policy" {
         for_each = each.value["container_delete_retention_policy"] == true ? [30] : []
+
         content {
           days = container_delete_retention_policy.value
         }
@@ -80,8 +70,10 @@ resource "azurerm_storage_account" "storageaccounts" {
           days = delete_retention_policy.value
         }
       }
+
       dynamic "restore_policy" {
         for_each = each.value["backup_center"] == true ? [30] : []
+
         content {
           days = restore_policy.value
         }
@@ -95,12 +87,11 @@ resource "azurerm_storage_account" "storageaccounts" {
 ###
 
 resource "azurerm_storage_account_network_rules" "network_rule" {
-  for_each                   = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
-  storage_account_id         = azurerm_storage_account.storageaccounts[each.key].id
-  default_action             = "Deny"
-  ip_rules                   = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
-  virtual_network_subnet_ids = values(data.azurerm_subnet.subnets)[*].id
-  bypass                     = ["AzureServices"]
+  for_each           = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
+  storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
+  default_action     = "Deny"
+  ip_rules           = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
+  bypass             = ["AzureServices"]
 }
 
 #######################################################################################
@@ -109,7 +100,7 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
 
 resource "azurerm_role_assignment" "northeurope" {
   for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
-  scope                = azurerm_storage_account.storageaccounts[each.key].id
+  scope                = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
   role_definition_name = "Storage Account Backup Contributor"
   principal_id         = azurerm_data_protection_backup_vault.northeurope.identity[0].principal_id
   depends_on           = [azurerm_storage_account.storageaccounts]
@@ -124,7 +115,7 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   location           = each.value.location
-  storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
+  storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
   backup_policy_id   = azurerm_data_protection_backup_policy_blob_storage.northeurope.id
   depends_on         = [azurerm_role_assignment.northeurope]
 }
@@ -135,18 +126,21 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
 
 resource "azurerm_storage_management_policy" "sapolicy" {
   for_each           = { for key in compact([for key, value in var.storage_accounts : value.life_cycle ? key : ""]) : key => var.storage_accounts[key] }
-  storage_account_id = azurerm_storage_account.storageaccounts[each.key].id
+  storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
 
   rule {
     name    = "lifecycle-${var.RADIX_ZONE}"
     enabled = true
+
     filters {
       blob_types = ["blockBlob"]
     }
+
     actions {
       version {
         delete_after_days_since_creation = 60
       }
+
       base_blob {
         tier_to_cool_after_days_since_modification_greater_than = 30
         delete_after_days_since_modification_greater_than       = 90
@@ -165,6 +159,7 @@ resource "azurerm_data_protection_backup_vault" "northeurope" {
   location            = var.AZ_LOCATION
   datastore_type      = "VaultStore"
   redundancy          = "LocallyRedundant"
+
   identity {
     type = "SystemAssigned"
   }

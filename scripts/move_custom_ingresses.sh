@@ -317,15 +317,15 @@ kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
 ### Used in GHA to determine which cluster shall be powered on daily
 echo ""
 if [[ $CLUSTER_TYPE == "development" ]]; then
-    CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select((.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) and (.powerState.code!="Stopped")) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code}]}]')
+    CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select((.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) and (.powerState.code!="Stopped")) | {name: .name, powerstate: .powerState.code, id: .id}]}]')
     while read -r list; do
         CLUSTER=$(jq -n "${list}" | jq -r .name)
-        CGROUP=$(jq -n "${list}" | jq -r .resourceGroup)
-        printf "Clear tag 'autostartupschedule' on cluster $CLUSTER\n"
-        az aks update --resource-group $CGROUP --name $CLUSTER --tags autostartupschedule="" --no-wait
+        ID=$(jq -n "${list}" | jq -r .id)
+        printf "Clear tag 'autostartupschedule' on cluster %s\n" "${CLUSTER}"
+        az resource tag --ids "${ID}" --tags autostartupschedule=false --is-incremental
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
-    printf "Tag cluster $DEST_CLUSTER to autostartupschedule\n"
-    az aks update --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --name $DEST_CLUSTER --tags autostartupschedule="true" --no-wait
+    printf "Tag cluster %s to autostartupschedule\n" "${DEST_CLUSTER}"
+    az resource tag --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER}" --tags autostartupschedule=true --is-incremental
 fi
 
 echo ""

@@ -2,7 +2,7 @@
 ### AKS
 ###
 
-AKS_KUBERNETES_VERSION    = "1.23.8"
+AKS_KUBERNETES_VERSION    = "1.23.12"
 AKS_NODE_POOL_VM_SIZE     = "Standard_B4ms"
 AKS_SYSTEM_NODE_MAX_COUNT = "2"
 AKS_SYSTEM_NODE_MIN_COUNT = "1"
@@ -10,6 +10,8 @@ AKS_SYSTEM_NODE_POOL_NAME = "systempool"
 AKS_USER_NODE_MAX_COUNT   = "5"
 AKS_USER_NODE_MIN_COUNT   = "2"
 AKS_USER_NODE_POOL_NAME   = "userpool"
+TAGS_AA                   = { "autostartupschedule " = "true", "migrationStrategy" = "aa" }
+TAGS_AT                   = { "autostartupschedule " = "false", "migrationStrategy" = "at" }
 
 #######################################################################################
 ### Zone and cluster settings
@@ -33,6 +35,13 @@ AZ_RESOURCE_GROUP_COMMON   = "common"
 ###
 
 AZ_SUBSCRIPTION_ID = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+
+#######################################################################################
+### AAD
+###
+
+AAD_RADIX_GROUP = "radix"
 
 #######################################################################################
 ### System users
@@ -43,6 +52,7 @@ MI_AKSKUBELET = [{
   id        = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-development-northeurope"
   object_id = "89541870-e10a-403c-8d4c-d80e92dd5eb7"
 }]
+
 MI_AKS = [{
   client_id = "1ff97b0f-f824-47d9-a98f-a045b6a759bc"
   id        = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-development-northeurope",
@@ -99,7 +109,7 @@ resource_groups = {
     name = "monitoring"
   }
   "S941-log" = {
-    name = "S941-log"
+    name     = "S941-log"
     location = "westeurope"
   }
   "s941-tfstate" = {
@@ -123,15 +133,6 @@ storage_accounts = {
     rg_name       = "Logs-Dev"
     backup_center = true
   }
-  "radixinfradev" = {
-    name                      = "radixinfradev"
-    rg_name                   = "s941-tfstate"
-    backup_center             = false
-    repl                      = "GRS"
-    kind                      = "BlobStorage"
-    shared_access_key_enabled = false
-    firewall                  = false
-  }
   "radixvelerodev" = {
     name          = "radixvelerodev"
     rg_name       = "backups"
@@ -144,6 +145,15 @@ storage_accounts = {
     rg_name                         = "s941-tfstate"
     backup_center                   = true
     repl                            = "RAGRS"
+    allow_nested_items_to_be_public = false
+    create_with_rbac                = true
+    firewall                        = false
+  }
+  "s941radixvelerodev" = {
+    name                            = "s941radixvelerodev"
+    rg_name                         = "backups"
+    backup_center                   = true
+    repl                            = "GRS"
     allow_nested_items_to_be_public = false
   }
   "s941sqllogsdev" = {
@@ -159,20 +169,161 @@ storage_accounts = {
 }
 
 #######################################################################################
-### Virtual networks
+### SQL Server
 ###
 
-vnets = {
-  "vnet-playground-07" = {
-    vnet_name   = "vnet-playground-07"
-    subnet_name = "subnet-playground-07"
+sql_server = {
+  "sql-radix-cost-allocation-dev" = {
+    name                = "sql-radix-cost-allocation-dev"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
   }
-  "vnet-weekly-03" = {
-    vnet_name   = "vnet-weekly-03"
-    subnet_name = "subnet-weekly-03"
+  "sql-radix-cost-allocation-playground" = {
+    name                = "sql-radix-cost-allocation-playground"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin-playground"
+    minimum_tls_version = "Disabled"
+    tags = {
+      "displayName" = "SqlServer"
+    }
   }
-  "vnet-weekly-04" = {
-    vnet_name   = "vnet-weekly-04"
-    subnet_name = "subnet-weekly-04"
+  "sql-radix-vulnerability-scan-dev" = {
+    name     = "sql-radix-vulnerability-scan-dev"
+    rg_name  = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin"
+    identity = false
+  }
+  "sql-radix-vulnerability-scan-playground" = {
+    name     = "sql-radix-vulnerability-scan-playground"
+    rg_name  = "vulnerability-scan"
+    db_admin = "radix-vulnerability-scan-db-admin-playground"
+    identity = false
   }
 }
+
+#######################################################################################
+### SQL Database
+###
+
+sql_database = {
+  "sql-radix-cost-allocation-dev" = {
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-dev"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-cost-allocation-playground" = {
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-playground"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-vulnerability-scan-dev" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-dev"
+  }
+  "sql-radix-vulnerability-scan-playground" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-playground"
+  }
+}
+
+#######################################################################################
+### MYSQL Flexible Server
+###
+
+mysql_flexible_server = {
+  "s941-radix-grafana-dev" = {
+    name   = "s941-radix-grafana-dev"
+    secret = "s941-radix-grafana-dev-mysql-admin-pwd"
+  }
+  "s941-radix-grafana-playground" = {
+    name   = "s941-radix-grafana-playground"
+    secret = "s941-radix-grafana-playground-mysql-admin-pwd"
+  }
+}
+
+#######################################################################################
+### MYSQL Server
+###
+
+mysql_server = {
+  "mysql-radix-grafana-dev" = {
+    name    = "mysql-radix-grafana-dev"
+    fw_rule = true
+    secret  = "mysql-grafana-dev-admin-password"
+  }
+}
+
+#######################################################################################
+### Key Vault
+###
+
+key_vault = {
+  "kv-radix-monitoring-dev" = {
+    name    = "kv-radix-monitoring-dev"
+    rg_name = "monitoring"
+  }
+  "radix-vault-dev" = {
+    name    = "radix-vault-dev"
+    rg_name = "common"
+  }
+  "kv-radix-monitoring-dev" = {
+    name    = "kv-radix-monitoring-dev"
+    rg_name = "monitoring"
+  }
+}
+
+firewall_rules = {
+  "equinor-wifi" = {
+    start_ip_address = "143.97.110.1"
+    end_ip_address   = "143.97.110.1"
+  }
+  "equinor_north_europe" = {
+    start_ip_address = "40.85.141.13"
+    end_ip_address   = "40.85.141.13"
+  }
+  "ext-mon-dev" = {
+    start_ip_address = "20.54.47.154"
+    end_ip_address   = "20.54.47.154"
+  }
+  "runnerIp" = {
+    start_ip_address = "20.36.193.46"
+    end_ip_address   = "20.36.193.46"
+  }
+  "weekly-42-b" = {
+    start_ip_address = "20.67.128.243"
+    end_ip_address   = "20.67.128.243"
+  }
+  "Enable-Azure-services" = {
+    start_ip_address = "0.0.0.0"
+    end_ip_address   = "0.0.0.0"
+  }
+}
+
+#######################################################################################
+### Service principal
+###
+
+APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance"
+SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
+
+#######################################################################################
+### Keyvaults
+###
+
+KV_RADIX_VAULT = "radix-vault-dev"
+
+#######################################################################################
+### Github
+###
+
+GH_ORGANIZATION = "equinor"
+GH_REPOSITORY   = "radix-platform"
+GH_ENVIRONMENT  = "operations"

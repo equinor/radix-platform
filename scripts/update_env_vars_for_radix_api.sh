@@ -14,6 +14,9 @@
 #   CLUSTER_NAME            (Mandatory)
 #   RADIX_ZONE_ENV          (Mandatory)
 
+# Optional:
+# - STAGING         : Whether or not to use staging certificate. true/false. Default false.
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
@@ -61,6 +64,12 @@ fi
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 
+# Optional inputs
+
+if [[ -z "$STAGING" ]]; then
+    STAGING=false
+fi
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -99,8 +108,8 @@ if [[ -z ${resource} ]]; then
 fi
 printf " Done.\n"
 
-updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" || exit
-updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" || exit
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" STAGING="$STAGING" || exit
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" STAGING="$STAGING" || exit
 
 # Restart Radix API deployment
 printf "Restarting Radix API...\n"

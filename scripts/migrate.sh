@@ -181,6 +181,12 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
+UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT="$WORKDIR_PATH/velero/update_storageaccount_firewall.sh"
+if ! [[ -x "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The update storageaccount firewall script is not found or it is not executable in path $UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" >&2
+fi
+
 ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/add_reply_url_for_cluster.sh"
 if ! [[ -x "$ADD_REPLY_URL_SCRIPT" ]]; then
     # Print to stderror
@@ -521,6 +527,12 @@ printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 
+echo ""
+echo "Updating storageaccount firewall..."
+printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" ACTION="add" source "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT")
+wait # wait for subshell to finish
+
 # Wait for velero to be deployed from flux
 echo ""
 echo "Waiting for velero to be deployed by flux-operator so that it can handle restore into cluster from backup"
@@ -678,14 +690,14 @@ printf "Done.\n"
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
 # Update web console web component with cluster oidc issuer url
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT")
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
@@ -698,7 +710,7 @@ printf "Done.\n"
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
@@ -794,7 +806,7 @@ fi
 # Update Radix API env vars
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$RADIX_API_ENV_VAR_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" source "$RADIX_API_ENV_VAR_SCRIPT")
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$RADIX_API_ENV_VAR_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
