@@ -215,25 +215,6 @@ mysql_flexible_server = {
   }
 }
 
-key_secrets = {
-  "sql-radix-cost-allocation-c2-prod" = {
-    name  = "radix-cost-allocation-db-admin"
-    vault = "radix-vault-c2-prod"
-  }
-  "sql-radix-cost-allocation-prod" = {
-    name  = "radix-cost-allocation-db-admin"
-    vault = "radix-vault-prod"
-  }
-  "sql-radix-vulnerability-scan-c2-prod" = {
-    name  = "radix-vulnerability-scan-db-admin"
-    vault = "radix-vault-c2-prod"
-  }
-  "sql-radix-vulnerability-scan-prod" = {
-    name  = "radix-vulnerability-scan-db-admin"
-    vault = "radix-vault-prod"
-  }
-}
-
 #######################################################################################
 ### Key Vault
 ###
