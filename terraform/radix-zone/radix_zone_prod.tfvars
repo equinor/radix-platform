@@ -173,6 +173,7 @@ sql_server = {
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
     vault               = "radix-vault-prod"
+    sku_name            = "S3"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -184,7 +185,6 @@ sql_server = {
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
     vault    = "radix-vault-c2-prod"
-    sku_name = "S3"
   }
   "sql-radix-vulnerability-scan-prod" = {
     name     = "sql-radix-vulnerability-scan-prod"
@@ -289,20 +289,20 @@ sql_database = {
     }
   }
   "sql-radix-cost-allocation-prod" = {
-    name   = "sqldb-radix-cost-allocation"
-    server = "sql-radix-cost-allocation-prod"
+    name     = "sqldb-radix-cost-allocation"
+    server   = "sql-radix-cost-allocation-prod"
     sku_name = "S3"
     tags = {
       "displayName" = "Database"
     }
   }
   "sql-radix-vulnerability-scan-c2-prod" = {
-    name     = "radix-vulnerability-scan"
-    server   = "sql-radix-vulnerability-scan-c2-prod"
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-c2-prod"
   }
   "sql-radix-vulnerability-scan-prod" = {
-    name   = "radix-vulnerability-scan"
-    server = "sql-radix-vulnerability-scan-prod"
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-prod"
     sku_name = "S3"
   }
 }
