@@ -46,6 +46,7 @@ resource "azurerm_mssql_server" "sqlserver" {
 
   dynamic "identity" {
     for_each = each.value["identity"] ? [1] : []
+    
     content {
       identity_ids = []
       type         = "SystemAssigned"

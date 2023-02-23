@@ -1,15 +1,83 @@
 #######################################################################################
+### AKS
+###
+
+AKS_KUBERNETES_VERSION    = "1.23.8"
+AKS_NODE_POOL_VM_SIZE     = "Standard_E16as_v4"
+AKS_SYSTEM_NODE_MAX_COUNT = "3"
+AKS_SYSTEM_NODE_MIN_COUNT = "2"
+AKS_SYSTEM_NODE_POOL_NAME = "systempool"
+AKS_USER_NODE_MAX_COUNT   = "30"
+AKS_USER_NODE_MIN_COUNT   = "16"
+AKS_USER_NODE_POOL_NAME   = "nodepool1"
+TAGS_AA                   = { "migrationStrategy" = "aa" }
+TAGS_AT                   = { "migrationStrategy" = "at" }
+
+#######################################################################################
 ### Zone and cluster settings
 ###
 
-RADIX_ZONE = "prod"
+AZ_LOCATION                    = "northeurope"
+CLUSTER_TYPE                   = "production"
+RADIX_ZONE                     = "prod"
+RADIX_ENVIRONMENT              = "prod"
+RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
 
 #######################################################################################
 ### Resource groups
 ###
 
-AZ_LOCATION              = "northeurope"
-AZ_RESOURCE_GROUP_COMMON = "common"
+AZ_RESOURCE_GROUP_CLUSTERS = "clusters"
+AZ_RESOURCE_GROUP_COMMON   = "common"
+
+#######################################################################################
+### Shared environment, az region and az subscription
+###
+
+AZ_SUBSCRIPTION_ID = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+
+#######################################################################################
+### AAD
+###
+
+AAD_RADIX_GROUP = "radix"
+
+#######################################################################################
+### System users
+###
+
+MI_AKSKUBELET = [{
+  client_id = "a991a23f-13fd-433e-8e69-a6493f7aadae"
+  id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-production-northeurope"
+  object_id = "a6d8e609-ec92-4336-bc80-045b3d9e04a8"
+}]
+
+MI_AKS = [{
+  client_id = "e9f15eab-a6c1-47e7-b840-5a2178c0995c"
+  id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-production-northeurope"
+  object_id = "3206534b-99a1-4a17-b238-5354129ccc44"
+}]
+
+AZ_PRIVATE_DNS_ZONES = [
+  "privatelink.database.windows.net",
+  "privatelink.blob.core.windows.net",
+  "privatelink.table.core.windows.net",
+  "privatelink.queue.core.windows.net",
+  "privatelink.file.core.windows.net",
+  "privatelink.web.core.windows.net",
+  "privatelink.dfs.core.windows.net",
+  "privatelink.documents.azure.com",
+  "privatelink.mongo.cosmos.azure.com",
+  "privatelink.cassandra.cosmos.azure.com",
+  "privatelink.gremlin.cosmos.azure.com",
+  "privatelink.table.cosmos.azure.com",
+  "privatelink.postgres.database.azure.com",
+  "privatelink.mysql.database.azure.com",
+  "privatelink.mariadb.database.azure.com",
+  "privatelink.vaultcore.azure.net",
+  "private.radix.equinor.com"
+]
 
 #######################################################################################
 ### Resouce Groups
@@ -19,17 +87,21 @@ resource_groups = {
   "backups" = {
     name = "backups"
   }
-  "cluster-vnet-hub-prod" = {
-    name = "cluster-vnet-hub-prod"
-  }
   "clusters" = {
     name = "clusters"
+  }
+  "cluster-vnet-hub-prod" = {
+    name = "cluster-vnet-hub-prod"
   }
   "common" = {
     name = "common"
   }
   "cost-allocation" = {
     name = "cost-allocation"
+  }
+  "dashboards" = {
+    name     = "dashboards"
+    location = "westeurope"
   }
   "monitoring" = {
     name = "monitoring"
@@ -50,10 +122,6 @@ resource_groups = {
   }
   "cost-allocation-westeurope" = {
     name     = "cost-allocation-westeurope"
-    location = "westeurope"
-  }
-  "dashboards" = {
-    name     = "dashboards"
     location = "westeurope"
   }
   "Logs" = {
@@ -126,6 +194,21 @@ storage_accounts = {
     name          = "s940radixinfra"
     rg_name       = "s940-tfstate"
     repl          = "RAGRS"
+    backup_center = true
+    firewall      = false
+    create_with_rbac = true
+  }
+  "s940radixveleroc2" = {
+    name          = "s940radixveleroc2"
+    rg_name       = "backups"
+    location      = "westeurope"
+    repl          = "GRS"
+    backup_center = true
+  }
+  "s940radixveleroprod" = {
+    name          = "s940radixveleroprod"
+    rg_name       = "backups"
+    repl          = "GRS"
     backup_center = true
   }
   "s940sqllogsc2prod" = {
@@ -250,6 +333,8 @@ firewall_rules = {
   }
 }
 
+KV_RADIX_VAULT = "radix-vault-prod"
+
 #######################################################################################
 ### SQL Database
 ###
@@ -282,22 +367,16 @@ sql_database = {
 }
 
 #######################################################################################
-### Virtual networks
+### Service principal
 ###
 
-vnets = {
-  "vnet-c2-prod-34" = {
-    vnet_name   = "vnet-c2-prod-34"
-    subnet_name = "subnet-c2-prod-34"
-    rg_name     = "clusters-westeurope"
-  }
-  "vnet-eu-34" = {
-    vnet_name   = "vnet-eu-34"
-    subnet_name = "subnet-eu-34"
-  }
-  "aks-vnet-35748448" = {
-    vnet_name   = "aks-vnet-35748448"
-    subnet_name = "aks-subnet"
-    rg_name     = "MC_monitoring_ext-mon-14_northeurope"
-  }
-}
+APP_GITHUB_ACTION_CLUSTER_NAME     = "OP-Terraform-Github Action"
+SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "043e5510-738f-4c30-8b9d-ee32578c7fe8"
+
+#######################################################################################
+### Github
+###
+
+GH_ORGANIZATION = "equinor"
+GH_REPOSITORY   = "radix-platform"
+GH_ENVIRONMENT  = "operations"
