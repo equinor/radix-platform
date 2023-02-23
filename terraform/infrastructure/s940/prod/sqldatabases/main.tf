@@ -18,8 +18,8 @@ data "azurerm_key_vault" "keyvault" {
 }
 
 data "azurerm_key_vault_secret" "keyvault_secrets" {
-  for_each     = var.key_secrets
-  name         = each.value["name"]
+  for_each     = var.sql_server
+  name         = each.value["db_admin"]
   key_vault_id = data.azurerm_key_vault.keyvault[each.value["vault"]].id
 }
 

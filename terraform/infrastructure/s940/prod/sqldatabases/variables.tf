@@ -1,30 +1,3 @@
-variable "AZ_LOCATION" {
-  description = "The location to create the resources in."
-  type        = string
-}
-
-variable "AZ_RESOURCE_GROUP_COMMON" {
-  description = "Resource group name for common(platorm)"
-  type        = string
-}
-
-variable "RADIX_ZONE" {
-  description = "Radix zone"
-  type        = string
-}
-
-variable "identity" {
-  description = "The identity to configure for this SQL Server."
-
-  type = object({
-    type         = optional(string, "SystemAssigned")
-    identity_ids = optional(list(string), [])
-  })
-
-  default = null
-}
-
-
 variable "sql_server" {
   type = map(object({
     administrator_login = optional(string, "radix")
@@ -39,6 +12,7 @@ variable "sql_server" {
     }), {})
     identity = optional(bool, true)
     db_admin = string # Used in azurerm_key_vault_secret
+    vault    = string
   }))
   default = {}
 }
@@ -50,7 +24,7 @@ variable "sql_database" {
     collation      = optional(string, "SQL_Latin1_General_CP1_CI_AS")
     max_size_gb    = optional(number, 250)
     read_scale     = optional(bool, false)
-    sku_name       = optional(string, "S3")
+    sku_name       = optional(string, "S0")
     zone_redundant = optional(bool, false)
     tags           = optional(map(string), {})
   }))
@@ -61,14 +35,6 @@ variable "key_vault" {
   type = map(object({
     name    = string
     rg_name = string
-  }))
-  default = {}
-}
-
-variable "key_secrets" {
-  type = map(object({
-    name  = string
-    vault = string
   }))
   default = {}
 }

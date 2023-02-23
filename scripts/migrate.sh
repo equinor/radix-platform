@@ -253,11 +253,6 @@ if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
     echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
 fi
 
-CREATE_A_RECORDS_SCRIPT="$WORKDIR_PATH/external-dns-prerequisites/create_a_records.sh"
-if ! [[ -x "$CREATE_A_RECORDS_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The create A records script is not found or it is not executable in path $CREATE_A_RECORDS_SCRIPT" >&2
-fi
 
 #######################################################################################
 ### Prepare az session
@@ -749,9 +744,6 @@ if [[ $update_redis_cache == true ]]; then
     printf "Done...\n"
 fi
 
-# Create A records, both cluster specific and active-cluster record
-printf "%s► Execute %s%s\n" "${grn}" "$CREATE_A_RECORDS_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" CLUSTER_NAME="${DEST_CLUSTER}" USER_PROMPT="${USER_PROMPT}" source "${CREATE_A_RECORDS_SCRIPT}")
 
 # Move custom ingresses
 if [[ $MIGRATION_STRATEGY == "aa" ]]; then

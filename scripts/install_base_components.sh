@@ -270,14 +270,6 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/grafana/bootstrap.
 (USER_PROMPT="$USER_PROMPT" ./grafana/bootstrap.sh)
 wait
 
-#######################################################################################
-### Install prerequisites for external-dns (flux handles the main installation)
-###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/external-dns-prerequisites/bootstrap.sh" "${normal}"
-(./external-dns-prerequisites/bootstrap.sh)
-wait
 
 #######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
