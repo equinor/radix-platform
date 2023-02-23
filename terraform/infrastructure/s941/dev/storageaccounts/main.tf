@@ -92,6 +92,7 @@ resource "azurerm_storage_account_network_rules" "network_rule" {
   default_action     = "Deny"
   ip_rules           = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
   bypass             = ["AzureServices"]
+  depends_on         = [azurerm_storage_account.storageaccounts]
 }
 
 #######################################################################################
@@ -127,6 +128,7 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
 resource "azurerm_storage_management_policy" "sapolicy" {
   for_each           = { for key in compact([for key, value in var.storage_accounts : value.life_cycle ? key : ""]) : key => var.storage_accounts[key] }
   storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
+  depends_on         = [azurerm_storage_account.storageaccounts]
 
   rule {
     name    = "lifecycle-${var.RADIX_ZONE}"

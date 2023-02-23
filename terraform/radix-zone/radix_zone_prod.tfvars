@@ -122,13 +122,6 @@ storage_accounts = {
     kind          = "BlobStorage"
     backup_center = false
   }
-  "radixveleroprod" = {
-    name          = "radixveleroprod"
-    rg_name       = "backups"
-    repl          = "LRS"
-    kind          = "BlobStorage"
-    backup_center = false
-  }
   "s940radixinfra" = {
     name          = "s940radixinfra"
     rg_name       = "s940-tfstate"
