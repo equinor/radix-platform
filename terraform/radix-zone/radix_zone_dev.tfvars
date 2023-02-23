@@ -178,6 +178,7 @@ sql_server = {
     rg_name             = "cost-allocation"
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
+    vault               = "radix-vault-dev"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -187,6 +188,7 @@ sql_server = {
     rg_name             = "cost-allocation"
     db_admin            = "radix-cost-allocation-db-admin-playground"
     minimum_tls_version = "Disabled"
+    vault               = "radix-vault-dev"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -196,12 +198,14 @@ sql_server = {
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
+    vault    = "radix-vault-dev"
   }
   "sql-radix-vulnerability-scan-playground" = {
     name     = "sql-radix-vulnerability-scan-playground"
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin-playground"
     identity = false
+    vault    = "radix-vault-dev"
   }
 }
 

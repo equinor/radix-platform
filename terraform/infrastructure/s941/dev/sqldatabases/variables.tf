@@ -1,3 +1,8 @@
+variable "AZ_LOCATION" {
+  description = "The location to create the resources in."
+  type        = string
+}
+
 variable "AZ_RESOURCE_GROUP_COMMON" {
   description = "Resource group name for common"
   type        = string
@@ -19,7 +24,6 @@ variable "identity" {
   default = null
 }
 
-
 variable "sql_server" {
   type = map(object({
     administrator_login = optional(string, "radix")
@@ -34,6 +38,7 @@ variable "sql_server" {
     }), {})
     identity = optional(bool, true)
     db_admin = string # Used in azurerm_key_vault_secret
+    vault    = string
   }))
   default = {}
 }
@@ -48,6 +53,22 @@ variable "sql_database" {
     sku_name       = optional(string, "S0")
     zone_redundant = optional(bool, false)
     tags           = optional(map(string), {})
+  }))
+  default = {}
+}
+
+variable "key_vault" {
+  type = map(object({
+    name    = string
+    rg_name = string
+  }))
+  default = {}
+}
+
+variable "key_secrets" {
+  type = map(object({
+    name  = string
+    vault = string
   }))
   default = {}
 }

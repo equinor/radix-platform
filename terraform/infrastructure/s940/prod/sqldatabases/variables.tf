@@ -4,7 +4,7 @@ variable "AZ_LOCATION" {
 }
 
 variable "AZ_RESOURCE_GROUP_COMMON" {
-  description = "Resource group name for common(platorm)"
+  description = "Resource group name for common"
   type        = string
 }
 
@@ -23,7 +23,6 @@ variable "identity" {
 
   default = null
 }
-
 
 variable "sql_server" {
   type = map(object({

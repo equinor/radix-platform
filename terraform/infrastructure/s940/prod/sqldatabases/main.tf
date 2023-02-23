@@ -17,12 +17,6 @@ data "azurerm_key_vault" "keyvault" {
   resource_group_name = each.value["rg_name"]
 }
 
-# data "azurerm_key_vault_secret" "keyvault_secret" {
-#   for_each     = var.key_secrets
-#   name         = each.value["name"]
-#   key_vault_id = data.azurerm_key_vault.keyvault_env[each.value["vault"]].id
-# }
-
 data "azurerm_key_vault_secret" "keyvault_secrets" {
   for_each     = var.sql_server
   name         = each.value["db_admin"]
