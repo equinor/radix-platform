@@ -1,25 +1,3 @@
-variable "AZ_RESOURCE_GROUP_COMMON" {
-  description = "Resource group name for common"
-  type        = string
-}
-
-variable "RADIX_ZONE" {
-  description = "Radix zone"
-  type        = string
-}
-
-variable "identity" {
-  description = "The identity to configure for this SQL Server."
-
-  type = object({
-    type         = optional(string, "SystemAssigned")
-    identity_ids = optional(list(string), [])
-  })
-
-  default = null
-}
-
-
 variable "sql_server" {
   type = map(object({
     administrator_login = optional(string, "radix")
@@ -34,6 +12,7 @@ variable "sql_server" {
     }), {})
     identity = optional(bool, true)
     db_admin = string # Used in azurerm_key_vault_secret
+    vault    = string
   }))
   default = {}
 }
@@ -48,6 +27,14 @@ variable "sql_database" {
     sku_name       = optional(string, "S0")
     zone_redundant = optional(bool, false)
     tags           = optional(map(string), {})
+  }))
+  default = {}
+}
+
+variable "key_vault" {
+  type = map(object({
+    name    = string
+    rg_name = string
   }))
   default = {}
 }

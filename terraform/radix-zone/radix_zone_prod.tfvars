@@ -161,6 +161,7 @@ sql_server = {
     location            = "westeurope"
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
+    vault               = "radix-vault-c2-prod"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -171,6 +172,8 @@ sql_server = {
     rg_name             = "cost-allocation"
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
+    vault               = "radix-vault-prod"
+    sku_name            = "S3"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -181,24 +184,16 @@ sql_server = {
     location = "westeurope"
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
+    vault    = "radix-vault-c2-prod"
   }
   "sql-radix-vulnerability-scan-prod" = {
     name     = "sql-radix-vulnerability-scan-prod"
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
+    vault    = "radix-vault-prod"
+    sku_name = "S3"
   }
 }
-
-# key_vault = {
-#   "radix-vault-c2-prod" = {
-#     name    = "radix-vault-c2-prod"
-#     rg_name = "common-westeurope"
-#   }
-#   "radix-vault-prod" = {
-#     name    = "radix-vault-prod"
-#     rg_name = "common"
-#   }
-# }
 
 #######################################################################################
 ### MYSQL Flexible Server
@@ -220,25 +215,6 @@ mysql_flexible_server = {
   }
 }
 
-key_secrets = {
-  "sql-radix-cost-allocation-c2-prod" = {
-    name  = "radix-cost-allocation-db-admin"
-    vault = "radix-vault-c2-prod"
-  }
-  "sql-radix-cost-allocation-prod" = {
-    name  = "radix-cost-allocation-db-admin"
-    vault = "radix-vault-prod"
-  }
-  "sql-radix-vulnerability-scan-c2-prod" = {
-    name  = "radix-vulnerability-scan-db-admin"
-    vault = "radix-vault-c2-prod"
-  }
-  "sql-radix-vulnerability-scan-prod" = {
-    name  = "radix-vulnerability-scan-db-admin"
-    vault = "radix-vault-prod"
-  }
-}
-
 #######################################################################################
 ### Key Vault
 ###
@@ -247,6 +223,14 @@ key_vault = {
   "kv-radix-monitoring-prod" = {
     name    = "kv-radix-monitoring-prod"
     rg_name = "monitoring"
+  }
+  "radix-vault-c2-prod" = {
+    name    = "radix-vault-c2-prod"
+    rg_name = "common-westeurope"
+  }
+  "radix-vault-prod" = {
+    name    = "radix-vault-prod"
+    rg_name = "common"
   }
 }
 
@@ -279,28 +263,28 @@ firewall_rules = {
 
 sql_database = {
   "sql-radix-cost-allocation-c2-prod" = {
-    name     = "sqldb-radix-cost-allocation"
-    server   = "sql-radix-cost-allocation-c2-prod"
-    sku_name = "S0"
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-c2-prod"
     tags = {
       "displayName" = "Database"
     }
   }
   "sql-radix-cost-allocation-prod" = {
-    name   = "sqldb-radix-cost-allocation"
-    server = "sql-radix-cost-allocation-prod"
+    name     = "sqldb-radix-cost-allocation"
+    server   = "sql-radix-cost-allocation-prod"
+    sku_name = "S3"
     tags = {
       "displayName" = "Database"
     }
   }
   "sql-radix-vulnerability-scan-c2-prod" = {
-    name     = "radix-vulnerability-scan"
-    server   = "sql-radix-vulnerability-scan-c2-prod"
-    sku_name = "S0"
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-c2-prod"
   }
   "sql-radix-vulnerability-scan-prod" = {
-    name   = "radix-vulnerability-scan"
-    server = "sql-radix-vulnerability-scan-prod"
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-prod"
+    sku_name = "S3"
   }
 }
 

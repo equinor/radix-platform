@@ -49,12 +49,3 @@ variable "key_vault" {
   }))
   default = {}
 }
-
-variable "key_secrets" {
-  description = "Name of secrets in a Keyvault."
-  type = map(object({
-    name  = optional(string, "grafana-database-password")
-    vault = optional(string, "radix-vault-dev")
-  }))
-  default = null
-}
