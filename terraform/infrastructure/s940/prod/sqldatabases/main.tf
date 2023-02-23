@@ -6,27 +6,33 @@ provider "azurerm" {
   features {}
 }
 
+data "azuread_group" "developers" {
+  display_name     = "Radix Platform Developers"
+  security_enabled = true
+}
+
 data "azurerm_key_vault" "keyvault" {
   for_each            = var.key_vault
   name                = each.value["name"]
   resource_group_name = each.value["rg_name"]
 }
 
-data "azurerm_key_vault_secret" "keyvault_secret" {
-  for_each     = var.key_secrets
-  name         = each.value["name"]
-  key_vault_id = data.azurerm_key_vault.keyvault[each.value["vault"]].id
-}
+# data "azurerm_key_vault_secret" "keyvault_secret" {
+#   for_each     = var.key_secrets
+#   name         = each.value["name"]
+#   key_vault_id = data.azurerm_key_vault.keyvault_env[each.value["vault"]].id
+# }
 
-data "azuread_group" "developers" {
-  display_name     = "Radix Platform Developers"
-  security_enabled = true
+data "azurerm_key_vault_secret" "keyvault_secrets" {
+  for_each     = var.sql_server
+  name         = each.value["db_admin"]
+  key_vault_id = data.azurerm_key_vault.keyvault[each.value["vault"]].id
 }
 
 resource "azurerm_mssql_server" "sqlserver" {
   for_each                     = var.sql_server
   administrator_login          = each.value["administrator_login"]
-  administrator_login_password = data.azurerm_key_vault_secret.keyvault_secret[each.value["name"]].value
+  administrator_login_password = data.azurerm_key_vault_secret.keyvault_secrets[each.value["name"]].value
   location                     = each.value["location"]
   minimum_tls_version          = each.value["minimum_tls_version"]
   name                         = each.value["name"]
