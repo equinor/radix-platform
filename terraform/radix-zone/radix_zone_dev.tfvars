@@ -133,13 +133,6 @@ storage_accounts = {
     rg_name       = "Logs-Dev"
     backup_center = true
   }
-  "radixvelerodev" = {
-    name          = "radixvelerodev"
-    rg_name       = "backups"
-    backup_center = false
-    repl          = "GRS"
-    kind          = "BlobStorage"
-  }
   "s941radixinfra" = {
     name                            = "s941radixinfra"
     rg_name                         = "s941-tfstate"
