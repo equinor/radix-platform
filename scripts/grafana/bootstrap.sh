@@ -187,15 +187,23 @@ verify_cluster_access
 
 echo "Install secret grafana-secret in cluster"
 
-GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
-GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
+GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
+GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
 GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name grafana-database-password | jq -r .value)"
 
 # Transform clustername to lowercase
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
-# Before moving custom ingresses, the root url should be cluster-specific.
-GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
+# Check for custom-domain / Active cluster
+HOST_NAME=$(kubectl get ing --namespace default grafana.custom-domain -o json | jq --raw-output .spec.rules[0].host) 
+
+if [[ -z $HOST_NAME ]]; then
+    GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
+    echo "GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL"
+else
+    GF_SERVER_ROOT_URL="https://$HOST_NAME"
+    echo "GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL"
+fi
 
 echo "ingress:
   enabled: true
@@ -222,6 +230,9 @@ kubectl create secret generic grafana-secrets \
     --dry-run=client \
     -o yaml |
     kubectl apply -f -
+
+flux reconcile helmrelease --namespace default grafana
+kubectl rollout restart deployment --namespace default grafana
 
 # #######################################################################################
 # ### Install Grafana
