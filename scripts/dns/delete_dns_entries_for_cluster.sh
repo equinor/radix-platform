@@ -149,10 +149,24 @@ while read -r line; do
 done <<< "${TXT_RECORDS}"
 wait
 
-az network dns record-set a delete \
+delete_cluster_specific_wildcard=true
+while true; do
+        read -r -p "Delete cluster specific wildcard record *.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}? If this script is run as part of complete cluster teardown, the answer is probably yes. (Y/n) " yn
+        case $yn in
+        [Yy]*) break ;;
+        [Nn]*)
+            delete_cluster_specific_wildcard=false
+            break
+            ;;
+        *) echo "Please answer yes or no." ;;
+        esac
+    done
+if [[ $delete_cluster_specific_wildcard == true ]]; then
+    az network dns record-set a delete \
         --name "*.${CLUSTER_NAME}" \
         --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
         --zone-name ${AZ_RESOURCE_DNS} \
         --yes
+fi
 
 echo "Deleted DNS records for cluster."

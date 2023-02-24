@@ -176,7 +176,8 @@ CONFIG_DIR="${WORK_DIR}/configs"
 # Get cluster IP
 cluster_ip=$(kubectl get secret --namespace "ingress-nginx" "ingress-nginx-raw-ip" -ojson | jq .data.rawIp --raw-output | base64 --decode)
 
-a_records=("@" "*" "*.app")
+set -f
+a_records=('@' '*' '*.app')
 # Create A records in the dns zone
 # creating the "@"-record, i.e. e.g. dev.radix.equinor.com.
 # creating wildcard record to match all FQDNs in active-cluster ingresses
@@ -187,6 +188,7 @@ do
       echo "ERROR: failed to create A record ${record}.${AZ_RESOURCE_DNS}" >&2
   }
 done
+set +f
 
 
 # iterate over configs for selected Radix components and apply ingress objects with custom names
