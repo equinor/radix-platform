@@ -34,6 +34,7 @@
 
 # Generate and store new SQL user password - new password is stored in KV and updated for SQL user
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" REGENERATE_SQL_PASSWORD=true ./bootstrap_collector.sh
+# radix-cost-allocation-db-writer-${RADIX_ENVIRONMENT}
 
 #######################################################################################
 ### START

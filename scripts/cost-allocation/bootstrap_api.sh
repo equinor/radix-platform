@@ -34,6 +34,7 @@
 # Generate and store new SQL user password - new password is stored in KV and updated for SQL user
 # The SQL_PASSWORD secret for radix-cost-allocation-api app in Radix must be updated and restarted
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env REGENERATE_SQL_PASSWORD=true ./bootstrap_api.sh
+# radix-cost-allocation-db-api-${RADIX_ENVIRONMENT}
 
 #######################################################################################
 ### START
