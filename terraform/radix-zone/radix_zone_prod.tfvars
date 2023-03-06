@@ -159,11 +159,6 @@ resource_groups = {
 ###
 
 storage_accounts = {
-  "costallocationprodsqllog" = {
-    name          = "costallocationprodsqllog"
-    rg_name       = "cost-allocation"
-    backup_center = true
-  }
   "radixflowlogsc2prod" = {
     name          = "radixflowlogsc2prod"
     rg_name       = "logs-westeurope"
@@ -176,19 +171,6 @@ storage_accounts = {
     rg_name       = "Logs"
     backup_center = true
     life_cycle    = false
-  }
-  "radixgrafanabackup" = {
-    name          = "radixgrafanabackup"
-    rg_name       = "monitoring"
-    backup_center = true
-  }
-  "radixveleroc2prod" = {
-    name          = "radixveleroc2prod"
-    rg_name       = "backups"
-    location      = "westeurope"
-    repl          = "GRS"
-    kind          = "BlobStorage"
-    backup_center = false
   }
   "s940radixinfra" = {
     name          = "s940radixinfra"

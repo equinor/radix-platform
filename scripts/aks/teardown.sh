@@ -459,11 +459,11 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dns/delete_dns_entries_
 (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" CLUSTER_NAME="$CLUSTER_NAME" ../dns/delete_dns_entries_for_cluster.sh)
 wait # wait for subshell to finish
 
-echo ""
-echo "Delete orphaned DNS records"
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dns/delete_orphaned_dns_entries.sh" "${normal}"
-(RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" ../dns/delete_orphaned_dns_entries.sh)
-wait # wait for subshell to finish
+# echo ""
+# echo "Delete orphaned DNS records"
+# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dns/delete_orphaned_dns_entries.sh" "${normal}"
+# (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" ../dns/delete_orphaned_dns_entries.sh)
+# wait # wait for subshell to finish
 
 #######################################################################################
 ### END
