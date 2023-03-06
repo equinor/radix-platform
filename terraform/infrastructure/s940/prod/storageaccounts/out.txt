@@ -1,0 +1,1114 @@
+[0m[1mazurerm_data_protection_backup_vault.northeurope: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-northeurope][0m
+[0m[1mazurerm_data_protection_backup_vault.westeurope: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-westeurope][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940radixinfra"]: Reading...[0m[0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["radixflowlogsc2prod"]: Reading...[0m[0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940radixveleroc2"]: Reading...[0m[0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940sqllogsc2prod"]: Reading...[0m[0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940sqllogsprod"]: Reading...[0m[0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940radixveleroprod"]: Reading...[0m[0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["radixflowlogsprod"]: Reading...[0m[0m
+[0m[1mazurerm_storage_account.storageaccounts["radixflowlogsprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/Logs/providers/Microsoft.Storage/storageAccounts/radixflowlogsprod][0m
+[0m[1mazurerm_storage_account.storageaccounts["s940radixveleroc2"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroc2][0m
+[0m[1mazurerm_storage_account.storageaccounts["s940sqllogsc2prod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Storage/storageAccounts/s940sqllogsc2prod][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["radixflowlogsc2prod"]: Read complete after 0s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/logs-westeurope/providers/Microsoft.Storage/storageAccounts/radixflowlogsc2prod][0m
+[0m[1mazurerm_storage_account.storageaccounts["s940radixveleroprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroprod][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940sqllogsc2prod"]: Read complete after 0s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Storage/storageAccounts/s940sqllogsc2prod][0m
+[0m[1mazurerm_storage_account.storageaccounts["radixgrafanabackup"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/monitoring/providers/Microsoft.Storage/storageAccounts/radixgrafanabackup][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["radixflowlogsprod"]: Read complete after 0s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/Logs/providers/Microsoft.Storage/storageAccounts/radixflowlogsprod][0m
+[0m[1mazurerm_storage_account.storageaccounts["costallocationprodsqllog"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cost-allocation/providers/Microsoft.Storage/storageAccounts/costallocationprodsqllog][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940radixveleroc2"]: Read complete after 0s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroc2][0m
+[0m[1mazurerm_storage_account.storageaccounts["s940sqllogsprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Storage/storageAccounts/s940sqllogsprod][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940radixinfra"]: Read complete after 1s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/s940-tfstate/providers/Microsoft.Storage/storageAccounts/s940radixinfra][0m
+[0m[1mazurerm_storage_account.storageaccounts["radixveleroc2prod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/radixveleroc2prod][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940sqllogsprod"]: Read complete after 1s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Storage/storageAccounts/s940sqllogsprod][0m
+[0m[1mazurerm_storage_account.storageaccounts["radixflowlogsc2prod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/logs-westeurope/providers/Microsoft.Storage/storageAccounts/radixflowlogsc2prod][0m
+[0m[1mdata.azurerm_storage_account.storageaccounts["s940radixveleroprod"]: Read complete after 1s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroprod][0m
+[0m[1mdata.azurerm_key_vault.keyvault_env: Reading...[0m[0m
+[0m[1mdata.azurerm_key_vault.keyvault_env: Read complete after 0s [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.KeyVault/vaults/radix-vault-prod][0m
+[0m[1mazurerm_data_protection_backup_policy_blob_storage.westeurope: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-westeurope/backupPolicies/s940-backuppolicy-westeurope][0m
+[0m[1mazurerm_data_protection_backup_policy_blob_storage.northeurope: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-northeurope/backupPolicies/s940-backuppolicy-northeurope][0m
+[0m[1mdata.azurerm_key_vault_secret.whitelist_ips: Reading...[0m[0m
+[0m[1mdata.azurerm_key_vault_secret.whitelist_ips: Read complete after 1s [id=https://radix-vault-prod.vault.azure.net/secrets/kubernetes-api-server-whitelist-ips-prod/7d058a56a93947559bb719c545ff87bd][0m
+[0m[1mazurerm_role_assignment.westeurope["radixflowlogsc2prod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/logs-westeurope/providers/Microsoft.Storage/storageAccounts/radixflowlogsc2prod/providers/Microsoft.Authorization/roleAssignments/aec459e2-0533-195f-f404-6e7a186bcc75][0m
+[0m[1mazurerm_role_assignment.northeurope["s940radixveleroprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroprod/providers/Microsoft.Authorization/roleAssignments/871c070e-cb79-9780-a905-1551bd7f5953][0m
+[0m[1mazurerm_role_assignment.northeurope["s940sqllogsprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Storage/storageAccounts/s940sqllogsprod/providers/Microsoft.Authorization/roleAssignments/2d40daf3-390b-f088-efdb-5d1ee100c29d][0m
+[0m[1mazurerm_role_assignment.northeurope["radixgrafanabackup"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/monitoring/providers/Microsoft.Storage/storageAccounts/radixgrafanabackup/providers/Microsoft.Authorization/roleAssignments/35d4c373-cfe6-51ab-41a0-615e1e581554][0m
+[0m[1mazurerm_role_assignment.northeurope["radixflowlogsprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/Logs/providers/Microsoft.Storage/storageAccounts/radixflowlogsprod/providers/Microsoft.Authorization/roleAssignments/6cdcc062-0991-a849-f837-f388838c90d2][0m
+[0m[1mazurerm_role_assignment.northeurope["s940radixinfra"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/s940-tfstate/providers/Microsoft.Storage/storageAccounts/s940radixinfra/providers/Microsoft.Authorization/roleAssignments/755e7441-e49c-d4f1-1d16-2bce78da5dcc][0m
+[0m[1mazurerm_role_assignment.northeurope["costallocationprodsqllog"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cost-allocation/providers/Microsoft.Storage/storageAccounts/costallocationprodsqllog/providers/Microsoft.Authorization/roleAssignments/62fa0c6a-ea7c-45d4-f97b-bb6d9a7f8961][0m
+[0m[1mazurerm_storage_management_policy.sapolicy["s940radixinfra"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/s940-tfstate/providers/Microsoft.Storage/storageAccounts/s940radixinfra/managementPolicies/default][0m
+[0m[1mazurerm_storage_management_policy.sapolicy["s940radixveleroprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroprod/managementPolicies/default][0m
+[0m[1mazurerm_storage_management_policy.sapolicy["s940radixveleroc2"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroc2/managementPolicies/default][0m
+[0m[1mazurerm_role_assignment.westeurope["s940radixveleroc2"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroc2/providers/Microsoft.Authorization/roleAssignments/ec3b9801-13ad-e5a6-d145-2f66621b9d31][0m
+[0m[1mazurerm_role_assignment.westeurope["s940sqllogsc2prod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Storage/storageAccounts/s940sqllogsc2prod/providers/Microsoft.Authorization/roleAssignments/c39c8796-4fd2-cd39-fb19-c969c3c12545][0m
+[0m[1mazurerm_data_protection_backup_instance_blob_storage.northeurope["s940radixveleroprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-northeurope/backupInstances/s940radixveleroprod][0m
+[0m[1mazurerm_data_protection_backup_instance_blob_storage.northeurope["s940sqllogsprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-northeurope/backupInstances/s940sqllogsprod][0m
+[0m[1mazurerm_data_protection_backup_instance_blob_storage.northeurope["s940radixinfra"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-northeurope/backupInstances/s940radixinfra][0m
+[0m[1mazurerm_data_protection_backup_instance_blob_storage.northeurope["radixflowlogsprod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-northeurope/backupInstances/radixflowlogsprod][0m
+[0m[1mazurerm_data_protection_backup_instance_blob_storage.westeurope["s940sqllogsc2prod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-westeurope/backupInstances/s940sqllogsc2prod][0m
+[0m[1mazurerm_data_protection_backup_instance_blob_storage.westeurope["s940radixveleroc2"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-westeurope/backupInstances/s940radixveleroc2][0m
+[0m[1mazurerm_data_protection_backup_instance_blob_storage.westeurope["radixflowlogsc2prod"]: Refreshing state... [id=/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.DataProtection/backupVaults/s940-backupvault-westeurope/backupInstances/radixflowlogsc2prod][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [31m-[0m destroy
+[0m
+Terraform will perform the following actions:
+
+[1m  # azurerm_role_assignment.northeurope["costallocationprodsqllog"][0m will be [1m[31mdestroyed[0m
+  # (because key ["costallocationprodsqllog"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_role_assignment" "northeurope" {
+      [31m-[0m [0m[1m[0mid[0m[0m                   = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cost-allocation/providers/Microsoft.Storage/storageAccounts/costallocationprodsqllog/providers/Microsoft.Authorization/roleAssignments/62fa0c6a-ea7c-45d4-f97b-bb6d9a7f8961" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                 = "62fa0c6a-ea7c-45d4-f97b-bb6d9a7f8961" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprincipal_id[0m[0m         = "0574327d-4040-4365-a583-7866b4816abf" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprincipal_type[0m[0m       = "ServicePrincipal" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mrole_definition_id[0m[0m   = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/providers/Microsoft.Authorization/roleDefinitions/e5e2a7ff-d759-4cd2-bb51-3152d37e2eb1" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mrole_definition_name[0m[0m = "Storage Account Backup Contributor" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mscope[0m[0m                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cost-allocation/providers/Microsoft.Storage/storageAccounts/costallocationprodsqllog" [90m->[0m [0m[90mnull[0m[0m
+    }
+
+[1m  # azurerm_role_assignment.northeurope["radixgrafanabackup"][0m will be [1m[31mdestroyed[0m
+  # (because key ["radixgrafanabackup"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_role_assignment" "northeurope" {
+      [31m-[0m [0m[1m[0mid[0m[0m                   = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/monitoring/providers/Microsoft.Storage/storageAccounts/radixgrafanabackup/providers/Microsoft.Authorization/roleAssignments/35d4c373-cfe6-51ab-41a0-615e1e581554" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                 = "35d4c373-cfe6-51ab-41a0-615e1e581554" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprincipal_id[0m[0m         = "0574327d-4040-4365-a583-7866b4816abf" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprincipal_type[0m[0m       = "ServicePrincipal" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mrole_definition_id[0m[0m   = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/providers/Microsoft.Authorization/roleDefinitions/e5e2a7ff-d759-4cd2-bb51-3152d37e2eb1" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mrole_definition_name[0m[0m = "Storage Account Backup Contributor" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mscope[0m[0m                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/monitoring/providers/Microsoft.Storage/storageAccounts/radixgrafanabackup" [90m->[0m [0m[90mnull[0m[0m
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["costallocationprodsqllog"][0m will be [1m[31mdestroyed[0m
+  # (because key ["costallocationprodsqllog"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "LRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cost-allocation/providers/Microsoft.Storage/storageAccounts/costallocationprodsqllog" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "costallocationprodsqllog" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://costallocationprodsqllog.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "costallocationprodsqllog.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://costallocationprodsqllog.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "costallocationprodsqllog.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://costallocationprodsqllog.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "costallocationprodsqllog.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://costallocationprodsqllog.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "costallocationprodsqllog.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://costallocationprodsqllog.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "costallocationprodsqllog.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://costallocationprodsqllog.z16.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "costallocationprodsqllog.z16.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "cost-allocation" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Allow" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+        }
+
+      [31m-[0m [0mtimeouts {}
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["radixflowlogsc2prod"][0m will be [1m[31mdestroyed[0m
+  # (because key ["radixflowlogsc2prod"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "LRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/logs-westeurope/providers/Microsoft.Storage/storageAccounts/radixflowlogsc2prod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "radixflowlogsc2prod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://radixflowlogsc2prod.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "radixflowlogsc2prod.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://radixflowlogsc2prod.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "radixflowlogsc2prod.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://radixflowlogsc2prod.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "radixflowlogsc2prod.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://radixflowlogsc2prod.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "radixflowlogsc2prod.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://radixflowlogsc2prod.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "radixflowlogsc2prod.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://radixflowlogsc2prod.z6.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "radixflowlogsc2prod.z6.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "logs-westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Deny" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [
+              [31m-[0m [0m"143.97.110.1",
+              [31m-[0m [0m"143.97.2.129",
+              [31m-[0m [0m"143.97.2.35",
+              [31m-[0m [0m"46.15.4.178",
+              [31m-[0m [0m"46.9.11.90",
+              [31m-[0m [0m"92.220.195.12",
+              [31m-[0m [0m"92.221.167.86",
+              [31m-[0m [0m"92.221.23.247",
+              [31m-[0m [0m"92.221.25.155",
+              [31m-[0m [0m"92.221.72.153",
+              [31m-[0m [0m"92.221.74.49",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/MC_monitoring_ext-mon-14_northeurope/providers/Microsoft.Network/virtualNetworks/aks-vnet-35748448/subnets/aks-subnet",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-westeurope/providers/Microsoft.Network/virtualNetworks/vnet-c2-prod-34/subnets/subnet-c2-prod-34",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters/providers/Microsoft.Network/virtualNetworks/vnet-eu-34/subnets/subnet-eu-34",
+            ] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+
+          [31m-[0m [0mretention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mtimeouts {}
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["radixflowlogsprod"][0m will be [1m[31mdestroyed[0m
+  # (because key ["radixflowlogsprod"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "LRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/Logs/providers/Microsoft.Storage/storageAccounts/radixflowlogsprod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "radixflowlogsprod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://radixflowlogsprod.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "radixflowlogsprod.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://radixflowlogsprod.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "radixflowlogsprod.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://radixflowlogsprod.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "radixflowlogsprod.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://radixflowlogsprod.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "radixflowlogsprod.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://radixflowlogsprod.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "radixflowlogsprod.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://radixflowlogsprod.z16.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "radixflowlogsprod.z16.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "Logs" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Deny" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [
+              [31m-[0m [0m"143.97.110.1",
+              [31m-[0m [0m"143.97.2.129",
+              [31m-[0m [0m"143.97.2.35",
+              [31m-[0m [0m"46.15.4.178",
+              [31m-[0m [0m"46.9.11.90",
+              [31m-[0m [0m"92.220.195.12",
+              [31m-[0m [0m"92.221.167.86",
+              [31m-[0m [0m"92.221.23.247",
+              [31m-[0m [0m"92.221.25.155",
+              [31m-[0m [0m"92.221.72.153",
+              [31m-[0m [0m"92.221.74.49",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/MC_monitoring_ext-mon-14_northeurope/providers/Microsoft.Network/virtualNetworks/aks-vnet-35748448/subnets/aks-subnet",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-westeurope/providers/Microsoft.Network/virtualNetworks/vnet-c2-prod-34/subnets/subnet-c2-prod-34",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters/providers/Microsoft.Network/virtualNetworks/vnet-eu-34/subnets/subnet-eu-34",
+            ] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+
+          [31m-[0m [0mretention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mtimeouts {}
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["radixgrafanabackup"][0m will be [1m[31mdestroyed[0m
+  # (because key ["radixgrafanabackup"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "LRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/monitoring/providers/Microsoft.Storage/storageAccounts/radixgrafanabackup" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "radixgrafanabackup" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://radixgrafanabackup.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "radixgrafanabackup.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://radixgrafanabackup.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "radixgrafanabackup.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://radixgrafanabackup.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "radixgrafanabackup.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://radixgrafanabackup.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "radixgrafanabackup.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://radixgrafanabackup.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "radixgrafanabackup.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://radixgrafanabackup.z16.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "radixgrafanabackup.z16.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "monitoring" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Allow" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+        }
+
+      [31m-[0m [0mtimeouts {}
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["radixveleroc2prod"][0m will be [1m[31mdestroyed[0m
+  # (because key ["radixveleroc2prod"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "BlobStorage" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "GRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/radixveleroc2prod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "radixveleroc2prod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://radixveleroc2prod.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "radixveleroc2prod.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://radixveleroc2prod.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "radixveleroc2prod.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://radixveleroc2prod.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "radixveleroc2prod.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "backups" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_location[0m[0m                = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Allow" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mtimeouts {}
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["s940radixveleroc2"][0m will be [1m[31mdestroyed[0m
+  # (because key ["s940radixveleroc2"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "GRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroc2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "s940radixveleroc2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://s940radixveleroc2.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "s940radixveleroc2.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://s940radixveleroc2.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "s940radixveleroc2.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://s940radixveleroc2.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "s940radixveleroc2.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://s940radixveleroc2.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "s940radixveleroc2.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://s940radixveleroc2.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "s940radixveleroc2.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://s940radixveleroc2.z6.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "s940radixveleroc2.z6.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "backups" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_location[0m[0m                = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Deny" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [
+              [31m-[0m [0m"143.97.110.1",
+              [31m-[0m [0m"143.97.2.129",
+              [31m-[0m [0m"143.97.2.35",
+              [31m-[0m [0m"46.15.4.178",
+              [31m-[0m [0m"46.9.11.90",
+              [31m-[0m [0m"92.220.195.12",
+              [31m-[0m [0m"92.221.167.86",
+              [31m-[0m [0m"92.221.23.247",
+              [31m-[0m [0m"92.221.25.155",
+              [31m-[0m [0m"92.221.72.153",
+              [31m-[0m [0m"92.221.74.49",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/MC_monitoring_ext-mon-14_northeurope/providers/Microsoft.Network/virtualNetworks/aks-vnet-35748448/subnets/aks-subnet",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-westeurope/providers/Microsoft.Network/virtualNetworks/vnet-c2-prod-34/subnets/subnet-c2-prod-34",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters/providers/Microsoft.Network/virtualNetworks/vnet-eu-34/subnets/subnet-eu-34",
+            ] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+
+          [31m-[0m [0mretention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["s940radixveleroprod"][0m will be [1m[31mdestroyed[0m
+  # (because key ["s940radixveleroprod"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "GRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/backups/providers/Microsoft.Storage/storageAccounts/s940radixveleroprod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "s940radixveleroprod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://s940radixveleroprod.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "s940radixveleroprod.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://s940radixveleroprod.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "s940radixveleroprod.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://s940radixveleroprod.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "s940radixveleroprod.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://s940radixveleroprod.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "s940radixveleroprod.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://s940radixveleroprod.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "s940radixveleroprod.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://s940radixveleroprod.z16.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "s940radixveleroprod.z16.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "backups" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_location[0m[0m                = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Deny" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [
+              [31m-[0m [0m"143.97.110.1",
+              [31m-[0m [0m"143.97.2.129",
+              [31m-[0m [0m"143.97.2.35",
+              [31m-[0m [0m"46.15.4.178",
+              [31m-[0m [0m"46.9.11.90",
+              [31m-[0m [0m"92.220.195.12",
+              [31m-[0m [0m"92.221.167.86",
+              [31m-[0m [0m"92.221.23.247",
+              [31m-[0m [0m"92.221.25.155",
+              [31m-[0m [0m"92.221.72.153",
+              [31m-[0m [0m"92.221.74.49",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/MC_monitoring_ext-mon-14_northeurope/providers/Microsoft.Network/virtualNetworks/aks-vnet-35748448/subnets/aks-subnet",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-westeurope/providers/Microsoft.Network/virtualNetworks/vnet-c2-prod-34/subnets/subnet-c2-prod-34",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters/providers/Microsoft.Network/virtualNetworks/vnet-eu-34/subnets/subnet-eu-34",
+            ] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+
+          [31m-[0m [0mretention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["s940sqllogsc2prod"][0m will be [1m[31mdestroyed[0m
+  # (because key ["s940sqllogsc2prod"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "LRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Storage/storageAccounts/s940sqllogsc2prod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "s940sqllogsc2prod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://s940sqllogsc2prod.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "s940sqllogsc2prod.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://s940sqllogsc2prod.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "s940sqllogsc2prod.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://s940sqllogsc2prod.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "s940sqllogsc2prod.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://s940sqllogsc2prod.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "s940sqllogsc2prod.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://s940sqllogsc2prod.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "s940sqllogsc2prod.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://s940sqllogsc2prod.z6.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "s940sqllogsc2prod.z6.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "common-westeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Deny" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [
+              [31m-[0m [0m"143.97.110.1",
+              [31m-[0m [0m"143.97.2.129",
+              [31m-[0m [0m"143.97.2.35",
+              [31m-[0m [0m"46.15.4.178",
+              [31m-[0m [0m"46.9.11.90",
+              [31m-[0m [0m"92.220.195.12",
+              [31m-[0m [0m"92.221.167.86",
+              [31m-[0m [0m"92.221.23.247",
+              [31m-[0m [0m"92.221.25.155",
+              [31m-[0m [0m"92.221.72.153",
+              [31m-[0m [0m"92.221.74.49",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/MC_monitoring_ext-mon-14_northeurope/providers/Microsoft.Network/virtualNetworks/aks-vnet-35748448/subnets/aks-subnet",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-westeurope/providers/Microsoft.Network/virtualNetworks/vnet-c2-prod-34/subnets/subnet-c2-prod-34",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters/providers/Microsoft.Network/virtualNetworks/vnet-eu-34/subnets/subnet-eu-34",
+            ] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+
+          [31m-[0m [0mretention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mtimeouts {}
+    }
+
+[1m  # azurerm_storage_account.storageaccounts["s940sqllogsprod"][0m will be [1m[31mdestroyed[0m
+  # (because key ["s940sqllogsprod"] is not in for_each map)[0m
+[0m  [31m-[0m[0m resource "azurerm_storage_account" "storageaccounts" {
+      [31m-[0m [0m[1m[0maccess_tier[0m[0m                       = "Hot" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_kind[0m[0m                      = "StorageV2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_replication_type[0m[0m          = "LRS" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0maccount_tier[0m[0m                      = "Standard" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mallow_nested_items_to_be_public[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mcross_tenant_replication_enabled[0m[0m  = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mdefault_to_oauth_authentication[0m[0m   = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0menable_https_traffic_only[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mid[0m[0m                                = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Storage/storageAccounts/s940sqllogsprod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0minfrastructure_encryption_enabled[0m[0m = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mis_hns_enabled[0m[0m                    = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mlocation[0m[0m                          = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mmin_tls_version[0m[0m                   = "TLS1_2" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mname[0m[0m                              = "s940sqllogsprod" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mnfsv3_enabled[0m[0m                     = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_access_key[0m[0m                = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_connection_string[0m[0m    = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_blob_endpoint[0m[0m             = "https://s940sqllogsprod.blob.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_blob_host[0m[0m                 = "s940sqllogsprod.blob.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_connection_string[0m[0m         = (sensitive value)
+      [31m-[0m [0m[1m[0mprimary_dfs_endpoint[0m[0m              = "https://s940sqllogsprod.dfs.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_dfs_host[0m[0m                  = "s940sqllogsprod.dfs.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_endpoint[0m[0m             = "https://s940sqllogsprod.file.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_file_host[0m[0m                 = "s940sqllogsprod.file.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_location[0m[0m                  = "northeurope" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_endpoint[0m[0m            = "https://s940sqllogsprod.queue.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_queue_host[0m[0m                = "s940sqllogsprod.queue.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_endpoint[0m[0m            = "https://s940sqllogsprod.table.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_table_host[0m[0m                = "s940sqllogsprod.table.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_endpoint[0m[0m              = "https://s940sqllogsprod.z16.web.core.windows.net/" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mprimary_web_host[0m[0m                  = "s940sqllogsprod.z16.web.core.windows.net" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mpublic_network_access_enabled[0m[0m     = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mqueue_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mresource_group_name[0m[0m               = "common" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0msecondary_access_key[0m[0m              = (sensitive value)
+      [31m-[0m [0m[1m[0msecondary_connection_string[0m[0m       = (sensitive value)
+      [31m-[0m [0m[1m[0msftp_enabled[0m[0m                      = false [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mshared_access_key_enabled[0m[0m         = true [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtable_encryption_key_type[0m[0m         = "Service" [90m->[0m [0m[90mnull[0m[0m
+      [31m-[0m [0m[1m[0mtags[0m[0m                              = {} [90m->[0m [0m[90mnull[0m[0m
+
+      [31m-[0m [0mblob_properties {
+          [31m-[0m [0m[1m[0mchange_feed_enabled[0m[0m           = true [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mchange_feed_retention_in_days[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mlast_access_time_enabled[0m[0m      = false [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mversioning_enabled[0m[0m            = true [90m->[0m [0m[90mnull[0m[0m
+
+          [31m-[0m [0mcontainer_delete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mdelete_retention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 35 [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mrestore_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 30 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mnetwork_rules {
+          [31m-[0m [0m[1m[0mbypass[0m[0m                     = [
+              [31m-[0m [0m"AzureServices",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mdefault_action[0m[0m             = "Deny" [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mip_rules[0m[0m                   = [
+              [31m-[0m [0m"143.97.110.1",
+              [31m-[0m [0m"143.97.2.129",
+              [31m-[0m [0m"143.97.2.35",
+              [31m-[0m [0m"46.15.4.178",
+              [31m-[0m [0m"46.9.11.90",
+              [31m-[0m [0m"92.220.195.12",
+              [31m-[0m [0m"92.221.167.86",
+              [31m-[0m [0m"92.221.23.247",
+              [31m-[0m [0m"92.221.25.155",
+              [31m-[0m [0m"92.221.72.153",
+              [31m-[0m [0m"92.221.74.49",
+            ] [90m->[0m [0m[90mnull[0m[0m
+          [31m-[0m [0m[1m[0mvirtual_network_subnet_ids[0m[0m = [
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/MC_monitoring_ext-mon-14_northeurope/providers/Microsoft.Network/virtualNetworks/aks-vnet-35748448/subnets/aks-subnet",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-westeurope/providers/Microsoft.Network/virtualNetworks/vnet-c2-prod-34/subnets/subnet-c2-prod-34",
+              [31m-[0m [0m"/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters/providers/Microsoft.Network/virtualNetworks/vnet-eu-34/subnets/subnet-eu-34",
+            ] [90m->[0m [0m[90mnull[0m[0m
+        }
+
+      [31m-[0m [0mqueue_properties {
+
+          [31m-[0m [0mhour_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = true [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mlogging {
+              [31m-[0m [0m[1m[0mdelete[0m[0m                = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mread[0m[0m                  = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mwrite[0m[0m                 = false [90m->[0m [0m[90mnull[0m[0m
+            }
+
+          [31m-[0m [0mminute_metrics {
+              [31m-[0m [0m[1m[0menabled[0m[0m               = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0minclude_apis[0m[0m          = false [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mretention_policy_days[0m[0m = 0 [90m->[0m [0m[90mnull[0m[0m
+              [31m-[0m [0m[1m[0mversion[0m[0m               = "1.0" [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mshare_properties {
+
+          [31m-[0m [0mretention_policy {
+              [31m-[0m [0m[1m[0mdays[0m[0m = 7 [90m->[0m [0m[90mnull[0m[0m
+            }
+        }
+
+      [31m-[0m [0mtimeouts {}
+    }
+
+[0m[1mPlan:[0m 0 to add, 0 to change, 11 to destroy.
+[0m[33m╷[0m[0m
+[33m│[0m [0m[1m[33mWarning: [0m[0m[1mValue for undeclared variable[0m
+[33m│[0m [0m
+[33m│[0m [0m[0mThe root module does not declare a variable named "resource_groups" but a value was found in file "../../../../radix-zone/radix_zone_prod.tfvars". If you meant to use this value, add a "variable" block to the configuration.
+[33m│[0m [0m
+[33m│[0m [0mTo silence these warnings, use TF_VAR_... environment variables to provide certain "global" settings to all configurations in your organization. To reduce the verbosity of these warnings, use the -compact-warnings option.
+[33m╵[0m[0m
+[33m╷[0m[0m
+[33m│[0m [0m[1m[33mWarning: [0m[0m[1mValue for undeclared variable[0m
+[33m│[0m [0m
+[33m│[0m [0m[0mThe root module does not declare a variable named "AKS_SYSTEM_NODE_MAX_COUNT" but a value was found in file "../../../../radix-zone/radix_zone_prod.tfvars". If you meant to use this value, add a "variable" block to the configuration.
+[33m│[0m [0m
+[33m│[0m [0mTo silence these warnings, use TF_VAR_... environment variables to provide certain "global" settings to all configurations in your organization. To reduce the verbosity of these warnings, use the -compact-warnings option.
+[33m╵[0m[0m
+[33m╷[0m[0m
+[33m│[0m [0m[1m[33mWarning: [0m[0m[1mValues for undeclared variables[0m
+[33m│[0m [0m
+[33m│[0m [0m[0mIn addition to the other similar warnings shown, 30 other variable(s) defined without being declared.
+[33m╵[0m[0m
+[90m
+─────────────────────────────────────────────────────────────────────────────[0m
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.

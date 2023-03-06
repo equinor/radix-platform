@@ -82,13 +82,13 @@ resource "azurerm_storage_account" "storageaccounts" {
 ### Network rules
 ###
 
-resource "azurerm_storage_account_network_rules" "network_rule" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
-  storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
-  default_action     = "Deny"
-  ip_rules           = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
-  bypass             = ["AzureServices"]
-}
+# resource "azurerm_storage_account_network_rules" "network_rule" {
+#   for_each           = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
+#   storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
+#   default_action     = "Deny"
+#   ip_rules           = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
+#   bypass             = ["AzureServices"]
+# }
 
 #######################################################################################
 ### Role assignment
