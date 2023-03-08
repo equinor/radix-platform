@@ -114,6 +114,14 @@ fi
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
+LIB_DNS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/dns/lib_dns.sh"
+if ! [[ -x "$LIB_DNS_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The lib DNS script is not found or it is not executable in path $LIB_DNS_SCRIPT" >&2
+else
+    source $LIB_DNS_SCRIPT
+fi
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -295,6 +303,14 @@ else
         SELECTED_INGRESS_IP_RAW_ADDRESS="${IP_EXISTS}"
     fi
 fi
+
+#######################################################################################
+### Add wildcard cluster specific DNS record
+###
+
+create-a-record "*.${CLUSTER_NAME}" "$SELECTED_INGRESS_IP_RAW_ADDRESS" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
+      echo "ERROR: failed to create A record *.${CLUSTER_NAME}" >&2
+  }
 
 # create nsg rule, update subnet.
 # Create network security group rule
