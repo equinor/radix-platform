@@ -709,21 +709,14 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 
 printf "Done.\n"
 
-
-#######################################################################################
-### Add wildcard cluster specific DNS record
-###
-cluster_ip=$(echo $SELECTED_INGRESS_IPS  | jq .ipAddress --raw-output)
-create-a-record "*.${CLUSTER_NAME}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
-      echo "ERROR: failed to create A record *.${CLUSTER_NAME}" >&2
-  }
-
 #######################################################################################
 ### Taint the 'systempool'
 ###
+
 echo "Taint the 'systempool'"
 az aks nodepool update --cluster-name "$CLUSTER_NAME" --name systempool --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-taints CriticalAddonsOnly=true:NoSchedule --labels nodepool-type=system nodepoolos=linux app=system-apps  >/dev/null
 printf "Done.\n"
+
 #######################################################################################
 ### Add untainted User nodepool
 ###

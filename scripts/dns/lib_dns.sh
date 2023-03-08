@@ -1,6 +1,4 @@
-
-
-function create-a-record(){
+function create-a-record() {
     local record_name=$1
     local ip_address=$2
     local rg=$3
@@ -19,7 +17,7 @@ function create-a-record(){
             --resource-group "$rg" \
             --zone-name "$zone_name" \
             --record-set-name "$record_name" \
-            --ipv4-address "$cluster_ip" \
+            --ipv4-address "$ip_address" \
             --if-none-match \
             --ttl $ttl \
             2>&1 >/dev/null
@@ -30,7 +28,7 @@ function create-a-record(){
             --name "$record_name" \
             --resource-group "$rg" \
             --zone-name "$zone_name" \
-            --set aRecords[0].ipv4Address="$cluster_ip" \
+            --set aRecords[0].ipv4Address="$ip_address" \
             2>&1 >/dev/null
         return
     fi
