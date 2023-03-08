@@ -15,11 +15,11 @@ function updateComponentEnvVar() {
         return 1
     fi
 
-    if [[ -z "$STAGING" ]]; then
+    if [[ $STAGING == true ]]; then
+        curl_command="curl --cacert /usr/local/share/ca-certificates/letsencrypt-stg-root-x1.pem"
+    else
         STAGING=false
         curl_command="curl"
-    elif [[ $STAGING ]]; then
-        curl_command="curl --cacert /usr/local/share/ca-certificates/letsencrypt-stg-root-x1.pem"
     fi
 
     local max_retries=15
