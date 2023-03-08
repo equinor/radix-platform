@@ -104,6 +104,22 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
+LIB_DNS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/dns/lib_dns.sh"
+if ! [[ -x "$LIB_DNS_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The lib DNS script is not found or it is not executable in path $LIB_DNS_SCRIPT" >&2
+else
+    source $LIB_DNS_SCRIPT
+fi
+
+ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/activate_ddos_protection_standard.sh"
+if ! [[ -x "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The script for activating DDoS Protection Standard is not found or it is not executable in path $ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" >&2
+else
+    source $ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT
+fi
+
 # Optional inputs
 
 if [[ -z "$CREDENTIALS_FILE" ]]; then
@@ -807,6 +823,14 @@ if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
     echo "PS: It has been enabled on our subscriptions so no need to do that step."
     echo ""
     echo "###########################################################"
+fi
+
+if [ "$RADIX_ZONE" == "c2" ]; then
+    # Activate DDoS Protection Standard
+    printf "%s► Execute %s%s\n" "${grn}" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" "${normal}"
+    (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT")
+    wait # wait for subshell to finish
+    echo ""
 fi
 
 echo ""
