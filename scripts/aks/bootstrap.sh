@@ -116,8 +116,6 @@ ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scri
 if ! [[ -x "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The script for activating DDoS Protection Standard is not found or it is not executable in path $ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" >&2
-else
-    source $ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT
 fi
 
 # Optional inputs
@@ -438,7 +436,7 @@ if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
         --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
         --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
-        --subscription "$AZ_SUBSCRIPTION_ID"
+        --subscription "$AZ_SUBSCRIPTION_ID" \
         --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
         --sku "${AZ_STORAGEACCOUNT_SKU}" \
         --kind "${AZ_STORAGEACCOUNT_KIND}" \
@@ -828,7 +826,7 @@ fi
 if [ "$RADIX_ZONE" == "c2" ]; then
     # Activate DDoS Protection Standard
     printf "%s► Execute %s%s\n" "${grn}" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT")
+    (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT")
     wait # wait for subshell to finish
     echo ""
 fi
