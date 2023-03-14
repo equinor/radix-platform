@@ -148,12 +148,14 @@ rm $temp_file_path
 ###
 
 function update-keyvault() {
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="12 months")
+
     if [[ -z "$updateKeyvault" ]]; then
         updateKeyvault=true
     fi
     if [[ $updateKeyvault == false ]]; then return; fi
     printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
-    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_acr_ip_whitelist_base64}" 2>&1)" == *"ERROR"* ]]; then
+    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_acr_ip_whitelist_base64}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
         printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
         exit 1
     fi
