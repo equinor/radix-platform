@@ -99,6 +99,7 @@ fi
 
 SECRET_NAME="acr-whitelist-ips-${RADIX_ENVIRONMENT}"
 update_keyvault=false
+RADIX_ZONE_ENV_DEV=../radix-zone/radix_zone_dev.env
 
 #######################################################################################
 ### Prepare az session
@@ -118,6 +119,7 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_ip_whitelist.sh
 #######################################################################################
 ### Fetch ACR IP whitelist from key vault
 ###
+
 MASTER_ACR_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 
 #######################################################################################
@@ -139,30 +141,17 @@ fi
 new_master_acr_ip_whitelist_base64=$(cat ${temp_file_path})
 new_master_acr_ip_whitelist=$(echo ${new_master_acr_ip_whitelist_base64} | base64 -d)
 
-#######################################################################################
-### Calculate which IPs are to be removed, and which IPs are to be added
-###
-
-desired_ips_file="/tmp/$(uuidgen)"
-current_ips_file="/tmp/$(uuidgen)"
-current_ips_file_no_mask="/tmp/$(uuidgen)"
-current_ips_file_with_duplicates="/tmp/$(uuidgen)"
-jq <<<"${new_master_acr_ip_whitelist[@]}" | jq -r '[.whitelist[].ip] | join("\n")' | sort | uniq > ${desired_ips_file}
-az acr network-rule list --name ${AZ_RESOURCE_CONTAINER_REGISTRY} | jq -r '[.ipRules[].ipAddressOrRange] | join("\n")' > ${current_ips_file_no_mask}
-cat ${current_ips_file_no_mask} | grep -v "/" | xargs -I {} echo "{}/32" >> ${current_ips_file_with_duplicates}
-cat ${current_ips_file_no_mask} | grep "/" >> ${current_ips_file_with_duplicates}
-cat ${current_ips_file_with_duplicates} | sort | uniq > ${current_ips_file}
-ips_to_remove=$(comm -23 <(sort ${current_ips_file}) <(sort ${desired_ips_file}))
-ips_to_add=$(comm -23 <(sort ${desired_ips_file}) <(sort ${current_ips_file}))
-
-# clean up temp files
-rm $desired_ips_file $current_ips_file $current_ips_file_no_mask $current_ips_file_with_duplicates $temp_file_path
+rm $temp_file_path
 
 #######################################################################################
 ### Update keyvault with new whitelist
 ###
 
 function update-keyvault() {
+    if [[ -z "$updateKeyvault" ]]; then
+        updateKeyvault=true
+    fi
+    if [[ $updateKeyvault == false ]]; then return; fi
     printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
     if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_acr_ip_whitelist_base64}" 2>&1)" == *"ERROR"* ]]; then
         printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
@@ -171,49 +160,92 @@ function update-keyvault() {
     printf "Done.\n"
 }
 
-if [[ $(echo "${ips_to_add}${ips_to_remove}" | wc -c) -le 1 ]]; then
-    printf "No changes to apply to ACR whitelist.\n"
-    update-keyvault
-    printf "Done.\n"
-    exit 0
-fi
+function update-acr-firewall() {
+    #######################################################################################
+    ### Calculate which IPs are to be removed, and which IPs are to be added
+    ###
 
-#######################################################################################
-### Update ACR with new whitelist
-###
+    acr_ip_whitelist=$1
+    acr=$2
+    RADIX_ZONE_ENV_TMP=$3
+    updateKeyvault=$4
 
-printf "\nUpdating ACR ${AZ_RESOURCE_CONTAINER_REGISTRY}...\n\n"
-
-if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        printf "Deleting these IPs\n${ips_to_remove}\n\n"
-        printf "Adding these IPs\n${ips_to_add}\n\n"
-        read -r -p "Proceed with operation? (Y/n) " yn
-        case ${yn} in
-        [Yy]*)
-            whitelist_ok=true
-            break
-            ;;
-        [Nn]*)
-            whitelist_ok=false
+    if [[ -z "${RADIX_ZONE_ENV_TMP}" ]]; then
+        printf "\nERROR: Please provide RADIX_ZONE_ENV_TMP" >&2
+        exit 1
+    else
+        if [[ ! -f "${RADIX_ZONE_ENV_TMP}" ]]; then
+            printf "\nERROR: RADIX_ZONE_ENV_TMP=%s is invalid, the file does not exist." "${RADIX_ZONE_ENV_TMP}" >&2
             exit 1
-            ;;
-        *) printf "\nPlease answer yes or no.\n" ;;
-        esac
+        fi
+        source "${RADIX_ZONE_ENV_TMP}"
+    fi
+
+    desired_ips_file="/tmp/$(uuidgen)"
+    current_ips_file="/tmp/$(uuidgen)"
+    current_ips_file_no_mask="/tmp/$(uuidgen)"
+    current_ips_file_with_duplicates="/tmp/$(uuidgen)"
+    jq <<<"${acr_ip_whitelist}" | jq -r '[.whitelist[].ip] | join("\n")' | sort | uniq >${desired_ips_file}
+    az acr network-rule list --name "${acr}" --subscription "${AZ_SUBSCRIPTION_ID}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" | jq -r '[.ipRules[].ipAddressOrRange] | join("\n")' >${current_ips_file_no_mask}
+    cat ${current_ips_file_no_mask} | grep -v "/" | xargs -I {} echo "{}/32" >>${current_ips_file_with_duplicates}
+    cat ${current_ips_file_no_mask} | grep "/" >>${current_ips_file_with_duplicates}
+    cat ${current_ips_file_with_duplicates} | sort | uniq >${current_ips_file}
+    ips_to_remove=$(comm -23 <(sort ${current_ips_file}) <(sort ${desired_ips_file}))
+    ips_to_add=$(comm -23 <(sort ${desired_ips_file}) <(sort ${current_ips_file}))
+
+    # clean up temp files
+    rm $desired_ips_file $current_ips_file $current_ips_file_no_mask $current_ips_file_with_duplicates
+
+    printf "\nChecking ACR %s...\n\n" "${acr}"
+
+    if [[ $(echo "${ips_to_add}${ips_to_remove}" | wc -c) -le 1 ]]; then
+        printf "No changes to apply to ACR whitelist.\n"
+        update-keyvault
+        printf "Done.\n"
+        return
+    fi
+
+    #######################################################################################
+    ### Update ACR with new whitelist
+    ###
+
+    printf "\nUpdating ACR %s...\n\n" "${acr}"
+
+    if [[ $USER_PROMPT == true ]]; then
+        while true; do
+            printf "Deleting these IPs\n%s\n\n" "${ips_to_remove}"
+            printf "Adding these IPs\n%s\n\n" "${ips_to_add}"
+            read -r -p "Proceed with operation? (Y/n) " yn
+            case ${yn} in
+            [Yy]*)
+                whitelist_ok=true
+                break
+                ;;
+            [Nn]*)
+                whitelist_ok=false
+                exit 1
+                ;;
+            *) printf "\nPlease answer yes or no.\n" ;;
+            esac
+        done
+    fi
+
+    update-keyvault
+
+    for ip_to_add in ${ips_to_add}; do
+        printf "Adding %s to ACR whitelist...\n" "${ip_to_add}"
+        az acr network-rule add --ip-address "${ip_to_add}" --name "${acr}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" >/dev/null
     done
-fi
 
-update-keyvault
+    for ip_to_remove in ${ips_to_remove}; do
+        printf "Deleting %s from ACR whitelist...\n" "${ip_to_remove}"
+        ip_to_remove_no_32_mask=${ip_to_remove%"/32"}
+        az acr network-rule remove --ip-address "${ip_to_remove_no_32_mask}" --name "${acr}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" >/dev/null
+    done
 
-for ip_to_add in ${ips_to_add}; do
-    printf "Adding ${ip_to_add} to ACR whitelist...\n"
-    az acr network-rule add --ip-address "${ip_to_add}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
-done
+    printf "Done.\n"
+}
 
-for ip_to_remove in ${ips_to_remove}; do
-    printf "Deleting ${ip_to_remove} from ACR whitelist...\n"
-    ip_to_remove_no_32_mask=${ip_to_remove%"/32"}
-    az acr network-rule remove --ip-address "${ip_to_remove_no_32_mask}" --name ${AZ_RESOURCE_CONTAINER_REGISTRY} --resource-group ${AZ_RESOURCE_GROUP_COMMON} >/dev/null
-done
-
-printf "Done.\n"
+combined_acr_ip_whitelist=$(combineWhitelists)
+(update-acr-firewall "${new_master_acr_ip_whitelist[@]}" "${AZ_RESOURCE_CONTAINER_REGISTRY}" "${RADIX_ZONE_ENV}")
+(update-acr-firewall "${combined_acr_ip_whitelist[@]}" "radixcanary" "${RADIX_ZONE_ENV_DEV}" "false")
