@@ -86,7 +86,7 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Start deleting of orphaned DNS records using the following configuration:"
+echo -e "Start deletion of DNS records using the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
