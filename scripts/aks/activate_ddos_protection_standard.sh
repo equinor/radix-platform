@@ -119,9 +119,9 @@ fi
 
 echo ""
 
-if [[ "$RADIX_ZONE" != "c2" ]]; then
+if [[ "$RADIX_ZONE" != "c2" && "$RADIX_ZONE" != "prod" ]]; then
     while true; do
-        read -r -p "Selected RADIX_ZONE is ${RADIX_ZONE}, which is _NOT_ c2. Is this correct? (Y/n) " yn
+        read -r -p "Selected RADIX_ZONE is ${RADIX_ZONE}, which is _NOT_ c2 or prod. Is this correct? (Y/n) " yn
         case $yn in
         [Yy]*) break ;;
         [Nn]*)
@@ -137,7 +137,11 @@ fi
 
 echo "Adding ${VNET_NAME} to list of vnets protected by ${DDOS_PROTECTION_STANDARD_RESOURCE_ID}..."
 
-az network vnet update --ddos-protection "true" --ddos-protection-plan ${DDOS_PROTECTION_STANDARD_RESOURCE_ID} --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${VNET_NAME}
+az network vnet update \
+        --ddos-protection "true" \
+        --ddos-protection-plan ${DDOS_PROTECTION_STANDARD_RESOURCE_ID} \
+        --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} \
+        --name ${VNET_NAME} >/dev/null
 
 echo ""
-echo "Done.\n"
+echo "Done."

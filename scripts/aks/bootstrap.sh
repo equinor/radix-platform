@@ -823,7 +823,7 @@ if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
     echo "###########################################################"
 fi
 
-if [ "$RADIX_ZONE" == "c2" ]; then
+if [ "$RADIX_ZONE" == "c2" || "$RADIX_ZONE" == "prod"  ]; then
     # Activate DDoS Protection Standard
     printf "%s► Execute %s%s\n" "${grn}" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" "${normal}"
     (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT")
