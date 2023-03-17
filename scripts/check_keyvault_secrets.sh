@@ -28,7 +28,7 @@
 ###
 
 DAYS_LEFT_WARNING=14
-EXPIRY_DATE_EXTENSION="6 months"
+EXPIRY_DATE_EXTENSION="12 months"
 
 printf "\nStarting check keyvault secrets... "
 
@@ -86,10 +86,6 @@ echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e ""
-echo -e "   > WHAT:"
-echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
-echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
@@ -122,35 +118,67 @@ red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
+fmt="%-55s %-40s %5s\n"
 
-KEY_VAULT_SECRETS=$(az keyvault secret list --vault-name "$AZ_RESOURCE_KEYVAULT")
-MISSING_EXPIRY_ARRAY=()
+KEY_VAULTS=$(az keyvault list)
+SECRETS_MISSING_EXPIRY_DATE=()
+SECRETS_EXPIRING_SOON=()
+SECRETS_EXPIRED=()
 
-function createArrays() {
+function printSecrets() {
+    SECRET_LIST=$1
+    TEXT_COLOR=$2
+
+    if [[ -z "$TEXT_COLOR" ]]; then
+        TEXT_COLOR="${normal}"
+    fi
+
+    if [ ${#SECRET_LIST[@]} -ne 0 ]; then
+        while read -r i; do
+            NAME=$(jq -n "$i" | jq -r '.name')
+            KEYVAULT=$(jq -n "$i" | jq -r '.keyvault')
+            EXPIRES=$(jq -n "$i" | jq -r '.expires')
+
+            printf "${TEXT_COLOR}"
+            printf "${fmt}" "$NAME" "$KEYVAULT" "$EXPIRES"
+            printf "${normal}"
+        done < <(echo "${SECRET_LIST[@]}" | jq -c '.')
+    fi
+}
+
+function checkForMissingExpiryDate() {
     while read -r i; do
         EXPIRES=$(jq -n "$i" | jq -r '.attributes.expires')
         NAME=$(jq -n "$i" | jq -r '.name')
         ID=$(jq -n "$i" | jq -r '.id')
 
         if [[ $EXPIRES == "null" ]]; then
-            MISSING_EXPIRY_ARRAY+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$EXPIRES\"}")
+            SECRETS_MISSING_EXPIRY_DATE+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$EXPIRES\",\"keyvault\":\"$KV_NAME\"}")
         fi
-    done < <(echo "${KEY_VAULT_SECRETS}" | jq -c '.[]')
+    done < <(echo "${KV_SECRETS}" | jq -c '.[]')
 }
 
 function assignExpiryDate() {
     NEXT_EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$EXPIRY_DATE_EXTENSION")
+    SECRETS_ASSIGNED_EXPIRY_DATE=()
 
+    printf "\nAssigning expiration date..."
     while read -r i; do
         EXPIRES=$(jq -n "$i" | jq -r '.expires')
         NAME=$(jq -n "$i" | jq -r '.name')
         ID=$(jq -n "$i" | jq -r '.id')
+        KEYVAULT=$(jq -n "$i" | jq -r '.keyvault')
 
         if az keyvault secret set-attributes --id "$ID" --expires "$NEXT_EXPIRY_DATE" --output none; then
-            printf "\n%s  Assigned secret %s expiry date %s%s" "${grn}" "$NAME" "$(date +%c -d "$NEXT_EXPIRY_DATE")" "${normal}"
+            SECRETS_ASSIGNED_EXPIRY_DATE+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$NEXT_EXPIRY_DATE")\",\"keyvault\":\"$KV_NAME\"}")
         fi
 
-    done < <(echo "${MISSING_EXPIRY_ARRAY[@]}" | jq -c '.')
+    done < <(echo "${SECRETS_MISSING_EXPIRY_DATE[@]}" | jq -c '.')
+
+    if [ ${#SECRETS_ASSIGNED_EXPIRY_DATE[@]} -ne 0 ]; then
+        printf "\n${fmt}" "Secret" "Keyvault" "Expiration"
+        printSecrets "${SECRETS_ASSIGNED_EXPIRY_DATE[*]}" "${grn}"
+    fi
 
     return 1
 }
@@ -173,31 +201,45 @@ function checkExpiryDates() {
             DIFFERANSE=$res
             if [ "$DIFFERANSE" -lt $DAYS_LEFT_WARNING ]; then
                 if [ "$DIFFERANSE" -lt 0 ]; then
-                    printf "\n  %sSecret %s in keyvault %s has expired %s%s" "${red}" "$NAME" "$AZ_RESOURCE_KEYVAULT" "$(date +%c -d "$EXPIRES")" "${normal}"
+                    SECRETS_EXPIRED+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRES")}\",\"keyvault\":\"$KV_NAME\"}")
                 else
-                    printf "\n  %sSecret %s in keyvault %s is expiring soon %s%s" "${yel}" "$NAME" "$AZ_RESOURCE_KEYVAULT" "$(date +%c -d "$EXPIRES")" "${normal}"
+                    SECRETS_EXPIRING_SOON+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRES")\",\"keyvault\":\"$KV_NAME\"}")
                 fi
             fi
         fi
-    done < <(echo "${KEY_VAULT_SECRETS}" | jq -c '.[]')
+    done < <(echo "${KV_SECRETS}" | jq -c '.[]')
 }
 
-printf "Creating arrays..."
-createArrays
-printf "done"
+while read -r i; do
+    KV_NAME=$(jq -n "$i" | jq -r '.name')
+    printf "Getting secrets from keyvault %s... " "${KV_NAME}"
 
-if [ ${#MISSING_EXPIRY_ARRAY[@]} -ne 0 ]; then
-    printf "\nChecking for missing expiration dates..."
+    KV_SECRETS=$(az keyvault secret list --vault-name "$KV_NAME" 2>/dev/null || {
+        # Send message to stderr
+        printf "ERROR: Could not get secrets for keyvault \"%s\". " "$KV_NAME" >&2
+        exit 1
+    })
+
+    checkForMissingExpiryDate
+    checkExpiryDates
+
+    printf "Done.\n"
+done < <(echo "${KEY_VAULTS}" | jq -c '.[]')
+
+if [ ${#SECRETS_MISSING_EXPIRY_DATE[@]} -ne 0 ]; then
+    printf "\nListing secrets missing expiration date...\n"
+    printf "${fmt}" "Secret" "Keyvault"
     while read -r i; do
         NAME=$(jq -n "$i" | jq -r '.name')
-        printf "\n%s  Secret %s is missing expiry date%s" "${yel}" "$NAME" "${normal}"
-    done < <(echo "${MISSING_EXPIRY_ARRAY[@]}" | jq -c '.')
+        KEYVAULT=$(jq -n "$i" | jq -r '.keyvault')
+        printf "${fmt}" "$NAME" "$KEYVAULT"
+    done < <(echo "${SECRETS_MISSING_EXPIRY_DATE[@]}" | jq -c '.')
 
     printf "\n"
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -r -p "Do you want to assign date to secrets missing expiry date? $EXPIRY_DATE_EXTENSION from today (y/N) " yn
+            read -r -p "Do you want to assign expiration date to the following secrets? $EXPIRY_DATE_EXTENSION from today (Y/n) " yn
             case $yn in
             [Yy]*) assignExpiryDate || break ;;
             [Nn]*) break ;;
@@ -207,9 +249,13 @@ if [ ${#MISSING_EXPIRY_ARRAY[@]} -ne 0 ]; then
     else
         assignExpiryDate
     fi
-    printf "\nDone"
 fi
 
-printf "\nChecking expiration dates..."
-checkExpiryDates
+if [ ${#SECRETS_EXPIRING_SOON[@]} -ne 0 ] || [ ${#SECRETS_EXPIRED[@]} -ne 0 ]; then
+    printf "\nListing soon to expire and expired secrets...\n"
+    printf "${fmt}" "Secret" "Keyvault" "Expiration"
+    printSecrets "${SECRETS_EXPIRING_SOON[*]}" "${yel}"
+    printSecrets "${SECRETS_EXPIRED[*]}" "${red}"
+fi
+
 printf "\nDone\n"
