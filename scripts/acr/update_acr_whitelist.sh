@@ -99,7 +99,7 @@ fi
 
 SECRET_NAME="acr-whitelist-ips-${RADIX_ENVIRONMENT}"
 update_keyvault=false
-RADIX_ZONE_ENV_DEV=../radix-zone/radix_zone_dev.env
+RADIX_ZONE_ENV_DEV="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/radix-zone/radix_zone_dev.env"
 
 #######################################################################################
 ### Prepare az session
