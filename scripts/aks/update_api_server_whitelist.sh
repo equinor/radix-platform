@@ -99,18 +99,11 @@ printf "Done.\n"
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_ip_whitelist.sh
 
-
-
 #######################################################################################
 ### Prepare K8S API IP WHITELIST
 ###
+
 MASTER_K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
-
-
-# if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
-#     checkpackage=$( dpkg -s libnet-ip-perl /dev/null 2>&1 | grep Status: )
-#     if [[ -n ${checkpackage} ]]; then
-# fi
 
 temp_file_path="/tmp/$(uuidgen)"
 run-interactive-ip-whitelist-wizard "${MASTER_K8S_API_IP_WHITELIST}" "${temp_file_path}"
@@ -131,9 +124,11 @@ new_k8s_api_ip_whitelist=$(jq <<<"${new_master_k8s_api_ip_whitelist[@]}" | jq -r
 ###
 
 if [[ ${update_keyvault} == true ]]; then
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="12 months")
+
     # Update keyvault
     printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
-    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist_base64}" 2>&1)" == *"ERROR"* ]]; then
+    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist_base64}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
         printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
         exit 1
     fi
