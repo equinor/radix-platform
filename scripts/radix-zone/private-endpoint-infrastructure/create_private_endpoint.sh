@@ -139,17 +139,13 @@ PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
 
 if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
     echo "Creating private endpoint..."
-    if [[ -n "${TARGET_SUBRESOURCE}" ]]; then
-        # Argument can not be empty.
-        GROUP_ID="--group-id "${TARGET_SUBRESOURCE}""
-    fi
 
     PRIVATE_ENDPOINT_ID=$(az network private-endpoint create \
         --name "${PRIVATE_ENDPOINT_NAME}" \
         --resource-group "${AZ_RESOURCE_GROUP_VNET_HUB}" \
         --connection-name "${PRIVATE_ENDPOINT_NAME}" \
         --private-connection-resource-id "${TARGET_RESOURCE_RESOURCE_ID}" \
-        ${GROUP_ID} \
+        --group-id "${TARGET_SUBRESOURCE}" \
         --subnet "${AZ_VNET_HUB_SUBNET_NAME}" \
         --vnet-name "${AZ_VNET_HUB_NAME}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
