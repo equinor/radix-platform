@@ -169,7 +169,7 @@ fi
 
 PRIVATE_ENDPOINT_NIC_ID=$(az network private-endpoint show --ids ${PRIVATE_ENDPOINT_ID} --query networkInterfaces[0].id --output tsv)
 if [[ -n ${PRIVATE_ENDPOINT_NIC_ID} ]]; then
-    NIC_PRIVATE_IP=$(az network nic show --ids ${PRIVATE_ENDPOINT_NIC_ID} --query ipConfigurations[0].privateIpAddress --output tsv 2>/dev/null)
+    NIC_PRIVATE_IP=$(az network nic show --ids ${PRIVATE_ENDPOINT_NIC_ID} --query ipConfigurations[0].privateIPAddress --output tsv 2>/dev/null)
 
     if [[ -n ${NIC_PRIVATE_IP} ]]; then
         PRIVATE_DNS_RECORD_NAME=$(az network private-dns record-set a list \
