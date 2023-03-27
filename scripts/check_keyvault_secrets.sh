@@ -201,7 +201,7 @@ function checkExpiryDates() {
             DIFFERANSE=$res
             if [ "$DIFFERANSE" -lt $DAYS_LEFT_WARNING ]; then
                 if [ "$DIFFERANSE" -lt 0 ]; then
-                    SECRETS_EXPIRED+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRES")}\",\"keyvault\":\"$KV_NAME\"}")
+                    SECRETS_EXPIRED+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRES")\",\"keyvault\":\"$KV_NAME\"}")
                 else
                     SECRETS_EXPIRING_SOON+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRES")\",\"keyvault\":\"$KV_NAME\"}")
                 fi
