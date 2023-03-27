@@ -253,6 +253,12 @@ if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
     echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
 fi
 
+GITHUB_MAINTENANCE_SCRIPT="$WORKDIR_PATH/github_maintenance.sh"
+if ! [[ -x "$GITHUB_MAINTENANCE_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The github maintenance secrets script is not found or it is not executable in path $GITHUB_MAINTENANCE_SCRIPT" >&2
+fi
+
 
 #######################################################################################
 ### Prepare az session
@@ -778,6 +784,12 @@ else
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
     wait # wait for subshell to finish
 fi
+
+# Create role for github maintenance
+printf "\n%s► Execute %s%s\n" "${grn}" "$GITHUB_MAINTENANCE_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" source "$GITHUB_MAINTENANCE_SCRIPT")
+wait # wait for subshell to finish
+echo ""
 
 if [[ -d "${RADIX_ZONE_PATH}" ]]; then
     for filename in "${RADIX_ZONE_PATH}"/*.env; do

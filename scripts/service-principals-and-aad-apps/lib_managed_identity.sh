@@ -138,6 +138,51 @@ function create_custom_role() {
     fi
 }
 
+function add-federated-gh-credentials {
+    local mi_name
+    local repo
+    local branch
+
+    mi_name="$1"
+    repo="$2"
+    branch="$3"
+
+    printf "Adding federated GH credentials to MI ${mi_name}... "
+    az identity federated-credential create \
+        --identity-name "${mi_name}" \
+        --name "${repo}-gh-actions-${branch}" \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --audiences "api://AzureADTokenExchange" \
+        --issuer "https://token.actions.githubusercontent.com" \
+        --subject "repo:equinor/${repo}:ref:refs/heads/${branch}" \
+        --only-show-errors >/dev/null || {        
+            echo -e "ERROR: Could not add federated GH credentials to managed identity ${mi_name}." >&2
+            exit 1
+        }
+    printf "Done!\n"
+}
+
+function create-role-and-rolebinding {
+    local role_path
+    local rolebinding_path
+
+    role_path="$1"
+    rolebinding_path="$2"
+
+    printf "Creating role...\n"
+    kubectl apply -f "${role_path}" || {        
+            echo -e "ERROR: Could not create role." >&2
+            exit 1
+        }
+    printf "Done\n"
+
+    printf "Creating rolebinding...\n"
+    kubectl apply -f "${rolebinding_path}" || {        
+            echo -e "ERROR: Could not create rolebinding." >&2
+            exit 1
+        }
+    printf "Done\n"
+}
 
 #######################################################################################
 ### END

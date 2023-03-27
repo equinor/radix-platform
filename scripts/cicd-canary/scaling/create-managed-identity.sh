@@ -93,7 +93,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORKDIR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Source util scripts
 
@@ -126,8 +126,6 @@ printf "...Done.\n"
 ### Verify cluster access
 ###
 verify_cluster_access
-
-AKS_COMMAND_RUNNER_ROLE_NAME="Radix Azure Kubernetes Service Command Runner"
 
 function mi-exists {
     local mi_name=$1
@@ -183,38 +181,6 @@ function modify-role-binding {
         }
 }
 
-function add-federated-gh-credentials {
-    local mi_name=$1
-    local branch=$2
-    printf "Adding federated GH credentials to MI ${mi_name}...\n"
-    az identity federated-credential create \
-        --identity-name ${mi_name} \
-        --name radix-platform-gh-actions-${branch} \
-        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-        --audiences "api://AzureADTokenExchange" \
-        --issuer https://token.actions.githubusercontent.com \
-        --subject repo:equinor/radix-platform:ref:refs/heads/${branch} \
-        --only-show-errors >/dev/null || {        
-            echo -e "ERROR: Could not add federated GH credentials to managed identity ${mi_name}." >&2
-            exit 1
-        }
-}
-
-function create-role-and-rolebinding {
-    printf "Creating role in radix-cicd-canary namespace...\n"
-    kubectl apply -f $script_dir_path/role.yaml || {        
-            echo -e "ERROR: Could not create role." >&2
-            exit 1
-        }
-    printf "Done\n"
-    printf "Creating rolebinding in radix-cicd-canary namespace...\n"
-    kubectl apply -f $script_dir_path/rolebinding.yaml || {        
-            echo -e "ERROR: Could not create rolebinding." >&2
-            exit 1
-        }
-    printf "Done\n"
-}
-
 function set-kv-policy {
     local object_id=$1
     printf "Creating vault access policy on ${AZ_RESOURCE_KEYVAULT} for ${object_id}...\n"
@@ -244,6 +210,6 @@ rm ${tmp_file_name}
 # https://github.com/equinor/Solum/issues/10900
 create_role_assignment_for_identity "${mi_name}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
 set-kv-policy "${mi_object_id}"
-create-role-and-rolebinding
+create-role-and-rolebinding "${WORKDIR_PATH}/role.yaml" "${WORKDIR_PATH}/rolebinding.yaml"
 modify-role-binding ${mi_object_id}
-add-federated-gh-credentials ${mi_name} "master"
+add-federated-gh-credentials ${mi_name} "radix-platform" "master"

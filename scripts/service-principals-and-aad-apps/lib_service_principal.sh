@@ -574,6 +574,18 @@ function wait_for_pim_app_developer_role() {
     fi
 }
 
+function check_for_ad_owner_role() {
+    printf "Checking if you have required AZ AD ownership..."
+    currentownerrole="$(az role assignment list --query "[?roleDefinitionName == 'Owner' && principalName == '$(az account show --query user.name -o tsv)']" | jq .[])"
+
+    if [[ -z "$currentownerrole" ]]; then
+        echo "You must activate Azure resources role \"Owner\" in PIM before using this script. Exiting..." >&2
+        exit 1
+    fi
+
+    printf "Done.\n"
+}
+
 function wait_for_ad_owner_role() {
     local currentownerrole
     printf "Checking if you have required AZ AD ownership..."

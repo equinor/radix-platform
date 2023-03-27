@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: radix-github-maintenance
+subjects:
+- kind: User
+  name: xx
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: radix-github-maintenance
+  apiGroup: rbac.authorization.k8s.io
