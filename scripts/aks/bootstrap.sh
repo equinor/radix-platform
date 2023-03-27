@@ -589,6 +589,7 @@ AKS_BASE_OPTIONS=(
     --location "$AZ_RADIX_ZONE_LOCATION"
     --enable-managed-identity
     --enable-aad
+    --enable-defender
     --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
     --assign-identity "$ID_AKS"
     --assign-kubelet-identity "$ID_AKSKUBELET"
