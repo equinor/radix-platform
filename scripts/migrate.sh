@@ -253,7 +253,7 @@ if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
     echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
 fi
 
-GITHUB_MAINTENANCE_SCRIPT="$WORKDIR_PATH/github_maintenance.sh"
+GITHUB_MAINTENANCE_SCRIPT="$WORKDIR_PATH/github_maintenance/bootstrap.sh"
 if ! [[ -x "$GITHUB_MAINTENANCE_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The github maintenance secrets script is not found or it is not executable in path $GITHUB_MAINTENANCE_SCRIPT" >&2
