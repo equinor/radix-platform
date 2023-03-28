@@ -162,6 +162,7 @@ create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${
 
 create_managed_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
 create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "Azure Kubernetes Service Contributor Role" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
 add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master"
 
 #######################################################################################

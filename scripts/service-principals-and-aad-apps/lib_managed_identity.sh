@@ -194,7 +194,7 @@ function set-kv-policy {
     printf "Creating vault access policy on %s for %s...\n" "${AZ_RESOURCE_KEYVAULT}" "${object_id}"
     az keyvault set-policy \
         --name "${AZ_RESOURCE_KEYVAULT}" \
-        --secret-permissions "${permissions}" \
+        --secret-permissions ${permissions} \
         --object-id "${object_id}" \
         --only-show-errors >/dev/null || {        
             echo -e "ERROR: Could not create vault access policy on ${AZ_RESOURCE_KEYVAULT}." >&2
