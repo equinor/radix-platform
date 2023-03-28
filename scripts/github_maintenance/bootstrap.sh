@@ -94,7 +94,14 @@ object_id=$(az identity show --name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMEN
         exit 1
     }
 
-kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance" \
+set-kv-policy "${object_id}" "get set"
+
+kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-1" \
+    --type strategic \
+    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
+
+kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-2" \
+    --namespace ingress-nginx \
     --type strategic \
     --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
 
