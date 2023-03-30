@@ -89,10 +89,10 @@ printf "Done.\n"
 
 create-role-and-rolebinding "${WORKDIR_PATH}/roles/role.yaml" "${WORKDIR_PATH}/roles/rolebinding.yaml"
 
-object_id=$(az identity show --name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query principalId -o tsv)  || {
-        echo -e "ERROR: Could not retrieve object ID of MI ${MI_GITHUB_MAINTENANCE}." >&2
-        exit 1
-    }
+object_id=$(az identity show --name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query principalId -o tsv) || {
+    echo -e "ERROR: Could not retrieve object ID of MI ${MI_GITHUB_MAINTENANCE}." >&2
+    exit 1
+}
 
 set-kv-policy "${object_id}" "get set"
 
@@ -102,6 +102,21 @@ kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-1
 
 kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-2" \
     --namespace ingress-nginx \
+    --type strategic \
+    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
+
+kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-3" \
+    --namespace radix-web-console-qa \
+    --type strategic \
+    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
+
+kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-4" \
+    --namespace radix-cicd-canary \
+    --type strategic \
+    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
+
+kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-5" \
+    --namespace flux-system \
     --type strategic \
     --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
 

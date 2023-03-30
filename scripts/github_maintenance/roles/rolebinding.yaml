@@ -24,3 +24,45 @@ roleRef:
   kind: ClusterRole
   name: radix-github-maintenance
   apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: radix-github-maintenance-3
+  namespace: radix-web-console-qa
+subjects:
+  - kind: User
+    name: xx
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: radix-github-maintenance
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: radix-github-maintenance-4
+  namespace: radix-cicd-canary
+subjects:
+  - kind: User
+    name: xx
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: radix-github-maintenance
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: radix-github-maintenance-5
+  namespace: flux-system
+subjects:
+  - kind: User
+    name: xx
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: radix-github-maintenance
+  apiGroup: rbac.authorization.k8s.io

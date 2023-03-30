@@ -160,9 +160,17 @@ create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${
 ### Create managed identity
 ###
 
+permission=("Microsoft.Network/dnszones/A/write" "Microsoft.ContainerService/managedClusters/write" "Microsoft.Network/publicIPAddresses/join/action" "Microsoft.Network/virtualNetworks/subnets/join/action" "Microsoft.OperationalInsights/workspaces/sharedkeys/read" "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action")
+permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
+
+scopes=("/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters" "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common")
+scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
+
+create-az-role "radix-maintenance" "Permission needed for cluster maintenance" "$permission_json" "$scopes_json"
 create_managed_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
 create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "Azure Kubernetes Service Contributor Role" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
 add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master"
 
 #######################################################################################
