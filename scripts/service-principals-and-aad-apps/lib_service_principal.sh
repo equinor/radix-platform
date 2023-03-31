@@ -446,7 +446,7 @@ function create_oidc_and_federated_credentials() {
     echo 'Updating GitHub secrets...'
     gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
     gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
-    gh secret set 'AZURE_TENANT_ID' --body $(az ad signed-in-user show --query id -otsv) --repo "equinor/${REPO}" --env "$ENVIRONMENT"
+    gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" --env "$ENVIRONMENT"
 }
 
 function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
