@@ -573,6 +573,13 @@ echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 ### Add Usermode pool - System - Tainted
 ###
 
+WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
+DEFENDER_CONFIG="DEFENDER_CONFIG.json"
+
+cat <<EOF > $DEFENDER_CONFIG
+{"logAnalyticsWorkspaceResourceId": "$WORKSPACE_ID"}
+EOF
+
 AKS_BASE_OPTIONS=(
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
     --name "$CLUSTER_NAME"
@@ -590,6 +597,7 @@ AKS_BASE_OPTIONS=(
     --enable-managed-identity
     --enable-aad
     --enable-defender
+    --defender-config "$DEFENDER_CONFIG"
     --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
     --assign-identity "$ID_AKS"
     --assign-kubelet-identity "$ID_AKSKUBELET"
@@ -637,6 +645,8 @@ else
 fi
 
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
+
+rm -f $DEFENDER_CONFIG
 
 #######################################################################################
 ### Assign Contributor on scope of nodepool RG for AKS managed identity
