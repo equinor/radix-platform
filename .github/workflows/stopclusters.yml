@@ -1,8 +1,10 @@
 name: stop-cluster
 on:
   schedule:
-    - cron: '0 17 * * 1-5'      #utc time
-    - cron: '0 19 * * 1-5'      #utc time
+    - cron: '0 16 * * 1-5' #utc Summer time - Initial
+    - cron: '0 18 * * 1-5' #utc Summer time - Runs second time if initial run did not succeed
+    #- cron: '0 17 * * 1-5' #utc Winter time - Initial
+    #- cron: '0 19 * * 1-5' #utc Winter time - Runs second time if initial run did not succeed
 permissions:
   id-token: write
   contents: read

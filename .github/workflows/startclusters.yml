@@ -1,7 +1,8 @@
 name: start-cluster
 on:
   schedule:
-    - cron: '0 5 * * 1-5' #utc time
+    - cron: '0 4 * * 1-5' #utc Summer time 
+    #- cron: '0 5 * * 1-5' #utc Winter time
 
 permissions:
   id-token: write
