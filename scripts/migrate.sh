@@ -773,17 +773,17 @@ if [[ $USER_PROMPT == true && $MIGRATION_STRATEGY == "aa" ]]; then
     done
 fi
 
-if [[ $CUSTOM_INGRESSES == true ]]; then
-    printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
-    source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
-else
-    echo ""
-    printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
-    printf "Update Auth proxy secret...\n"
-    printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
-    wait # wait for subshell to finish
-fi
+# if [[ $CUSTOM_INGRESSES == true ]]; then
+#     printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
+#     source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
+# else
+#     echo ""
+#     printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
+#     printf "Update Auth proxy secret...\n"
+#     printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" "${normal}"
+#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
+#     wait # wait for subshell to finish
+# fi
 
 # Create role for github maintenance
 printf "\n%s► Execute %s%s\n" "${grn}" "$GITHUB_MAINTENANCE_SCRIPT" "${normal}"
