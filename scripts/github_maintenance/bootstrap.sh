@@ -58,8 +58,6 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 LIB_SERVICE_PRINCIPAL_PATH="$RADIX_PLATFORM_REPOSITORY_PATH/scripts/service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
     echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
@@ -87,7 +85,33 @@ printf "Done.\n"
 
 ### Start
 
-create-role-and-rolebinding "${WORKDIR_PATH}/roles/role.yaml" "${WORKDIR_PATH}/roles/rolebinding.yaml"
+printf "Creating role...\n"
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: radix-github-maintenance
+rules:
+  - apiGroups: ['*']
+    resources: ['pods']
+    verbs: ['get', 'list']
+  - apiGroups: ['*']
+    resources: ['secrets']
+    verbs: ['get', 'create', 'list', 'patch']
+  - apiGroups: ['apps']
+    resources: ['deployments']
+    verbs: ['get', 'patch']
+  - apiGroups: ['apps']
+    resources: ['deployments/scale']
+    verbs: ['patch']
+  - apiGroups: ['networking.k8s.io']
+    resources: ['ingresses']
+    verbs: ['get', 'create', 'delete']
+  - apiGroups: ['kustomize.toolkit.fluxcd.io']
+    resources: ['kustomizations']
+    verbs: ['get', 'list', 'watch', 'patch']
+EOF
+printf "Done\n"
 
 object_id=$(az identity show --name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query principalId -o tsv) || {
     echo -e "ERROR: Could not retrieve object ID of MI ${MI_GITHUB_MAINTENANCE}." >&2
@@ -99,10 +123,30 @@ set-kv-policy "${object_id}" "get set"
 namespaces=("default" "ingress-nginx" "radix-web-console-qa" "radix-cicd-canary" "flux-system")
 
 for namespace in "${namespaces[@]}"; do
+    printf "Creating rolebinding in %s...\n" "${namespace}"
+    cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: radix-github-maintenance
+  namespace: ${namespace}
+subjects:
+  - kind: User
+    name: xx
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: radix-github-maintenance
+  apiGroup: rbac.authorization.k8s.io
+EOF
+    printf "Done\n"
+
+    printf "Patching rolebinding in %s... " "${namespace}"
     kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance" \
-    --namespace "${namespace}" \
-    --type strategic \
-    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
+        --namespace "${namespace}" \
+        --type strategic \
+        --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}' 2>&1 >/dev/null
+    printf "Done\n"
 done
 
 echo ""
