@@ -170,7 +170,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
 ###
 
 #helm repo update
-CONFIG_DIR="${RADIX_PLATFORM_REPOSITORY_PATH}/app_alias/configs"
+CONFIG_DIR="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/app_alias/configs"
 
 # Get cluster IP
 cluster_ip=$(kubectl get secret --namespace "ingress-nginx" "ingress-nginx-raw-ip" -ojson | jq .data.rawIp --raw-output | base64 --decode)
