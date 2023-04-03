@@ -1,29 +1,5 @@
 name: Move custom ingresses
 on:
-  push:
-    branches:
-      - "master"
-    paths:
-      - "clusters/development/postBuild.yaml"
-  workflow_dispatch:
-    inputs:
-      source_cluster:
-        description: "Source cluster"
-        required: true
-        type: string
-        default: weekly-01
-
-      dest_cluster:
-        description: "Destination cluster"
-        required: true
-        type: string
-        default: weekly-02
-
-      environment:
-        description: Secret environment
-        type: string
-        default: operations
-
   workflow_call:
     inputs:
       DEST_CLUSTER:

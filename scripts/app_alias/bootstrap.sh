@@ -1,48 +1,42 @@
 #!/usr/bin/env bash
 
-
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Create "user friendly" alias for the CNAME of an existing radix app.
 # We do this by creating a custom ingress for each radix app in the target cluster.
 
-
 #######################################################################################
 ### DEPENDENCIES
-### 
+###
 
 # Each app alias must be defined as a config file in directory ./configs/
 
-
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
 # - CLUSTER_NAME            : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - RADIX_APP_ENVIRONMENT   : Defaulted if omitted. ex: "prod", "qa", "test"           
+# - RADIX_APP_ENVIRONMENT   : Defaulted if omitted. ex: "prod", "qa", "test"
 # - USER_PROMPT             : Is human interaction is required to run script? true/false. Default is true.
-
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
-
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start bootstrap radix app aliases... "
-
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -50,13 +44,24 @@ echo "Start bootstrap radix app aliases... "
 
 echo ""
 printf "Check for neccesary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
-hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nERROR: helm not found in PATH. Exiting..." >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting..." >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash kubectl 2>/dev/null || {
+    echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash helm 2>/dev/null || {
+    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
+    exit 1
+}
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
 printf "All is good."
 echo ""
-
 
 #######################################################################################
 ### Read inputs and configs
@@ -97,15 +102,14 @@ fi
 if [[ -z "$RADIX_APP_ENVIRONMENT" ]]; then
     RADIX_APP_ENVIRONMENT="prod"
 fi
-if [[ $CLUSTER_TYPE  == "development" ]]; then
-  echo "Development cluster uses QA environment"
-  RADIX_APP_ENVIRONMENT="qa"
+if [[ $CLUSTER_TYPE == "development" ]]; then
+    echo "Development cluster uses QA environment"
+    RADIX_APP_ENVIRONMENT="qa"
 fi
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -115,7 +119,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -145,9 +148,13 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
     echo ""
@@ -158,11 +165,11 @@ fi
 ###
 
 # Exit if cluster does not exist
-echo "Connecting kubectl..."   
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {    
+echo "Connecting kubectl..."
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 1        
+    exit 1
 }
 
 #######################################################################################
@@ -181,19 +188,17 @@ a_records=('@' '*' '*.app')
 # creating the "@"-record, i.e. e.g. dev.radix.equinor.com.
 # creating wildcard record to match all FQDNs in active-cluster ingresses
 # creating wildcard record to match all FQDNs in "app alias" ingresses
-for record in ${a_records[@]}
-do
-  create-a-record "${record}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
-      echo "ERROR: failed to create A record ${record}.${AZ_RESOURCE_DNS}" >&2
-  }
+for record in ${a_records[@]}; do
+    create-a-record "${record}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
+        echo "ERROR: failed to create A record ${record}.${AZ_RESOURCE_DNS}" >&2
+    }
 done
 set +f
-
 
 # iterate over configs for selected Radix components and apply ingress objects with custom names
 for alias_config in "$CONFIG_DIR"/*.env; do
     [ -e "$alias_config" ] || continue
-    
+
     # Import variables
     source "$alias_config"
 
@@ -241,7 +246,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
         --set component="$RADIX_APP_COMPONENT" \
         --set componentPort="$RADIX_APP_COMPONENT_PORT" \
         --set authSecret="$RADIX_AUTH_SECRET"
-        2>&1 >/dev/null
+    2>&1 >/dev/null
 
     printf "Done."
     echo ""
