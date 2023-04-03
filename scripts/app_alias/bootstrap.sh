@@ -170,8 +170,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
 ###
 
 #helm repo update
-WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CONFIG_DIR="${WORK_DIR}/configs"
+CONFIG_DIR="${RADIX_PLATFORM_REPOSITORY_PATH}/app_alias/configs"
 
 # Get cluster IP
 cluster_ip=$(kubectl get secret --namespace "ingress-nginx" "ingress-nginx-raw-ip" -ojson | jq .data.rawIp --raw-output | base64 --decode)
@@ -232,7 +231,7 @@ for alias_config in "$CONFIG_DIR"/*.env; do
         HELM_NAME="radix-ingress-$RADIX_APP_ALIAS_NAME"
     fi
 
-    chartPath="$WORK_DIR/../../charts/ingress/"
+    chartPath="${RADIX_PLATFORM_REPOSITORY_PATH}/charts/ingress/"
     helm upgrade --install "$HELM_NAME" \
         "$chartPath" \
         --set aliasUrl="$RADIX_APP_ALIAS_URL" \
