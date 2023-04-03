@@ -17,7 +17,7 @@ rules:
     verbs: ['patch']
   - apiGroups: ['networking.k8s.io']
     resources: ['ingresses']
-    verbs: ['get']
+    verbs: ['get', 'create', 'delete']
   - apiGroups: ['kustomize.toolkit.fluxcd.io']
     resources: ['kustomizations']
     verbs: ['get', 'list', 'watch', 'patch']

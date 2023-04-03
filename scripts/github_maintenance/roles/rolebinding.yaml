@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: radix-github-maintenance-1
+  name: radix-github-maintenance
 subjects:
   - kind: User
     name: xx
@@ -14,7 +14,7 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: radix-github-maintenance-2
+  name: radix-github-maintenance
   namespace: ingress-nginx
 subjects:
   - kind: User
@@ -28,7 +28,7 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: radix-github-maintenance-3
+  name: radix-github-maintenance
   namespace: radix-web-console-qa
 subjects:
   - kind: User
@@ -42,7 +42,7 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: radix-github-maintenance-4
+  name: radix-github-maintenance
   namespace: radix-cicd-canary
 subjects:
   - kind: User
@@ -56,7 +56,7 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: radix-github-maintenance-5
+  name: radix-github-maintenance
   namespace: flux-system
 subjects:
   - kind: User

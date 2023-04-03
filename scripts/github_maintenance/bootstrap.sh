@@ -96,29 +96,14 @@ object_id=$(az identity show --name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMEN
 
 set-kv-policy "${object_id}" "get set"
 
-kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-1" \
-    --type strategic \
-    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
+namespaces=("default" "ingress-nginx" "radix-web-console-qa" "radix-cicd-canary" "flux-system")
 
-kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-2" \
-    --namespace ingress-nginx \
+for namespace in "${namespaces[@]}"; do
+    kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance" \
+    --namespace "${namespace}" \
     --type strategic \
     --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
-
-kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-3" \
-    --namespace radix-web-console-qa \
-    --type strategic \
-    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
-
-kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-4" \
-    --namespace radix-cicd-canary \
-    --type strategic \
-    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
-
-kubectl patch rolebindings.rbac.authorization.k8s.io "radix-github-maintenance-5" \
-    --namespace flux-system \
-    --type strategic \
-    --patch '{"subjects":[{"apiGroup":"rbac.authorization.k8s.io","kind":"User","name":"'${object_id}'"}]}'
+done
 
 echo ""
 echo "Bootstrap of github maintenance done!"
