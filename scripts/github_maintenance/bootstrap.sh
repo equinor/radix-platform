@@ -97,7 +97,7 @@ rules:
     verbs: ['get', 'list']
   - apiGroups: ['*']
     resources: ['secrets']
-    verbs: ['get', 'create', 'list', 'patch']
+    verbs: ['get', 'create', 'list', 'patch', 'update']
   - apiGroups: ['apps']
     resources: ['deployments']
     verbs: ['get', 'patch']
@@ -120,7 +120,7 @@ object_id=$(az identity show --name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMEN
 
 set-kv-policy "${object_id}" "get set"
 
-namespaces=("default" "ingress-nginx" "radix-web-console-qa" "radix-cicd-canary" "flux-system")
+namespaces=("default" "ingress-nginx" "radix-web-console-qa" "radix-cicd-canary" "flux-system" "radix-api-qa" "radix-canary-golang-qa" "radix-cost-allocation-api-qa" "radix-platform-qa" "radix-github-webhook-qa")
 
 for namespace in "${namespaces[@]}"; do
     printf "Creating rolebinding in %s...\n" "${namespace}"
