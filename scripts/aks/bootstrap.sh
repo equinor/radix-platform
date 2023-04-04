@@ -605,7 +605,7 @@ AKS_BASE_OPTIONS=(
     --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST"
     --vnet-subnet-id "$SUBNET_ID"
     --disable-local-accounts
-    --enable-addons azure-keyvault-secrets-provider
+    --enable-addons "azure-keyvault-secrets-provider,azure-policy"
     --nodepool-name systempool
     --enable-secret-rotation
     --enable-oidc-issuer
