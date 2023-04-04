@@ -1,6 +1,41 @@
 #!/usr/bin/env bash
 
 #######################################################################################
+### PURPOSE
+###
+
+# Compare flux active cluster with active cluster in keyvault
+
+#######################################################################################
+### INPUTS
+###
+
+# Required:
+# - RADIX_ZONE_ENV      : Path to *.env file
+# - DEST_CLUSTER        : Ex: "test-2", "weekly-93"
+# - GITHUB_PUBLIC_IP    : Github action public ip address
+
+#######################################################################################
+### HOW TO USE in GH action
+###
+
+# RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env DEST_CLUSTER=${{ inputs.DEST_CLUSTER }} GITHUB_PUBLIC_IP=${{ steps.github_public_ip.outputs.ipv4 }} .github/workflows/scripts/compare_active_cluster.sh
+
+#######################################################################################
+### Check for prerequisites binaries
+###
+
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
+
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
+#######################################################################################
 ### Read inputs and configs
 ###
 
@@ -15,6 +50,16 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+if [[ -z "$DEST_CLUSTER" ]]; then
+    echo "ERROR: Please provide DEST_CLUSTER" >&2
+    exit 1
+fi
+
+if [[ -z "$GITHUB_PUBLIC_IP" ]]; then
+    echo "ERROR: Please provide GITHUB_PUBLIC_IP" >&2
+    exit 1
+fi
+
 #######################################################################################
 ### Resolve dependencies on other scripts
 ###
@@ -26,12 +71,37 @@ if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
 fi
 
 #######################################################################################
-### Start
+### Verify task at hand
 ###
 
 KV_SECRET_ACTIVE_CLUSTER="radix-flux-active-cluster-${RADIX_ZONE}"
-
 SOURCE_CLUSTER="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_ACTIVE_CLUSTER" | jq -r .value)"
+
+echo -e ""
+echo -e "Compare active cluster will use the following configuration:"
+echo -e ""
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  RADIX_ZONE_ENV                   : $RADIX_ZONE_ENV"
+echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
+echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  SOURCE_CLUSTER                   : $SOURCE_CLUSTER"
+echo -e "   -  DEST_CLUSTER                     : $DEST_CLUSTER"
+echo -e ""
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e ""
+
+echo ""
+
+#######################################################################################
+### Start
+###
 
 function updateClusterIps() {
     local CLUSTER_NAMES
@@ -71,12 +141,9 @@ function updateClusterIps() {
     done
 }
 
-echo "AZ_RESOURCE_KEYVAULT: $AZ_RESOURCE_KEYVAULT"
-echo "DEST_CLUSTER: $DEST_CLUSTER"
-echo "SOURCE_CLUSTER: $SOURCE_CLUSTER"
-
 if [[ "${SOURCE_CLUSTER}" != "${DEST_CLUSTER}" ]]; then
 
+    echo "Adding github action ip to clusters..."
     updateClusterIps "${SOURCE_CLUSTER} ${DEST_CLUSTER}" "${GITHUB_PUBLIC_IP}" "add"
 
     if [[ -n $SOURCE_CLUSTER ]]; then
@@ -89,10 +156,25 @@ if [[ "${SOURCE_CLUSTER}" != "${DEST_CLUSTER}" ]]; then
         wait # wait for subshell to finish
     fi
 
+    echo "Updating secret \"${KV_SECRET_ACTIVE_CLUSTER}\" in keyvault \"${AZ_RESOURCE_KEYVAULT}\""
     az keyvault secret set \
         --vault-name "${AZ_RESOURCE_KEYVAULT}" \
         --name "${KV_SECRET_ACTIVE_CLUSTER}" \
-        --value "${DEST_CLUSTER}"
+        --value "${DEST_CLUSTER}" || {
+        echo "ERROR: Could not update secret \"${KV_SECRET_ACTIVE_CLUSTER}\" in keyvault \"${AZ_RESOURCE_KEYVAULT}\"." >&2
+    }
+    echo "Done."
 
+    echo "Removing github action ip to clusters..."
     updateClusterIps "${SOURCE_CLUSTER} ${DEST_CLUSTER}" "${GITHUB_PUBLIC_IP}" "delete"
+else
+    echo "${DEST_CLUSTER} is currently the active cluster skipping..."
 fi
+
+#######################################################################################
+### END
+###
+
+echo ""
+echo "Compare active cluster is done!"
+echo ""
