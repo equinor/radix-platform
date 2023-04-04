@@ -597,7 +597,6 @@ AKS_BASE_OPTIONS=(
     --enable-managed-identity
     --enable-aad
     --enable-defender
-    --azure-policy
     --defender-config "$DEFENDER_CONFIG"
     --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
     --assign-identity "$ID_AKS"
@@ -606,7 +605,7 @@ AKS_BASE_OPTIONS=(
     --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST"
     --vnet-subnet-id "$SUBNET_ID"
     --disable-local-accounts
-    --enable-addons azure-keyvault-secrets-provider
+    --enable-addons "azure-keyvault-secrets-provider,azure-policy"
     --nodepool-name systempool
     --enable-secret-rotation
     --enable-oidc-issuer
