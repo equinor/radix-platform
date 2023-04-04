@@ -597,6 +597,7 @@ AKS_BASE_OPTIONS=(
     --enable-managed-identity
     --enable-aad
     --enable-defender
+    --azure-policy
     --defender-config "$DEFENDER_CONFIG"
     --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
     --assign-identity "$ID_AKS"
