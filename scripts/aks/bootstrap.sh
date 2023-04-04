@@ -264,10 +264,6 @@ printf "Reading credentials... "
 if [[ -z "$CREDENTIALS_FILE" ]]; then
     # No file found, default to read credentials from keyvault
     # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)
-    # AAD_SERVER_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .id)"
-    # AAD_SERVER_APP_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .password)"
-    # AAD_TENANT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_SERVER | jq -r .value | jq -r .tenantId)"
-    # AAD_CLIENT_APP_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $AZ_RESOURCE_AAD_CLIENT | jq -r .value | jq -r .id)"
     ID_AKS="$(az identity show \
         --name "$MI_AKS" \
         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
