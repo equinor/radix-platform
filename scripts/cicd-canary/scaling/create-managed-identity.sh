@@ -93,7 +93,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORKDIR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Source util scripts
 
@@ -127,36 +127,9 @@ printf "...Done.\n"
 ###
 verify_cluster_access
 
-AKS_COMMAND_RUNNER_ROLE_NAME="Radix Azure Kubernetes Service Command Runner"
-
 function mi-exists {
     local mi_name=$1
     az identity show --name ${mi_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} >/dev/null 2>&1 || (printf "MI ${mi_name} does not exist, creating...\n" && return 1)
-}
-
-function create-az-command-runner-role {
-    local temp_file="/tmp/$(uuidgen)"
-    cat <<EOF >>${temp_file}
-    {
-        "Name": "${AKS_COMMAND_RUNNER_ROLE_NAME}",
-        "Id": "",
-        "IsCustom": true,
-        "Description": "Can execute 'az aks command invoke' on AKS cluster.",
-        "Actions": [
-            "Microsoft.ContainerService/managedClusters/listClusterUserCredential/action",
-            "Microsoft.ContainerService/managedClusters/read",
-            "Microsoft.ContainerService/managedClusters/runCommand/action",
-            "Microsoft.ContainerService/managedclusters/commandResults/read"
-        ],
-        "AssignableScopes": [
-            "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b",
-            "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a"
-        ]
-    }
-EOF
-    create_custom_role "${temp_file}" "${role_name}"
-    rm ${temp_file}
-    printf "Done\n"
 }
 
 function get-mi-object-id {
@@ -183,59 +156,19 @@ function modify-role-binding {
         }
 }
 
-function add-federated-gh-credentials {
-    local mi_name=$1
-    local branch=$2
-    printf "Adding federated GH credentials to MI ${mi_name}...\n"
-    az identity federated-credential create \
-        --identity-name ${mi_name} \
-        --name radix-platform-gh-actions-${branch} \
-        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
-        --audiences "api://AzureADTokenExchange" \
-        --issuer https://token.actions.githubusercontent.com \
-        --subject repo:equinor/radix-platform:ref:refs/heads/${branch} \
-        --only-show-errors >/dev/null || {        
-            echo -e "ERROR: Could not add federated GH credentials to managed identity ${mi_name}." >&2
-            exit 1
-        }
-}
-
-function create-role-and-rolebinding {
-    printf "Creating role in radix-cicd-canary namespace...\n"
-    kubectl apply -f $script_dir_path/role.yaml || {        
-            echo -e "ERROR: Could not create role." >&2
-            exit 1
-        }
-    printf "Done\n"
-    printf "Creating rolebinding in radix-cicd-canary namespace...\n"
-    kubectl apply -f $script_dir_path/rolebinding.yaml || {        
-            echo -e "ERROR: Could not create rolebinding." >&2
-            exit 1
-        }
-    printf "Done\n"
-}
-
-function set-kv-policy {
-    local object_id=$1
-    printf "Creating vault access policy on ${AZ_RESOURCE_KEYVAULT} for ${object_id}...\n"
-    az keyvault set-policy \
-        --name ${AZ_RESOURCE_KEYVAULT} \
-        --secret-permissions get \
-        --object-id ${object_id} \
-        --only-show-errors >/dev/null || {        
-            echo -e "ERROR: Could not create vault access policy on ${AZ_RESOURCE_KEYVAULT}." >&2
-            exit 1
-        }
-    printf "Done\n"
-}
-
 mi_name=radix-cicd-canary-scaler
 mi-exists ${mi_name} || { 
         create_managed_identity ${mi_name}
         client_id=$(az identity show --name ${mi_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query clientId -o tsv)
         printf "${yel}""WARNING: New managed identity's client ID, ${client_id}, must be added to GitHub Actions workflow config file, ${AZ_SUBSCRIPTION_NAME}-${AZ_LOCATION}.cfg${normal}\n" >&2 
     }
-create-az-command-runner-role
+
+actions=("Microsoft.ContainerService/managedClusters/listClusterUserCredential/action" "Microsoft.ContainerService/managedClusters/read" "Microsoft.ContainerService/managedClusters/runCommand/action" "Microsoft.ContainerService/managedclusters/commandResults/read")
+actions_json=$(jq -c -n '$ARGS.positional' --args "${actions[@]}")
+scopes=("/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b" "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a")
+scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
+
+create-az-role "${AKS_COMMAND_RUNNER_ROLE_NAME}" "Can execute 'az aks command invoke' on AKS cluster." "$actions_json" "$scopes_json"
 tmp_file_name="/tmp/$(uuidgen)"
 get-mi-object-id ${tmp_file_name} ${mi_name}
 mi_object_id=$(cat ${tmp_file_name})
@@ -243,7 +176,7 @@ rm ${tmp_file_name}
 # TODO: DevOps issue 259748, downgrade Contributor role when new role is ready
 # https://github.com/equinor/Solum/issues/10900
 create_role_assignment_for_identity "${mi_name}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-set-kv-policy "${mi_object_id}"
-create-role-and-rolebinding
+set-kv-policy "${mi_object_id}" "get"
+create-role-and-rolebinding "${WORKDIR_PATH}/role.yaml" "${WORKDIR_PATH}/rolebinding.yaml"
 modify-role-binding ${mi_object_id}
-add-federated-gh-credentials ${mi_name} "master"
+add-federated-gh-credentials ${mi_name} "radix-platform" "master"

@@ -4,7 +4,7 @@
 ### PURPOSE
 ###
 
-# Bootstrap radix service principals: create them and store credentials in az keyvault
+# Bootstrap radix service principals & managed identity: create them and store credentials in az keyvault
 
 #######################################################################################
 ### INPUTS
@@ -27,7 +27,7 @@
 ###
 
 echo ""
-echo "Start bootstrap radix service principals... "
+echo "Start bootstrap radix service principals & managed identity... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -73,13 +73,23 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/lib_service_principal.sh"
+LIB_SERVICE_PRINCIPAL_PATH="$WORKDIR_PATH/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
     echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
     exit 1
 else
     source "$LIB_SERVICE_PRINCIPAL_PATH"
+fi
+
+LIB_MANAGED_IDENTITY_PATH="$WORKDIR_PATH/lib_managed_identity.sh"
+if [[ ! -f "$LIB_MANAGED_IDENTITY_PATH" ]]; then
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_MANAGED_IDENTITY_PATH is invalid, the file does not exist." >&2
+    exit 1
+else
+    source "$LIB_MANAGED_IDENTITY_PATH"
 fi
 
 #######################################################################################
@@ -92,13 +102,14 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 exit_if_user_does_not_have_required_ad_role
+check_for_ad_owner_role
 
 #######################################################################################
 ### Verify task at hand
 ###
 
 echo -e ""
-echo -e "Bootstrap radix service principals will use the following configuration:"
+echo -e "Bootstrap radix service principals & managed identity will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
@@ -111,6 +122,7 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 echo -e "   -  AZ_SYSTEM_USER_DNS                       : $AZ_SYSTEM_USER_DNS"
+echo -e "   -  MI_GITHUB_MAINTENANCE                    : ${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -143,11 +155,29 @@ fi
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
-create_oidc_and_federated_credentials "ar-radix-platform-github-dev-cluster-maintenance" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operation"
+create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operations"
+
+#######################################################################################
+### Create managed identity
+###
+
+permission=("Microsoft.Network/dnszones/A/write" "Microsoft.ContainerService/managedClusters/write" "Microsoft.Network/publicIPAddresses/join/action" "Microsoft.Network/virtualNetworks/subnets/join/action" "Microsoft.OperationalInsights/workspaces/sharedkeys/read" "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action" "Microsoft.OperationalInsights/workspaces/read" "Microsoft.OperationsManagement/solutions/write" "Microsoft.OperationsManagement/solutions/read")
+permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
+
+scopes=("/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}")
+scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
+
+create-az-role "radix-maintenance" "Permission needed for cluster maintenance" "$permission_json" "$scopes_json"
+create_managed_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
+add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master"
 
 #######################################################################################
 ### END
 ###
 
 echo ""
-echo "Bootstrap of radix service principals done!"
+echo "Bootstrap of radix service principals & managed identity done!"

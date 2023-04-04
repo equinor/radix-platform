@@ -115,12 +115,16 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 ### Resolve dependencies on other scripts
 ###
 
-WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-BOOTSTRAP_APP_ALIAS_SCRIPT="$WORKDIR_PATH/app_alias/bootstrap.sh"
+BOOTSTRAP_APP_ALIAS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/app_alias/bootstrap.sh"
 if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
+fi
+
+UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/update_auth_proxy_secret_for_console.sh"
+if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The update auth proxy secret for console script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" >&2
 fi
 
 #######################################################################################
@@ -259,7 +263,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     printf "Done.\n"
 
     printf "Update Auth proxy secret...\n"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT")
     printf "Done.\n"
     echo ""
 fi
@@ -280,7 +284,7 @@ wait # wait for subshell to finish
 printf "Done creating aliases."
 
 # Update auth proxy secret and redis cache
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" ./update_auth_proxy_secret_for_console.sh)
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT")
 wait # wait for subshell to finish
 
 # Point granana to cluster type ingress

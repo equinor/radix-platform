@@ -1,0 +1,76 @@
+name: Move custom ingresses
+on:
+  workflow_call:
+    inputs:
+      DEST_CLUSTER:
+        type: string
+        required: true
+        description: Current active cluster / destination cluster
+      environment:
+        type: string
+        description: Secret environment
+    
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true 
+      AZURE_SUBSCRIPTION_ID:
+        required: true 
+      AZURE_TENANT_ID:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+    
+jobs:
+  moveCustomIngresses:
+    name: Move Custom Ingresses Job
+    runs-on: ubuntu-22.04
+    environment: ${{ inputs.environment }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: equinor/radix-platform
+
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        uses: haythem/public-ip@v1.3
+
+      - name: Az CLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Setup kubelogin
+        uses: azure/use-kubelogin@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          kubelogin-version: 'latest'
+
+      - name: Setup Flux
+        uses: fluxcd/flux2/action@main
+
+      - name: Set AKS context
+        id: set-context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: 'clusters'
+          cluster-name: ${{ inputs.DEST_CLUSTER }}
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: compare active cluster
+        run: |
+          RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env DEST_CLUSTER=${{ inputs.DEST_CLUSTER }} GITHUB_PUBLIC_IP=${{ steps.github_public_ip.outputs.ipv4 }} .github/workflows/scripts/compare_active_cluster.sh

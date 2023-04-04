@@ -446,7 +446,7 @@ function create_oidc_and_federated_credentials() {
     echo 'Updating GitHub secrets...'
     gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
     gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
-    gh secret set 'AZURE_TENANT_ID' --body $(az ad signed-in-user show --query id -otsv) --repo "equinor/${REPO}" --env "$ENVIRONMENT"
+    gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" --env "$ENVIRONMENT"
 }
 
 function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
@@ -572,6 +572,18 @@ function wait_for_pim_app_developer_role() {
     else
         printf " Done.\n"
     fi
+}
+
+function check_for_ad_owner_role() {
+    printf "Checking if you have required AZ AD ownership..."
+    currentownerrole="$(az role assignment list --query "[?roleDefinitionName == 'Owner' && principalName == '$(az account show --query user.name -o tsv)']" | jq .[])"
+
+    if [[ -z "$currentownerrole" ]]; then
+        echo "You must activate Azure resources role \"Owner\" in PIM before using this script. Exiting..." >&2
+        exit 1
+    fi
+
+    printf "Done.\n"
 }
 
 function wait_for_ad_owner_role() {
