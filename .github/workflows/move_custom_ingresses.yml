@@ -36,7 +36,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          repository: sondresjolyst/github-action-copy
+          repository: equinor/radix-platform
 
       - name: Get GitHub Public IP
         id: github_public_ip
