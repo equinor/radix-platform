@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 # PURPOSE
-# Sets the value of RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM from Radix Zone to the environment variable REQUIRE_APP_CONFIGURATION_ITEM of the server component of Radix API.
+# Sets zone specific configuration for the following Radix API environment variables:
+# - REQUIRE_APP_CONFIGURATION_ITEM
+# - REQUIRE_APP_AD_GROUPS
 
 # Example 1:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh
@@ -110,6 +112,9 @@ printf " Done.\n"
 
 updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" STAGING="$STAGING" || exit
 updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" STAGING="$STAGING" || exit
+
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "REQUIRE_APP_AD_GROUPS" "${RADIX_API_REQUIRE_APP_AD_GROUPS}" STAGING="$STAGING" || exit
+updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "REQUIRE_APP_AD_GROUPS" "${RADIX_API_REQUIRE_APP_AD_GROUPS}" STAGING="$STAGING" || exit
 
 # Restart Radix API deployment
 printf "Restarting Radix API...\n"
