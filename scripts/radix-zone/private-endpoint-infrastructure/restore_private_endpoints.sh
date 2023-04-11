@@ -66,15 +66,8 @@ jq -c '.[]' $temp_file | while read i; do
     target_resource_id=$(echo $i | jq .target_resource_id --raw-output)
     target_subresource=$(echo $i | jq .target_subresource --raw-output)
     pe_ip_address=$(echo $i | jq .ip_address --raw-output)
-
-    # echo $pe_name
-    # echo $pe_rg
-    # echo $pe_location
-    # echo $target_resource_id
-    # echo $target_subresource
-    # echo $pe_ip_address
-    (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT=false PRIVATE_ENDPOINT_NAME=${pe_name} TARGET_RESOURCE_RESOURCE_ID=$target_resource_id TARGET_SUBRESOURCE=${target_subresource} IP_ADDRESS=${pe_ip_address} bash ${CREATE_PRIVATE_ENDPOINT_SCRIPT})
-    wait
+    RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT=false PRIVATE_ENDPOINT_NAME=${pe_name} TARGET_RESOURCE_RESOURCE_ID=$target_resource_id TARGET_SUBRESOURCE=${target_subresource} IP_ADDRESS=${pe_ip_address} ${CREATE_PRIVATE_ENDPOINT_SCRIPT}
 done
 
 rm $temp_file
+echo "Done restoring all private endpoints from ${RADIX_PE_KV_SECRET_NAME}."

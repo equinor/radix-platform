@@ -178,16 +178,17 @@ fi
 ### Create private endpoint
 ###
 
-if [[ -z {$TARGET_SUBRESOURCE} ]]; then
+if [ -z $TARGET_SUBRESOURCE ]; then
   group_id_arg=""
 else
   group_id_arg='--group-id '${TARGET_SUBRESOURCE}''
 fi
 
-if [[ -z {$IP_ADDRESS} ]]; then
+if [ -z $IP_ADDRESS ]; then
   ip_config_arg=""
 else
-  ip_config_arg='--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}'}]'
+  # TODO: take into account case when TARGET_SUBRESOURCE is empty
+  ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$',groupId:'${TARGET_SUBRESOURCE}$',memberName:'${TARGET_SUBRESOURCE}$'}]'
 fi
 
 PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
@@ -203,15 +204,15 @@ PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
         --name "${PRIVATE_ENDPOINT_NAME}" \
         --resource-group "${AZ_RESOURCE_GROUP_VNET_HUB}" \
         --connection-name "${PRIVATE_ENDPOINT_NAME}" \
-        "${group_id_arg}" \
         --private-connection-resource-id "${TARGET_RESOURCE_RESOURCE_ID}" \
-        "${ip_config_arg}" \
+        ${group_id_arg} \
+        ${ip_config_arg} \
         --subnet "${AZ_VNET_HUB_SUBNET_NAME}" \
         --vnet-name "${AZ_VNET_HUB_NAME}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --location "${AZ_RADIX_ZONE_LOCATION}" \
         --manual-request true \
-        --request-message "Radix Private Link" \
+        --request-message RadixPrivateLink \
         --query id \
         --output tsv \
         --only-show-errors) || { echo "ERROR: Something went wrong when creating Private Endpoint." >&2; exit 1; }
