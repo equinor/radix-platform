@@ -151,6 +151,13 @@ function add-federated-gh-credentials {
     mi_name="$1"
     repo="$2"
     branch="$3"
+    environment="$4"
+
+    if [[ -z $environment ]]; then
+        subject="repo:equinor/${repo}:ref:refs/heads/${branch}"
+    else
+        subject="repo:equinor/${repo}:environment:${environment}"
+    fi
 
     printf "Adding federated GH credentials to MI ${mi_name}... "
     az identity federated-credential create \
@@ -159,7 +166,7 @@ function add-federated-gh-credentials {
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
         --audiences "api://AzureADTokenExchange" \
         --issuer "https://token.actions.githubusercontent.com" \
-        --subject "repo:equinor/${repo}:ref:refs/heads/${branch}" \
+        --subject "${subject}" \
         --only-show-errors >/dev/null || {
         echo -e "ERROR: Could not add federated GH credentials to managed identity ${mi_name}." >&2
         exit 1

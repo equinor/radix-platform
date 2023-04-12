@@ -161,19 +161,23 @@ create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${
 ### Create managed identity
 ###
 
-permission=("Microsoft.Network/dnszones/A/write" "Microsoft.ContainerService/managedClusters/write" "Microsoft.Network/publicIPAddresses/join/action" "Microsoft.Network/virtualNetworks/subnets/join/action" "Microsoft.OperationalInsights/workspaces/sharedkeys/read" "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action" "Microsoft.OperationalInsights/workspaces/read" "Microsoft.OperationsManagement/solutions/write" "Microsoft.OperationsManagement/solutions/read")
+permission=("Microsoft.Network/dnszones/A/write" "Microsoft.Network/dnszones/A/read" "Microsoft.ContainerService/managedClusters/write" "Microsoft.Network/publicIPAddresses/join/action" "Microsoft.Network/virtualNetworks/subnets/join/action" "Microsoft.OperationalInsights/workspaces/sharedkeys/read" "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action" "Microsoft.OperationalInsights/workspaces/read" "Microsoft.OperationsManagement/solutions/write" "Microsoft.OperationsManagement/solutions/read")
 permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
 
 scopes=("/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}")
 scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
 
-create-az-role "radix-maintenance" "Permission needed for cluster maintenance" "$permission_json" "$scopes_json"
+role_name="radix-maintenance"
+
+create-az-role "${role_name}" "Permission needed for cluster maintenance" "$permission_json" "$scopes_json"
 create_managed_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
 create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
-create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-maintenance" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
-add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
+create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
+add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master" "operations"
+MI_ID=$(az ad sp list --display-name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --query [].appId --output tsv)
+gh_federated_credentials "radix-flux" "operations" "${MI_ID}" "${AZ_SUBSCRIPTION_ID}"
 
 #######################################################################################
 ### END
