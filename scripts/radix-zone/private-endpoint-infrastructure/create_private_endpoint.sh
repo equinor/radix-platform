@@ -74,7 +74,9 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 #######################################################################################
-### Define associative array to map PE subresource and DNS Zone
+### Define associative array to map PE subresource and DNS Zone. Append additional entries to this map from
+### https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
+### when required
 ###
 
 declare -A DNS_ZONE_MAP=(
@@ -86,7 +88,7 @@ declare -A DNS_ZONE_MAP=(
     ["sqlServer"]="privatelink.database.windows.net"
 )
 
-dns_zone=${DNS_ZONE_MAP[$TARGET_SUBRESOURCE]}
+dns_zone=${DNS_ZONE_MAP[$TARGET_SUBRESOURCE]} 2>/dev/null # can't figure out how to properly suppress this error message
 
 unset yn
 if [[ -z ${dns_zone} ]]; then
@@ -95,23 +97,26 @@ if [[ -z ${dns_zone} ]]; then
         WARNING: Target sub-resource ${TARGET_SUBRESOURCE} does not map to a private DNS zone. If an appropriate mapping is documented 
         at https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns#azure-services-dns-zone-configuration, you can add 
         this mapping to the logic in this script. If you proceed without a mapping, this script will not create a DNS record in our 
-        Private DNS Zones to make the current FQDN of the target resource resolve to the Private Endpoint IP address from within Radix.
+        Private DNS Zones to make the current FQDN of the target resource resolve to the Private Endpoint's IP address from within Radix.
+        E.g., if you create a PE to a blob containerin a storage account with FQDN radixblob.core.windows.net _without_ creating the 
+        appropriate record in the private DNS zone .privatelink.blob.core.windows.net, the result will be that radixblob.core.windows.net
+        is resolvable outside of the Radix cluster, but _not_ inside the Radix cluster.
 
         However, a default DNS record by name of ${RESOURCE_NAME}.${dns_zone} will still be created. If you're creating
         a PE to a service which does not resolve to a particular FQDN by default, like an Azure Load Balancer or an Azure Application 
         Gateway, this is appropriate.
 END
     )
-        echo "$warning_msg" >&2
         if [[ $USER_PROMPT == true ]]; then
-        while true; do
-            read -p "Proceed without creating service-specific DNS record for PE? (Y/n) " yn
-                case $yn in
-                        [Yy]* ) break;;
-                        [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                        * ) echo "Please answer yes or no.";;
-                    esac
-                done
+            echo "$warning_msg" >&2
+            while true; do
+                read -p "Proceed without creating service-specific DNS record for PE? (Y/n) " yn
+                    case $yn in
+                            [Yy]* ) break;;
+                            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
+                            * ) echo "Please answer yes or no.";;
+                        esac
+                    done
         fi
 fi
 
@@ -188,7 +193,11 @@ if [ -z $IP_ADDRESS ]; then
   ip_config_arg=""
 else
   # TODO: take into account case when TARGET_SUBRESOURCE is empty
-  ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$',groupId:'${TARGET_SUBRESOURCE}$',memberName:'${TARGET_SUBRESOURCE}$'}]'
+  if [ -z $TARGET_SUBRESOURCE ]; then
+    ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$'}]'
+  else
+    ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$',groupId:'${TARGET_SUBRESOURCE}$',memberName:'${TARGET_SUBRESOURCE}$'}]'
+  fi
 fi
 
 PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
@@ -259,7 +268,10 @@ function save-pe-to-kv() {
         --vault-name ${AZ_RESOURCE_KEYVAULT} \
         --name ${RADIX_PE_KV_SECRET_NAME} \
         | jq '.value | fromjson')"
-    
+    if [ "$existing_secret" == "" ]; then
+      existing_secret='[]'
+    fi
+
     # Check if PE exists in secret
     if [[ -z $(echo ${existing_secret} | jq '.[] | select(.private_endpoint_id=="'${pe_id}'").name') ]]; then
         # Does not exist in secret
@@ -267,6 +279,7 @@ function save-pe-to-kv() {
         pe_definition=$(az network private-endpoint show \
             --ids ${pe_id} \
             2>/dev/null)
+        target_subresource=$(echo $pe_definition | jq .manualPrivateLinkServiceConnections[].groupIds[] --raw-output 2>/dev/null)
         json=$(echo ${pe_definition} | jq '. |
         {
             private_endpoint_id: .id,
@@ -274,7 +287,7 @@ function save-pe-to-kv() {
             private_endpoint_resource_group: .resourceGroup,
             private_endpoint_location: .location,
             target_resource_id: .manualPrivateLinkServiceConnections[].privateLinkServiceId,
-            target_subresource: .manualPrivateLinkServiceConnections[].groupIds[],
+            target_subresource: "'${target_subresource}'",
             ip_address: "'${ip_address}'"
         }')
         echo "$json"
