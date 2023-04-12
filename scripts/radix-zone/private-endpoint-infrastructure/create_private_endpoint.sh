@@ -242,7 +242,7 @@ if [[ -n ${private_endpoint_nic_id} ]]; then
         exit 1
     fi
 else
-    echo "ERROR: Could not get NIC ID of Private Endpoint ${private_endpoint_id}." >&2
+    echo "ERROR: Could not get NIC ID of Private Endpoint ${PRIVATE_ENDPOINT_ID}." >&2
     exit 1
 fi
 
