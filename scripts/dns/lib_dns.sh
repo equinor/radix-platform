@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function create-a-record() {
     local record_name=$1
     local ip_address=$2

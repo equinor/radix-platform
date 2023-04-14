@@ -6,7 +6,7 @@ on:
         type: string
         required: true
         description: Current active cluster / destination cluster
-      environment:
+      GH_ENVIRONMENT:
         type: string
         description: Secret environment
     
@@ -26,7 +26,7 @@ jobs:
   moveCustomIngresses:
     name: Move Custom Ingresses Job
     runs-on: ubuntu-22.04
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.GH_ENVIRONMENT }}
 
     defaults:
       run:

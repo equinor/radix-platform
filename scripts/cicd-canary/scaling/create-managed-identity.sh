@@ -163,12 +163,12 @@ mi-exists ${mi_name} || {
         printf "${yel}""WARNING: New managed identity's client ID, ${client_id}, must be added to GitHub Actions workflow config file, ${AZ_SUBSCRIPTION_NAME}-${AZ_LOCATION}.cfg${normal}\n" >&2 
     }
 
-actions=("Microsoft.ContainerService/managedClusters/listClusterUserCredential/action" "Microsoft.ContainerService/managedClusters/read" "Microsoft.ContainerService/managedClusters/runCommand/action" "Microsoft.ContainerService/managedclusters/commandResults/read")
-actions_json=$(jq -c -n '$ARGS.positional' --args "${actions[@]}")
+permission=("Microsoft.ContainerService/managedClusters/listClusterUserCredential/action" "Microsoft.ContainerService/managedClusters/read" "Microsoft.ContainerService/managedClusters/runCommand/action" "Microsoft.ContainerService/managedclusters/commandResults/read")
+permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
 scopes=("/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b" "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a")
 scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
 
-create-az-role "${AKS_COMMAND_RUNNER_ROLE_NAME}" "Can execute 'az aks command invoke' on AKS cluster." "$actions_json" "$scopes_json"
+create-az-role "${AKS_COMMAND_RUNNER_ROLE_NAME}" "Can execute 'az aks command invoke' on AKS cluster." "$permission_json" "$scopes_json"
 tmp_file_name="/tmp/$(uuidgen)"
 get-mi-object-id ${tmp_file_name} ${mi_name}
 mi_object_id=$(cat ${tmp_file_name})
