@@ -398,19 +398,12 @@ function gh_federated_credentials() {
     if [[ -n $ENVIRONMENT ]]; then
         gh api --method PUT "repos/equinor/${REPO}/environments/${ENVIRONMENT}" 2>&1 >/dev/null
         env_arg=$'--env '$ENVIRONMENT''
-        AZURE_CLIENT_ID="AZURE_CLIENT_ID"
-        AZURE_SUBSCRIPTION_ID="AZURE_SUBSCRIPTION_ID"
-    else
-        AZURE_CLIENT_ID="AZURE_CLIENT_ID-$ENVIRONMENT"
-        AZURE_SUBSCRIPTION_ID="AZURE_SUBSCRIPTION_ID-$ENVIRONMENT"
     fi
 
-    AZURE_TENANT_ID="AZURE_TENANT_ID"
-
     echo 'Updating GitHub secrets...'
-    gh secret set "${AZURE_CLIENT_ID}" --body "$app_id" --repo "equinor/${REPO}" ${env_arg}
-    gh secret set "${AZURE_SUBSCRIPTION_ID}" --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" ${env_arg}
-    gh secret set "${AZURE_TENANT_ID}" --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}
+    gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" ${env_arg}
+    gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" ${env_arg}
+    gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}
 }
 
 function create_oidc_and_federated_credentials() {
