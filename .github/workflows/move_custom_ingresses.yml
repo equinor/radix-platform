@@ -6,9 +6,6 @@ on:
         type: string
         required: true
         description: Current active cluster / destination cluster
-      environment:
-        type: string
-        description: Secret environment
     
     secrets:
       AZURE_CLIENT_ID:
@@ -26,7 +23,6 @@ jobs:
   moveCustomIngresses:
     name: Move Custom Ingresses Job
     runs-on: ubuntu-22.04
-    environment: ${{ inputs.environment }}
 
     defaults:
       run:

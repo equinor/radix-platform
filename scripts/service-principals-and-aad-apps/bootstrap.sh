@@ -175,9 +175,9 @@ create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMEN
 create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
 create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
 create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
-add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master" "operations"
+add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master"
 MI_ID=$(az ad sp list --display-name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --query [].appId --output tsv)
-gh_federated_credentials "radix-flux" "operations" "${MI_ID}" "${AZ_SUBSCRIPTION_ID}"
+gh_federated_credentials "radix-flux" "${MI_ID}" "${AZ_SUBSCRIPTION_ID}"
 
 #######################################################################################
 ### END

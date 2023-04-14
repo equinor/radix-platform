@@ -381,25 +381,36 @@ function set_app_registration_api_scopes {
 
 function gh_federated_credentials() {
     local REPO
-    local ENVIRONMENT
     local app_id
     local SUBSCRIPTION_ID
+    local ENVIRONMENT
 
     REPO=$1
-    ENVIRONMENT=$2
-    app_id=$3
-    SUBSCRIPTION_ID=$4
+    app_id=$2
+    SUBSCRIPTION_ID=$3
+    ENVIRONMENT=$4
 
     if ! gh auth status >/dev/null 2>&1; then
         echo "You need to login: "
         gh auth login
     fi
 
-    gh api --method PUT "repos/equinor/${REPO}/environments/${ENVIRONMENT}" 2>&1 >/dev/null
+    if [[ -n $ENVIRONMENT ]]; then
+        gh api --method PUT "repos/equinor/${REPO}/environments/${ENVIRONMENT}" 2>&1 >/dev/null
+        env_arg=$'--env '$ENVIRONMENT''
+        AZURE_CLIENT_ID="AZURE_CLIENT_ID"
+        AZURE_SUBSCRIPTION_ID="AZURE_SUBSCRIPTION_ID"
+    else
+        AZURE_CLIENT_ID="AZURE_CLIENT_ID-$ENVIRONMENT"
+        AZURE_SUBSCRIPTION_ID="AZURE_SUBSCRIPTION_ID-$ENVIRONMENT"
+    fi
+
+    AZURE_TENANT_ID="AZURE_TENANT_ID"
+
     echo 'Updating GitHub secrets...'
-    gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
-    gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" --env "$ENVIRONMENT"
-    gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" --env "$ENVIRONMENT"
+    gh secret set "${AZURE_CLIENT_ID}" --body "$app_id" --repo "equinor/${REPO}" ${env_arg}
+    gh secret set "${AZURE_SUBSCRIPTION_ID}" --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" ${env_arg}
+    gh secret set "${AZURE_TENANT_ID}" --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}
 }
 
 function create_oidc_and_federated_credentials() {
@@ -460,7 +471,7 @@ function create_oidc_and_federated_credentials() {
         printf " Done.\n"
     done
 
-    gh_federated_credentials "${REPO}" "${ENVIRONMENT}" "${app_id}" "${SUBSCRIPTION_ID}"
+    gh_federated_credentials "${REPO}" "${app_id}" "${SUBSCRIPTION_ID}" "${ENVIRONMENT}"
 }
 
 function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {

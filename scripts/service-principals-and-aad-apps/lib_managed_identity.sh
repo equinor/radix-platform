@@ -147,6 +147,7 @@ function add-federated-gh-credentials {
     local mi_name
     local repo
     local branch
+    local environment
 
     mi_name="$1"
     repo="$2"
