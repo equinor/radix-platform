@@ -163,7 +163,7 @@ function add-federated-gh-credentials {
     printf "Adding federated GH credentials to MI ${mi_name}... "
     az identity federated-credential create \
         --identity-name "${mi_name}" \
-        --name "${repo}-gh-actions-${branch}" \
+        --name "${repo}-gh-actions-${branch}-${RADIX_ENVIRONMENT}" \
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
         --audiences "api://AzureADTokenExchange" \
         --issuer "https://token.actions.githubusercontent.com" \
