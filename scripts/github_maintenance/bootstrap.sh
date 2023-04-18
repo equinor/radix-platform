@@ -97,7 +97,7 @@ rules:
     verbs: ['get', 'list']
   - apiGroups: ['*']
     resources: ['secrets']
-    verbs: ['get', 'create', 'list', 'patch', 'update']
+    verbs: ['get', 'create', 'list', 'patch', 'update', 'delete']
   - apiGroups: ['apps']
     resources: ['deployments']
     verbs: ['get', 'patch']
