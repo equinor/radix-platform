@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-# PURPOSE
+#######################################################################################
+### PURPOSE
+###
+
 # Deletes the redis cache for the cluster given the context.
 
-# Example 1:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./delete_redis_cache_for_console.sh
-
-# Example 2:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./delete_redis_cache_for_console.sh
+#######################################################################################
+### INPUTS
+###
 
 # Required:
 # - RADIX_ZONE_ENV          : Path to *.env file
@@ -16,6 +17,35 @@
 
 # Optional:
 # - USER_PROMPT             : Enable/disable user prompt, ex: "true" [default], "false"
+
+#######################################################################################
+### HOW TO USE
+###
+
+# Example 1:
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./delete_redis_cache_for_console.sh
+
+# Example 2:
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./delete_redis_cache_for_console.sh
+
+#######################################################################################
+### Check for prerequisites binaries
+###
+
+echo ""
+printf "Check for neccesary executables... "
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
+
+printf "Done.\n"
+
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
 
 if [[ -z "$RADIX_ZONE_ENV" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
@@ -38,33 +68,57 @@ if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
     exit 1
 fi
 
+# Optional inputs
+
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+# Source util scripts
+
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
+
+#######################################################################################
+### Prepare az session
+###
+
+printf "Logging you in to Azure if not already logged in... "
+az account show >/dev/null || az login >/dev/null
+az account set --subscription "${AZ_SUBSCRIPTION_ID}" >/dev/null
+printf "Done.\n"
+
+#######################################################################################
+
 function deleteRedisCache() {
     # check if redis cache exist, else exit
     echo ""
-    REDIS_CACHE_NAME="$CLUSTER_NAME-$RADIX_WEB_CONSOLE_ENV"
-    if [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>/dev/null) == "" ]]; then
-        echo "ERROR: Redis Cache \"$REDIS_CACHE_NAME\" not found." >&2
+    REDIS_CACHE_NAME="${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}"
+    
+    if [[ $(az redis show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" 2>/dev/null) == "" ]]; then
+        echo "ERROR: Redis Cache \"${REDIS_CACHE_NAME}\" not found." >&2
         exit 1 # redis cache not found, exit
     fi
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -r -p "Do you want to delete Redis Cache \"$REDIS_CACHE_NAME\"? (Y/n) " yn
+            read -r -p "Do you want to delete Redis Cache \"${REDIS_CACHE_NAME}\"? (Y/n) " yn
             case $yn in
-                [Yy]* ) echo ""; break;;
-                [Nn]* ) echo "Quitting."; exit 0;;
-                * ) echo "Please answer yes or no.";;
+            [Yy]*)
+                echo ""
+                break
+                ;;
+            [Nn]*)
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
             esac
         done
     fi
 
-    printf "Deleting Redis Cache \"%s\"..." "$REDIS_CACHE_NAME"
-    if [[ $(az redis delete --yes --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$REDIS_CACHE_NAME" 2>&1) == *"ERROR"* ]]; then
-        printf "\nERROR: Could not delete Redis Cache \"%s\".\n" "$REDIS_CACHE_NAME" >&2
+    printf "Deleting Redis Cache \"%s\"..." "${REDIS_CACHE_NAME}"
+    if [[ $(az redis delete --yes --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" 2>&1) == *"ERROR"* ]]; then
+        printf "\nERROR: Could not delete Redis Cache \"%s\".\n" "${REDIS_CACHE_NAME}" >&2
     else
         printf " Done.\n"
     fi
