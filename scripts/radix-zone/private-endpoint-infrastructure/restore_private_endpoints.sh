@@ -8,14 +8,13 @@
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV                  : Path to *.env file
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-
 
 #######################################################################################
 ### HOW TO USE
@@ -55,9 +54,9 @@ fi
 temp_file="/tmp/$(uuidgen)"
 
 az keyvault secret show \
-        --vault-name ${AZ_RESOURCE_KEYVAULT} \
-        --name ${RADIX_PE_KV_SECRET_NAME} \
-        | jq '.value | fromjson' > ${temp_file}
+    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+    --name "${RADIX_PE_KV_SECRET_NAME}" |
+    jq '.value | fromjson' >${temp_file}
 
 jq -c '.[]' $temp_file | while read i; do
     pe_name=$(echo $i | jq .private_endpoint_name --raw-output)
@@ -69,5 +68,5 @@ jq -c '.[]' $temp_file | while read i; do
     RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT=false PRIVATE_ENDPOINT_NAME=${pe_name} TARGET_RESOURCE_RESOURCE_ID=$target_resource_id TARGET_SUBRESOURCE=${target_subresource} IP_ADDRESS=${pe_ip_address} ${CREATE_PRIVATE_ENDPOINT_SCRIPT}
 done
 
-rm $temp_file
+rm "${temp_file}"
 echo "Done restoring all private endpoints from ${RADIX_PE_KV_SECRET_NAME}."
