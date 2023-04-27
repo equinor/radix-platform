@@ -9,7 +9,7 @@
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV                  : Path to *.env file
@@ -19,7 +19,6 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
-
 
 #######################################################################################
 ### HOW TO USE
@@ -80,7 +79,7 @@ fi
 ###
 
 declare -A DNS_ZONE_MAP=(
-    ["vault"]="privatelink.vaultcore.azure.net" 
+    ["vault"]="privatelink.vaultcore.azure.net"
     ["blob"]="privatelink.blob.core.windows.net"
     ["postgresqlServer"]="privatelink.postgres.database.azure.com"
     ["mysqlServer"]="privatelink.mysql.database.azure.com"
@@ -93,7 +92,8 @@ dns_zone=${DNS_ZONE_MAP[$TARGET_SUBRESOURCE]} 2>/dev/null # can't figure out how
 unset yn
 if [[ -z ${dns_zone} ]]; then
     dns_zone=${AZ_PRIVATE_DNS_ZONES[-1]}
-    warning_msg=$(cat <<-END
+    warning_msg=$(
+        cat <<-END
         WARNING: Target sub-resource ${TARGET_SUBRESOURCE} does not map to a private DNS zone. If an appropriate mapping is documented 
         at https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns#azure-services-dns-zone-configuration, you can add 
         this mapping to the logic in this script. If you proceed without a mapping, this script will not create a DNS record in our 
@@ -107,17 +107,21 @@ if [[ -z ${dns_zone} ]]; then
         Gateway, this is appropriate.
 END
     )
-        if [[ $USER_PROMPT == true ]]; then
-            echo "$warning_msg" >&2
-            while true; do
-                read -p "Proceed without creating service-specific DNS record for PE? (Y/n) " yn
-                    case $yn in
-                            [Yy]* ) break;;
-                            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-                            * ) echo "Please answer yes or no.";;
-                        esac
-                    done
-        fi
+    if [[ $USER_PROMPT == true ]]; then
+        echo "$warning_msg" >&2
+        while true; do
+            read -p "Proceed without creating service-specific DNS record for PE? (Y/n) " yn
+            case $yn in
+            [Yy]*) break ;;
+            [Nn]*)
+                echo ""
+                echo "Quitting."
+                exit 0
+                ;;
+            *) echo "Please answer yes or no." ;;
+            esac
+        done
+    fi
 fi
 
 RESOURCE_NAME=$(echo $TARGET_RESOURCE_RESOURCE_ID | awk -F '/' '{print $NF}')
@@ -130,7 +134,6 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
 
 #######################################################################################
 ### Verify task at hand
@@ -171,33 +174,36 @@ if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -p "Is this correct? (Y/n) " yn
         case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 0;;
-            * ) echo "Please answer yes or no.";;
+        [Yy]*) break ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
         esac
     done
 fi
-
 
 #######################################################################################
 ### Create private endpoint
 ###
 
 if [ -z $TARGET_SUBRESOURCE ]; then
-  group_id_arg=""
+    group_id_arg=""
 else
-  group_id_arg='--group-id '${TARGET_SUBRESOURCE}''
+    group_id_arg='--group-id '${TARGET_SUBRESOURCE}''
 fi
 
 if [ -z $IP_ADDRESS ]; then
-  ip_config_arg=""
+    ip_config_arg=""
 else
-  # TODO: take into account case when TARGET_SUBRESOURCE is empty
-  if [ -z $TARGET_SUBRESOURCE ]; then
-    ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$'}]'
-  else
-    ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$',groupId:'${TARGET_SUBRESOURCE}$',memberName:'${TARGET_SUBRESOURCE}$'}]'
-  fi
+    # TODO: take into account case when TARGET_SUBRESOURCE is empty
+    if [ -z $TARGET_SUBRESOURCE ]; then
+        ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$'}]'
+    else
+        ip_config_arg=$'--ip-configs [{name:static-ip-address,private-ip-address:'${IP_ADDRESS}$',groupId:'${TARGET_SUBRESOURCE}$',memberName:'${TARGET_SUBRESOURCE}$'}]'
+    fi
 fi
 
 PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
@@ -207,7 +213,7 @@ PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
     --output tsv \
     2>/dev/null)
 
-    if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
+if [[ -z ${PRIVATE_ENDPOINT_ID} ]]; then
     echo "Creating private endpoint..."
     PRIVATE_ENDPOINT_ID=$(az network private-endpoint create \
         --name "${PRIVATE_ENDPOINT_NAME}" \
@@ -224,11 +230,13 @@ PRIVATE_ENDPOINT_ID=$(az network private-endpoint show \
         --request-message RadixPrivateLink \
         --query id \
         --output tsv \
-        --only-show-errors) || { echo "ERROR: Something went wrong when creating Private Endpoint." >&2; exit 1; }
+        --only-show-errors) || {
+        echo "ERROR: Something went wrong when creating Private Endpoint." >&2
+        exit 1
+    }
 else
     echo "Private Endpoint already exists."
 fi
-
 
 #######################################################################################
 ### Get PE NIC IP address
@@ -246,15 +254,16 @@ else
     exit 1
 fi
 
-
 az network private-endpoint dns-zone-group create \
     --endpoint-name ${PRIVATE_ENDPOINT_NAME} \
     --name default \
     --private-dns-zone ${dns_zone} \
     --resource-group ${AZ_RESOURCE_GROUP_VNET_HUB} \
     --zone-name $(echo ${dns_zone} | tr '.' '_') \
-    --only-show-errors >/dev/null || { echo "ERROR: Something went wrong when creating DNS zone integration with Private Endpoint." >&2; exit 1; }
-
+    --only-show-errors >/dev/null || {
+    echo "ERROR: Something went wrong when creating DNS zone integration with Private Endpoint." >&2
+    exit 1
+}
 
 #######################################################################################
 ### Save information in keyvault
@@ -266,10 +275,10 @@ function save-pe-to-kv() {
 
     existing_secret="$(az keyvault secret show \
         --vault-name ${AZ_RESOURCE_KEYVAULT} \
-        --name ${RADIX_PE_KV_SECRET_NAME} \
-        | jq '.value | fromjson')"
+        --name ${RADIX_PE_KV_SECRET_NAME} |
+        jq '.value | fromjson')"
     if [ "$existing_secret" == "" ]; then
-      existing_secret='[]'
+        existing_secret='[]'
     fi
 
     # Check if PE exists in secret
