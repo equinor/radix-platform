@@ -38,8 +38,31 @@ do
     done
 done
 
+#az ad app federated-credential list --id 7ef841f8-a263-45ea-8993-683cc6817ae2 -o json
+#az identity federated-credential list --identity-name serg-delete-me -g test-resources -o json
+
+#az resource list --query "[?type=='Microsoft.ManagedIdentity/userAssignedIdentities' && identity == null]" -o json
+#az ad sp list --show-mine --query "[].{appId:appId,displayName:displayName,objectId:id,type:servicePrincipalType}"
+#  {
+#    "appId": "7ef841f8-a263-45ea-8993-683cc6817ae2",
+#    "displayName": "ar-radix-csi-az-keyvault",
+#    "objectId": "aee13272...",
+#    "type": "Application"
+#  },
+
+#az ad sp show --id aee13272-...
+#"servicePrincipalType": "Application
+
+#az ad sp show --id c5a65135-...
+#"servicePrincipalType": "ManagedIdentity"
+
+#az ad sp list --show-mine --query "[?id=='c5a65135-...'][].{appId:appId,displayName:displayName,objectId:id,type:servicePrincipalType}"
+
 echo "Identity entries:"
 for identityEntry in "${identityEntries[@]}"
 do
   echo "$identityEntry"
 done
+
+
+#a='{"ns": "radix-test-fed-kv-dev","componentName": "app2","clientId": "7ef841f8-a263-45ea-8993-683cc6817ae2"}'
