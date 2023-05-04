@@ -30,7 +30,6 @@ if [[ -z "${appNames}" ]]; then
   exit 1
 fi
 
-identityEntries=("test1" "test2")
 #Get identities for each application
 for appName in $appNames
 do
@@ -50,18 +49,16 @@ do
   fi
   for envName in $envNames
     do
-      if [[ "$envName" != "dev" ]]; then
-        echo "  skip"
-        continue
-      fi
+      # if [[ "$envName" != "dev" ]]; then
+      #   echo "  skip"
+      #   continue
+      # fi
 
-      identityPropList=$(curl -X GET \
+      identityPropList=($(curl -X GET \
           https://api.dev.radix.equinor.com/api/v1/applications/${appName}/environments/${envName} \
               -H "Authorization: Bearer ${token}" \
               -H "Content-Type: application/json" 2>/dev/null | \
-              jq -r '.activeDeployment as $d|select($d != null)|select($d.components != null)|$d.components[] as $c|select($c.identity != null)|select($c.identity.azure != null)|{namespace:$d.namespace,componentName:$c.name,clientId:$c.identity.azure.clientId}'|jq -c '.')
-
-      echo $identityPropList
+              jq -r '.activeDeployment as $d|select($d != null)|select($d.components != null)|$d.components[] as $c|select($c.identity != null)|select($c.identity.azure != null)|{namespace:$d.namespace,componentName:$c.name,clientId:$c.identity.azure.clientId}'|jq -c '.'))
 
       if [[ -z "$identityPropList" ]]; then
         echo "  no Azure identities for env: $envName"
@@ -69,17 +66,35 @@ do
       fi
 
       echo "  found Azure identities for env: $envName"
-      for identityProps in $identityPropList[@]
+      for identityProps in "${identityPropList[@]}"
       do
-        namespace="$(echo $identityProps|jq -r .namespace)"
-        componentName="$(echo $identityProps|jq -r .componentName)"
-        clientId="$(echo $identityProps|jq -r .clientId)"
-        echo "$namespace - $componentName - $clientId"
+        namespace=$(echo "$identityProps"|jq -r .namespace)
+        componentName=$(echo "$identityProps"|jq -r .componentName)
+        clientId=$(echo "$identityProps"|jq -r .clientId)
+        echo "namespace:$namespace, component:$componentName, clientId: $clientId"
+
+        sps=$(az ad sp list --filter "appId eq '$clientId'" --query "[].{appId:appId,displayName:displayName,objectId:id,type:servicePrincipalType}"|jq -rc '.|select(length > 0)|.[0]')
+        if [[ -z "$sps" ]]; then
+          echo "not found service principal for the clientId $clientId"
+          continue
+        fi
+
+        if [[ $(echo "$sps"|jq -r '.type') == "Application" ]]; then
+          echo "clientId $clientId is an application: $sps"
+          #TODO: add federated credentials
+          continue
+        elif [[ $(echo "$sps"|jq -r '.type') == "ManagedIdentity" ]]; then
+          echo "clientId $clientId is a managed identity: $sps"
+          #TODO: add federated credentials
+          continue
+        fi
+
+        echo "not found application or managed identity for the clientId $clientId"
       done
     done
 done
 
-echo "stop"
+echo "completed"
 
 #az ad app federated-credential list --id 7ef841f8-a263-45ea-8993-683cc6817ae2 -o json
 #az identity federated-credential list --identity-name serg-delete-me -g test-resources -o json
