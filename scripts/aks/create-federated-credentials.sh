@@ -5,6 +5,8 @@
 # Get issuer URL:
 # az aks show --resource-group clusters --name <cluster-name> --query oidcIssuerProfile.issuerUrl
 
+tenant="3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+
 if [[ -z "${ISSUER_URL}" ]]; then
   printf "ERROR: ISSUER_URL is not set.\n" >&2
   exit 1
@@ -24,7 +26,7 @@ appNames=$(curl -X GET \
   https://api.dev.radix.equinor.com/api/v1/applications \
   -H "Authorization: Bearer ${token}" \
   -H "Content-Type: application/json" \
-  -H "cache-control: no-cache" 2>/dev/null |jq -r '.[].name')
+  -H "cache-control: no-cache" 2>/dev/null|jq -r '.[].name')
 if [[ -z "${appNames}" ]]; then
   printf "ERROR: Could not get applications.\n" >&2
   exit 1
@@ -42,17 +44,17 @@ do
   envNames=$(curl -X GET \
           "https://api.dev.radix.equinor.com/api/v1/applications/${appName}/environments" \
           -H "Authorization: Bearer ${token}" \
-          -H "Content-Type: application/json"  2>/dev/null |jq -r '.[].name')
+          -H "Content-Type: application/json"  2>/dev/null|jq -r '.[].name')
   if [[ -z "$envNames" ]]; then
     echo " no environments found"
     continue
   fi
   for envName in $envNames
     do
-      # if [[ "$envName" != "dev" ]]; then
-      #   echo "  skip"
-      #   continue
-      # fi
+       if [[ "$envName" != "dev" ]]; then
+         echo "  skip"
+         continue
+       fi
 
       identityPropList=($(curl -X GET \
           https://api.dev.radix.equinor.com/api/v1/applications/${appName}/environments/${envName} \
@@ -80,11 +82,31 @@ do
         fi
 
         if [[ $(echo "$sps"|jq -r '.type') == "Application" ]]; then
-          echo "clientId $clientId is an application: $sps"
-          #TODO: add federated credentials
+          echo "clientId $clientId is an application"
+          clientId="7ef841f8-a263-45ea-8993-683cc6817ae2"
+
+          fedCreds=$(az ad app federated-credential list --id "$clientId" -o json|jq -r ".[]|select(.issuer|contains(\"azure.com/$tenant/\"))|select(.subject==\"system:serviceaccount:$namespace:$componentName-sa\")"|jq -s '.')
+          if [[ -z "$fedCreds" ]]; then
+            echo "fail to get federated credentials"
+            exit 1
+          elif [ $(echo "$fedCreds"|jq '. | length') -eq 0 ]; then
+            echo "no federated credentials found"
+            continue
+          fi
+
+          fedCredsCount=$(echo "$fedCreds"|jq -s ".|length")
+          echo "$fedCredsCount federated credentials found"
+
+          requiredFedCredCount=$(echo "$fedCreds"|jq -r ".[]|select(.issuer|contains(\"$ISSUER_URL\"))"|jq -s ".|length")
+          if [ "$requiredFedCredCount" -eq 0 ]; then
+            echo "no federated credentials found for the required issuer - register new one"
+            echo "TODO: add federated credentials"
+          else
+            echo "exist federated credentials for the required issuer"
+          fi
           continue
         elif [[ $(echo "$sps"|jq -r '.type') == "ManagedIdentity" ]]; then
-          echo "clientId $clientId is a managed identity: $sps"
+          echo "clientId $clientId is a managed identity"
           #TODO: add federated credentials
           continue
         fi
