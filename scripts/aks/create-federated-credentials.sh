@@ -36,7 +36,7 @@ fi
 for appName in $appNames
 do
   if [[ "$appName" != "radix-test-fed-kv" ]]; then
-   # echo "  skip"
+    echo "  temp skip"
     continue
   fi
 
@@ -94,61 +94,58 @@ do
             echo "fail to get federated credentials"
             exit 1
           elif [ $(echo "$fedCreds"|jq '. | length') -eq 0 ]; then
-            echo "  - no federated credential(s) found"
+            echo "    - no federated credential(s) found"
             continue
           fi
 
           fedCredsCount=$(echo "$fedCreds"|jq -s ".|length")
-          echo "  - found $fedCredsCount federated credential(s)"
+          echo "    - found $fedCredsCount federated credential(s)"
 
           requiredFedCredCount=$(echo "$fedCreds"|jq -r ".[]|select(.issuer|contains(\"$ISSUER_URL\"))"|jq -s ".|length")
           if [ "$requiredFedCredCount" -eq 0 ]; then
-            echo "    - no federated credentials found for the required issuer - register new one"
+            echo "      - no federated credentials found for the required issuer - register new one"
             az ad app federated-credential create --id "$clientId" \
               --parameters "{\"audiences\":[\"api://AzureADTokenExchange\"],\"issuer\":\"$ISSUER_URL\",\"name\":\"$newFedCredName\",\"subject\":\"$newFedCredSubject\",\"description\":\"$newFedCredDescription\"}"
 #TODO: add error handling
             continue
           fi
-          echo "    - found existing federated credential(s) for the required issuer, skip registration"
+          echo "      - found existing federated credential(s) for the required issuer, skip registration"
           continue
         fi
 
         if [[ $(echo "$sps"|jq -r '.type') == "ManagedIdentity" ]]; then
-          echo "  - managed identity: $displayName, clientId: $clientId, namespace:$namespace, component:$componentName"
           resourceGroup=$(az identity list --query "[?clientId=='$clientId']" -o json|jq -r '.|select(length > 0)|.[0]|.resourceGroup')
+          echo "  - managed identity: $displayName, resource group $resourceGroup, clientId: $clientId, namespace:$namespace, component:$componentName"
 
-          echo "  - get federated credentials for the managed identity $displayName in resource group $resourceGroup"
           fedCreds=$(az identity federated-credential list --identity-name "$displayName" --resource-group "$resourceGroup")
 
           if [[ -z "$fedCreds" ]]; then
-            echo "  - fail to get federated credential(s)"
+            echo "    - fail to get federated credential(s)"
             exit 1
           elif [ $(echo "$fedCreds"|jq '. | length') -eq 0 ]; then
-            echo "  - no federated credentials found"
+            echo "    - no federated credentials found"
             continue
           fi
 
           fedCredsCount=$(echo "$fedCreds"|jq -s ".|length")
-          echo "  - found $fedCredsCount federated credential(s)"
+          echo "    - found $fedCredsCount federated credential(s)"
 
           requiredFedCredCount=$(echo "$fedCreds"|jq -r ".[]|select(.issuer|contains(\"$ISSUER_URL\"))"|jq -s ".|length")
           if [ "$requiredFedCredCount" -eq 0 ]; then
-            echo "    - no federated credential(s) found for the required issuer - register new one"
-            #TODO
-            az identity federated-credential create \
+            echo "      - no federated credential(s) found for the required issuer - register new one"
+            echo $(az identity federated-credential create \
                 --identity-name "$displayName" \
                 --resource-group "$resourceGroup" \
                 --name "$newFedCredName" \
                 --subject "$newFedCredSubject" \
                 --issuer "$ISSUER_URL" \
-                --audiences "api://AzureADTokenExchange"
-#TODO: add error handling
-#            if [ $? -ne 0 ]; then
-#              echo "Error: Directory not found"
-#            fi
+                --audiences "api://AzureADTokenExchange")
+            if [ $? -ne 0 ]; then
+              echo "Error: failed registration"
+            fi
             continue
           fi
-          echo "    - found existing federated credential(s) for the required issuer, skip registration"
+          echo "      - found existing federated credential(s) for the required issuer, skip registration"
           continue
         fi
 
