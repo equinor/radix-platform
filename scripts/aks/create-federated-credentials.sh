@@ -17,12 +17,15 @@ apiUrlContextPart=""
 case "${CONTEXT}" in
   "playground")
     apiUrlContextPart="playground."
+    echo "context: playground"
     ;;
   "development")
     apiUrlContextPart="dev."
+    echo "context: development"
     ;;
   *)
     apiUrlContextPart="" # default - platform
+    echo "context: platform"
     ;;
 esac
 apiUrl="https://api.${apiUrlContextPart}radix.equinor.com/api/v1"
@@ -62,14 +65,14 @@ do
     continue
   fi
 
-  echo "found environments found for an application: $appName"
+  echo "found environment(s) for an application: $appName"
   for envName in $envNames
     do
       identityPropList=($(curl -X GET \
           "${apiUrl}/applications/${appName}/environments/${envName}" \
           -H "Authorization: Bearer ${token}" \
           -H "Content-Type: application/json" 2>/dev/null | \
-          jq -r '.activeDeployment as $d|select($d != null)|select($d.components != null)|$d.components[] as $c|select($c.identity != null)|select($c.identity.azure != null)|{namespace:$d.namespace,componentName:$c.name,clientId:$c.identity.azure.clientId}'|jq -c '.'))
+          jq -r '.|select(.activeDeployment != null)|.activeDeployment as $depl|select($depl.components != null)|$depl.components[] as $comp|select($comp.identity != null)|select($comp.identity.azure != null)|{namespace:$depl.namespace,componentName:$comp.name,clientId:$comp.identity.azure.clientId}'|jq -c '.'))
 
       if [[ -z "$identityPropList" ]]; then
         echo "- no Azure identities for env: $envName"
@@ -130,7 +133,7 @@ do
 
         if [[ $(echo "$sps"|jq -r '.type') == "ManagedIdentity" ]]; then
           resourceGroup=$(az identity list --query "[?clientId=='$clientId']" -o json|jq -r '.|select(length > 0)|.[0]|.resourceGroup')
-          echo "  - managed identity: $displayName, resource group $resourceGroup, clientId: $clientId, namespace:${namespace}, component:${componentName}"
+          echo "  - managed identity: $displayName, resource group: $resourceGroup, clientId: $clientId, namespace: ${namespace}, component: ${componentName}"
 
           fedCreds=$(az identity federated-credential list --identity-name "$displayName" --resource-group "$resourceGroup")
 
@@ -161,7 +164,7 @@ do
           if [ $? -ne 0 ]; then
             echo "      - registration failed"
           else
-            echo "      - registered. id: $(echo "$result"|jq -r '.id')"
+            echo "      - registered with id: $(echo "$result"|jq -r '.id')"
           fi
           continue
         fi
