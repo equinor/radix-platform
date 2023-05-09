@@ -12,7 +12,8 @@
 
 # Equinor tenant id
 tenant="3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-apiUrlContextPart="" # default - platform
+# Radix API URL
+apiUrlContextPart=""
 case "${CONTEXT}" in
   "playground")
     apiUrlContextPart="playground."
@@ -21,7 +22,7 @@ case "${CONTEXT}" in
     apiUrlContextPart="dev."
     ;;
   *)
-    apiUrlContextPart=""
+    apiUrlContextPart="" # default - platform
     ;;
 esac
 apiUrl="https://api.${apiUrlContextPart}radix.equinor.com/api/v1"
