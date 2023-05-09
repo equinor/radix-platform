@@ -102,14 +102,21 @@ do
           echo "    - found $fedCredsCount federated credential(s)"
 
           requiredFedCredCount=$(echo "$fedCreds"|jq -r ".[]|select(.issuer|contains(\"$ISSUER_URL\"))"|jq -s ".|length")
-          if [ "$requiredFedCredCount" -eq 0 ]; then
-            echo "      - no federated credentials found for the required issuer - register new one"
-            az ad app federated-credential create --id "$clientId" \
-              --parameters "{\"audiences\":[\"api://AzureADTokenExchange\"],\"issuer\":\"$ISSUER_URL\",\"name\":\"$newFedCredName\",\"subject\":\"$newFedCredSubject\",\"description\":\"$newFedCredDescription\"}"
-#TODO: add error handling
+          if [ "$requiredFedCredCount" -ne 0 ]; then
+            echo "      - found existing federated credential(s) for the required issuer, skip registration"
             continue
           fi
-          echo "      - found existing federated credential(s) for the required issuer, skip registration"
+
+          echo "      - no federated credentials found for the required issuer - register new one"
+
+          result=$(az ad app federated-credential create --id "$clientId" \
+            --parameters "{\"audiences\":[\"api://AzureADTokenExchange\"],\"issuer\":\"$ISSUER_URL\",\"name\":\"$newFedCredName\",\"subject\":\"$newFedCredSubject\",\"description\":\"$newFedCredDescription\"}")
+
+          if [ $? -ne 0 ]; then
+            echo "      - registration failed"
+          else
+            echo "      - registered. id: $(echo $result|jq -r '.id')"
+          fi
           continue
         fi
 
@@ -131,21 +138,23 @@ do
           echo "    - found $fedCredsCount federated credential(s)"
 
           requiredFedCredCount=$(echo "$fedCreds"|jq -r ".[]|select(.issuer|contains(\"$ISSUER_URL\"))"|jq -s ".|length")
-          if [ "$requiredFedCredCount" -eq 0 ]; then
-            echo "      - no federated credential(s) found for the required issuer - register new one"
-            echo $(az identity federated-credential create \
-                --identity-name "$displayName" \
-                --resource-group "$resourceGroup" \
-                --name "$newFedCredName" \
-                --subject "$newFedCredSubject" \
-                --issuer "$ISSUER_URL" \
-                --audiences "api://AzureADTokenExchange")
-            if [ $? -ne 0 ]; then
-              echo "Error: failed registration"
-            fi
+          if [ "$requiredFedCredCount" -ne 0 ]; then
+            echo "      - found existing federated credential(s) for the required issuer, skip registration"
             continue
           fi
-          echo "      - found existing federated credential(s) for the required issuer, skip registration"
+          echo "      - no federated credential(s) found for the required issuer - register new one"
+          result=$(az identity federated-credential create \
+              --identity-name "$displayName" \
+              --resource-group "$resourceGroup" \
+              --name "$newFedCredName" \
+              --subject "$newFedCredSubject" \
+              --issuer "$ISSUER_URL" \
+              --audiences "api://AzureADTokenExchange")
+          if [ $? -ne 0 ]; then
+            echo "      - registration failed"
+          else
+            echo "      - registered. id: $(echo $result|jq -r '.id')"
+          fi
           continue
         fi
 
