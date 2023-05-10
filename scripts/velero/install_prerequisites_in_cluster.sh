@@ -281,9 +281,17 @@ data:
   values: |
     configuration:
       backupStorageLocation:
-        bucket: $CLUSTER_NAME
+      - name: azure
+        provider: azure
+        default: true
+        bucket: "$CLUSTER_NAME"
         config:
-          storageAccount: $AZ_VELERO_STORAGE_ACCOUNT_ID
+          resourceGroup: 'backups'
+          storageAccount: "$AZ_VELERO_STORAGE_ACCOUNT_ID"
+      volumeSnapshotLocation:
+        - name: azure
+          provider: azure
+          apitimeout: 300s
 EOF
 printf "...Done"
 
