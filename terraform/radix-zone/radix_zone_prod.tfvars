@@ -22,6 +22,7 @@ CLUSTER_TYPE                   = "production"
 RADIX_ZONE                     = "prod"
 RADIX_ENVIRONMENT              = "prod"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
+K8S_ENVIROMENTS                = ["prod","c2"]
 
 #######################################################################################
 ### Resource groups
@@ -36,6 +37,7 @@ AZ_RESOURCE_GROUP_COMMON   = "common"
 
 AZ_SUBSCRIPTION_ID = "ded7ca41-37c8-4085-862f-b11d21ab341a"
 AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+AZ_SUBSCRIPTION_SHORTNAME = "s940"
 
 #######################################################################################
 ### AAD

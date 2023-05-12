@@ -500,27 +500,30 @@ VNET_ID="$(az network vnet show \
     --output tsv)"
 
 # peering VNET to hub-vnet
-HUB_VNET_RESOURCE_ID="$(az network vnet show \
-    --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-    --name "$AZ_VNET_HUB_NAME" \
-    --query "id" \
-    --output tsv)"
+# HUB_VNET_RESOURCE_ID="$(az network vnet show \
+#     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+#     --name "$AZ_VNET_HUB_NAME" \
+#     --query "id" \
+#     --output tsv)"
 
-echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
+# echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
 
-az network vnet peering create \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$VNET_PEERING_NAME" \
-    --vnet-name "$VNET_NAME" \
-    --remote-vnet "$HUB_VNET_RESOURCE_ID" \
-    --allow-vnet-access 2>&1
+# az network vnet peering create \
+#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#     --name "$VNET_PEERING_NAME" \
+#     --vnet-name "$VNET_NAME" \
+#     --remote-vnet "$HUB_VNET_RESOURCE_ID" \
+#     --allow-vnet-access 2>&1
 
-az network vnet peering create \
-    --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-    --name "$HUB_PEERING_NAME" \
-    --vnet-name "$AZ_VNET_HUB_NAME" \
-    --remote-vnet "$VNET_ID" \
-    --allow-vnet-access 2>&1
+# az network vnet peering create \
+#     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+#     --name "$HUB_PEERING_NAME" \
+#     --vnet-name "$AZ_VNET_HUB_NAME" \
+#     --remote-vnet "$VNET_ID" \
+#     --allow-vnet-access 2>&1
+
+read -p "Check if $VNET_NAME are associated with $VNET_PEERING_NAME before you continue. If OK, press enter  [Enter]..."
+
 
 function linkPrivateDnsZoneToVNET() {
     local dns_zone=${1}
