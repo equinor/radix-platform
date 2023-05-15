@@ -499,6 +499,7 @@ VNET_ID="$(az network vnet show \
     --query "id" \
     --output tsv)"
 
+#Legacy
 # peering VNET to hub-vnet
 # HUB_VNET_RESOURCE_ID="$(az network vnet show \
 #     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
@@ -522,7 +523,12 @@ VNET_ID="$(az network vnet show \
 #     --remote-vnet "$VNET_ID" \
 #     --allow-vnet-access 2>&1
 
-read -p "Check if $VNET_NAME are associated with $VNET_PEERING_NAME before you continue. If OK, press enter  [Enter]..."
+echo ""
+echo "Check if $VNET_NAME are associated with $HUB_VNET_NAME"
+while [ -z "$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)" ]; do
+    printf "."
+    sleep 5
+done
 
 
 function linkPrivateDnsZoneToVNET() {
