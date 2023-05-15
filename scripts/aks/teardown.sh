@@ -411,21 +411,21 @@ echo "Done."
 
 if [[ "${VNET}" ]]; then
     echo "Deleting vnet... "
-    az network vnet peering delete \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$VNET_PEERING_NAME" \
-        --vnet-name "$VNET_NAME" \
-        --subscription "$AZ_SUBSCRIPTION_ID" \
-        --output none \
-        --only-show-errors
+    # az network vnet peering delete \
+    #     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    #     --name "$VNET_PEERING_NAME" \
+    #     --vnet-name "$VNET_NAME" \
+    #     --subscription "$AZ_SUBSCRIPTION_ID" \
+    #     --output none \
+    #     --only-show-errors
 
-    az network vnet peering delete \
-        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-        --name "$HUB_PEERING_NAME" \
-        --vnet-name "$AZ_VNET_HUB_NAME" \
-        --subscription "$AZ_SUBSCRIPTION_ID" \
-        --output none \
-        --only-show-errors
+    # az network vnet peering delete \
+    #     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
+    #     --name "$HUB_PEERING_NAME" \
+    #     --vnet-name "$AZ_VNET_HUB_NAME" \
+    #     --subscription "$AZ_SUBSCRIPTION_ID" \
+    #     --output none \
+    #     --only-show-errors
 
     az network vnet delete \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
