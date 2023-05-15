@@ -15,12 +15,12 @@ Run below commands to deploy
 
 ```sh
 # Will deploy main.tf
-terraform apply --var-file=../../../../radix-zone/radix_zone_dev.tfvars
+terraform apply --var-file=../../../../radix-zone/radix_zone_prod.tfvars
 ```
 
 Run below commands to destroy
 
 ```sh
 # Will destroy main.tf
-terraform destroy --var-file=../../../../radix-zone/radix_zone_dev.tfvars
+terraform destroy --var-file=../../../../radix-zone/radix_zone_prod.tfvars
 ```
