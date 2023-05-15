@@ -6,33 +6,6 @@ provider "azurerm" {
   features {}
 }
 
-variable "cluster_location" {
-  type = map
-
-  default = {
-    prod = "northeurope"
-    c2 = "westeurope"
-  }
-}
-
-variable "cluster_rg" {
-  type = map
-
-  default = {
-    prod = "clusters"
-    c2 = "clusters-westeurope"
-  }
-}
-
-variable "enviroment_condition" {
-  type = map
-
-  default = {
-    prod = "notcontains"
-    c2 = "contains"
-  }
-}
-
 resource "azurerm_policy_definition" "policy" {
   for_each     = toset(var.K8S_ENVIROMENTS)
   name         = "Kubernetes-vnets-in-${each.key}"
@@ -46,7 +19,6 @@ resource "azurerm_policy_definition" "policy" {
     }
 
 METADATA
-
 
   policy_rule = <<POLICY_RULE
   {
