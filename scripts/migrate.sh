@@ -528,11 +528,11 @@ printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
 (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 
-echo ""
-echo "Updating storageaccount firewall..."
-printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" ACTION="add" source "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT")
-wait # wait for subshell to finish
+# echo ""
+# echo "Updating storageaccount firewall..."
+# printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" "${normal}"
+# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" ACTION="add" source "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT")
+# wait # wait for subshell to finish
 
 # Wait for velero to be deployed from flux
 echo ""

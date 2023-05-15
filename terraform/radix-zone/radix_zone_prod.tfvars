@@ -22,6 +22,7 @@ CLUSTER_TYPE                   = "production"
 RADIX_ZONE                     = "prod"
 RADIX_ENVIRONMENT              = "prod"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
+K8S_ENVIROMENTS                = ["prod", "c2"]
 
 #######################################################################################
 ### Resource groups
@@ -34,8 +35,9 @@ AZ_RESOURCE_GROUP_COMMON   = "common"
 ### Shared environment, az region and az subscription
 ###
 
-AZ_SUBSCRIPTION_ID = "ded7ca41-37c8-4085-862f-b11d21ab341a"
-AZ_TENANT_ID       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+AZ_SUBSCRIPTION_ID        = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+AZ_TENANT_ID              = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+AZ_SUBSCRIPTION_SHORTNAME = "s940"
 
 #######################################################################################
 ### AAD
@@ -173,11 +175,11 @@ storage_accounts = {
     life_cycle    = false
   }
   "s940radixinfra" = {
-    name          = "s940radixinfra"
-    rg_name       = "s940-tfstate"
-    repl          = "RAGRS"
-    backup_center = true
-    firewall      = false
+    name             = "s940radixinfra"
+    rg_name          = "s940-tfstate"
+    repl             = "RAGRS"
+    backup_center    = true
+    firewall         = false
     create_with_rbac = true
   }
   "s940radixveleroc2" = {
