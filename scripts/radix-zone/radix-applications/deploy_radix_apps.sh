@@ -861,6 +861,14 @@ wait_for_app_namespace_component_secret "radix-servicenow-proxy-prod" "api"
 (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_radix_servicenow_proxy.sh")
 wait # wait for subshell to finish
 
+### Set Radix Log API secrets
+echo ""
+echo "For the Radix Log API to work we need to apply secrets and environment variables"
+wait_for_app_namespace_component_secret "radix-log-api-qa" "server"
+wait_for_app_namespace_component_secret "radix-log-api-prod" "server"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_env_vars_and_secrets_for_radix_log_api.sh")
+wait # wait for subshell to finish
+
 ### All done
 echo ""
 echo "Roses are red, violets are blue"
