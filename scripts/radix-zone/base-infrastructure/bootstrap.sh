@@ -148,9 +148,12 @@ printf "\n"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 printf "\n   -  AZ_SYSTEM_USER_DNS                          : $AZ_SYSTEM_USER_DNS"
+printf "\n   -  APP_REGISTRATION_WEB_CONSOLE                : $APP_REGISTRATION_WEB_CONSOLE"
 printf "\n   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
 printf "\n   -  APP_REGISTRATION_CERT_MANAGER               : $APP_REGISTRATION_CERT_MANAGER"
 printf "\n   -  APP_REGISTRATION_VELERO                     : $APP_REGISTRATION_VELERO"
+printf "\n   -  APP_REGISTRATION_SERVICENOW_SERVER          : $APP_REGISTRATION_SERVICENOW_SERVER"
+printf "\n   -  APP_REGISTRATION_LOG_API                    : $APP_REGISTRATION_LOG_API"
 printf "\n"
 printf "\n   -  MI_AKS                                      : $MI_AKS"
 printf "\n   -  MI_AKSKUBELET                               : $MI_AKSKUBELET"
@@ -464,6 +467,7 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$APP_REGISTRATION_CERT_MANAGER" "Cert-Manager"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Used by web console for login and other AD information"
+    create_service_principal_and_store_credentials "$APP_REGISTRATION_LOG_API" "Service principal that provides read-only access to radix-container-logs Log Analytics workspace"
 }
 
 function create_servicenow_proxy_server_app_registration() {
@@ -521,6 +525,28 @@ function create_log_analytics_workspace() {
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none \
         --only-show-errors
+    printf "...Done\n"
+}
+
+function set_permissions_on_log_analytics_workspace() {
+    local scope
+    scope="$(az monitor log-analytics workspace show --name ${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE} --resource-group ${AZ_RESOURCE_GROUP_LOGS} --query "id" --output tsv)"
+
+    # Available roles
+    # https://github.com/Azure/acr/blob/master/docs/roles-and-permissions.md
+    # Note that to be able to use "az acr build" you have to have the role "Contributor".
+
+    local id
+    printf "Working on log analytics workspace \"${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}\": "
+
+    printf "Setting permissions for \"${APP_REGISTRATION_LOG_API}\"..." # radix-cr-reader-dev
+    id="$(az ad sp list --display-name ${APP_REGISTRATION_LOG_API} --query [].appId --output tsv)"
+    # Delete any existing roles
+    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
+    # Configure new roles
+    az role assignment create --assignee "${id}" --role "Log Analytics Reader" --scope "${scope}" --output none
+    printf "$scope"
+    printf $id
     printf "...Done\n"
 }
 
@@ -610,7 +636,7 @@ END
     printf "Done.\n"
 }
 
-function update_acr_whitelist() {
+function update_acr_whitelist() {
     #######################################################################################
     ### Add ACR network rule
     ###
@@ -647,6 +673,7 @@ create_acr_tasks
 set_permissions_on_dns
 create_dns_role_definition_for_cert_manager
 create_log_analytics_workspace
+set_permissions_on_log_analytics_workspace
 create_sql_logs_storageaccount
 
 #######################################################################################
