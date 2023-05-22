@@ -524,7 +524,7 @@ VNET_ID="$(az network vnet show \
 #     --allow-vnet-access 2>&1
 
 echo ""
-echo "Check if $VNET_NAME are associated with $HUB_VNET_NAME"
+echo "Check if $VNET_NAME are associated with $AZ_VNET_HUB_NAME"
 while [ -z "$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)" ]; do
     printf "."
     sleep 5
