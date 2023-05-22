@@ -210,13 +210,27 @@ verify_cluster_access
 echo ""
 printf "Enabling monitoring addon in the destination cluster...\n"
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
-az aks enable-addons --addons monitoring --name "${DEST_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --workspace-resource-id "${WORKSPACE_ID}" --no-wait
+if [[ $(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled) == "false" ]]; then
+    az aks enable-addons \
+        --addons monitoring \
+        --name "${DEST_CLUSTER}" \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --workspace-resource-id "${WORKSPACE_ID}" \
+        --no-wait
+fi
 printf "Done.\n"
 
 if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""
     printf "Disabling monitoring addon in the source cluster... "
-    az aks disable-addons --addons monitoring --name "${SOURCE_CLUSTER}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --no-wait
+    if [[ $(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled) == "true" ]]; then
+        az aks disable-addons \
+            --addons monitoring \
+            --name "${SOURCE_CLUSTER}" \
+            --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
+            --no-wait
+    fi
     printf "Done.\n"
 
     #######################################################################################
@@ -249,7 +263,9 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ###
     echo ""
     printf "Scale down radix-cicd-canary in %s..." "$SOURCE_CLUSTER"
-    kubectl scale deployment --namespace radix-cicd-canary radix-cicd-canary --replicas=0
+    kubectl scale deployment \
+        --namespace radix-cicd-canary radix-cicd-canary \
+        --replicas=0
     wait
     printf "Done.\n"
 
@@ -304,7 +320,7 @@ echo "ingress:
     hosts:
     - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
 env:
-  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" > config
+  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" >config
 
 kubectl create secret generic grafana-helm-secret \
     --from-file=./config \
@@ -326,10 +342,16 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
         CLUSTER=$(jq -n "${list}" | jq -r .name)
         ID=$(jq -n "${list}" | jq -r .id)
         printf "Clear tag 'autostartupschedule' on cluster %s\n" "${CLUSTER}"
-        az resource tag --ids "${ID}" --tags autostartupschedule=false --is-incremental
+        az resource tag \
+            --ids "${ID}" \
+            --tags autostartupschedule=false \
+            --is-incremental
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
     printf "Tag cluster %s to autostartupschedule\n" "${DEST_CLUSTER}"
-    az resource tag --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER}" --tags autostartupschedule=true --is-incremental
+    az resource tag \
+        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER}" \
+        --tags autostartupschedule=true \
+        --is-incremental
 fi
 
 echo ""
