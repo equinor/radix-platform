@@ -338,13 +338,15 @@ function create_radix_application() {
 
 function create_build_deploy_job() {
     # This downloads radixregistration-values from the keyvault and creates a radixJob.
-    local app_name          # Input 1
-    local clone_branch      # Input 2
+    local app_name           # Input 1
+    local clone_branch       # Input 2
+    local pipeline_image_tag # Input 3
     local secret_file
     local image_tag
 
     app_name="${1}"
     clone_branch="${2}"
+    pipeline_image_tag="${3:-release-latest}"
 
     if [ -z "$app_name" ] || [ -z "$clone_branch" ]; then
         printf "Missing arguments:"
@@ -381,6 +383,7 @@ function create_build_deploy_job() {
         OWNER=$(cat ${secret_file} | jq -r .owner) \
         TIMESTAMP="${timestamp}" \
         IMAGE_TAG="${image_tag}" \
+        PIPELINE_IMAGE_TAG="${pipeline_image_tag}" \
         CONTAINER_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
         envsubst < "${script_dir_path}/templates/radix-app-template-rj.yaml" > "${script_dir_path}/${app_name}-rj.yaml"
 
