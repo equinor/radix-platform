@@ -99,7 +99,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     local config_branch     # Input 7, optional
     local machine_user      # Input 8, optional
     local deploy_key_name   # Input 9, optional
-    local configuration_item # Input 109, optional
+    local configuration_item # Input 10, optional
     local template_path
     local check_key
     local private_key
@@ -762,6 +762,36 @@ if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     create_build_deploy_job "radix-servicenow-proxy" "main"
 
     create_build_deploy_job "radix-servicenow-proxy" "release"
+fi
+
+# Radix Log API
+
+echo ""
+echo "Deploy radix-log-api..."
+
+create_and_register_deploy_key_and_store_credentials \
+    "radix-log-api" \
+    "radix-log-api" \
+    "equinor" \
+    "${GITHUB_PAT}" \
+    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
+    "" \
+    "main" \
+    "false" \
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
+
+create_github_webhook_in_repository "radix-log-api" "${GITHUB_PAT}"
+
+create_radix_application "radix-log-api"
+
+if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
+    # Wait a few seconds until radix-operator can process the RadixRegistration
+    wait_for_app_namespace "radix-log-api"
+
+    create_build_deploy_job "radix-log-api" "main"
+
+    create_build_deploy_job "radix-log-api" "release"
 fi
 
 #######################################################################################
