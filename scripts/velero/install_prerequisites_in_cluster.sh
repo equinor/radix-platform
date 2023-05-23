@@ -233,12 +233,32 @@ printf "...Done"
 
 printf "\nWorking on credentials..."
 generateCredentialsFile
-kubectl create secret generic cloud-credentials --namespace "$VELERO_NAMESPACE" \
+kubectl create secret generic cloud-credentials \
+  --namespace "$VELERO_NAMESPACE" \
   --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
   --dry-run=client -o yaml |
   kubectl apply -f - \
     2>&1 >/dev/null
 printf "...Done"
+
+MYIP=$(curl http://ifconfig.me/ip) ||
+  {
+    echo "ERROR: Failed to get IP address." >&2
+    return 1
+  }
+
+az storage account network-rule add \
+  --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
+  --ip-address "${MYIP}" \
+  --output none \
+  --only-show-errors
+
+printf "Wait for network-rule to apply..."
+while [[ "$(az storage container list --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" --auth-mode login 2>&1 >/dev/null)" == *"ERROR"* ]]; do
+  printf "."
+  sleep 5
+done
+printf "Done."
 
 # Create the cluster specific blob container
 printf "\nWorking on storage container..."
@@ -248,6 +268,12 @@ az storage container create -n "$CLUSTER_NAME" \
   --auth-mode login \
   2>&1 >/dev/null
 printf "...Done"
+
+az storage account network-rule remove \
+  --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
+  --ip-address "${MYIP}" \
+  --output none \
+  --only-show-errors
 
 # Velero custom RBAC clusterrole
 RBAC_CLUSTERROLE="velero-admin"
