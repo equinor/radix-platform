@@ -106,7 +106,7 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_ip_whitelist.sh
 MASTER_K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 
 temp_file_path="/tmp/$(uuidgen)"
-run-interactive-ip-whitelist-wizard "${MASTER_K8S_API_IP_WHITELIST}" "${temp_file_path}"
+run-interactive-ip-whitelist-wizard "${MASTER_K8S_API_IP_WHITELIST}" "${temp_file_path}" "${USER_PROMPT}"
 new_master_k8s_api_ip_whitelist_base64=$(cat ${temp_file_path})
 new_master_k8s_api_ip_whitelist=$(echo ${new_master_k8s_api_ip_whitelist_base64} | base64 -d)
 
@@ -117,7 +117,7 @@ rm ${temp_file_path}
 ### Get list of IPs
 ###
 
-new_k8s_api_ip_whitelist=$(jq <<<"${new_master_k8s_api_ip_whitelist[@]}" | jq -r '[.whitelist[].ip] | join(",")')
+new_k8s_api_ip_whitelist=$(jq <<<"${new_master_k8s_api_ip_whitelist[@]}" | jq -r '[.whitelist[].ip] | sort | join(",")')
 
 #######################################################################################
 ### Update keyvault if input list
@@ -141,16 +141,21 @@ fi
 
 if [[ -n ${CLUSTER_NAME} ]]; then
     # Check if cluster exists
-    printf "\nUpdate cluster \"%s\".\n" "${CLUSTER_NAME}"
     if [[ -n "$(az aks list --query "[?name=='${CLUSTER_NAME}'].name" --subscription "${AZ_SUBSCRIPTION_ID}" -otsv)" ]]; then
-        printf "\nUpdating cluster with whitelist IPs...\n"
-        if [[ $(az aks update --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${CLUSTER_NAME}" --api-server-authorized-ip-ranges "${new_k8s_api_ip_whitelist}") == *"ERROR"* ]]; then
-            printf "ERROR: Could not update cluster. Quitting...\n" >&2
-            exit 1
+        printf "\nChecking cluster \"%s\"..." "${CLUSTER_NAME}"
+        cluster_k8s_api_ip_whitelist=$(az aks show --name "${CLUSTER_NAME}" --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --query apiServerAccessProfile.authorizedIpRanges | jq -r 'sort | join(",")')
+        if [[ "${new_k8s_api_ip_whitelist}" != "${cluster_k8s_api_ip_whitelist}" ]]; then
+            printf "\nUpdating cluster with whitelist IPs...\n"
+            if [[ $(az aks update --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${CLUSTER_NAME}" --api-server-authorized-ip-ranges "${new_k8s_api_ip_whitelist}") == *"ERROR"* ]]; then
+                printf "ERROR: Could not update cluster. Quitting...\n" >&2
+                exit 1
+            fi
+        else
+            printf " Cluster whitelist is up to date."
         fi
         printf "\nDone.\n"
     else
-        printf "\nERROR: Could not find the cluster. Make sure you have access to it." >&2
+        printf "\nERROR: Could not find the cluster \"%s\". Make sure you have access to it." "$CLUSTER_NAME" >&2
         exit 1
     fi
 fi

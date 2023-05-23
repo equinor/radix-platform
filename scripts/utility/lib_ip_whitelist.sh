@@ -10,10 +10,9 @@ function listandindex() {
         ip=$(jq -n "${i}" | jq -r .ip)
         current_ip_whitelist+=("{\"id\":\"${j}\",\"location\":\"${location}\",\"ip\":\"${ip}\"},")
         printf "${fmt}" "   (${j})" "${location}" "${ip}"
-        ((j=j+1))
+        ((j = j + 1))
     done < <(printf "%s" "${ip_whitelist}" | jq -c '.whitelist[]')
 }
-
 
 function addwhitelist() {
     local ip_whitelist="$1"
@@ -26,7 +25,7 @@ function addwhitelist() {
     done < <(printf "%s" "${ip_whitelist}" | jq -c '.whitelist[]')
 }
 
-function add-single-ip-to-whitelist(){
+function add-single-ip-to-whitelist() {
     local master_ip_whitelist=$1
     local temp_file_path=$2
     local new_ip=$3
@@ -37,10 +36,10 @@ function add-single-ip-to-whitelist(){
     current_ip_whitelist+=(" ] }")
     master_ip_whitelist=$(jq <<<"${current_ip_whitelist[@]}" | jq '.' | jq 'del(.whitelist [] | select(.id == "99"))')
     master_ip_whitelist_base64=$(jq <<<"${master_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
-    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' >$temp_file_path
 }
 
-function delete-single-ip-from-whitelist(){
+function delete-single-ip-from-whitelist() {
     local master_ip_whitelist=$1
     local temp_file_path=$2
     local ip_to_delete=$3
@@ -49,16 +48,30 @@ function delete-single-ip-from-whitelist(){
     current_ip_whitelist+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
     master_ip_whitelist=$(jq <<<"${current_ip_whitelist[@]}" | jq '.' | jq "del(.whitelist [] | select(.ip == \"${ip_to_delete}\"))" | jq 'del(.whitelist [] | select(.id == "99"))')
     master_ip_whitelist_base64=$(jq <<<"${master_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
-    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' >$temp_file_path
 }
 
-function run-interactive-ip-whitelist-wizard(){
-    local master_ip_whitelist=$1
-    local temp_file_path=$2
-    local i=0
-    local fmt="%-8s%-33s%-12s\n"
-    local fmt2="%-41s%-45s\n"
-    local current_ip_whitelist=("{ \"whitelist\": [ ")
+function run-interactive-ip-whitelist-wizard() {
+    local master_ip_whitelist
+    local temp_file_path
+    local USER_PROMPT
+    local i
+    local fmt
+    local fmt2
+    local current_ip_whitelist
+
+    master_ip_whitelist=$1
+    temp_file_path=$2
+    USER_PROMPT=$3
+    i=0
+    fmt="%-8s%-33s%-12s\n"
+    fmt2="%-41s%-45s\n"
+    current_ip_whitelist=("{ \"whitelist\": [ ")
+
+    if [[ -z "${USER_PROMPT}" ]]; then
+        USER_PROMPT=true
+    fi
+
     while true; do
         printf "\nCurrent whitelist configuration:"
         printf "\n"
@@ -71,24 +84,28 @@ function run-interactive-ip-whitelist-wizard(){
         printf "\n"
         printf "\n   Please inspect and approve the listed networks before you continue:"
         printf "\n"
-        
+
         listandindex "${master_ip_whitelist}"
         current_ip_whitelist+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
-        while true; do
-            printf "\n"
-            read -r -p "Is above list correct? (Y/n) " yn
-            case ${yn} in
-            [Yy]*)
-                whitelist_ok=true
-                break
-                ;;
-            [Nn]*)
-                whitelist_ok=false
-                break
-                ;;
-            *) printf "\nPlease answer yes or no.\n" ;;
-            esac
-        done
+        if [[ $USER_PROMPT == true ]]; then
+            while true; do
+                printf "\n"
+                read -r -p "Is above list correct? (Y/n) " yn
+                case ${yn} in
+                [Yy]*)
+                    whitelist_ok=true
+                    break
+                    ;;
+                [Nn]*)
+                    whitelist_ok=false
+                    break
+                    ;;
+                *) printf "\nPlease answer yes or no.\n" ;;
+                esac
+            done
+        else
+            whitelist_ok=true
+        fi
 
         if [[ ${whitelist_ok} == false ]]; then
             while true; do
@@ -174,7 +191,7 @@ function run-interactive-ip-whitelist-wizard(){
     done
 
     master_ip_whitelist_base64=$(jq <<<"${master_ip_whitelist[@]}" | jq '{whitelist:[.whitelist[] | {location,ip}]}' | base64)
-    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' > $temp_file_path
+    echo $master_ip_whitelist_base64 | sed -E 's#\s+##g' >$temp_file_path
 }
 
 function getWhitelist() {
