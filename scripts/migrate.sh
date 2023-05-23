@@ -241,6 +241,12 @@ if ! [[ -x "$RADIX_API_ENV_VAR_SCRIPT" ]]; then
     echo "ERROR: The Radix API env-var script is not found or it is not executable in path $RADIX_API_ENV_VAR_SCRIPT" >&2
 fi
 
+RADIX_LOG_API_ENV_VAR_AND_SECRET_SCRIPT="$WORKDIR_PATH/update_env_vars_and_secrets_for_radix_log_api.sh"
+if ! [[ -x "$RADIX_LOG_API_ENV_VAR_AND_SECRET_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The Radix Log API env-var and secret script is not found or it is not executable in path $RADIX_LOG_API_ENV_VAR_AND_SECRET_SCRIPT" >&2
+fi
+
 CHECK_KEYVAULT_SECRETS="$WORKDIR_PATH/check_keyvault_secrets.sh"
 if ! [[ -x "$CHECK_KEYVAULT_SECRETS" ]]; then
     # Print to stderror
@@ -811,6 +817,13 @@ fi
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$RADIX_API_ENV_VAR_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$RADIX_API_ENV_VAR_SCRIPT")
+wait # wait for subshell to finish
+echo ""
+
+# Update Radix Log API env vars and secrets
+echo ""
+printf "%s► Execute %s%s\n" "${grn}" "$RADIX_LOG_API_ENV_VAR_AND_SECRET_SCRIPT" "${normal}"
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$RADIX_LOG_API_ENV_VAR_AND_SECRET_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
