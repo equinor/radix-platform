@@ -40,7 +40,7 @@ variable "storage_accounts" {
     firewall                          = optional(bool, true)
     container_delete_retention_policy = optional(bool, true)
     tags                              = optional(map(string), {})
-    allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration | Allow Blob public access
+    allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration Allow Blob public access
     shared_access_key_enabled         = optional(bool, true)
     cross_tenant_replication_enabled  = optional(bool, true)
     delete_retention_policy           = optional(bool, true)
