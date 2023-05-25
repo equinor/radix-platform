@@ -530,7 +530,6 @@ while [ -z "$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_CLUSTERS" --vn
     sleep 5
 done
 
-
 function linkPrivateDnsZoneToVNET() {
     local dns_zone=${1}
     local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show \
@@ -581,7 +580,7 @@ echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
 DEFENDER_CONFIG="DEFENDER_CONFIG.json"
 
-cat <<EOF > $DEFENDER_CONFIG
+cat <<EOF >$DEFENDER_CONFIG
 {"logAnalyticsWorkspaceResourceId": "$WORKSPACE_ID"}
 EOF
 
@@ -659,7 +658,7 @@ rm -f $DEFENDER_CONFIG
 
 node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}
 managed_identity_id=$(az identity show \
-    --id /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS} \
+    --id "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS}" \
     --query principalId \
     -o tsv)
 
@@ -678,14 +677,24 @@ az role assignment create \
 printf "Done.\n"
 
 #######################################################################################
-### Tag cluster with migrationStrategy
+### Tag cluster
 ###
 
-printf "Tagging cluster ${CLUSTER_NAME} with tag migrationStrategy=${MIGRATION_STRATEGY}...\n"
+printf "Tagging cluster %s with tag migrationStrategy=%s...\n" "${CLUSTER_NAME}" "${MIGRATION_STRATEGY}"
 az resource tag \
-    --ids /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME} \
-    --tags migrationStrategy="${MIGRATION_STRATEGY}" --is-incremental  &>/dev/null
+    --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
+    --tags migrationStrategy="${MIGRATION_STRATEGY}" \
+    --is-incremental &>/dev/null
 printf "Done.\n"
+
+if [ "$RADIX_ZONE" = "dev" ]; then
+    printf "Tagging cluster %s with tag autostartupschedule...\n" "${CLUSTER_NAME}"
+    az resource tag \
+        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
+        --tags autostartupschedule=false \
+        --is-incremental &>/dev/null
+    printf "Done.\n"
+fi
 
 #######################################################################################
 ### Get api server whitelist
@@ -728,7 +737,12 @@ printf "Done.\n"
 ###
 
 echo "Taint the 'systempool'"
-az aks nodepool update --cluster-name "$CLUSTER_NAME" --name systempool --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --node-taints CriticalAddonsOnly=true:NoSchedule --labels nodepool-type=system nodepoolos=linux app=system-apps  >/dev/null
+az aks nodepool update \
+    --cluster-name "$CLUSTER_NAME" \
+    --name systempool \
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --node-taints CriticalAddonsOnly=true:NoSchedule \
+    --labels nodepool-type=system nodepoolos=linux app=system-apps >/dev/null
 printf "Done.\n"
 
 #######################################################################################
@@ -839,7 +853,7 @@ if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
     echo "###########################################################"
 fi
 
-if [ "$RADIX_ZONE" == "c2" ] || [ "$RADIX_ZONE" == "prod"  ]; then
+if [ "$RADIX_ZONE" == "c2" ] || [ "$RADIX_ZONE" == "prod" ]; then
     # Activate DDoS Protection Standard
     printf "%s► Execute %s%s\n" "${grn}" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" "${normal}"
     (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT")
