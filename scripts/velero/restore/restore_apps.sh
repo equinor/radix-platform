@@ -383,11 +383,11 @@ PATCH_JSON="$(
   cat <<END
 {
     "spec": {
+       "accessMode":"ReadOnly",
        "objectStorage": {
             "bucket": "$SOURCE_CLUSTER"
        }
-    },
-       "accessMode":"ReadOnly"
+    }
  }
 END
 )"
@@ -539,11 +539,11 @@ PATCH_JSON="$(
   cat <<END
 {
     "spec": {
+       "accessMode":"ReadWrite",
        "objectStorage": {
             "bucket": "$DEST_CLUSTER"
        }
-    },
-            "accessMode":"ReadWrite"
+    }
  }
 END
 )"

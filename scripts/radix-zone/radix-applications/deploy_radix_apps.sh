@@ -99,7 +99,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     local config_branch     # Input 7, optional
     local machine_user      # Input 8, optional
     local deploy_key_name   # Input 9, optional
-    local configuration_item # Input 109, optional
+    local configuration_item # Input 10, optional
     local template_path
     local check_key
     local private_key
@@ -338,13 +338,15 @@ function create_radix_application() {
 
 function create_build_deploy_job() {
     # This downloads radixregistration-values from the keyvault and creates a radixJob.
-    local app_name          # Input 1
-    local clone_branch      # Input 2
+    local app_name           # Input 1
+    local clone_branch       # Input 2
+    local pipeline_image_tag # Input 3
     local secret_file
     local image_tag
 
     app_name="${1}"
     clone_branch="${2}"
+    pipeline_image_tag="${3:-release-latest}"
 
     if [ -z "$app_name" ] || [ -z "$clone_branch" ]; then
         printf "Missing arguments:"
@@ -381,6 +383,7 @@ function create_build_deploy_job() {
         OWNER=$(cat ${secret_file} | jq -r .owner) \
         TIMESTAMP="${timestamp}" \
         IMAGE_TAG="${image_tag}" \
+        PIPELINE_IMAGE_TAG="${pipeline_image_tag}" \
         CONTAINER_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
         envsubst < "${script_dir_path}/templates/radix-app-template-rj.yaml" > "${script_dir_path}/${app_name}-rj.yaml"
 
@@ -764,6 +767,36 @@ if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     create_build_deploy_job "radix-servicenow-proxy" "release"
 fi
 
+# Radix Log API
+
+echo ""
+echo "Deploy radix-log-api..."
+
+create_and_register_deploy_key_and_store_credentials \
+    "radix-log-api" \
+    "radix-log-api" \
+    "equinor" \
+    "${GITHUB_PAT}" \
+    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
+    "" \
+    "main" \
+    "false" \
+    "${DEPLOY_KEY_NAME}" \
+    "2b0781a7db131784551ea1ea4b9619c9"
+
+create_github_webhook_in_repository "radix-log-api" "${GITHUB_PAT}"
+
+create_radix_application "radix-log-api"
+
+if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
+    # Wait a few seconds until radix-operator can process the RadixRegistration
+    wait_for_app_namespace "radix-log-api"
+
+    create_build_deploy_job "radix-log-api" "main"
+
+    create_build_deploy_job "radix-log-api" "release"
+fi
+
 #######################################################################################
 ### Applications have been deployed. Start configuration.
 ###
@@ -859,6 +892,14 @@ echo "For the Radix ServiceNow Proxy to work we need to apply secrets"
 wait_for_app_namespace_component_secret "radix-servicenow-proxy-qa" "api"
 wait_for_app_namespace_component_secret "radix-servicenow-proxy-prod" "api"
 (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_radix_servicenow_proxy.sh")
+wait # wait for subshell to finish
+
+### Set Radix Log API secrets
+echo ""
+echo "For the Radix Log API to work we need to apply secrets and environment variables"
+wait_for_app_namespace_component_secret "radix-log-api-qa" "server"
+wait_for_app_namespace_component_secret "radix-log-api-prod" "server"
+(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_env_vars_and_secrets_for_radix_log_api.sh")
 wait # wait for subshell to finish
 
 ### All done

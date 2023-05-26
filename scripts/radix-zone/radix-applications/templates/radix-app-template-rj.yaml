@@ -20,7 +20,7 @@ spec:
     toEnvironment: ""
   dockerRegistry: ${CONTAINER_REGISTRY}
   pipeLineType: build-deploy
-  pipelineImage: ${CLONE_BRANCH}-latest
+  pipelineImage: ${PIPELINE_IMAGE_TAG}
   promote:
     deploymentName: ""
     fromEnvironment: ""
