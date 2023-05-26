@@ -132,7 +132,12 @@ resource_groups = {
 
 storage_accounts = {
   "radixflowlogsdev" = {
-    name          = "radixflowlogsdev"
+    name             = "radixflowlogsdev"
+    rg_name          = "Logs-Dev"
+    backup_center    = true
+  }
+  "radixflowlogsplayground" = {
+    name          = "radixflowlogsplayground"
     rg_name       = "Logs-Dev"
     backup_center = true
   }
@@ -151,6 +156,10 @@ storage_accounts = {
     backup_center                   = true
     repl                            = "GRS"
     allow_nested_items_to_be_public = false
+    private_endpoint                = false
+    firewall                        = true
+    private_endpoint                = true
+
   }
   "s941sqllogsdev" = {
     name          = "s941sqllogsdev"
@@ -305,6 +314,29 @@ firewall_rules = {
 
 KV_RADIX_VAULT = "radix-vault-dev"
 
+
+
+private_link = {
+  "dev" = {
+    linkname =  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/cluster-vnet-hub-dev/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+  "playground"  = {
+    linkname =  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/cluster-vnet-hub-playground/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+}
+#######################################################################################
+### Virtual network
+###
+
+virtual_networks = {
+  "dev" = {
+    rg_name = "cluster-vnet-hub-dev"
+  }
+  "playground" = {
+    rg_name = "cluster-vnet-hub-playground"
+  }
+}
+
 #######################################################################################
 ### Service principal
 ###
@@ -319,3 +351,6 @@ SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
 GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations"
+
+
+

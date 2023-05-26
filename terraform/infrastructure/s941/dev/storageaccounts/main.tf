@@ -6,8 +6,31 @@ provider "azurerm" {
   features {}
 }
 
+data "azurerm_subscription" "AZ_SUBSCRIPTION" {
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+}
+
 locals {
   WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+  storageaccount_private_subnet = merge([for sa_key, sa_value in var.storage_accounts : {
+    for privlink_key, privlink_value in var.private_link :
+    "${sa_key}-${privlink_key}" => {
+      name                = sa_value.name
+      resource_group_name = sa_value.rg_name
+      location            = sa_value.location
+      subnet_id           = privlink_value.linkname
+      private_endpoint    = sa_value.private_endpoint
+    }
+  }]...)
+  privatelink_dns_record = merge([for sa_key, sa_value in var.storage_accounts : {
+    for virtual_networks_key, virtual_networks_value in var.virtual_networks :
+    "${sa_key}-${virtual_networks_key}" => {
+      name                = sa_value.name
+      resource_group_name = virtual_networks_value.rg_name
+      private_endpoint    = sa_value.private_endpoint
+    }
+  }]...)
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -16,10 +39,22 @@ data "azurerm_key_vault" "keyvault_env" {
 }
 
 data "azurerm_key_vault_secret" "whitelist_ips" {
-  name         = "kubernetes-api-server-whitelist-ips-${var.RADIX_ZONE}"
+  name         = "acr-whitelist-sa-${var.RADIX_ZONE}"
   key_vault_id = data.azurerm_key_vault.keyvault_env.id
 }
 
+data "azurerm_subnet" "virtual_subnets" {
+  for_each             = {for key, value in var.resource_groups: key => value if length(regexall("cluster-vnet-hub", key)) > 0}
+  name                 = "private-links"
+  virtual_network_name = "vnet-hub"
+  resource_group_name  = each.value["name"]
+}
+
+data "azurerm_private_dns_zone" "dns-zone" {
+  for_each             = {for key, value in var.resource_groups: key => value if length(regexall("cluster-vnet-hub", key)) > 0}
+  name                = "privatelink.blob.core.windows.net"
+  resource_group_name  = each.value["name"]
+}
 #######################################################################################
 ### Storage Accounts
 ###
@@ -82,15 +117,45 @@ resource "azurerm_storage_account" "storageaccounts" {
 ### Network rules
 ###
 
-resource "azurerm_storage_account_network_rules" "network_rule" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
-  storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
-  default_action     = "Deny"
-  ip_rules           = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
-  bypass             = ["AzureServices"]
-  depends_on         = [azurerm_storage_account.storageaccounts]
+# resource "azurerm_storage_account_network_rules" "network_rule" {
+#   for_each           = { for key in compact([for key, value in var.storage_accounts : value.firewall ? key : ""]) : key => var.storage_accounts[key] }
+#   storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
+#   default_action     = "Deny"
+#   ip_rules           = compact([for key, value in local.WHITELIST_IPS.whitelist : endswith(value.ip, "/32") ? replace(value.ip, "/32", "") : ""])
+#   bypass             = ["AzureServices"]
+# }
+
+#######################################################################################
+### Private endpoint
+###
+
+resource "azurerm_private_endpoint" "northeurope" {
+  for_each            = { for key in compact([for key, value in local.storageaccount_private_subnet : value.location == var.AZ_LOCATION && value.private_endpoint ? key : ""]) : key => local.storageaccount_private_subnet[key] }
+  name                = each.key
+  resource_group_name = each.value["resource_group_name"]
+  location            = each.value["location"]
+  subnet_id           = each.value["subnet_id"]
+  depends_on          = [azurerm_storage_account.storageaccounts]
+
+  private_service_connection {
+    name                           = "Private_Service_Connection"
+    private_connection_resource_id = azurerm_storage_account.storageaccounts[each.value["name"]].id
+    is_manual_connection           = false
+    subresource_names              = ["blob"]
+  }
+
 }
 
+## DNS 
+resource "azurerm_private_dns_a_record" "dns_a_northeurope" {
+  for_each            = { for key in compact([for key, value in local.privatelink_dns_record : value.private_endpoint ? key : ""]) : key => local.privatelink_dns_record[key] }
+  name                = each.value["name"]
+  zone_name           = "privatelink.blob.core.windows.net"
+  resource_group_name = each.value["resource_group_name"]
+  ttl                 = 10
+  records             = [azurerm_private_endpoint.northeurope[each.key].private_service_connection.0.private_ip_address]
+  depends_on          = [azurerm_private_endpoint.northeurope]
+}
 #######################################################################################
 ### Role assignment
 ###
@@ -152,7 +217,7 @@ resource "azurerm_storage_management_policy" "sapolicy" {
 ###
 
 resource "azurerm_data_protection_backup_vault" "northeurope" {
-  name                = "s941-backupvault-${var.AZ_LOCATION}"
+  name                = "${var.AZ_SUBSCRIPTION_SHORTNAME}-backupvault-${var.AZ_LOCATION}"
   resource_group_name = "backups"
   location            = var.AZ_LOCATION
   datastore_type      = "VaultStore"
@@ -168,7 +233,7 @@ resource "azurerm_data_protection_backup_vault" "northeurope" {
 ###
 
 resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
-  name               = "s941-backuppolicy-${var.AZ_LOCATION}"
+  name               = "${var.AZ_SUBSCRIPTION_SHORTNAME}-backuppolicy-${var.AZ_LOCATION}"
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   retention_duration = "P30D"
 }

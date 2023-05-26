@@ -92,6 +92,10 @@ resource_groups = {
   "clusters" = {
     name = "clusters"
   }
+  "cluster-vnet-hub-c2" = {
+    name = "cluster-vnet-hub-c2"
+    location = "westeurope"
+  }
   "cluster-vnet-hub-prod" = {
     name = "cluster-vnet-hub-prod"
   }
@@ -138,10 +142,6 @@ resource_groups = {
     name     = "monitoring-westeurope"
     location = "westeurope"
   }
-  "radix-private-links-c2-prod" = {
-    name     = "radix-private-links-c2-prod"
-    location = "westeurope"
-  }
   "rg-protection-we" = {
     name     = "rg-protection-we"
     location = "westeurope"
@@ -183,17 +183,19 @@ storage_accounts = {
     create_with_rbac = true
   }
   "s940radixveleroc2" = {
-    name          = "s940radixveleroc2"
-    rg_name       = "backups"
-    location      = "westeurope"
-    repl          = "GRS"
-    backup_center = true
+    name             = "s940radixveleroc2"
+    rg_name          = "backups"
+    location         = "westeurope"
+    repl             = "GRS"
+    backup_center    = true
+    private_endpoint = true
   }
   "s940radixveleroprod" = {
-    name          = "s940radixveleroprod"
-    rg_name       = "backups"
-    repl          = "GRS"
-    backup_center = true
+    name             = "s940radixveleroprod"
+    rg_name          = "backups"
+    repl             = "GRS"
+    backup_center    = true
+    private_endpoint = true
   }
   "s940sqllogsc2prod" = {
     name          = "s940sqllogsc2prod"
@@ -349,6 +351,29 @@ sql_database = {
     sku_name = "S3"
   }
 }
+
+private_link = {
+  "c2" = {
+    linkname = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cluster-vnet-hub-c2/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+  "prod" = {
+    linkname = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cluster-vnet-hub-prod/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+}
+
+#######################################################################################
+### Virtual network
+###
+
+virtual_networks = {
+  "c2" = {
+    rg_name = "cluster-vnet-hub-c2"
+  }
+  "prod" = {
+    rg_name = "cluster-vnet-hub-prod"
+  }
+}
+
 
 #######################################################################################
 ### Service principal
