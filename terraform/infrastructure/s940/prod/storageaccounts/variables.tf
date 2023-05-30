@@ -2,6 +2,7 @@ variable "AZ_SUBSCRIPTION_ID" {
   description = "Azure subscription id"
   type        = string
 }
+
 variable "AZ_LOCATION" {
   description = "The location to create the resources in."
   type        = string
@@ -35,7 +36,7 @@ variable "storage_accounts" {
     firewall                          = optional(bool, true)
     container_delete_retention_policy = optional(bool, true)
     tags                              = optional(map(string), {})
-    allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration | Allow Blob public access
+    allow_nested_items_to_be_public   = optional(bool, false) #GUI: Configuration Allow Blob public access
     shared_access_key_enabled         = optional(bool, true)
     cross_tenant_replication_enabled  = optional(bool, true)
     delete_retention_policy           = optional(bool, true)
@@ -50,8 +51,24 @@ variable "storage_accounts" {
 
 variable "virtual_networks" {
   type = map(object({
-    name      = optional(string, "vnet-hub")
-    rg_name   = string
+    name    = optional(string, "vnet-hub")
+    rg_name = string
+  }))
+  default = {}
+}
+
+variable "private_link" {
+  description = "Subnet connection."
+  type = map(object({
+    linkname = string
+  }))
+  default = null
+}
+
+variable "resource_groups" {
+  type = map(object({
+    name     = string                          # Mandatory
+    location = optional(string, "northeurope") # Optional
   }))
   default = {}
 }

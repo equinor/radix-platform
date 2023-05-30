@@ -12,7 +12,6 @@ data "azurerm_subscription" "AZ_SUBSCRIPTION" {
 
 locals {
   WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
-  subscription_id = var.AZ_SUBSCRIPTION_ID
   storageaccount_private_subnet = merge([for sa_key, sa_value in var.storage_accounts : {
     for privlink_key, privlink_value in var.private_link :
     "${sa_key}-${privlink_key}" => {
@@ -44,17 +43,18 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
 }
 
 data "azurerm_subnet" "virtual_subnets" {
-  for_each             = {for key, value in var.resource_groups: key => value if length(regexall("cluster-vnet-hub", key)) > 0}
+  for_each             = { for key, value in var.resource_groups : key => value if length(regexall("cluster-vnet-hub", key)) > 0 }
   name                 = "private-links"
   virtual_network_name = "vnet-hub"
   resource_group_name  = each.value["name"]
 }
 
 data "azurerm_private_dns_zone" "dns-zone" {
-  for_each             = {for key, value in var.resource_groups: key => value if length(regexall("cluster-vnet-hub", key)) > 0}
+  for_each            = { for key, value in var.resource_groups : key => value if length(regexall("cluster-vnet-hub", key)) > 0 }
   name                = "privatelink.blob.core.windows.net"
-  resource_group_name  = each.value["name"]
+  resource_group_name = each.value["name"]
 }
+
 #######################################################################################
 ### Storage Accounts
 ###
@@ -180,6 +180,7 @@ resource "azurerm_private_dns_a_record" "dns_a_westeurope" {
   records             = [azurerm_private_endpoint.westeurope[each.key].private_service_connection.0.private_ip_address]
   depends_on          = [azurerm_private_endpoint.westeurope]
 }
+
 #######################################################################################
 ### Role assignment
 ###
@@ -223,7 +224,6 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "westeurope" {
   backup_policy_id   = azurerm_data_protection_backup_policy_blob_storage.westeurope.id
   depends_on         = [azurerm_role_assignment.westeurope]
 }
-
 
 #######################################################################################
 ### Management Policy

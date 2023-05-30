@@ -93,7 +93,7 @@ resource_groups = {
     name = "clusters"
   }
   "cluster-vnet-hub-c2" = {
-    name = "cluster-vnet-hub-c2"
+    name     = "cluster-vnet-hub-c2"
     location = "westeurope"
   }
   "cluster-vnet-hub-prod" = {
@@ -258,6 +258,37 @@ sql_server = {
 }
 
 #######################################################################################
+### SQL Database
+###
+
+sql_database = {
+  "sql-radix-cost-allocation-c2-prod" = {
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-c2-prod"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name     = "sqldb-radix-cost-allocation"
+    server   = "sql-radix-cost-allocation-prod"
+    sku_name = "S3"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-c2-prod"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-prod"
+    sku_name = "S3"
+  }
+}
+
+#######################################################################################
 ### MYSQL Flexible Server
 ###
 
@@ -321,37 +352,6 @@ firewall_rules = {
 
 KV_RADIX_VAULT = "radix-vault-prod"
 
-#######################################################################################
-### SQL Database
-###
-
-sql_database = {
-  "sql-radix-cost-allocation-c2-prod" = {
-    name   = "sqldb-radix-cost-allocation"
-    server = "sql-radix-cost-allocation-c2-prod"
-    tags = {
-      "displayName" = "Database"
-    }
-  }
-  "sql-radix-cost-allocation-prod" = {
-    name     = "sqldb-radix-cost-allocation"
-    server   = "sql-radix-cost-allocation-prod"
-    sku_name = "S3"
-    tags = {
-      "displayName" = "Database"
-    }
-  }
-  "sql-radix-vulnerability-scan-c2-prod" = {
-    name   = "radix-vulnerability-scan"
-    server = "sql-radix-vulnerability-scan-c2-prod"
-  }
-  "sql-radix-vulnerability-scan-prod" = {
-    name     = "radix-vulnerability-scan"
-    server   = "sql-radix-vulnerability-scan-prod"
-    sku_name = "S3"
-  }
-}
-
 private_link = {
   "c2" = {
     linkname = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cluster-vnet-hub-c2/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
@@ -373,7 +373,6 @@ virtual_networks = {
     rg_name = "cluster-vnet-hub-prod"
   }
 }
-
 
 #######################################################################################
 ### Service principal
