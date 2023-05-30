@@ -24,7 +24,6 @@ RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
 K8S_ENVIROMENTS                = ["dev", "playground"]
 
-
 #######################################################################################
 ### Resource groups
 ###
@@ -136,6 +135,11 @@ storage_accounts = {
     rg_name       = "Logs-Dev"
     backup_center = true
   }
+  "radixflowlogsplayground" = {
+    name          = "radixflowlogsplayground"
+    rg_name       = "Logs-Dev"
+    backup_center = true
+  }
   "s941radixinfra" = {
     name                            = "s941radixinfra"
     rg_name                         = "s941-tfstate"
@@ -151,6 +155,9 @@ storage_accounts = {
     backup_center                   = true
     repl                            = "GRS"
     allow_nested_items_to_be_public = false
+    firewall                        = true
+    private_endpoint                = true
+
   }
   "s941sqllogsdev" = {
     name          = "s941sqllogsdev"
@@ -304,6 +311,28 @@ firewall_rules = {
 }
 
 KV_RADIX_VAULT = "radix-vault-dev"
+
+private_link = {
+  "dev" = {
+    linkname = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/cluster-vnet-hub-dev/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+  "playground" = {
+    linkname = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/cluster-vnet-hub-playground/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+}
+
+#######################################################################################
+### Virtual network
+###
+
+virtual_networks = {
+  "dev" = {
+    rg_name = "cluster-vnet-hub-dev"
+  }
+  "playground" = {
+    rg_name = "cluster-vnet-hub-playground"
+  }
+}
 
 #######################################################################################
 ### Service principal

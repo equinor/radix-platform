@@ -92,6 +92,10 @@ resource_groups = {
   "clusters" = {
     name = "clusters"
   }
+  "cluster-vnet-hub-c2" = {
+    name     = "cluster-vnet-hub-c2"
+    location = "westeurope"
+  }
   "cluster-vnet-hub-prod" = {
     name = "cluster-vnet-hub-prod"
   }
@@ -138,10 +142,6 @@ resource_groups = {
     name     = "monitoring-westeurope"
     location = "westeurope"
   }
-  "radix-private-links-c2-prod" = {
-    name     = "radix-private-links-c2-prod"
-    location = "westeurope"
-  }
   "rg-protection-we" = {
     name     = "rg-protection-we"
     location = "westeurope"
@@ -183,17 +183,19 @@ storage_accounts = {
     create_with_rbac = true
   }
   "s940radixveleroc2" = {
-    name          = "s940radixveleroc2"
-    rg_name       = "backups"
-    location      = "westeurope"
-    repl          = "GRS"
-    backup_center = true
+    name             = "s940radixveleroc2"
+    rg_name          = "backups"
+    location         = "westeurope"
+    repl             = "GRS"
+    backup_center    = true
+    private_endpoint = true
   }
   "s940radixveleroprod" = {
-    name          = "s940radixveleroprod"
-    rg_name       = "backups"
-    repl          = "GRS"
-    backup_center = true
+    name             = "s940radixveleroprod"
+    rg_name          = "backups"
+    repl             = "GRS"
+    backup_center    = true
+    private_endpoint = true
   }
   "s940sqllogsc2prod" = {
     name          = "s940sqllogsc2prod"
@@ -251,6 +253,37 @@ sql_server = {
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
     vault    = "radix-vault-prod"
+    sku_name = "S3"
+  }
+}
+
+#######################################################################################
+### SQL Database
+###
+
+sql_database = {
+  "sql-radix-cost-allocation-c2-prod" = {
+    name   = "sqldb-radix-cost-allocation"
+    server = "sql-radix-cost-allocation-c2-prod"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-cost-allocation-prod" = {
+    name     = "sqldb-radix-cost-allocation"
+    server   = "sql-radix-cost-allocation-prod"
+    sku_name = "S3"
+    tags = {
+      "displayName" = "Database"
+    }
+  }
+  "sql-radix-vulnerability-scan-c2-prod" = {
+    name   = "radix-vulnerability-scan"
+    server = "sql-radix-vulnerability-scan-c2-prod"
+  }
+  "sql-radix-vulnerability-scan-prod" = {
+    name     = "radix-vulnerability-scan"
+    server   = "sql-radix-vulnerability-scan-prod"
     sku_name = "S3"
   }
 }
@@ -319,34 +352,25 @@ firewall_rules = {
 
 KV_RADIX_VAULT = "radix-vault-prod"
 
+private_link = {
+  "c2" = {
+    linkname = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cluster-vnet-hub-c2/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+  "prod" = {
+    linkname = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/cluster-vnet-hub-prod/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/private-links"
+  }
+}
+
 #######################################################################################
-### SQL Database
+### Virtual network
 ###
 
-sql_database = {
-  "sql-radix-cost-allocation-c2-prod" = {
-    name   = "sqldb-radix-cost-allocation"
-    server = "sql-radix-cost-allocation-c2-prod"
-    tags = {
-      "displayName" = "Database"
-    }
+virtual_networks = {
+  "c2" = {
+    rg_name = "cluster-vnet-hub-c2"
   }
-  "sql-radix-cost-allocation-prod" = {
-    name     = "sqldb-radix-cost-allocation"
-    server   = "sql-radix-cost-allocation-prod"
-    sku_name = "S3"
-    tags = {
-      "displayName" = "Database"
-    }
-  }
-  "sql-radix-vulnerability-scan-c2-prod" = {
-    name   = "radix-vulnerability-scan"
-    server = "sql-radix-vulnerability-scan-c2-prod"
-  }
-  "sql-radix-vulnerability-scan-prod" = {
-    name     = "radix-vulnerability-scan"
-    server   = "sql-radix-vulnerability-scan-prod"
-    sku_name = "S3"
+  "prod" = {
+    rg_name = "cluster-vnet-hub-prod"
   }
 }
 
