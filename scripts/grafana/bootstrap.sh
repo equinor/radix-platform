@@ -182,6 +182,13 @@ fi
 verify_cluster_access
 
 #######################################################################################
+### Create namespace
+###
+
+if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then 
+    kubectl create namespace monitor --dry-run=client -o yaml | sed  '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
+fi
+#######################################################################################
 ### Create secret required by Grafana
 ###
 
@@ -216,14 +223,14 @@ echo "ingress:
 env:
   GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" > config
 
-kubectl create secret generic grafana-helm-secret \
+kubectl create secret generic grafana-helm-secret -n monitor \
     --from-file=./config \
     --dry-run=client -o yaml |
     kubectl apply -f -
 
 rm -f config
 
-kubectl create secret generic grafana-secrets \
+kubectl create secret generic grafana-secrets -n monitor \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
     --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
