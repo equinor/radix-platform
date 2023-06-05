@@ -202,7 +202,7 @@ GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --na
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
 # Check for custom-domain / Active cluster
-HOST_NAME=$(kubectl get ing --namespace default grafana.custom-domain -o json | jq --raw-output .spec.rules[0].host) 
+HOST_NAME=$(kubectl get ing --namespace monitor grafana.custom-domain -o json | jq --raw-output .spec.rules[0].host) 
 
 if [[ -z $HOST_NAME ]]; then
     GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
@@ -238,8 +238,8 @@ kubectl create secret generic grafana-secrets -n monitor \
     -o yaml |
     kubectl apply -f -
 
-flux reconcile helmrelease --namespace default grafana
-kubectl rollout restart deployment --namespace default grafana
+flux reconcile helmrelease --namespace monitor grafana
+kubectl rollout restart deployment --namespace monitor grafana
 
 # #######################################################################################
 # ### Install Grafana
