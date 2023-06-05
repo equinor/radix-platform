@@ -57,11 +57,6 @@ fi
 for appName in $appNames
 do
 
-  if [[ "$appName" != "radix-test-fed-kv" ]]; then
-    echo "  temp skip"
-    continue
-  fi
-
   envNames=$(curl -X GET \
           "${apiUrl}/applications/${appName}/environments" \
           -H "Authorization: Bearer ${token}" \
@@ -74,10 +69,6 @@ do
   echo "found environment(s) for an application: $appName"
   for envName in $envNames
     do
-      if [[ "$envName" != "qa" ]]; then
-       echo "  temp skip"
-       continue
-      fi
 
       identityPropList=($(curl -X GET \
           "${apiUrl}/applications/${appName}/environments/${envName}" \
