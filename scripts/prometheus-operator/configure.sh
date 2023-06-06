@@ -120,6 +120,12 @@ if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="mo
     kubectl create namespace monitor --dry-run=client -o yaml | sed  '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
 fi
 
+if [ "$RADIX_ZONE_ENV" == *"dev"* ] || [ "$RADIX_ZONE_ENV" == *"playground"* ]; then
+  NAMESPACE="monitor"
+else
+  NAMESPACE="default"
+fi
+
 ###########
 # !! Work in progress. OAUTH2_PROXY is NOT ready for production
 ##########
@@ -192,9 +198,11 @@ fi
 echo ""
 echo "Create secret..."
 htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name prometheus-token | jq -r .value)"
-kubectl create secret generic prometheus-htpasswd -n monitor \
-  --from-file auth --dry-run=client -o yaml |
-  kubectl apply -f -
+
+kubectl create secret generic prometheus-htpasswd -n "$NAMESPACE" \
+--from-file auth --dry-run=client -o yaml |
+kubectl apply -f -
+
 rm -f auth
 
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
@@ -213,7 +221,7 @@ metadata:
   labels:
     app: prometheus
   name: prometheus-basic-auth
-  namespace: monitor
+  namespace: ${NAMESPACE}
 spec:
   rules:
   - host: prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
@@ -243,7 +251,7 @@ metadata:
   labels:
     app: prometheus
   name: prometheus-oauth2-auth
-  namespace: monitor
+  namespace: ${NAMESPACE}
 spec:
   rules:
   - host: prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
