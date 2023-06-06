@@ -200,8 +200,8 @@ echo "Create secret..."
 htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name prometheus-token | jq -r .value)"
 
 kubectl create secret generic prometheus-htpasswd -n "$NAMESPACE" \
---from-file auth --dry-run=client -o yaml |
-kubectl apply -f -
+  --from-file auth --dry-run=client -o yaml |
+  kubectl apply -f -
 
 rm -f auth
 

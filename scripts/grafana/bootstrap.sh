@@ -235,19 +235,19 @@ env:
 
 
 kubectl create secret generic grafana-helm-secret -n "$NAMESPACE" \
---from-file=./config \
---dry-run=client -o yaml |
-kubectl apply -f -
+    --from-file=./config \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
 
 rm -f config
 
 kubectl create secret generic grafana-secrets -n "$NAMESPACE" \
---from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
---from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
---from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
---dry-run=client \
--o yaml |
-kubectl apply -f -
+    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
+    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
+    --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
+    --dry-run=client \
+    -o yaml |
+    kubectl apply -f -
 
 flux reconcile helmrelease --namespace "$NAMESPACE" grafana
 kubectl rollout restart deployment --namespace "$NAMESPACE" grafana
