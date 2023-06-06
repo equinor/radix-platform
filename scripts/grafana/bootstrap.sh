@@ -189,7 +189,7 @@ if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="mo
     kubectl create namespace monitor --dry-run=client -o yaml | sed  '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
 fi
 
-if [ "$RADIX_ZONE_ENV" == *"dev"* ] || [ "$RADIX_ZONE_ENV" == *"playground"* ]; then
+if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]]; then
   NAMESPACE="monitor"
 else
   NAMESPACE="default"

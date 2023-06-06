@@ -127,6 +127,12 @@ if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" ]]; then
     echo "ERROR: The update auth proxy secret for console script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" >&2
 fi
 
+if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]]; then
+  NAMESPACE="monitor"
+else
+  NAMESPACE="default"
+fi
+
 #######################################################################################
 ### Define web console auth secret variables
 ###
@@ -256,7 +262,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     ###
     # Point grafana to cluster specific ingress
     GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
-    kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
+    kubectl set env deployment/grafana -n "$NAMESPACE" GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
     #######################################################################################
     ### Scale down source cluster resources
@@ -322,7 +328,7 @@ echo "ingress:
 env:
   GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" >config
 
-kubectl create secret generic grafana-helm-secret \
+kubectl create secret generic grafana-helm-secret -n "$NAMESPACE" \
     --from-file=./config \
     --dry-run=client -o yaml |
     kubectl apply -f -
@@ -330,7 +336,7 @@ kubectl create secret generic grafana-helm-secret \
 rm -f config
 
 printf "Update grafana deployment... "
-kubectl set env deployment/grafana GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
+kubectl set env deployment/grafana -n "$NAMESPACE" GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
 
 #######################################################################################
 ### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"
