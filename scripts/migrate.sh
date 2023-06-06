@@ -150,6 +150,12 @@ if [[ -z "$BACKUP_NAME" ]]; then
     BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
 fi
 
+
+if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]]; then
+  NAMESPACE="monitor"
+else
+  NAMESPACE="default"
+fi
 #######################################################################################
 ### Resolve dependencies on other scripts
 ###
@@ -499,7 +505,7 @@ fi
 # Wait for prometheus to be deployed from flux
 echo ""
 printf "Wait for prometheus to be deployed by flux-operator..."
-while [[ "$(kubectl get deploy prometheus-operator-operator 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get deploy prometheus-operator-operator -n "$NAMESPACE" 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
@@ -523,7 +529,7 @@ printf " Done."
 # Wait for grafana to be deployed from flux
 echo ""
 echo "Waiting for grafana to be deployed by flux-operator so that we can add the ingress as a replyURL to \"$APP_REGISTRATION_GRAFANA\""
-while [[ "$(kubectl get deploy grafana 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl get deploy grafana -n "$NAMESPACE" 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
@@ -531,7 +537,7 @@ done
 echo ""
 # Add grafana replyUrl to AAD app
 printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
-(AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="default" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+(AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="$NAMESPACE" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
 wait # wait for subshell to finish
 
 # echo ""
