@@ -188,6 +188,15 @@ verify_cluster_access
 if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then 
     kubectl create namespace monitor --dry-run=client -o yaml | sed  '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
 fi
+
+if [ "$RADIX_ZONE_ENV" == *"dev"* ] || [ "$RADIX_ZONE_ENV" == *"playground"* ]; then
+  NAMESPACE="monitor"
+else
+  NAMESPACE="default"
+fi
+
+
+
 #######################################################################################
 ### Create secret required by Grafana
 ###
@@ -202,7 +211,8 @@ GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --na
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
 # Check for custom-domain / Active cluster
-HOST_NAME=$(kubectl get ing --namespace monitor grafana.custom-domain -o json | jq --raw-output .spec.rules[0].host) 
+
+HOST_NAME=$(kubectl get ing --namespace "$NAMESPACE" grafana.custom-domain -o json | jq --raw-output .spec.rules[0].host)
 
 if [[ -z $HOST_NAME ]]; then
     GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
@@ -223,14 +233,15 @@ echo "ingress:
 env:
   GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" > config
 
-kubectl create secret generic grafana-helm-secret -n monitor \
+
+kubectl create secret generic grafana-helm-secret -n "$NAMESPACE" \
     --from-file=./config \
     --dry-run=client -o yaml |
     kubectl apply -f -
 
 rm -f config
 
-kubectl create secret generic grafana-secrets -n monitor \
+kubectl create secret generic grafana-secrets -n "$NAMESPACE" \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
     --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
@@ -238,8 +249,8 @@ kubectl create secret generic grafana-secrets -n monitor \
     -o yaml |
     kubectl apply -f -
 
-flux reconcile helmrelease --namespace monitor grafana
-kubectl rollout restart deployment --namespace monitor grafana
+flux reconcile helmrelease --namespace "$NAMESPACE" grafana
+kubectl rollout restart deployment --namespace "$NAMESPACE" grafana
 
 # #######################################################################################
 # ### Install Grafana
