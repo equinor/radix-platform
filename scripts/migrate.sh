@@ -151,7 +151,7 @@ if [[ -z "$BACKUP_NAME" ]]; then
 fi
 
 
-if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]]; then
+if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]] || [[ "$RADIX_ZONE" == "prod" ]]; then
   NAMESPACE="monitor"
 else
   NAMESPACE="default"

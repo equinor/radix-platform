@@ -127,7 +127,7 @@ if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" ]]; then
     echo "ERROR: The update auth proxy secret for console script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" >&2
 fi
 
-if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]]; then
+if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]] || [[ "$RADIX_ZONE" == "prod" ]]; then
   NAMESPACE="monitor"
 else
   NAMESPACE="default"
