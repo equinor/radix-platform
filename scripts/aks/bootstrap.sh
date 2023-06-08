@@ -234,8 +234,8 @@ echo -e "   - USE CREDENTIALS FROM              : $(if [[ -z $CREDENTIALS_FILE ]
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name --output tsv)"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name --output tsv)"
 echo -e ""
 
 echo ""
@@ -356,7 +356,6 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     fi
 
     echo ""
-    USER_PROMPT="true"
     if [[ $USER_PROMPT == true ]]; then
         while true; do
             read -r -p "Is this correct? (Y/n) " yn
@@ -490,7 +489,7 @@ fi
 SUBNET_ID="$(az network vnet subnet list \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
     --vnet-name "$VNET_NAME" \
-    --query [].id \
+    --query "[].id" \
     --output tsv)"
 
 VNET_ID="$(az network vnet show \
@@ -525,19 +524,23 @@ VNET_ID="$(az network vnet show \
 
 echo ""
 echo "Check if $VNET_NAME are associated with $AZ_VNET_HUB_NAME"
-while [ -z "$(az network vnet peering list -g "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query [].id --output tsv)" ]; do
+while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
     printf "."
     sleep 5
 done
 
 function linkPrivateDnsZoneToVNET() {
-    local dns_zone=${1}
-    local PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show \
+    local dns_zone
+    local PRIVATE_DNS_ZONE_EXIST
+    local DNS_ZONE_LINK_EXIST
+
+    dns_zone=${1}
+    PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show \
         --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
         --name "$dns_zone" \
         --query "id" \
         --output tsv 2>&1)"
-    local DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show \
+    DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show \
         --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
         --name "$VNET_DNS_LINK" \
         --zone-name "$dns_zone" \
@@ -577,7 +580,12 @@ echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 ### Add Usermode pool - System - Tainted
 ###
 
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
+WORKSPACE_ID=$(az resource list \
+    --resource-type Microsoft.OperationalInsights/workspaces \
+    --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[].id" \
+    --output tsv)
 DEFENDER_CONFIG="DEFENDER_CONFIG.json"
 
 cat <<EOF >$DEFENDER_CONFIG
@@ -602,7 +610,7 @@ AKS_BASE_OPTIONS=(
     --enable-aad
     --enable-defender
     --defender-config "$DEFENDER_CONFIG"
-    --aad-admin-group-object-ids "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
+    --aad-admin-group-object-ids "$(az ad group show --group "${AZ_AD_DEV_GROUP}" --query id --output tsv --only-show-errors)"
     --assign-identity "$ID_AKS"
     --assign-kubelet-identity "$ID_AKSKUBELET"
     --attach-acr "$ACR_ID"
@@ -660,20 +668,20 @@ node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_R
 managed_identity_id=$(az identity show \
     --id "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS}" \
     --query principalId \
-    -o tsv)
+    --output tsv)
 
 printf "Assigning Contributor role to ${MI_AKS} on scope of resource group ${node_pool_resource_group}..."
 az role assignment create \
     --role Contributor \
     --assignee "$managed_identity_id" \
-    --scope $(az group show --name ${node_pool_resource_group} --query id -o tsv)
+    --scope "$(az group show --name "${node_pool_resource_group}" --query id --output tsv)"
 printf "Done.\n"
 
 printf "Assigning Contributor role to ${MI_AKS} on scope of resource group ${AZ_RESOURCE_GROUP_COMMON}... \n"
 az role assignment create \
     --role Contributor \
     --assignee "$managed_identity_id" \
-    --scope $(az group show --name ${AZ_RESOURCE_GROUP_COMMON} --query id -o tsv)
+    --scope "$(az group show --name "${AZ_RESOURCE_GROUP_COMMON}" --query id --output tsv)"
 printf "Done.\n"
 
 #######################################################################################
@@ -700,7 +708,7 @@ fi
 ### Get api server whitelist
 ###
 
-(USER_PROMPT=false CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
+(USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
 
 #######################################################################################
 ### Lock cluster and network resources
@@ -714,7 +722,8 @@ if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
         --resource-type Microsoft.ContainerService/managedClusters \
         --resource "$CLUSTER_NAME" &>/dev/null
 
-    az lock create --lock-type CanNotDelete \
+    az lock create \
+        --lock-type CanNotDelete \
         --name "${VNET_NAME}"-lock \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --resource-type Microsoft.Network/virtualNetworks \
