@@ -409,6 +409,28 @@ wait_for_velero() {
   printf " Done.\n"
 }
 
+stop_radix_operator() {
+  printf "Stop radix-operator"
+  kubectl scale deployment radix-operator -n default --replicas=0
+  
+  printf "Waiting for radix-operator is stopped"
+  while [[ $(kubectl get pods -l app.kubernetes.io/name=radix-operator -n default|wc -l) != 0 ]]; do
+    sleep 5
+  done
+  printf " Done.\n"
+}
+
+start_radix_operator() {
+  printf "Start radix-operator"
+  kubectl scale deployment radix-operator -n default --replicas=1
+  
+  printf "Waiting for radix-operator is started"
+  while [[ $(kubectl get pods -l app.kubernetes.io/name=radix-operator -n default|wc -l) == 0 ]]; do
+    sleep 5
+  done
+  printf " Done.\n"
+}
+
 wait_for_velero "BackupStorageLocation azure"
 kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
@@ -424,11 +446,7 @@ printf " Done.\n"
 ### Restart operator to get proper metrics
 ###
 
-printf "\nRestarting Radix operator... "
-$(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 0}]" --type json 2>&1 >/dev/null)
-sleep 2
-$(kubectl patch deploy radix-operator -p "[{'op': 'replace', 'path': "/spec/replicas",'value': 1}]" --type json 2>&1 >/dev/null)
-printf "Done."
+stop_radix_operator
 
 #######################################################################################
 ### Restore Radix registrations
@@ -438,6 +456,7 @@ echo ""
 echo "Restore app registrations..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rr.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
+please_wait_for_all_resources "rr"
 
 #######################################################################################
 ### Restore secrets
@@ -464,6 +483,8 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 echo ""
 echo "Wait for configmaps to be restored..."
 please_wait_for_all_resources "configmap"
+
+start_radix_operator
 
 #######################################################################################
 ### Restore apps
