@@ -443,7 +443,7 @@ done
 printf " Done.\n"
 
 #######################################################################################
-### Restart operator to get proper metrics
+### Stop operator to avoid radix-applications to be restored with not existing secrets and config-maps
 ###
 
 stop_radix_operator
@@ -484,6 +484,9 @@ echo ""
 echo "Wait for configmaps to be restored..."
 please_wait_for_all_resources "configmap"
 
+#######################################################################################
+### Start operator to sync radix-applications from rr
+###
 start_radix_operator
 
 #######################################################################################
