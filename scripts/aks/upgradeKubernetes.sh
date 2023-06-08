@@ -48,6 +48,11 @@ hash az 2>/dev/null || {
     exit 1
 }
 
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
+    exit 1
+}
+
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.41.0"
 if [ $(version ${AZ_CLI}) -lt $(version "${MIN_AZ_CLI}") ]; then
