@@ -150,11 +150,10 @@ if [[ -z "$BACKUP_NAME" ]]; then
     BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
 fi
 
-
 if [[ "$RADIX_ZONE" == "dev" ]] || [[ "$RADIX_ZONE" == "playground" ]]; then
-  NAMESPACE="monitor"
+    NAMESPACE="monitor"
 else
-  NAMESPACE="default"
+    NAMESPACE="default"
 fi
 #######################################################################################
 ### Resolve dependencies on other scripts
@@ -271,7 +270,6 @@ if ! [[ -x "$GITHUB_MAINTENANCE_SCRIPT" ]]; then
     echo "ERROR: The github maintenance secrets script is not found or it is not executable in path $GITHUB_MAINTENANCE_SCRIPT" >&2
 fi
 
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -281,7 +279,6 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-
 #######################################################################################
 ### Verifying owner on scope of subscription is activated
 ###
@@ -289,8 +286,8 @@ printf "Done.\n"
 printf "Verifying that logged in AAD user has Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription... "
 az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Owner\$"
 if [[ "$?" != "0" ]]; then
-  echo -e "ERROR: Logged in user is not Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
-  exit 1
+    echo -e "ERROR: Logged in user is not Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
+    exit 1
 fi
 printf "Done.\n"
 
@@ -325,10 +322,11 @@ if [[ ${MIGRATION_STRATEGY} == "at" ]]; then
         read -r -e -p "Do you want to use Staging certs on $DEST_CLUSTER? " -i "y" yn
         case $yn in
         [Yy]*)
-            check_staging_certs 
+            check_staging_certs
             STAGING=true
-            break ;;
-        [Nn]*)  break ;;
+            break
+            ;;
+        [Nn]*) break ;;
         *) echo "Please answer yes or no." ;;
         esac
     done
@@ -376,8 +374,6 @@ if [[ $USER_PROMPT == true ]]; then
         esac
     done
 fi
-
-#--------------------------------------------------------
 
 #######################################################################################
 ### Connect kubectl
@@ -761,7 +757,6 @@ if [[ $update_redis_cache == true ]]; then
     )
     printf "Done...\n"
 fi
-
 
 # Move custom ingresses
 if [[ $MIGRATION_STRATEGY == "aa" ]]; then
