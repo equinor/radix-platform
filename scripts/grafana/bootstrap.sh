@@ -39,7 +39,7 @@
 echo ""
 
 # Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../service-principals-and-aad-apps/lib_service_principal.sh"
+LIB_SERVICE_PRINCIPAL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../service-principals-and-aad-apps/lib_service_principal.sh"
 if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
     echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
     exit 1
@@ -48,7 +48,7 @@ else
 fi
 
 # Script vars
-WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo ""
 echo "Start bootstrap of Grafana... "
@@ -185,8 +185,8 @@ verify_cluster_access
 ### Create namespace
 ###
 
-if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then 
-    kubectl create namespace monitor --dry-run=client -o yaml | sed  '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
+if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then
+    kubectl create namespace monitor --dry-run=client -o yaml | sed '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
 fi
 
 #######################################################################################
@@ -223,8 +223,7 @@ echo "ingress:
     hosts:
     - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
 env:
-  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" > config
-
+  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" >config
 
 kubectl create secret generic grafana-helm-secret \
     --namespace monitor \

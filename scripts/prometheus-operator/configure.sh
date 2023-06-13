@@ -101,9 +101,9 @@ printf "Done.\n"
 # Exit if cluster does not exist
 printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
-    # Send message to stderr
-    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 0
+  # Send message to stderr
+  echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
+  exit 0
 }
 printf "...Done.\n"
 
@@ -116,8 +116,8 @@ verify_cluster_access
 ### Create namespace
 ###
 
-if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then 
-    kubectl create namespace monitor --dry-run=client -o yaml | sed  '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
+if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then
+  kubectl create namespace monitor --dry-run=client -o yaml | sed '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
 fi
 
 ###########
@@ -179,7 +179,6 @@ fi
 ###########
 # End OAUTH2_PROXY code
 ##########
-
 
 #######################################################################################
 ### Install custom ingresses
