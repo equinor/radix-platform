@@ -202,12 +202,6 @@ for alias_config in "$CONFIG_DIR"/*.env; do
     # Import variables
     source "$alias_config"
 
-    if [[ $RADIX_ZONE == "dev" ]] || [[ $RADIX_ZONE == "playground" ]]; then
-        if [[ $RADIX_APP_ALIAS_NAME == "grafana" ]] || [[ $RADIX_APP_ALIAS_NAME == "prometheus" ]]; then
-            RADIX_NAMESPACE="monitor"
-        fi
-    fi
-
     if [[ "$RADIX_APP_ALIAS_NAME" == "@" ]]; then
         RADIX_APP_ALIAS_URL="$AZ_RESOURCE_DNS"
     else
