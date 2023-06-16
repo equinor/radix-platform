@@ -175,7 +175,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
   while true; do
-    read -p "Is this correct? (Y/n) " yn
+    read -r -p "Is this correct? (Y/n) " yn
     case $yn in
     [Yy]*) break ;;
     [Nn]*)
@@ -232,7 +232,6 @@ function please_wait_until_rb_synced() {
 
   please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
 }
-
 
 function please_wait() {
   # Loop for $1 iterations.
@@ -300,12 +299,12 @@ function please_wait_for_reconciling_withcondition() {
 function please_wait_for_restore_to_be_completed() {
   local resource="${1}"
 
-  ready=($(kubectl get restore -n velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
+  ready=($(kubectl get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
 
   while [[ $ready != 'Completed' ]]; do
     printf "$iterator"
     sleep 5
-    ready=($(kubectl get restore -n velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
+    ready=($(kubectl get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
   done
 
   please_wait_for_all_resources "$resource"
@@ -335,14 +334,14 @@ function please_wait_for_all_resources() {
 function showProgress() {
   local percentage="${1:-5}"
 
-  if [[ $percentage < 0 ]]; then
+  if [[ $percentage -lt 0 ]]; then
     percentage=0
   fi
 
   local progress=""
   local iterator=$percentage
 
-  while [[ "$iterator" > 0 ]]; do
+  while [[ "$iterator" -gt 0 ]]; do
     iterator="$((iterator - 1))"
     progress="$progress#"
   done
@@ -375,9 +374,6 @@ verify_cluster_access
 echo ""
 echo "Configure velero for restore in destination cluster \"$DEST_CLUSTER\"..."
 
-# Set velero-destination to read-only
-#kubectl patch deployment velero -n velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server", "--restore-only"]}]}}}}'
-#kubectl patch deployment velero -n velero --patch '{"spec": {"objectStorage": {"bucket": "$SOURCE_CLUSTER"}}}'
 # Set velero in destination to read source backup location
 PATCH_JSON="$(
   cat <<END
@@ -411,10 +407,10 @@ wait_for_velero() {
 
 stop_radix_operator() {
   printf "Stop radix-operator"
-  kubectl scale deployment radix-operator -n default --replicas=0
-  
+  kubectl scale deployment radix-operator --namespace default --replicas=0
+
   printf "Waiting for radix-operator is stopped"
-  while [[ $(kubectl get pods -l app.kubernetes.io/name=radix-operator -n default|wc -l) != 0 ]]; do
+  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default | wc -l) != 0 ]]; do
     sleep 5
   done
   printf " Done.\n"
@@ -422,10 +418,10 @@ stop_radix_operator() {
 
 start_radix_operator() {
   printf "Start radix-operator"
-  kubectl scale deployment radix-operator -n default --replicas=1
-  
+  kubectl scale deployment radix-operator --namespace default --replicas=1
+
   printf "Waiting for radix-operator is started"
-  while [[ $(kubectl get pods -l app.kubernetes.io/name=radix-operator -n default|wc -l) == 0 ]]; do
+  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default | wc -l) == 0 ]]; do
     sleep 5
   done
   printf " Done.\n"
@@ -456,7 +452,10 @@ echo ""
 echo "Restore app registrations..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rr.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
-please_wait_for_all_resources "rr"
+
+echo ""
+echo "Wait for app registration to be restored..."
+please_wait_for_restore_to_be_completed "rr"
 
 #######################################################################################
 ### Restore secrets
@@ -469,7 +468,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 
 echo ""
 echo "Wait for secrets to be restored..."
-please_wait_for_all_resources "secret"
+please_wait_for_restore_to_be_completed "secret"
 
 #######################################################################################
 ### Restore configmaps
@@ -482,7 +481,7 @@ echo "$RESTORE_YAML" | kubectl apply -f -
 
 echo ""
 echo "Wait for configmaps to be restored..."
-please_wait_for_all_resources "configmap"
+please_wait_for_restore_to_be_completed "configmaps"
 
 #######################################################################################
 ### Start operator to sync radix-applications from rr
@@ -573,8 +572,6 @@ END
 )"
 # Set velero in read/write mode
 kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
-
-#kubectl patch deployment velero --namespace velero --patch '{"spec": {"template": {"spec": {"containers": [{"name": "velero","args": ["server"]}]}}}}'
 
 #######################################################################################
 ### Done!
