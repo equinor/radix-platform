@@ -38,6 +38,11 @@
 echo ""
 echo "Start moving custom ingresses..."
 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
@@ -279,6 +284,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     printf "Done.\n"
 
     printf "Update Auth proxy secret...\n"
+    printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" "${normal}"
     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT")
     printf "Done.\n"
     echo ""
@@ -294,12 +300,14 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
 echo ""
-printf "Create aliases in destination cluster... "
+printf "Create aliases in destination cluster...\n"
+printf "%s► Execute %s%s\n" "${grn}" "$BOOTSTRAP_APP_ALIAS_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_APP_ALIAS_SCRIPT")
 wait # wait for subshell to finish
-printf "Done creating aliases."
+printf "Done creating aliases.\n"
 
 # Update auth proxy secret and redis cache
+printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT")
 wait # wait for subshell to finish
 
@@ -331,7 +339,7 @@ kubectl create secret generic grafana-helm-secret \
 rm -f config
 
 printf "Update grafana deployment... "
-kubectl set env deployment/grafana --namespace "$NAMESPACE" GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
+kubectl set env deployment/grafana --namespace monitor GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
 
 #######################################################################################
 ### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"

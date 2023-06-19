@@ -29,7 +29,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 #######################################################################################
 ### START
