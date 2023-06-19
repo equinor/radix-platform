@@ -102,6 +102,7 @@ function updateAuthProxySecret() {
     echo "Auth proxy secret updated"
 
     printf "Restarting auth deployment...\n"
+    echo "kubectl rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $AUTH_PROXY_COMPONENT"
     kubectl rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $AUTH_PROXY_COMPONENT
     printf " Done."
     echo ""
