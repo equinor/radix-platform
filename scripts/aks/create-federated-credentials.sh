@@ -119,7 +119,6 @@ do
           resourceGroup=$(az identity list --query "[?clientId=='$clientId']" -o json|jq -r '.|select(length > 0)|.[0]|.resourceGroup')
           echo "  - managed identity: $displayName, resource group: $resourceGroup, clientId: $clientId, namespace: ${namespace}, component: ${componentName}"
 
-          echo "      - no federated credential(s) found for the required issuer - register new one"
           error_message=$(az identity federated-credential create \
               --identity-name "$displayName" \
               --resource-group "$resourceGroup" \
