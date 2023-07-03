@@ -132,8 +132,6 @@ metadata:
   name: custom-error-page
   namespace: ingress-nginx
 data:
-  404: |
-    $(echo ${ERROR_PAGE_CONTENT})
   503: |
     $(echo ${ERROR_PAGE_CONTENT})
 EOF
