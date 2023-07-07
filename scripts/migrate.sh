@@ -205,11 +205,11 @@ if ! [[ -x "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" ]]; then
     echo "ERROR: The web console cluster oidc issuer script is not found or it is not executable in path $WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" >&2
 fi
 
-MOVE_CUSTOM_INGRESSES_SCRIPT="$WORKDIR_PATH/move_custom_ingresses.sh"
-if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
-fi
+# MOVE_CUSTOM_INGRESSES_SCRIPT="$WORKDIR_PATH/move_custom_ingresses.sh"
+# if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
+#     # Print to stderror
+#     echo "ERROR: The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
+# fi
 
 UPDATE_AUTH_PROXY_SECRET_SCRIPT="$WORKDIR_PATH/update_auth_proxy_secret_for_console.sh"
 if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
@@ -754,26 +754,26 @@ if [[ $update_redis_cache == true ]]; then
 fi
 
 # Move custom ingresses
-if [[ $MIGRATION_STRATEGY == "aa" ]]; then
-    CUSTOM_INGRESSES=true
-else
-    CUSTOM_INGRESSES=false
-fi
+# if [[ $MIGRATION_STRATEGY == "aa" ]]; then
+#     CUSTOM_INGRESSES=true
+# else
+#     CUSTOM_INGRESSES=false
+# fi
 
-echo ""
-if [[ $USER_PROMPT == true && $MIGRATION_STRATEGY == "aa" ]]; then
-    while true; do
-        read -r -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
-        case $yn in
-        [Yy]*) break ;;
-        [Nn]*)
-            CUSTOM_INGRESSES=false
-            break
-            ;;
-        *) echo "Please answer yes or no." ;;
-        esac
-    done
-fi
+# echo ""
+# if [[ $USER_PROMPT == true && $MIGRATION_STRATEGY == "aa" ]]; then
+#     while true; do
+#         read -r -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
+#         case $yn in
+#         [Yy]*) break ;;
+#         [Nn]*)
+#             CUSTOM_INGRESSES=false
+#             break
+#             ;;
+#         *) echo "Please answer yes or no." ;;
+#         esac
+#     done
+# fi
 
 # if [[ $CUSTOM_INGRESSES == true ]]; then
 #     printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
@@ -787,11 +787,13 @@ fi
 #     wait # wait for subshell to finish
 # fi
 
-# Create role for github maintenance
-printf "\n%s► Execute %s%s\n" "${grn}" "$GITHUB_MAINTENANCE_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" source "$GITHUB_MAINTENANCE_SCRIPT")
-wait # wait for subshell to finish
-echo ""
+if [ "$RADIX_ZONE" = "dev" ]; then
+    # Create role for github maintenance
+    printf "\n%s► Execute %s%s\n" "${grn}" "$GITHUB_MAINTENANCE_SCRIPT" "${normal}"
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" source "$GITHUB_MAINTENANCE_SCRIPT")
+    wait # wait for subshell to finish
+    echo ""
+fi
 
 if [[ -d "${RADIX_ZONE_PATH}" ]]; then
     for filename in "${RADIX_ZONE_PATH}"/*.env; do
