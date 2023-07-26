@@ -631,7 +631,7 @@ create_and_register_deploy_key_and_store_credentials \
     "radix-networkpolicy-canary" \
     "equinor" \
     "${GITHUB_PAT}" \
-    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d,64b28659-4fe4-4222-8497-85dd7e43e25b,4b8ec60e-714c-4a9d-8e0a-3e4cfb3c3d31" \
+    "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" \
     "" \
     "main" \
     "true" \
