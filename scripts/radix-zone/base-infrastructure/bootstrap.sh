@@ -33,12 +33,22 @@ echo "Start bootstrap of base infrastructure... "
 ### Check for prerequisites binaries
 ###
 
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
     printf "\n\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.46.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    exit 1
+fi
+
 hash uuidgen 2>/dev/null || {
     echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
     exit 1
@@ -287,7 +297,7 @@ function create_outbound_public_ip_prefix() {
             --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
             --name ${AZ_IPPRE_OUTBOUND_NAME} \
             --subscription ${AZ_SUBSCRIPTION_ID} \
-            --query publicIpAddresses |
+            --query publicIPAddresses |
             jq -r .[].id |
             wc -l |
             sed 's/^ *//g')
@@ -296,7 +306,7 @@ function create_outbound_public_ip_prefix() {
             IPPRE_OUTBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_OUTBOUND_IP_NUMBER + 1)))
             IP_NAME="${AZ_IPPRE_OUTBOUND_IP_PREFIX}-${IPPRE_OUTBOUND_IP_NUMBER}"
             if [[ $(az network public-ip create \
-                --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_OUTBOUND_NAME \
+                --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME \
                 --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
                 --name ${IP_NAME} \
                 --subscription ${AZ_SUBSCRIPTION_ID} \
@@ -348,7 +358,7 @@ function create_inbound_public_ip_prefix() {
             --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
             --name ${AZ_IPPRE_INBOUND_NAME} \
             --subscription ${AZ_SUBSCRIPTION_ID} \
-            --query publicIpAddresses |
+            --query publicIPAddresses |
             jq -r .[].id |
             wc -l |
             sed 's/^ *//g')
@@ -357,7 +367,7 @@ function create_inbound_public_ip_prefix() {
             IPPRE_INBOUND_IP_NUMBER=$(printf %03d $(($IPPRE_INBOUND_IP_NUMBER + 1)))
             IP_NAME="${AZ_IPPRE_INBOUND_IP_PREFIX}-${IPPRE_INBOUND_IP_NUMBER}"
             if [[ $(az network public-ip create \
-                --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicipprefixes/$AZ_IPPRE_INBOUND_NAME \
+                --public-ip-prefix /subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_COMMON/providers/microsoft.network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME \
                 --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
                 --name ${IP_NAME} \
                 --subscription ${AZ_SUBSCRIPTION_ID} \
