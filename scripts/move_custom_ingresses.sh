@@ -215,7 +215,8 @@ verify_cluster_access
 echo ""
 printf "Enabling monitoring addon in the destination cluster...\n"
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
-if [[ $(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled) == "false" ]]; then
+omsagent=$(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled)
+if [[ "${omsagent}" == "false" || -z "${omsagent}" ]]; then
     az aks enable-addons \
         --addons monitoring \
         --name "${DEST_CLUSTER}" \
@@ -228,7 +229,7 @@ printf "Done.\n"
 if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""
     printf "Disabling monitoring addon in the source cluster... "
-    if [[ $(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled) == "true" ]]; then
+    if [[ "${omsagent}" == "true" ]]; then
         az aks disable-addons \
             --addons monitoring \
             --name "${SOURCE_CLUSTER}" \
@@ -340,6 +341,8 @@ rm -f config
 
 printf "Update grafana deployment... "
 kubectl set env deployment/grafana --namespace monitor GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
+echo ""
+echo "Grafana reply-URL has been updated."
 
 #######################################################################################
 ### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"
@@ -364,9 +367,6 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
         --tags autostartupschedule=true \
         --is-incremental
 fi
-
-echo ""
-echo "Grafana reply-URL has been updated."
 
 echo ""
 echo "###########################################################"
