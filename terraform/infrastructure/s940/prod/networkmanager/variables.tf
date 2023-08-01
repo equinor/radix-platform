@@ -12,6 +12,6 @@ variable "vnet_rg_names" {
   type = map(any)
   default = {
     prod = "cluster-vnet-hub-prod"
-    c2   = "radix-private-links-c2-prod"
+    c2   = "cluster-vnet-hub-c2"
   }
 }
