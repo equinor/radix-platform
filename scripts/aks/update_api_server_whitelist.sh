@@ -124,7 +124,7 @@ new_k8s_api_ip_whitelist=$(jq <<<"${new_master_k8s_api_ip_whitelist[@]}" | jq -r
 ###
 
 if [[ ${update_keyvault} == true ]]; then
-    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="12 months")
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
 
     # Update keyvault
     printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"

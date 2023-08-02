@@ -142,12 +142,12 @@ fi
 
 printf "Updating API key in keyvault... "
 
-expiration_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="12 months") # The API key has no real expiration date
+EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME") # The API key has no real expiration date
 
 az keyvault secret set \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
     --name "${KV_SECRET_SERVICENOW_API_KEY}" \
     --value "${API_KEY}" \
-    --expires "${expiration_date}" --output none || exit
+    --expires "${EXPIRY_DATE}" --output none || exit
 
 printf "Done.\n"
