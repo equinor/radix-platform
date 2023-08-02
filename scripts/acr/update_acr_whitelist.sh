@@ -148,7 +148,7 @@ rm $temp_file_path
 ###
 
 function update-keyvault() {
-    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="12 months")
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
 
     if [[ -z "$updateKeyvault" ]]; then
         updateKeyvault=true

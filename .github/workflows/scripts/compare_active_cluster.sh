@@ -157,10 +157,12 @@ if [[ "${SOURCE_CLUSTER}" != "${DEST_CLUSTER}" ]]; then
     fi
 
     echo "Updating secret \"${KV_SECRET_ACTIVE_CLUSTER}\" in keyvault \"${AZ_RESOURCE_KEYVAULT}\""
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
     az keyvault secret set \
         --vault-name "${AZ_RESOURCE_KEYVAULT}" \
         --name "${KV_SECRET_ACTIVE_CLUSTER}" \
-        --value "${DEST_CLUSTER}" || {
+        --value "${DEST_CLUSTER}" \
+        --expires "$EXPIRY_DATE" || {
         echo "ERROR: Could not update secret \"${KV_SECRET_ACTIVE_CLUSTER}\" in keyvault \"${AZ_RESOURCE_KEYVAULT}\"." >&2
     }
     echo "Done."

@@ -28,7 +28,6 @@
 ###
 
 DAYS_LEFT_WARNING=14
-EXPIRY_DATE_EXTENSION="12 months"
 
 printf "\nStarting check keyvault secrets... "
 
@@ -159,7 +158,7 @@ function checkForMissingExpiryDate() {
 }
 
 function assignExpiryDate() {
-    NEXT_EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$EXPIRY_DATE_EXTENSION")
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
     SECRETS_ASSIGNED_EXPIRY_DATE=()
 
     printf "\nAssigning expiration date..."
@@ -169,8 +168,8 @@ function assignExpiryDate() {
         ID=$(jq -n "$i" | jq -r '.id')
         KEYVAULT=$(jq -n "$i" | jq -r '.keyvault')
 
-        if az keyvault secret set-attributes --id "$ID" --expires "$NEXT_EXPIRY_DATE" --output none; then
-            SECRETS_ASSIGNED_EXPIRY_DATE+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$NEXT_EXPIRY_DATE")\",\"keyvault\":\"$KV_NAME\"}")
+        if az keyvault secret set-attributes --id "$ID" --expires "$EXPIRY_DATE" --output none; then
+            SECRETS_ASSIGNED_EXPIRY_DATE+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRY_DATE")\",\"keyvault\":\"$KV_NAME\"}")
         fi
 
     done < <(echo "${SECRETS_MISSING_EXPIRY_DATE[@]}" | jq -c '.')
@@ -239,7 +238,7 @@ if [ ${#SECRETS_MISSING_EXPIRY_DATE[@]} -ne 0 ]; then
 
     if [[ $USER_PROMPT == true ]]; then
         while true; do
-            read -r -p "Do you want to assign expiration date to the following secrets? $EXPIRY_DATE_EXTENSION from today (Y/n) " yn
+            read -r -p "Do you want to assign expiration date to the following secrets? $KV_EXPIRATION_TIME from today (Y/n) " yn
             case $yn in
             [Yy]*) assignExpiryDate || break ;;
             [Nn]*) break ;;

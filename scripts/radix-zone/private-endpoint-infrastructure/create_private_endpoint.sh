@@ -334,7 +334,12 @@ function save-pe-to-kv() {
         echo "$json"
         echo "Updating keyvault secret..."
         new_secret=$(echo ${existing_secret} | jq '. += ['"$(echo ${json} | jq -c)"']')
-        az keyvault secret set --name ${RADIX_PE_KV_SECRET_NAME} --vault-name ${AZ_RESOURCE_KEYVAULT} --value "${new_secret}" >/dev/null
+        EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
+        az keyvault secret set \
+            --name "${RADIX_PE_KV_SECRET_NAME}" \
+            --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+            --value "${new_secret}" \
+            --expires "${EXPIRY_DATE}" >/dev/null
         echo "Done."
     else
         echo "Private endpoint exists in keyvault secret."
