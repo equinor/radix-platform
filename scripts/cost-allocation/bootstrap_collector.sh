@@ -178,7 +178,7 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
-### CLUSTER?
+### Connect kubectl
 ###
 
 printf "Connecting kubectl..."
