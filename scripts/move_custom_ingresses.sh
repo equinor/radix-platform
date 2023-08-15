@@ -368,12 +368,15 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
         --is-incremental
 fi
 
-echo ""
-echo "###########################################################"
-echo ""
-echo "NOTE: You need to manually activate the cluster"
-echo ""
-echo "You do this in the https://github.com/equinor/radix-flux repo"
-echo ""
-echo "###########################################################"
-echo ""
+
+if [[ -z $CI ]]; then
+    echo ""
+    echo "###########################################################"
+    echo ""
+    echo "NOTE: You need to manually activate the cluster"
+    echo ""
+    echo "You do this in the https://github.com/equinor/radix-flux repo"
+    echo ""
+    echo "###########################################################"
+    echo ""
+fi
