@@ -142,7 +142,6 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-
 #TEMP
 echo ""
 echo "Deleting Dynatrace integration..."
@@ -308,10 +307,10 @@ printf "Done.\n"
 # Determining egress IP of cluster before deletion
 migration_strategy=$(az resource show --id /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME} --query tags.migrationStrategy -o tsv)
 if [[ "${migration_strategy}" == "at" ]]; then
-  echo ""
-  echo "Cluster ${CLUSTER_NAME} is a test cluster. Determining cluster egress IP in order to remove it after cluster deletion..."
-  egress_ip_range=$(get_cluster_outbound_ip ${migration_strategy} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
-  echo ""
+    echo ""
+    echo "Cluster ${CLUSTER_NAME} is a test cluster. Determining cluster egress IP in order to remove it after cluster deletion..."
+    egress_ip_range=$(get_cluster_outbound_ip ${migration_strategy} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
+    echo ""
 fi
 echo "Done."
 
@@ -332,17 +331,16 @@ echo "Done."
 ###
 
 if [[ "${migration_strategy}" == "at" ]]; then
-  echo ""
-  echo "Cluster ${CLUSTER_NAME} is a test cluster. Removing egress IP range ${egress_ip_range} from ACR rules..."
-  printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
-  (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
-  wait # wait for subshell to finish
-  echo ""
+    echo ""
+    echo "Cluster ${CLUSTER_NAME} is a test cluster. Removing egress IP range ${egress_ip_range} from ACR rules..."
+    printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
+    wait # wait for subshell to finish
+    echo ""
 else
-  echo "Cluster ${CLUSTER_NAME} is a non-test cluster. Leaving ACR network rules as they are..."
+    echo "Cluster ${CLUSTER_NAME} is a non-test cluster. Leaving ACR network rules as they are..."
 fi
 echo "Done."
-
 
 #######################################################################################
 ### Delete Redis Cache
@@ -400,6 +398,23 @@ wait # wait for subshell to finish
 # echo ""
 # printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/dashboard/teardown-dashboard.sh" "${normal}"
 # (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
+
+echo "Delete Data collection rule... "
+APIVersion="2022-06-01"
+DataCollectionRule="$(az rest \
+    --method GET \
+    --url "https://management.azure.com/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.Insights/dataCollectionRules?api-version=${APIVersion}" \
+    --query "value[?name=='MSCI-${AZ_INFRASTRUCTURE_REGION}-${CLUSTER_NAME}']")"
+
+if [[ $(jq '. | length' <<<"${DataCollectionRule}") -gt 0 ]]; then
+    dataCollectionRuleName=$(jq -r '.[].name' <<<"${DataCollectionRule}")
+    printf "   Deleting %s... " "${dataCollectionRuleName}"
+    az rest \
+        --method DELETE \
+        --url "https://management.azure.com/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.Insights/dataCollectionRules/${dataCollectionRuleName}?api-version=${APIVersion}"
+    printf "Done."
+fi
+echo "Done."
 
 echo "Cleaning up local kube config... "
 kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
