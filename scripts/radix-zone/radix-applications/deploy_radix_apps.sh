@@ -51,16 +51,6 @@ function assert_dep() {
     done
 }
 
-# Function to ensure same functionality on linux and mac
-function date () 
-{ 
-    if type -p gdate > /dev/null; then
-        gdate "$@";
-    else
-        command date "$@";
-    fi
-}
-
 function wait_for_app_namespace() {
     local name # Input 1
     name="${1}"
@@ -146,7 +136,7 @@ function create_and_register_deploy_key_and_store_credentials() {
 
     if [ ${check_key} ]; then
         # Check if deploy key is older than one year.
-        if [ "$(date -d "${check_key}" +%s)" -gt "$(date -d "-1 year" +%s)" ]; then
+        if [ "$(date --date="${check_key}" +%s)" -gt "$(date --date="-1 year" +%s)" ]; then
             echo "Deploy key exists and has not expired."
             return
         else

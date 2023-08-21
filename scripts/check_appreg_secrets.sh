@@ -49,6 +49,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -68,6 +72,12 @@ hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
+if [[ $(uname) == "Darwin" ]]; then
+    hash gdate 2>/dev/null || {
+        echo -e "\nERROR: gdate not found in PATH. Exiting..." >&2
+        exit 1
+    }
+fi
 printf "Done.\n"
 
 #######################################################################################
@@ -102,7 +112,7 @@ function list_secrets() {
 
 function compareDate() {
     TODAY=$(date +%s)
-    EXPIRES=$(date +%s -d "$1")
+    EXPIRES=$(date +%s --date="$1")
     DIFFERANSE=$((("$EXPIRES" - "$TODAY") / 86400))
     if [ "$DIFFERANSE" -le $RED_WARNING_DAYS ]; then
         printf "${red}"

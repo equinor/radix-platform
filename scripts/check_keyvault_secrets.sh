@@ -44,6 +44,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+# Source util scripts
+
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
 # Optional inputs
 
 if [[ -z "$USER_PROMPT" ]]; then
@@ -63,6 +67,12 @@ hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
+if [[ $(uname) == "Darwin" ]]; then
+    hash gdate 2>/dev/null || {
+        echo -e "\nERROR: gdate not found in PATH. Exiting..." >&2
+        exit 1
+    }
+fi
 printf "Done.\n"
 
 #######################################################################################
@@ -169,7 +179,7 @@ function assignExpiryDate() {
         KEYVAULT=$(jq -n "$i" | jq -r '.keyvault')
 
         if az keyvault secret set-attributes --id "$ID" --expires "$EXPIRY_DATE" --output none; then
-            SECRETS_ASSIGNED_EXPIRY_DATE+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRY_DATE")\",\"keyvault\":\"$KV_NAME\"}")
+            SECRETS_ASSIGNED_EXPIRY_DATE+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c --date="$EXPIRY_DATE")\",\"keyvault\":\"$KV_NAME\"}")
         fi
 
     done < <(echo "${SECRETS_MISSING_EXPIRY_DATE[@]}" | jq -c '.')
@@ -184,7 +194,7 @@ function assignExpiryDate() {
 
 function compareDate() {
     TODAY=$(date +%s)
-    EXPIRES=$(date +%s -d "$1")
+    EXPIRES=$(date +%s --date="$1")
     DIFFERANSE=$((("$EXPIRES" - "$TODAY") / 86400))
     echo "$DIFFERANSE"
 }
@@ -200,9 +210,9 @@ function checkExpiryDates() {
             DIFFERANSE=$res
             if [ "$DIFFERANSE" -lt $DAYS_LEFT_WARNING ]; then
                 if [ "$DIFFERANSE" -lt 0 ]; then
-                    SECRETS_EXPIRED+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRES")\",\"keyvault\":\"$KV_NAME\"}")
+                    SECRETS_EXPIRED+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c --date="$EXPIRES")\",\"keyvault\":\"$KV_NAME\"}")
                 else
-                    SECRETS_EXPIRING_SOON+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c -d "$EXPIRES")\",\"keyvault\":\"$KV_NAME\"}")
+                    SECRETS_EXPIRING_SOON+=("{\"name\":\"$NAME\",\"id\":\"$ID\",\"expires\":\"$(date +%c --date="$EXPIRES")\",\"keyvault\":\"$KV_NAME\"}")
                 fi
             fi
         fi

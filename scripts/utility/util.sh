@@ -4,7 +4,7 @@ function get_credentials() {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
-  
+
     az aks get-credentials \
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -39,8 +39,8 @@ function get_cluster_outbound_ip() {
     if [[ "${migration_strategy}" == "at" ]]; then
         ip_address=$(get_test_cluster_outbound_ip $cluster_name $az_subscription_id)
         if [[ -z "${ip_address}" ]]; then
-          printf "ERROR: Could not get outbound IP address for test cluster $cluster_name.\n" >&2 
-          return 1
+            printf "ERROR: Could not get outbound IP address for test cluster $cluster_name.\n" >&2
+            return 1
         fi
         ip_prefix="$ip_address/32"
     else
@@ -75,7 +75,7 @@ function get_test_cluster_outbound_ip() {
     frontend_ip_configurations_file="/tmp/$(uuidgen)"
     cat $outbound_rules_file | jq -r .[0].frontendIPConfigurations > $frontend_ip_configurations_file
     if [[ $(jq length $frontend_ip_configurations_file) != "1" ]]; then
-        printf "ERROR: Expected exactly 1 frontendIPConfiguration associated with outbound rule in LB for $dest_cluster, but found $(jq length $frontend_ip_configurations_file)" >&2 
+        printf "ERROR: Expected exactly 1 frontendIPConfiguration associated with outbound rule in LB for $dest_cluster, but found $(jq length $frontend_ip_configurations_file)" >&2
         rm $json_output_file $outbound_rules_file $frontend_ip_configurations_file
         return 1
     fi
@@ -86,7 +86,7 @@ function get_test_cluster_outbound_ip() {
     rm $json_output_file $outbound_rules_file $frontend_ip_configurations_file
 }
 
-function check_staging_certs(){
+function check_staging_certs() {
     echo ""
     if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
         dl_certs=()
@@ -105,16 +105,15 @@ function check_staging_certs(){
         done
 
         #Compare installed certs with array of downloaded certs
-        for file in "$search_dir"/*
-        do
+        for file in "$search_dir"/*; do
             j=0
             md5=($(md5sum ${file}))
             for item in "${dl_certs[@]}"; do
-                if [[ $md5 == "$item" ]];then
-                    ((i=i+1))
+                if [[ $md5 == "$item" ]]; then
+                    ((i = i + 1))
                     unset -v 'dl_certs[$j]'
                 fi
-            ((j=j+1))
+                ((j = j + 1))
             done
         done
 
@@ -129,7 +128,16 @@ function check_staging_certs(){
 }
 
 get_latest_release() {
-  # retrieves latest release version from a GitHub repository. Assumes the version has format v<version>.<major_version>.<minor_version>
-  # this function does not use the more convenient GitHub API in order to circumvent rate limiting
-  curl -sL https://github.com/$1/releases/latest | grep -E "/tree/" | grep -E "v[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}" -o | head -1
+    # retrieves latest release version from a GitHub repository. Assumes the version has format v<version>.<major_version>.<minor_version>
+    # this function does not use the more convenient GitHub API in order to circumvent rate limiting
+    curl -sL https://github.com/$1/releases/latest | grep -E "/tree/" | grep -E "v[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}" -o | head -1
+}
+
+function date() {
+    OS=$(uname)
+    if [[ $OS == "Linux" ]]; then
+        command date "$@"
+    elif [[ $OS == "Darwin" ]]; then
+        gdate "$@"
+    fi
 }
