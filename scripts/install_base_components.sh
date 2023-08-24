@@ -277,7 +277,7 @@ kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
 # Create radix platform shared configs and secrets
-# Create 3 secrets for Radix platform radix-sp-acr-azure, radix-docker and radix-snyk-service-account
+# Create 4 secrets for Radix platform: radix-sp-acr-azure, radix-sp-buildah-azure and radix-docker and radix-snyk-service-account
 
 echo ""
 echo "Start on radix platform shared configs and secrets..."
