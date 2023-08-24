@@ -226,7 +226,7 @@ echo -e "   -  NSG_NAME                         : $NSG_NAME"
 echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
 echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
 echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
-echo -e "   -  VNET_DOCKER_BRIDGE_ADDRESS       : $VNET_DOCKER_BRIDGE_ADDRESS"
+# echo -e "   -  VNET_DOCKER_BRIDGE_ADDRESS       : $VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
 echo -e "   -  VNET_DNS_SERVICE_IP              : $VNET_DNS_SERVICE_IP"
 echo -e "   -  VNET_SERVICE_CIDR                : $VNET_SERVICE_CIDR"
 echo -e "   -  HUB_VNET_RESOURCE_GROUP          : $AZ_RESOURCE_GROUP_VNET_HUB"
@@ -606,7 +606,7 @@ AKS_BASE_OPTIONS=(
     --max-pods "$POD_PER_NODE"
     --network-plugin "$NETWORK_PLUGIN"
     --network-policy "$NETWORK_POLICY"
-    --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS"
+    # --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
     --dns-service-ip "$VNET_DNS_SERVICE_IP"
     --service-cidr "$VNET_SERVICE_CIDR"
     --location "$AZ_RADIX_ZONE_LOCATION"
@@ -640,11 +640,13 @@ fi
 
 if [ "$CLUSTER_TYPE" = "production" ]; then
     AKS_CLUSTER_OPTIONS=(
-        --uptime-sla
+        # --uptime-sla # deprecated
+        --tier standard
     )
 elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
     AKS_CLUSTER_OPTIONS=(
-        --uptime-sla
+        # --uptime-sla # deprecated
+        --tier standard
     )
 elif [[ "$CLUSTER_TYPE" = "development" ]]; then
     AKS_CLUSTER_OPTIONS=()
