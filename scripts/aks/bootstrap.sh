@@ -320,6 +320,7 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     echo "Getting list of available public egress ips in $RADIX_ZONE..."
     AVAILABLE_EGRESS_IPS="$(az network public-ip list \
         --query "[?publicIPPrefix.id=='${IPPRE_EGRESS_ID}' && ipConfiguration.resourceGroup==null].{name:name, id:id, ipAddress:ipAddress}")"
+    AVAILABLE_EGRESS_IPS_COUNT="$(jq length <<<"${AVAILABLE_EGRESS_IPS}")"
 
     # Select range of egress ips based on OUTBOUND_IP_COUNT
     SELECTED_EGRESS_IPS="$(echo "$AVAILABLE_EGRESS_IPS" | jq '.[0:'$OUTBOUND_IP_COUNT']')"
@@ -338,6 +339,10 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
         exit 1
     elif [[ -z $AVAILABLE_EGRESS_IPS ]]; then
         echo "ERROR: Found no available ips to assign to the destination cluster. Exiting..." >&2
+        exit 1
+    elif [[ "${AVAILABLE_EGRESS_IPS_COUNT}" -lt "${OUTBOUND_IP_COUNT}" ]]; then
+        echo "ERROR: Too few Egress IPs available."
+        echo "Tip: You might need to do a teardown of an early clusters first."
         exit 1
     else
         echo ""
