@@ -12,16 +12,21 @@ spec:
         - name: prometheus-restore
           image: busybox
           volumeMounts:
-          - name: prometheus
-            mountPath: /prometheus
-          - name: backup
-            mountPath: /backup
-          command: [ "sh", "-c", "rm -rf /prometheus/prometheus-db && mkdir /prometheus/prometheus-db && tar xf /backup/prometheusbackup.tar  --strip-components=3 -C /prometheus/prometheus-db" ]
+            - name: prometheus
+              mountPath: /prometheus
+            - name: backup
+              mountPath: /backup
+          command:
+            [
+              'sh',
+              '-c',
+              'rm -rf /prometheus/prometheus-db && mkdir /prometheus/prometheus-db && tar xf /backup/prometheusbackup.tar  --strip-components=3 -C /prometheus/prometheus-db'
+            ]
       restartPolicy: Never
       volumes:
-      - name: backup
-        persistentVolumeClaim:
-          claimName: pvc-prometheus-backup
-      - name: prometheus
-        persistentVolumeClaim:
-          claimName: prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0
+        - name: backup
+          persistentVolumeClaim:
+            claimName: pvc-prometheus-backup
+        - name: prometheus
+          persistentVolumeClaim:
+            claimName: prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0
