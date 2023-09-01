@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: prometheus-recovery
+  namespace: monitor
+spec:
+  containers:
+    - image: busybox
+      name: debug-disk
+      volumeMounts:
+        - name: backup
+          mountPath: /backup
+        - name: prometheus
+          mountPath: /prometheus
+      command: ['sleep', '8h']
+  volumes:
+    - name: backup
+      persistentVolumeClaim:
+        claimName: pvc-prometheus-backup
+    - name: prometheus
+      persistentVolumeClaim:
+        claimName: prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0
