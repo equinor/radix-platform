@@ -31,6 +31,15 @@ generate_password_and_store() {
             ;;
     esac
 
+    if [[ -n "${KV_EXPIRATION_TIME}" ]]; then
+        EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
+        OPTIONS=(
+            --expires "$EXPIRY_DATE"
+        )
+    else
+        OPTIONS=()
+    fi
+
     printf "Checking access to secret '$secretName' in '$keyvault'.\n"
     az keyvault secret show --vault-name $keyvault --name $secretName --output none 2> error.txt
     status=$?
@@ -54,7 +63,7 @@ generate_password_and_store() {
     local password=$(python3 -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())') ||
         { echo "ERROR: Could not generate password." >&2; return 1; }
 
-    az keyvault secret set --vault-name $keyvault --name $secretName --value $password --output none --only-show-errors ||
+    az keyvault secret set --vault-name $keyvault --name $secretName --value $password "${OPTIONS[@]}" --output none --only-show-errors ||
         { echo "ERROR: Could not get secret '$secretName' in '${keyvault}'." >&2; return 1; }
 
     printf "Successfully updated secret '${secretName}' in '${keyvault}'.\n"
