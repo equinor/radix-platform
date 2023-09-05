@@ -396,33 +396,15 @@ function set_permissions_on_dns() {
         dns="$AZ_RESOURCE_DNS"
     fi
 
-    if [ "$RADIX_ENVIRONMENT" = "classic" ]; then
-        # Use Managed Identity.
-        # https://cert-manager.io/docs/configuration/acme/dns01/azuredns/#managed-identity-using-aad-pod-identities
+    # Use service principle.
+    scope="$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
 
-        printf "Azure dns zone: Setting permissions for \"${AZ_MANAGED_IDENTITY_NAME}\" on \"${dns}\"..."
-
-        # Choose a unique Identity name and existing resource group to create identity in.
-        IDENTITY="$(az identity show --name $AZ_MANAGED_IDENTITY_NAME --resource-group $AZ_RESOURCE_GROUP_CLUSTERS --output json)"
-        # Gets principalId to use for role assignment
-        PRINCIPAL_ID=$(echo $IDENTITY | jq -r '.principalId')
-        # Get existing DNS Zone Id
-        ZONE_ID=$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" -o tsv)
-        # Create role assignment
-        az role assignment create --assignee $PRINCIPAL_ID --role "DNS Zone Contributor" --scope $ZONE_ID
-        printf "...Done\n"
-    else
-        # Use service principle.
-
-        scope="$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
-
-        # Grant 'DNS Zone Contributor' permissions to a specific zone
-        # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
-        printf "Azure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
-        id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_DNS} --query [].appId --output tsv)"
-        az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
-        printf "...Done\n"
-    fi
+    # Grant 'DNS Zone Contributor' permissions to a specific zone
+    # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
+    printf "Azure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
+    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_DNS} --query [].appId --output tsv)"
+    az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
+    printf "...Done\n"
 }
 
 function create_dns_role_definition_for_cert_manager() {
