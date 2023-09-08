@@ -766,6 +766,30 @@ az aks nodepool update \
 printf "Done.\n"
 
 #######################################################################################
+### Add tainted pipelinepool
+###
+
+AKS_USER_OPTIONS=(
+    --cluster-name "$CLUSTER_NAME"
+    --nodepool-name pipelinepool
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --enable-cluster-autoscaler
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --max-count "$NODE_COUNT"
+    --max-pods "$POD_PER_NODE"
+    --min-count "$SYSTEM_MIN_COUNT"
+    --mode User
+    --node-count "$SYSTEM_MIN_COUNT"
+    --node-osdisk-size "$NODE_DISK_SIZE"
+    --node-vm-size "$NODE_VM_SIZE"
+    --vnet-subnet-id "$SUBNET_ID"
+    --node-taints "nodepooltasks=jobs:NoSchedule"
+    --labels "nodepooltasks:jobs"
+)
+echo "Create user pipelinepool"
+az aks nodepool add "${AKS_USER_OPTIONS[@]}"
+
+#######################################################################################
 ### Add untainted User nodepool
 ###
 
