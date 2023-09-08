@@ -781,7 +781,7 @@ AKS_USER_OPTIONS=(
     --mode User
     --node-count "$PIPELINE_MIN_COUNT"
     --node-osdisk-size "$NODE_DISK_SIZE"
-    --node-vm-size "$NODE_VM_SIZE"
+    --node-vm-size "$PIPELINE_VM_SIZE"
     --vnet-subnet-id "$SUBNET_ID"
     --node-taints "nodepooltasks=jobs:NoSchedule"
     --labels "nodepooltasks:jobs"
