@@ -775,11 +775,11 @@ AKS_USER_OPTIONS=(
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
     --enable-cluster-autoscaler
     --kubernetes-version "$KUBERNETES_VERSION"
-    --max-count "$NODE_COUNT"
+    --max-count "$PIPELINE_MAX_COUNT"
     --max-pods "$POD_PER_NODE"
-    --min-count "$SYSTEM_MIN_COUNT"
+    --min-count "$PIPELINE_MIN_COUNT"
     --mode User
-    --node-count "$SYSTEM_MIN_COUNT"
+    --node-count "$PIPELINE_MIN_COUNT"
     --node-osdisk-size "$NODE_DISK_SIZE"
     --node-vm-size "$NODE_VM_SIZE"
     --vnet-subnet-id "$SUBNET_ID"
