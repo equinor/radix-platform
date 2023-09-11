@@ -521,30 +521,6 @@ VNET_ID="$(az network vnet show \
     --query "id" \
     --output tsv)"
 
-#Legacy
-# peering VNET to hub-vnet
-# HUB_VNET_RESOURCE_ID="$(az network vnet show \
-#     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-#     --name "$AZ_VNET_HUB_NAME" \
-#     --query "id" \
-#     --output tsv)"
-
-# echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-
-# az network vnet peering create \
-#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#     --name "$VNET_PEERING_NAME" \
-#     --vnet-name "$VNET_NAME" \
-#     --remote-vnet "$HUB_VNET_RESOURCE_ID" \
-#     --allow-vnet-access 2>&1
-
-# az network vnet peering create \
-#     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-#     --name "$HUB_PEERING_NAME" \
-#     --vnet-name "$AZ_VNET_HUB_NAME" \
-#     --remote-vnet "$VNET_ID" \
-#     --allow-vnet-access 2>&1
-
 echo ""
 echo "Check if $VNET_NAME are associated with $AZ_VNET_HUB_NAME"
 while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
@@ -623,7 +599,6 @@ AKS_BASE_OPTIONS=(
     --node-osdisk-size "$NODE_DISK_SIZE"
     --node-vm-size "$NODE_VM_SIZE"
     --max-pods "$POD_PER_NODE"
-    # --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
     --dns-service-ip "$VNET_DNS_SERVICE_IP"
     --service-cidr "$VNET_SERVICE_CIDR"
     --location "$AZ_RADIX_ZONE_LOCATION"
