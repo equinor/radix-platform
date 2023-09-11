@@ -58,6 +58,11 @@ hash jq 2>/dev/null || {
     exit 1
 }
 
+hash helm 2>/dev/null || {
+    echo -e "\nERROR: helm not found in PATH. Exiting... " >&2
+    exit 1
+}
+
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.41.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
@@ -144,6 +149,10 @@ fi
 if [[ -z "$VNET_DNS_LINK" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
+
+# Script vars
+
+WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 #######################################################################################
 ### support functions
@@ -609,8 +618,6 @@ AKS_BASE_OPTIONS=(
     --node-osdisk-size "$NODE_DISK_SIZE"
     --node-vm-size "$NODE_VM_SIZE"
     --max-pods "$POD_PER_NODE"
-    --network-plugin "$NETWORK_PLUGIN"
-    --network-policy "$NETWORK_POLICY"
     # --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
     --dns-service-ip "$VNET_DNS_SERVICE_IP"
     --service-cidr "$VNET_SERVICE_CIDR"
@@ -643,14 +650,23 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     )
 fi
 
+if [ "$CILIUM" = true ]; then
+    AKS_NETWORK_OPTIONS=(
+        --network-plugin "none"
+    )
+else
+    AKS_NETWORK_OPTIONS=(
+        --network-plugin "$NETWORK_PLUGIN"
+        --network-policy "$NETWORK_POLICY"
+    )
+fi
+
 if [ "$CLUSTER_TYPE" = "production" ]; then
     AKS_CLUSTER_OPTIONS=(
-        # --uptime-sla # deprecated
         --tier standard
     )
 elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
     AKS_CLUSTER_OPTIONS=(
-        # --uptime-sla # deprecated
         --tier standard
     )
 elif [[ "$CLUSTER_TYPE" = "development" ]]; then
@@ -667,7 +683,7 @@ else
     echo "ERROR: Unknown parameter" >&2
 fi
 
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_NETWORK_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 rm -f $DEFENDER_CONFIG
 
@@ -751,6 +767,82 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 [[ "$(kubectl config current-context)" != "$CLUSTER_NAME" ]] && exit 1
 
 printf "Done.\n"
+
+#######################################################################################
+### Install Cilium
+###
+
+function retry() {
+    local DURATION
+    local COMMAND
+    local SUCCESS
+
+    DURATION=$1
+    COMMAND=$2
+    SUCCESS=false
+
+    while [ $SUCCESS = false ]; do
+        if timeout "${DURATION}" bash -c "${COMMAND}"; then
+            SUCCESS=true
+        else
+            echo "Command is stuck. Trying again..."
+            sleep 5
+        fi
+    done
+}
+
+if [ "$CILIUM" = true ]; then
+    CILIUM_VALUES="cilium-values.yaml"
+
+    cat <<EOF >"${WORK_DIR}/${CILIUM_VALUES}"
+nodeinit:
+  enabled: true
+
+aksbyocni:
+  enabled: true
+
+azure:
+  resourceGroup: ${AZ_RESOURCE_GROUP_CLUSTERS}
+
+k8sClientRateLimit:
+  qps: 20
+  burst: 20
+
+prometheus:
+  enabled: true
+
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+
+operator:
+  prometheus:
+    enabled: true
+
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList: ["10.200.0.0/16"]
+    clusterPoolIPv4MaskSize: 24
+EOF
+
+    printf "Installing Cilium...\n"
+
+    retry "1m" "helm repo add cilium https://helm.cilium.io/"
+
+    retry "2m" "helm upgrade --install cilium cilium/cilium \
+        --version $CILIUM_VERSION \
+        --namespace kube-system \
+        --values ${WORK_DIR}/${CILIUM_VALUES}"
+
+    cilium status --wait
+
+    printf "Done."
+fi
+
+rm -f "${WORK_DIR}/${CILIUM_VALUES}"
 
 #######################################################################################
 ### Taint the 'systempool'
