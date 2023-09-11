@@ -53,6 +53,11 @@ hash az 2>/dev/null || {
     exit 1
 }
 
+hash cilium 2>/dev/null || {
+    echo -e "\nERROR: cilium not found in PATH. Exiting... " >&2
+    exit 1
+}
+
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
     exit 1
