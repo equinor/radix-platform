@@ -237,8 +237,12 @@ echo -e "   -  VNET_NAME                        : $VNET_NAME"
 echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
 echo -e "   -  VNET_SUBNET_PREFIX               : $VNET_SUBNET_PREFIX"
 echo -e "   -  NSG_NAME                         : $NSG_NAME"
-echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
-echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
+if [ "${CILIUM}" = true ]; then
+    echo -e "   -  NETWORK_POLICY                   : none"
+else
+    echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
+    echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
+fi
 echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
 # echo -e "   -  VNET_DOCKER_BRIDGE_ADDRESS       : $VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
 echo -e "   -  VNET_DNS_SERVICE_IP              : $VNET_DNS_SERVICE_IP"
