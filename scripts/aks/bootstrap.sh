@@ -244,7 +244,6 @@ else
     echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
 fi
 echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
-# echo -e "   -  VNET_DOCKER_BRIDGE_ADDRESS       : $VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
 echo -e "   -  VNET_DNS_SERVICE_IP              : $VNET_DNS_SERVICE_IP"
 echo -e "   -  VNET_SERVICE_CIDR                : $VNET_SERVICE_CIDR"
 echo -e "   -  HUB_VNET_RESOURCE_GROUP          : $AZ_RESOURCE_GROUP_VNET_HUB"
