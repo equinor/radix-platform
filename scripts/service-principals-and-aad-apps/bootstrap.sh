@@ -161,7 +161,22 @@ create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${
 ### Create managed identity
 ###
 
-permission=("Microsoft.Network/dnszones/A/write" "Microsoft.Network/dnszones/A/read" "Microsoft.ContainerService/managedClusters/write" "Microsoft.Network/publicIPAddresses/join/action" "Microsoft.Network/virtualNetworks/subnets/join/action" "Microsoft.OperationalInsights/workspaces/sharedkeys/read" "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action" "Microsoft.OperationalInsights/workspaces/read" "Microsoft.OperationsManagement/solutions/write" "Microsoft.OperationsManagement/solutions/read" "Microsoft.Authorization/roleAssignments/write" "Microsoft.Insights/dataCollectionRules/read")
+permission=(
+    "Microsoft.Authorization/roleAssignments/write"
+    "Microsoft.ContainerService/managedClusters/write"
+    "Microsoft.Insights/dataCollectionRules/read"
+    "Microsoft.Insights/dataCollectionRules/write"
+    "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action"
+    "Microsoft.Network/dnszones/A/read"
+    "Microsoft.Network/dnszones/A/write"
+    "Microsoft.Network/publicIPAddresses/join/action"
+    "Microsoft.Network/virtualNetworks/subnets/join/action"
+    "Microsoft.OperationalInsights/workspaces/read"
+    "Microsoft.OperationalInsights/workspaces/sharedKeys/action"
+    "Microsoft.OperationalInsights/workspaces/sharedkeys/read"
+    "Microsoft.OperationsManagement/solutions/read"
+    "Microsoft.OperationsManagement/solutions/write"
+)
 permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
 
 scopes=("/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}")
