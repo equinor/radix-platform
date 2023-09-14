@@ -124,17 +124,12 @@ MASTER_ACR_IP_WHITELIST=$(az keyvault secret show \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
     --name "${SECRET_NAME}" \
     --query="value" \
-    --output tsv | base64 --decode | jq '{whitelist:.whitelist | unique_by(.ip) |sort_by(.location | ascii_downcase)}' 2>/dev/null)
+    --output tsv | base64 --decode | jq '{whitelist:.whitelist | unique_by(.ip) | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 
 #######################################################################################
 ### Run interactive wizard to modify IP whitelist
 ###
 
-MASTER_ACR_IP_WHITELIST=$(az keyvault secret show \
-    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
-    --name "${SECRET_NAME}" \
-    --query="value" \
-    --output tsv | base64 --decode | jq '{whitelist:.whitelist | unique_by(.ip) | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 temp_file_path="/tmp/$(uuidgen)"
 
 if [[ -n "${IP_MASK}" ]]; then
