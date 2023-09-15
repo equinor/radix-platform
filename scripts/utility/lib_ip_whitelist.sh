@@ -235,7 +235,6 @@ function combineWhitelists() {
 
             combined_whitelist+=$(RADIX_ZONE_ENV=${radix_zone_env_tmp} getWhitelist | jq -c '.[]')
             wait # wait for subshell to finish
-            # echo ""
         done
         unset radix_zone_env_tmp
     else
