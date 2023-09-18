@@ -238,7 +238,9 @@ echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
 echo -e "   -  VNET_SUBNET_PREFIX               : $VNET_SUBNET_PREFIX"
 echo -e "   -  NSG_NAME                         : $NSG_NAME"
 if [ "${CILIUM}" = true ]; then
-    echo -e "   -  NETWORK_POLICY                   : none"
+    echo -e "   -  NETWORK_DATAPLANE                : cilium"
+    echo -e "   -  NETWORK_PLUGIN                   : azure"
+    echo -e "   -  NETWORK_POLICY                   : <unset>"
 else
     echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
     echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
@@ -636,7 +638,8 @@ fi
 
 if [ "$CILIUM" = true ]; then
     AKS_NETWORK_OPTIONS=(
-        --network-plugin "none"
+        --network-dataplane "cilium"
+        --network-plugin "azure"
     )
 else
     AKS_NETWORK_OPTIONS=(
