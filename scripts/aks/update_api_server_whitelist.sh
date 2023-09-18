@@ -103,7 +103,11 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_ip_whitelist.sh
 ### Prepare K8S API IP WHITELIST
 ###
 
-MASTER_K8S_API_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
+MASTER_K8S_API_IP_WHITELIST=$(az keyvault secret show \
+    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+    --name "${SECRET_NAME}" \
+    --query="value" \
+    --output tsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 
 temp_file_path="/tmp/$(uuidgen)"
 run-interactive-ip-whitelist-wizard "${MASTER_K8S_API_IP_WHITELIST}" "${temp_file_path}" "${USER_PROMPT}"
