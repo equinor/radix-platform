@@ -120,13 +120,16 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_ip_whitelist.sh
 ### Fetch ACR IP whitelist from key vault
 ###
 
-MASTER_ACR_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
+MASTER_ACR_IP_WHITELIST=$(az keyvault secret show \
+    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+    --name "${SECRET_NAME}" \
+    --query="value" \
+    --output tsv | base64 --decode | jq '{whitelist:.whitelist | unique_by(.ip) | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 
 #######################################################################################
 ### Run interactive wizard to modify IP whitelist
 ###
 
-MASTER_ACR_IP_WHITELIST=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" --query="value" -otsv | base64 --decode | jq '{whitelist:.whitelist | sort_by(.location | ascii_downcase)}' 2>/dev/null)
 temp_file_path="/tmp/$(uuidgen)"
 
 if [[ -n "${IP_MASK}" ]]; then
@@ -153,7 +156,9 @@ function update-keyvault() {
     if [[ -z "$updateKeyvault" ]]; then
         updateKeyvault=true
     fi
+
     if [[ $updateKeyvault == false ]]; then return; fi
+
     printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
     if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_acr_ip_whitelist_base64}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
         printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
@@ -188,7 +193,10 @@ function update-acr-firewall() {
     current_ips_file_no_mask="/tmp/$(uuidgen)"
     current_ips_file_with_duplicates="/tmp/$(uuidgen)"
     jq <<<"${acr_ip_whitelist}" | jq -r '[.whitelist[].ip] | join("\n")' | sort | uniq >${desired_ips_file}
-    az acr network-rule list --name "${acr}" --subscription "${AZ_SUBSCRIPTION_ID}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" | jq -r '[.ipRules[].ipAddressOrRange] | join("\n")' >${current_ips_file_no_mask}
+    az acr network-rule list \
+        --name "${acr}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" | jq -r '[.ipRules[].ipAddressOrRange] | join("\n")' >${current_ips_file_no_mask}
     cat ${current_ips_file_no_mask} | grep -v "/" | xargs -I {} echo "{}/32" >>${current_ips_file_with_duplicates}
     cat ${current_ips_file_no_mask} | grep "/" >>${current_ips_file_with_duplicates}
     cat ${current_ips_file_with_duplicates} | sort | uniq >${current_ips_file}

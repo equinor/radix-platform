@@ -53,8 +53,18 @@ hash az 2>/dev/null || {
     exit 1
 }
 
+hash cilium 2>/dev/null || {
+    echo -e "\nERROR: cilium not found in PATH. Exiting... " >&2
+    exit 1
+}
+
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
+    exit 1
+}
+
+hash helm 2>/dev/null || {
+    echo -e "\nERROR: helm not found in PATH. Exiting... " >&2
     exit 1
 }
 
@@ -145,6 +155,10 @@ if [[ -z "$VNET_DNS_LINK" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
 
+# Script vars
+
+WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 #######################################################################################
 ### support functions
 ###
@@ -219,10 +233,13 @@ echo -e "   -  VNET_NAME                        : $VNET_NAME"
 echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
 echo -e "   -  VNET_SUBNET_PREFIX               : $VNET_SUBNET_PREFIX"
 echo -e "   -  NSG_NAME                         : $NSG_NAME"
-echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
-echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
+if [ "${CILIUM}" = true ]; then
+    echo -e "   -  NETWORK_POLICY                   : none"
+else
+    echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
+    echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
+fi
 echo -e "   -  SUBNET_NAME                      : $SUBNET_NAME"
-# echo -e "   -  VNET_DOCKER_BRIDGE_ADDRESS       : $VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
 echo -e "   -  VNET_DNS_SERVICE_IP              : $VNET_DNS_SERVICE_IP"
 echo -e "   -  VNET_SERVICE_CIDR                : $VNET_SERVICE_CIDR"
 echo -e "   -  HUB_VNET_RESOURCE_GROUP          : $AZ_RESOURCE_GROUP_VNET_HUB"
@@ -503,30 +520,6 @@ VNET_ID="$(az network vnet show \
     --query "id" \
     --output tsv)"
 
-#Legacy
-# peering VNET to hub-vnet
-# HUB_VNET_RESOURCE_ID="$(az network vnet show \
-#     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-#     --name "$AZ_VNET_HUB_NAME" \
-#     --query "id" \
-#     --output tsv)"
-
-# echo "Peering vnet $VNET_NAME to hub-vnet $HUB_VNET_RESOURCE_ID... "
-
-# az network vnet peering create \
-#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#     --name "$VNET_PEERING_NAME" \
-#     --vnet-name "$VNET_NAME" \
-#     --remote-vnet "$HUB_VNET_RESOURCE_ID" \
-#     --allow-vnet-access 2>&1
-
-# az network vnet peering create \
-#     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-#     --name "$HUB_PEERING_NAME" \
-#     --vnet-name "$AZ_VNET_HUB_NAME" \
-#     --remote-vnet "$VNET_ID" \
-#     --allow-vnet-access 2>&1
-
 echo ""
 echo "Check if $VNET_NAME are associated with $AZ_VNET_HUB_NAME"
 while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
@@ -605,9 +598,6 @@ AKS_BASE_OPTIONS=(
     --node-osdisk-size "$NODE_DISK_SIZE"
     --node-vm-size "$NODE_VM_SIZE"
     --max-pods "$POD_PER_NODE"
-    --network-plugin "$NETWORK_PLUGIN"
-    --network-policy "$NETWORK_POLICY"
-    # --docker-bridge-address "$VNET_DOCKER_BRIDGE_ADDRESS" # deprecated
     --dns-service-ip "$VNET_DNS_SERVICE_IP"
     --service-cidr "$VNET_SERVICE_CIDR"
     --location "$AZ_RADIX_ZONE_LOCATION"
@@ -639,14 +629,23 @@ if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     )
 fi
 
+if [ "$CILIUM" = true ]; then
+    AKS_NETWORK_OPTIONS=(
+        --network-plugin "none"
+    )
+else
+    AKS_NETWORK_OPTIONS=(
+        --network-plugin "$NETWORK_PLUGIN"
+        --network-policy "$NETWORK_POLICY"
+    )
+fi
+
 if [ "$CLUSTER_TYPE" = "production" ]; then
     AKS_CLUSTER_OPTIONS=(
-        # --uptime-sla # deprecated
         --tier standard
     )
 elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
     AKS_CLUSTER_OPTIONS=(
-        # --uptime-sla # deprecated
         --tier standard
     )
 elif [[ "$CLUSTER_TYPE" = "development" ]]; then
@@ -655,7 +654,7 @@ else
     echo "ERROR: Unknown parameter" >&2
 fi
 
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
+az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_NETWORK_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 rm -f $DEFENDER_CONFIG
 
@@ -828,6 +827,30 @@ az aks nodepool update \
     --node-taints CriticalAddonsOnly=true:NoSchedule \
     --labels nodepool-type=system nodepoolos=linux app=system-apps >/dev/null
 printf "Done.\n"
+
+#######################################################################################
+### Add tainted pipelinepool
+###
+
+AKS_PIPELINE_OPTIONS=(
+    --cluster-name "$CLUSTER_NAME"
+    --enable-cluster-autoscaler
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --labels "nodepooltasks=jobs"
+    --max-count "$PIPELINE_MAX_COUNT"
+    --max-pods "$POD_PER_NODE"
+    --min-count "$PIPELINE_MIN_COUNT"
+    --mode User
+    --node-count "$PIPELINE_MIN_COUNT"
+    --node-osdisk-size "$NODE_DISK_SIZE"
+    --node-taints "nodepooltasks=jobs:NoSchedule"
+    --node-vm-size "$PIPELINE_VM_SIZE"
+    --nodepool-name pipelinepool
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --vnet-subnet-id "$SUBNET_ID"
+)
+echo "Create pipeline nodepool"
+az aks nodepool add "${AKS_PIPELINE_OPTIONS[@]}"
 
 #######################################################################################
 ### Add untainted User nodepool
