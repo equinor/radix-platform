@@ -412,7 +412,7 @@ if [[ $(jq '. | length' <<<"${DataCollectionRule}") -gt 0 ]]; then
     az rest \
         --method DELETE \
         --url "https://management.azure.com/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.Insights/dataCollectionRules/${dataCollectionRuleName}?api-version=${APIVersion}"
-    printf "Done."
+    printf "Done.\n"
 fi
 echo "Done."
 

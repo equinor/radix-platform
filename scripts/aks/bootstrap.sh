@@ -741,6 +741,82 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
+### Install Cilium
+###
+
+function retry() {
+    local DURATION
+    local COMMAND
+    local SUCCESS
+
+    DURATION=$1
+    COMMAND=$2
+    SUCCESS=false
+
+    while [ $SUCCESS = false ]; do
+        if timeout "${DURATION}" bash -c "${COMMAND}"; then
+            SUCCESS=true
+        else
+            echo "Command is stuck. Trying again..."
+            sleep 5
+        fi
+    done
+}
+
+if [ "$CILIUM" = true ]; then
+    CILIUM_VALUES="cilium-values.yaml"
+
+    cat <<EOF >"${WORK_DIR}/${CILIUM_VALUES}"
+nodeinit:
+  enabled: true
+
+aksbyocni:
+  enabled: true
+
+azure:
+  resourceGroup: ${AZ_RESOURCE_GROUP_CLUSTERS}
+
+k8sClientRateLimit:
+  qps: 20
+  burst: 20
+
+prometheus:
+  enabled: true
+
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+
+operator:
+  prometheus:
+    enabled: true
+
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList: ["10.200.0.0/16"]
+    clusterPoolIPv4MaskSize: 24
+EOF
+
+    printf "Installing Cilium...\n"
+
+    retry "1m" "helm repo add cilium https://helm.cilium.io/"
+
+    retry "2m" "helm upgrade --install cilium cilium/cilium \
+        --version $CILIUM_VERSION \
+        --namespace kube-system \
+        --values ${WORK_DIR}/${CILIUM_VALUES}"
+
+    cilium status --wait
+
+    printf "Done.\n"
+fi
+
+rm -f "${WORK_DIR}/${CILIUM_VALUES}"
+
+#######################################################################################
 ### Taint the 'systempool'
 ###
 
