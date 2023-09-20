@@ -230,7 +230,7 @@ function combineWhitelists() {
 
     if [[ -d "${RADIX_ZONE_PATH}" ]]; then
         for filename in "${RADIX_ZONE_PATH}"/*.env; do
-            if [[ "${filename}" == *classic* || "${filename}" == *test* ]]; then continue; fi
+            if [[ "${filename}" == *test* ]]; then continue; fi
             radix_zone_env_tmp="${filename}"
 
             combined_whitelist+=$(RADIX_ZONE_ENV=${radix_zone_env_tmp} getWhitelist | jq -c '.[]')

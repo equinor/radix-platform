@@ -201,14 +201,10 @@ printf "Done.\n"
 ### Get unused VNET address prefix
 ###
 
-if [ "$OMNIA_ZONE" = "standalone" ]; then
-    echo "Getting unused VNET address space... "
-    AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
-    VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
-    VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
-else
-    echo "Unknown parameter"
-fi
+echo "Getting unused VNET address space... "
+AKS_VNET_ADDRESS_PREFIX="$(getAddressSpaceForVNET)"
+VNET_ADDRESS_PREFIX="$AKS_VNET_ADDRESS_PREFIX/16"
+VNET_SUBNET_PREFIX="$AKS_VNET_ADDRESS_PREFIX/18"
 
 #######################################################################################
 ### Verify task at hand
@@ -654,14 +650,6 @@ elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
     )
 elif [[ "$CLUSTER_TYPE" = "development" ]]; then
     AKS_CLUSTER_OPTIONS=()
-elif [[ "$CLUSTER_TYPE" = "classicdev" ]]; then
-    AKS_CLUSTER_OPTIONS=(
-        --vnet-subnet-id "/subscriptions/c44d61d9-1f68-4236-aa19-2103b69766d5/resourceGroups/S045-NE-network/providers/Microsoft.Network/virtualNetworks/S045-NE-vnet"
-    )
-elif [[ "$CLUSTER_TYPE" = "classicprod" ]]; then
-    AKS_CLUSTER_OPTIONS=(
-        --vnet-subnet-id "/subscriptions/7790e999-c11c-4f0b-bfdf-bc2fd5c38e91/resourceGroups/S340-NE-network/providers/Microsoft.Network/virtualNetworks/S340-NE-vnet"
-    )
 else
     echo "ERROR: Unknown parameter" >&2
 fi
@@ -822,7 +810,7 @@ EOF
 
     cilium status --wait
 
-    printf "Done."
+    printf "Done.\n"
 fi
 
 rm -f "${WORK_DIR}/${CILIUM_VALUES}"
