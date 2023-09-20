@@ -164,6 +164,7 @@ create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${
 permission=(
     "Microsoft.Authorization/roleAssignments/write"
     "Microsoft.ContainerService/managedClusters/write"
+    "Microsoft.Insights/dataCollectionRuleAssociations/write"
     "Microsoft.Insights/dataCollectionRules/read"
     "Microsoft.Insights/dataCollectionRules/write"
     "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action"
