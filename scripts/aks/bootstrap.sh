@@ -240,6 +240,8 @@ echo -e "   -  NSG_NAME                         : $NSG_NAME"
 if [ "${CILIUM}" = true ]; then
     echo -e "   -  NETWORK_DATAPLANE                : cilium"
     echo -e "   -  NETWORK_PLUGIN                   : azure"
+    echo -e "   -  NETWORK_PLUGIN_MODE              : overlay"
+    echo -e "   -  POD_CIDR                         : 10.200.0.0/16"
     echo -e "   -  NETWORK_POLICY                   : <unset>"
 else
     echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
@@ -639,6 +641,8 @@ if [ "$CILIUM" = true ]; then
     AKS_NETWORK_OPTIONS=(
         --network-dataplane "cilium"
         --network-plugin "azure"
+        --network-plugin-mode "overlay"
+        --pod-cidr "10.200.0.0/16"
     )
 else
     AKS_NETWORK_OPTIONS=(
@@ -776,59 +780,6 @@ function retry() {
         fi
     done
 }
-
-if [ "$CILIUM" = true ]; then
-    CILIUM_VALUES="cilium-values.yaml"
-
-    cat <<EOF >"${WORK_DIR}/${CILIUM_VALUES}"
-nodeinit:
-  enabled: true
-
-aksbyocni:
-  enabled: true
-
-azure:
-  resourceGroup: ${AZ_RESOURCE_GROUP_CLUSTERS}
-
-k8sClientRateLimit:
-  qps: 20
-  burst: 20
-
-prometheus:
-  enabled: true
-
-hubble:
-  enabled: true
-  relay:
-    enabled: true
-  ui:
-    enabled: true
-
-operator:
-  prometheus:
-    enabled: true
-
-ipam:
-  operator:
-    clusterPoolIPv4PodCIDRList: ["10.200.0.0/16"]
-    clusterPoolIPv4MaskSize: 24
-EOF
-
-    printf "Installing Cilium...\n"
-
-    retry "1m" "helm repo add cilium https://helm.cilium.io/"
-
-    retry "2m" "helm upgrade --install cilium cilium/cilium \
-        --version $CILIUM_VERSION \
-        --namespace kube-system \
-        --values ${WORK_DIR}/${CILIUM_VALUES}"
-
-    cilium status --wait
-
-    printf "Done."
-fi
-
-rm -f "${WORK_DIR}/${CILIUM_VALUES}"
 
 #######################################################################################
 ### Taint the 'systempool'
