@@ -842,7 +842,7 @@ AKS_PIPELINE_OPTIONS=(
     --min-count "$PIPELINE_MIN_COUNT"
     --mode User
     --node-count "$PIPELINE_MIN_COUNT"
-    --node-osdisk-size "$NODE_DISK_SIZE"
+    --node-osdisk-size "$PIPELINE_DISK_SIZE"
     --node-taints "nodepooltasks=jobs:NoSchedule"
     --node-vm-size "$PIPELINE_VM_SIZE"
     --nodepool-name pipelinepool
