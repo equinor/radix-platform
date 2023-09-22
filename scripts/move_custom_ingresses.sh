@@ -212,6 +212,7 @@ verify_cluster_access
 #######################################################################################
 ### Move custom ingresses
 ###
+
 echo ""
 printf "Enabling monitoring addon in the destination cluster...\n"
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
@@ -222,7 +223,10 @@ if [[ "${omsagent}" == "false" || -z "${omsagent}" ]]; then
         --name "${DEST_CLUSTER}" \
         --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
         --workspace-resource-id "${WORKSPACE_ID}" \
-        --no-wait
+        --no-wait || {
+        echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2
+        exit 1
+    }
 fi
 printf "Done.\n"
 
@@ -235,13 +239,12 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
             --name "${SOURCE_CLUSTER}" \
             --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
             --subscription "${AZ_SUBSCRIPTION_ID}" \
-            --no-wait
+            --no-wait || {
+            echo -e "\nERROR: Failed to disable monitoring addon. Exiting... " >&2
+            exit 1
+        }
     fi
     printf "Done.\n"
-
-    #######################################################################################
-    ### Change credentials to Source cluster
-    ###
 
     echo ""
     printf "Point to source cluster...\n"
@@ -258,15 +261,12 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     done <<<"$(helm list --short | grep radix-ingress)"
 
     #######################################################################################
+    ### Point grafana to cluster specific ingress
     ###
-    ###
-    # Point grafana to cluster specific ingress
+
     GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
     kubectl set env deployment/grafana --namespace monitor GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
-    #######################################################################################
-    ### Scale down source cluster resources
-    ###
     echo ""
     printf "Scale down radix-cicd-canary in %s..." "$SOURCE_CLUSTER"
     kubectl scale deployment \
@@ -275,9 +275,6 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     wait
     printf "Done.\n"
 
-    #######################################################################################
-    ### Suspend source flux resources
-    ###
     echo ""
     printf "Suspend radix-cicd-canary kustomizations...\n"
     flux suspend kustomization radix-cicd-canary
@@ -291,10 +288,6 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""
 fi
 
-#######################################################################################
-### Change credentials to Destination cluster
-###
-
 echo ""
 printf "Point to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
@@ -307,14 +300,14 @@ printf "%s► Execute %s%s\n" "${grn}" "$BOOTSTRAP_APP_ALIAS_SCRIPT" "${normal}"
 wait # wait for subshell to finish
 printf "Done creating aliases.\n"
 
-# Update auth proxy secret and redis cache
+echo ""
+printf "Update auth proxy secret and redis cache...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT")
 wait # wait for subshell to finish
 
 # Point granana to cluster type ingress
 echo "Update grafana reply-URL... "
-# Transform clustername to lowercase
 CLUSTER_NAME_LOWER="$(echo "$DEST_CLUSTER" | awk '{print tolower($0)}')"
 GF_SERVER_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
 
@@ -347,6 +340,8 @@ echo "Grafana reply-URL has been updated."
 #######################################################################################
 ### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"
 ### Used in GHA to determine which cluster shall be powered on daily
+###
+
 echo ""
 if [[ $CLUSTER_TYPE == "development" ]]; then
     CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select((.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) and (.powerState.code!="Stopped") and (.tags.autostartupschedule == null) or (.name == '\"$SOURCE_CLUSTER\"')) | {name: .name, powerstate: .powerState.code, id: .id}]}]')
@@ -367,7 +362,6 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
         --tags autostartupschedule=true \
         --is-incremental
 fi
-
 
 if [[ -z $CI ]]; then
     echo ""
