@@ -53,10 +53,12 @@ hash az 2>/dev/null || {
     exit 1
 }
 
-hash cilium 2>/dev/null || {
-    echo -e "\nERROR: cilium not found in PATH. Exiting... " >&2
-    exit 1
-}
+if [ "${CILIUM}" = true ]; then
+    hash cilium 2>/dev/null || {
+        echo -e "\nERROR: cilium not found in PATH. Exiting... " >&2
+        exit 1
+    }
+fi
 
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
@@ -811,9 +813,9 @@ EOF
     cilium status --wait
 
     printf "Done.\n"
+    
+    rm -f "${WORK_DIR}/${CILIUM_VALUES}"
 fi
-
-rm -f "${WORK_DIR}/${CILIUM_VALUES}"
 
 #######################################################################################
 ### Taint the 'systempool'
