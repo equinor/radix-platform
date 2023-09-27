@@ -720,25 +720,7 @@ fi
 
 (USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
 
-#######################################################################################
-### Lock cluster and network resources
-###
 
-if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    az lock create \
-        --lock-type CanNotDelete \
-        --name "${CLUSTER_NAME}"-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --resource-type Microsoft.ContainerService/managedClusters \
-        --resource "$CLUSTER_NAME" &>/dev/null
-
-    az lock create \
-        --lock-type CanNotDelete \
-        --name "${VNET_NAME}"-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --resource-type Microsoft.Network/virtualNetworks \
-        --resource "$VNET_NAME" &>/dev/null
-fi
 
 #######################################################################################
 ### Update local kube config
@@ -955,6 +937,33 @@ az aks nodepool add \
 printf "Done."
 
 #######################################################################################
+### Lock cluster and network resources
+###
+
+if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
+    az lock create \
+        --lock-type CanNotDelete \
+        --name "${CLUSTER_NAME}"-lock \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-type Microsoft.ContainerService/managedClusters \
+        --resource "$CLUSTER_NAME" &>/dev/null
+
+    az lock create \
+        --lock-type ReadOnly \
+        --name "${CLUSTER_NAME}"-readonly-lock \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-type Microsoft.ContainerService/managedClusters \
+        --resource "$CLUSTER_NAME" &>/dev/null
+
+    az lock create \
+        --lock-type CanNotDelete \
+        --name "${VNET_NAME}"-lock \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-type Microsoft.Network/virtualNetworks \
+        --resource "$VNET_NAME" &>/dev/null
+fi
+
+#######################################################################################
 ### END
 ###
 
@@ -979,6 +988,8 @@ if [ "$RADIX_ZONE" == "c2" ] || [ "$RADIX_ZONE" == "prod" ]; then
     wait # wait for subshell to finish
     echo ""
 fi
+
+
 
 echo ""
 echo "Bootstrap of \"${CLUSTER_NAME}\" done!"

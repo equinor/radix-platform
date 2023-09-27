@@ -25,7 +25,7 @@ function stopcluster() {
         STATUS=$(jq -n "${list}" | jq -r .powerstate)
         if [ "$STATUS" = "Running" ]; then
             printf "Stopping cluster $CLUSTER\n"
-            az aks stop --name $CLUSTER --resource-group $CGROUP --no-wait
+            az aks stop --name $CLUSTER --resource-group $CGROUP --subscription "16ede44b-1f74-40a5-b428-46cca9a5741b" --no-wait
             curl -s -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Action: Stopping cluster '"$CLUSTER"'"}' "$SLACK_WEBHOOK_URL" > /dev/null
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
@@ -39,7 +39,7 @@ function startcluster() {
         SCHEDULE=$(jq -n "${list}" | jq -r .autostartupschedule)
         if [[ "$STATUS" != "Running" && "$SCHEDULE" = "true" ]]; then
             printf "Starting cluster $CLUSTER\n"
-            az aks start --name $CLUSTER --resource-group $CGROUP --no-wait
+            az aks start --name $CLUSTER --resource-group $CGROUP --subscription "16ede44b-1f74-40a5-b428-46cca9a5741b" --no-wait
             curl -s -X POST -H 'Content-type: application/json' --data '{"text":"GitHub Action: Starting cluster '"$CLUSTER"'"}' "$SLACK_WEBHOOK_URL" > /dev/null
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
@@ -47,8 +47,8 @@ function startcluster() {
 
 
 
-CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") | not) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code, autostartupschedule: .tags.autostartupschedule}]}]')
-SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_SLACK_WEBHOOK" | jq -r .value)"
+CLUSTERS=$(az aks list --subscription "16ede44b-1f74-40a5-b428-46cca9a5741b" -ojson | jq '[{k8s:[.[] | select(.name | startswith("playground") | not) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code, autostartupschedule: .tags.autostartupschedule}]}]')
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_SLACK_WEBHOOK" --subscription "16ede44b-1f74-40a5-b428-46cca9a5741b" | jq -r .value)"
 echo -e "   ------------------------------------------------------------------"
 printf '%s %s\n' "   -  DATE                             : $(date)"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
