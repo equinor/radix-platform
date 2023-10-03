@@ -17,7 +17,7 @@ Head to the [public website](https://www.radix.equinor.com/) and check the guide
 
 Contact us on Equinor Slack on [#omnia_radix_support](https://equinor.slack.com/messages/CBKM6N2JY/). We are also available on [#omnia_radix](https://equinor.slack.com/messages/C8U7XGGAJ/) for general inquires.
 
-Bugs and feature requests can be submitted using the [issue tracker in this repo](https://github.com/equinor/radix-platform/issues). If you are external to Equinor, the issue tracker is for now the best way to get in touch, too.
+Bugs and feature requests can be submitted using the [issue tracker in this repo](https://github.com/equinor/radix/issues). If you are external to Equinor, the issue tracker is for now the best way to get in touch, too.
 
 ## Develop or deploy Radix
 
@@ -30,10 +30,6 @@ We are moving fast and making changes, so portions of the documentation will be 
 ## Code
 
 All of our source code for the platform is on [GitHub repositories prefixed with _radix-_](https://github.com/equinor?utf8=%E2%9C%93&q=radix-). You need to be a member of the _Omnia Radix Readers_ group to have access to some private repositories (we are still working on open-sourcing all parts of Radix). Contact us to get access.
-
-## DevOps
-
-We have a [Azure DevOps board](https://dev.azure.com/Equinor/Radix) for tracking progress in the team. Right now this is internal for the team only.
 
 ## Visuals
 
