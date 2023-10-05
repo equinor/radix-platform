@@ -9,7 +9,7 @@ We love your input! We want to make contributing to this project as easy and tra
 
 This is how you should do it:
 
-Use our [issue list](./issues) to report a **bug** or **propose a new feature**, including
+Use our [issue list](../../issues) to report a **bug** or **propose a new feature**, including
 
 ### For **bug report**  
 - A quick summary and/or background
