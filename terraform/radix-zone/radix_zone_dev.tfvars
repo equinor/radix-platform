@@ -81,6 +81,45 @@ AZ_PRIVATE_DNS_ZONES = [
   "private.radix.equinor.com"
 ]
 
+#To do
+#Alphabetical order
+#######################################################################################
+### Managed Identities
+###
+
+managed_identity = {
+  "radix-logicapp-operator-dev" = {
+    name = "radix-logicapp-operator-dev"
+  }
+}
+
+#######################################################################################
+### Log Analytics
+###
+
+loganalytics = {
+  "s941-northeurope-diagnostics" = {
+    name             = "s941-northeurope-diagnostics"
+    rg_name          = "logs-dev"
+    managed_identity = true
+  }
+}
+
+#######################################################################################
+### Logic Apps
+###
+
+logic_app_workflow = {
+  "archive-s941-northeurope-diagnostics-playground" = {
+    name                  = "archive-s941-northeurope-diagnostics"
+    managed_identity_name = "radix-logicapp-operator-dev"
+    loganalytics          = "s941-northeurope-diagnostics"
+    storageaccount        = "radixflowlogsplayground"
+    folder                = "playground"
+  }
+}
+
+
 #######################################################################################
 ### Resouce Groups
 ###
@@ -136,9 +175,10 @@ storage_accounts = {
     backup_center = true
   }
   "radixflowlogsplayground" = {
-    name          = "radixflowlogsplayground"
-    rg_name       = "Logs-Dev"
-    backup_center = true
+    name             = "radixflowlogsplayground"
+    rg_name          = "Logs-Dev"
+    backup_center    = true
+    managed_identity = true
   }
   "s941radixinfra" = {
     name                            = "s941radixinfra"

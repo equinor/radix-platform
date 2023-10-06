@@ -81,6 +81,36 @@ AZ_PRIVATE_DNS_ZONES = [
   "private.radix.equinor.com"
 ]
 
+#To do
+#Alphabetical order
+#######################################################################################
+### Managed Identities
+###
+
+managed_identity = {
+  "radix-logicapp-operator-prod" = {
+    name = "radix-logicapp-operator-prod"
+  }
+}
+
+#######################################################################################
+### Log Analytics
+###
+
+loganalytics = {
+  "s940-northeurope-diagnostics" = {
+    name             = "s940-northeurope-diagnostics"
+    rg_name          = "logs"
+    managed_identity = true
+  }
+  "s940-westeurope-diagnostics" = {
+    name             = "s940-westeurope-diagnostics"
+    rg_name          = "logs-westeurope"
+    managed_identity = true
+  }
+}
+
+
 #######################################################################################
 ### Resouce Groups
 ###
@@ -167,12 +197,14 @@ storage_accounts = {
     location      = "westeurope"
     backup_center = true
     life_cycle    = false
+    managed_identity = true
   }
   "radixflowlogsprod" = {
     name          = "radixflowlogsprod"
     rg_name       = "Logs"
     backup_center = true
     life_cycle    = false
+    managed_identity = true
   }
   "s940radixinfra" = {
     name             = "s940radixinfra"
