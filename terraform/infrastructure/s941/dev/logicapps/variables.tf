@@ -13,7 +13,7 @@ variable "logic_app_workflow" {
   type = map(object({
     name                  = string
     location              = optional(string, "northeurope")
-    rg_name               = optional(string, "Logs-Dev")
+    rg_name               = string
     managed_identity_name = string
     loganalytics          = string
     storageaccount        = string
@@ -26,8 +26,7 @@ variable "managed_identity" {
   description = "Managed Identity"
   type = map(object({
     name    = string
-    rg_name = optional(string, "Logs-Dev")
-
+    rg_name = string
   }))
   default = {}
 }

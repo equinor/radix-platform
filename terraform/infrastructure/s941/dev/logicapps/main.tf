@@ -17,7 +17,6 @@ locals {
       loganalytics       = logic_app_workflow_value.loganalytics
       storageaccount     = logic_app_workflow_value.storageaccount
       folder             = logic_app_workflow_value.folder
-      #test = join("", ["foo", "bar"])
     }
   }]...)
 
