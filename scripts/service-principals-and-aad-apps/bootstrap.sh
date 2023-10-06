@@ -122,7 +122,9 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 echo -e "   -  AZ_SYSTEM_USER_DNS                       : $AZ_SYSTEM_USER_DNS"
-echo -e "   -  MI_GITHUB_MAINTENANCE                    : ${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
+    echo -e "   -  MI_GITHUB_MAINTENANCE                    : ${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+fi
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -164,34 +166,36 @@ fi
 ### Create managed identity
 ###
 
-permission=(
-    "Microsoft.Authorization/roleAssignments/write"
-    "Microsoft.ContainerService/managedClusters/write"
-    "Microsoft.Insights/dataCollectionRuleAssociations/write"
-    "Microsoft.Insights/dataCollectionRules/read"
-    "Microsoft.Insights/dataCollectionRules/write"
-    "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action"
-    "Microsoft.Network/dnszones/A/read"
-    "Microsoft.Network/dnszones/A/write"
-    "Microsoft.Network/publicIPAddresses/join/action"
-    "Microsoft.Network/virtualNetworks/subnets/join/action"
-    "Microsoft.OperationalInsights/workspaces/read"
-    "Microsoft.OperationalInsights/workspaces/sharedKeys/action"
-    "Microsoft.OperationalInsights/workspaces/sharedkeys/read"
-    "Microsoft.OperationsManagement/solutions/read"
-    "Microsoft.OperationsManagement/solutions/write"
-)
-permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
-
-scopes=(
-    "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-    "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
-    "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
-)
-scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
-
-role_name="radix-maintenance"
+# Create MI and role for move custom ingress action
 if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
+    permission=(
+        "Microsoft.Authorization/roleAssignments/write"
+        "Microsoft.ContainerService/managedClusters/write"
+        "Microsoft.Insights/dataCollectionRuleAssociations/write"
+        "Microsoft.Insights/dataCollectionRules/read"
+        "Microsoft.Insights/dataCollectionRules/write"
+        "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action"
+        "Microsoft.Network/dnszones/A/read"
+        "Microsoft.Network/dnszones/A/write"
+        "Microsoft.Network/publicIPAddresses/join/action"
+        "Microsoft.Network/virtualNetworks/subnets/join/action"
+        "Microsoft.OperationalInsights/workspaces/read"
+        "Microsoft.OperationalInsights/workspaces/sharedKeys/action"
+        "Microsoft.OperationalInsights/workspaces/sharedkeys/read"
+        "Microsoft.OperationsManagement/solutions/read"
+        "Microsoft.OperationsManagement/solutions/write"
+    )
+    permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
+
+    scopes=(
+        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
+        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
+    )
+    scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
+
+    role_name="radix-maintenance"
+
     create-az-role "${role_name}" "Permission needed for cluster maintenance" "$permission_json" "$scopes_json"
     create_managed_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
     create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
