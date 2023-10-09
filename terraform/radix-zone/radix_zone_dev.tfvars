@@ -101,7 +101,7 @@ managed_identity = {
 loganalytics = {
   "s941-northeurope-diagnostics" = {
     name             = "s941-northeurope-diagnostics"
-    rg_name          = "logs-dev"
+    rg_name          = "Logs-dev"
     managed_identity = true
   }
 }
