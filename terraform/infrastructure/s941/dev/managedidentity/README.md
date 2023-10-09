@@ -20,20 +20,3 @@ Run below commands to destroy
 # Will destroy main.tf
 terraform destroy --var-file=../../../../radix-zone/radix_zone_dev.tfvars
 ```
-Variants of query:
-  # }
-  # dynamic "identity" {
-  #   for_each = var.identity != null ? [var.identity] : []
-
-  #   content {
-  #     type         = identity.value["type"]
-  #     identity_ids = identity.value["identity_ids"]
-  #   }
-  # }
-  #  dynamic "identity" {
-  #   for_each = each.value["identity"] != null ? [each.value["identity"]] : []
-  #   content {
-  #     type                         = identity.value["type"]
-  #   }
-    
-
