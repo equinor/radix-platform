@@ -9,18 +9,18 @@ variable "managed_identity" {
 
 variable "storage_accounts" {
   type = map(object({
-    name                              = string                          # Mandatory
-    rg_name                           = string                          # Mandatory
-    managed_identity                  = optional(bool, false)
+    name             = string
+    rg_name          = string
+    managed_identity = optional(bool, false)
   }))
   default = {}
 }
 
 variable "loganalytics" {
   type = map(object({
-    name                              = string                          # Mandatory
-    rg_name                           = string                          # Mandatory
-    managed_identity                  = optional(bool, false)
+    name             = string
+    rg_name          = string
+    managed_identity = optional(bool, false)
   }))
   default = {}
 }
