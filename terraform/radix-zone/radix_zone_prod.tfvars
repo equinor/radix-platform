@@ -90,6 +90,7 @@ AZ_PRIVATE_DNS_ZONES = [
 managed_identity = {
   "radix-logicapp-operator-prod" = {
     name = "radix-logicapp-operator-prod"
+    rg_name = "Logs"
   }
 }
 
@@ -100,12 +101,12 @@ managed_identity = {
 loganalytics = {
   "s940-northeurope-diagnostics" = {
     name             = "s940-northeurope-diagnostics"
-    rg_name          = "logs"
+    rg_name          = "Logs"
     managed_identity = true
   }
   "s940-westeurope-diagnostics" = {
     name             = "s940-westeurope-diagnostics"
-    rg_name          = "logs-westeurope"
+    rg_name          = "Logs-westeurope"
     managed_identity = true
   }
 }
