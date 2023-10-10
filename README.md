@@ -17,7 +17,9 @@ Head to the [public website](https://www.radix.equinor.com/) and check the guide
 
 Contact us on Equinor Slack on [#omnia_radix_support](https://equinor.slack.com/messages/CBKM6N2JY/). We are also available on [#omnia_radix](https://equinor.slack.com/messages/C8U7XGGAJ/) for general inquires.
 
-Bugs and feature requests can be submitted using the [issue tracker in this repo](https://github.com/equinor/radix/issues). If you are external to Equinor, the issue tracker is for now the best way to get in touch, too.
+
+Bugs and feature requests can be submitted using the [issue tracker in this repo](https://github.com/equinor/radix-platform/issues). If you are external to Equinor, read these [**contributing**](./contributing.md) guidelines.
+
 
 ## Develop or deploy Radix
 
@@ -35,3 +37,6 @@ All of our source code for the platform is on [GitHub repositories prefixed with
 
 Font: [Raleway](https://www.fontsquirrel.com/fonts/raleway)  
 Logo: See [./logo/radix.svg](./logo/radix.svg)
+
+## Security
+[Security information](./security.md)
