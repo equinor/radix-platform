@@ -1,0 +1,21 @@
+name: lock-resources
+on:
+  schedule:
+    - cron: '0 18 * * *'
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  lock-clusters:
+    runs-on: ubuntu-latest
+    environment: lock-operations-dev
+    steps:
+      - uses: actions/checkout@v3 #Clone Repo
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: lock-resources
+        run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env .github/workflows/scripts/check_resource_lock.sh

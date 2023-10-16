@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 #######################################################################################
 ### PURPOSE
 ###
@@ -8,29 +7,32 @@
 # Library for often used service principal functions.
 # -
 
-
 #######################################################################################
 ### Check for prerequisites binaries
 ###
 
 printf "Check for neccesary executables for \"$(basename ${BASH_SOURCE[0]})\"... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting... " >&2;  exit 1; }
+hash az 2>/dev/null || {
+    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+    exit 1
+}
+hash jq 2>/dev/null || {
+    echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
+    exit 1
+}
 printf "Done.\n"
-
 
 #######################################################################################
 ### FUNCTIONS
 ###
 
-
 function update_service_principal_credentials_in_az_keyvault() {
-    local name              # Input 1, string
-    local id                # Input 2, string
-    local password          # Input 3, string
-    local description       # Input 4, string, optional
-    local secret_id         # Input 5, string, optional
-    local expiration_date   # Input 6, string, optional
+    local name            # Input 1, string
+    local id              # Input 2, string
+    local password        # Input 3, string
+    local description     # Input 4, string, optional
+    local secret_id       # Input 5, string, optional
+    local expiration_date # Input 6, string, optional
     local tmp_file_path
     local template_path
     local script_dir_path
@@ -42,7 +44,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     secret_id="$5"
     expiration_date="$6"
     tenantId="$(az ad sp show --id ${id} --query appOwnerOrganizationId --output tsv)"
-    script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     template_path="${script_dir_path}/template-credentials.json"
 
     if [ ! -e "$template_path" ]; then
@@ -53,13 +55,13 @@ function update_service_principal_credentials_in_az_keyvault() {
     # Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
     tmp_file_path="${script_dir_path}/${name}.json"
     cat "$template_path" | jq -r \
-    --arg name "${name}" \
-    --arg id "${id}" \
-    --arg password "${password}" \
-    --arg description "${description}" \
-    --arg tenantId "${tenantId}" \
-    --arg secretId "${secret_id}" \
-    '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId | .secretId=$secretId' > "$tmp_file_path"
+        --arg name "${name}" \
+        --arg id "${id}" \
+        --arg password "${password}" \
+        --arg description "${description}" \
+        --arg tenantId "${tenantId}" \
+        --arg secretId "${secret_id}" \
+        '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId | .secretId=$secretId' >"$tmp_file_path"
 
     # show result
     # cat "${tmp_file_path}"
@@ -75,15 +77,14 @@ function update_service_principal_credentials_in_az_keyvault() {
     rm -rf "$tmp_file_path"
 }
 
-
 function update_app_credentials_in_az_keyvault() {
-    local name              # Input 1, string
-    local id                # Input 2, string
-    local password          # Input 3, string
-    local description       # Input 4, string, optional
-    local secret_id         # Input 5, string, optional
-    local expiration_date   # Input 6, string, optional
-    local keyvault          # Input 7, string 
+    local name            # Input 1, string
+    local id              # Input 2, string
+    local password        # Input 3, string
+    local description     # Input 4, string, optional
+    local secret_id       # Input 5, string, optional
+    local expiration_date # Input 6, string, optional
+    local keyvault        # Input 7, string
     local tmp_file_path
     local template_path
     local script_dir_path
@@ -96,7 +97,7 @@ function update_app_credentials_in_az_keyvault() {
     expiration_date="$6"
     keyvault="$7"
     # tenantId="$(az ad app show --id ${id} --query appOwnerOrganizationId --output tsv)"
-    script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     template_path="${script_dir_path}/template-credentials.json"
 
     if [ ! -e "$template_path" ]; then
@@ -107,13 +108,13 @@ function update_app_credentials_in_az_keyvault() {
     # Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
     tmp_file_path="${script_dir_path}/${name}.json"
     cat "$template_path" | jq -r \
-    --arg name "${name}" \
-    --arg id "${id}" \
-    --arg password "${password}" \
-    --arg description "${description}" \
-    --arg tenantId "" \
-    --arg secretId "${secret_id}" \
-    '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId | .secretId=$secretId' > "$tmp_file_path"
+        --arg name "${name}" \
+        --arg id "${id}" \
+        --arg password "${password}" \
+        --arg description "${description}" \
+        --arg tenantId "" \
+        --arg secretId "${secret_id}" \
+        '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId | .secretId=$secretId' >"$tmp_file_path"
 
     # show result
     # cat "${tmp_file_path}"
@@ -131,8 +132,8 @@ function update_app_credentials_in_az_keyvault() {
 }
 
 function update_ad_app_owners() {
-    local name              # Input 1
-    local ad_group          # Input 2, optional
+    local name     # Input 1
+    local ad_group # Input 2, optional
     local ad_group_users
     local app_owners
     local user_object_id
@@ -161,7 +162,7 @@ function update_ad_app_owners() {
             az ad app owner add --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
             printf " Done.\n"
         fi
-    done <<< "${ad_group_users}"
+    done <<<"${ad_group_users}"
     unset IFS
 
     while IFS=$'\t' read -r -a line; do
@@ -172,7 +173,7 @@ function update_ad_app_owners() {
             az ad app owner remove --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
             printf " Done.\n"
         fi
-    done <<< "${app_owners}"
+    done <<<"${app_owners}"
     unset IFS
     printf " Done.\n"
 }
@@ -180,8 +181,8 @@ function update_ad_app_owners() {
 function update_service_principal_owners() {
     # As the Azure CLI does not support adding or removing owners to a service principal (enterprise application), it is possible to send a request to Microsoft Graph rest API.
     # https://docs.microsoft.com/en-us/graph/api/serviceprincipal-post-owners?view=graph-rest-1.0
-    local name              # Input 1
-    local ad_group          # Input 2, optional
+    local name     # Input 1
+    local ad_group # Input 2, optional
     local ad_group_users
     local sp_owners
     local user_object_id
@@ -212,7 +213,7 @@ function update_service_principal_owners() {
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
             printf " Done.\n"
         fi
-    done <<< "${ad_group_users}"
+    done <<<"${ad_group_users}"
     unset IFS
 
     while IFS=$'\t' read -r -a line; do
@@ -224,7 +225,7 @@ function update_service_principal_owners() {
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
             printf " Done.\n"
         fi
-    done <<< "${sp_owners}"
+    done <<<"${sp_owners}"
     unset IFS
 
     printf " Done.\n"
@@ -232,8 +233,8 @@ function update_service_principal_owners() {
 
 function create_service_principal_and_store_credentials() {
 
-    local name          # Input 1
-    local description   # Input 2, optional
+    local name        # Input 1
+    local description # Input 2, optional
     local password
     local id
 
@@ -244,7 +245,7 @@ function create_service_principal_and_store_credentials() {
 
     # Skip creation if the sp exist
     local testSP
-    testSP="$(az ad sp list --display-name "${name}" --query [].appId --output tsv 2> /dev/null)"
+    testSP="$(az ad sp list --display-name "${name}" --query [].appId --output tsv 2>/dev/null)"
     if [ -z "$testSP" ]; then
         printf "creating ${name}..."
         password="$(az ad sp create-for-rbac --name "${name}" --query password --output tsv)"
@@ -275,25 +276,32 @@ function create_app_registration_and_service_principal() {
 
     name="$1"
 
-    if [[ -z ${1:+x} ]]
-    then
+    if [[ -z ${1:+x} ]]; then
         echo "ERROR: Missing required argument #1 for app name. Quitting..." >&2
         return 1
     fi
 
     printf "\nCreate AAD app registration and service principal "${name}"... "
     app_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].appId -o tsv)"
-    if [[ -z $app_id ]]
-    then
+    if [[ -z $app_id ]]; then
         printf "creating app registration... "
         app_id=$(az ad app create --display-name $name --query appId -o tsv) || return
+
+        app_objectId=$(az ad app list \
+            --filter "displayName eq '$name'" \
+            --query [].id --output tsv)
+
+        az rest \
+            --method patch \
+            --url "https://graph.microsoft.com/v1.0/applications/${app_objectId}" \
+            --headers 'Content-Type=application/json' \
+            --body "{\"serviceManagementReference\":\"${SERVICE_MANAGEMENT_REFERENCE}\"}"
     else
         printf "app registration already exist... "
     fi
 
     sp_id=$(az ad sp list --filter "appId eq '$app_id'" --query [].id -o tsv)
-    if [[ -z $sp_id ]]
-    then
+    if [[ -z $sp_id ]]; then
         printf "creating service principal... "
         az ad sp create --id $app_id -o none --only-show-errors || return
     else
@@ -304,13 +312,13 @@ function create_app_registration_and_service_principal() {
 }
 
 function set_app_registration_identifier_uris {
-    local name # Input 1, string
+    local name            # Input 1, string
     local identifier_uris # Input 2, string, optional. If omitted, sets the identifier uri to api://{appId}
     local app_id
 
     name="$1"
     identifier_uris="$2"
-    
+
     printf "\nUpdating identifierUris for app "${name}"... "
 
     app_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].appId -o tsv)"
@@ -319,7 +327,7 @@ function set_app_registration_identifier_uris {
         return 1
     fi
 
-    if [ -z ${2+x} ]; then 
+    if [ -z ${2+x} ]; then
         identifier_uris="api://${app_id}"
     fi
 
@@ -333,7 +341,7 @@ function set_app_registration_identifier_uris {
 }
 
 function set_app_registration_api_scopes {
-    local name # Input 1, string
+    local name   # Input 1, string
     local scopes # Input 2, string
 
     name="$1"
@@ -343,34 +351,31 @@ function set_app_registration_api_scopes {
     printf "\nUpdating oauth2PermissionScopes for app "${name}"... "
 
     app_obj_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].id -o tsv)"
-    if [[ -z $app_obj_id ]]
-    then
+    if [[ -z $app_obj_id ]]; then
         echo "ERROR: Could not find app registration "${name}". Quitting..." >&2
         return 1
     fi
 
     current_scopes=$(az ad app show --id $app_obj_id --query api.oauth2PermissionScopes)
-    if [[ -z $current_scopes ]]
-    then
+    if [[ -z $current_scopes ]]; then
         echo "ERROR: Failed to read oauth2PermissionScopes for app "${name}". Quitting..." >&2
         return 1
     fi
 
-    iterate_scopes=$(jq -c .[] <<< $scopes) || return
+    iterate_scopes=$(jq -c .[] <<<$scopes) || return
 
     while read -r scope; do
-        current_scope=$(jq --argjson scope "$scope" '.[] | select((.value | ascii_downcase) == ($scope.value | ascii_downcase))' <<< $current_scopes) || return
-        sanitized_scope=$(jq '{value,type,isEnabled,userConsentDescription,userConsentDisplayName,adminConsentDescription,adminConsentDisplayName}' <<< $scope) || return
-        
-        if [[ -z $current_scope ]]
-        then
+        current_scope=$(jq --argjson scope "$scope" '.[] | select((.value | ascii_downcase) == ($scope.value | ascii_downcase))' <<<$current_scopes) || return
+        sanitized_scope=$(jq '{value,type,isEnabled,userConsentDescription,userConsentDisplayName,adminConsentDescription,adminConsentDisplayName}' <<<$scope) || return
+
+        if [[ -z $current_scope ]]; then
             uuid=$(python3 -c 'import uuid; print(uuid.uuid1())') || return
-            new_scope=$(jq --arg uuid "$uuid" '. + {"id":$uuid}' <<< $sanitized_scope) || return
+            new_scope=$(jq --arg uuid "$uuid" '. + {"id":$uuid}' <<<$sanitized_scope) || return
         else
-            new_scope=$(jq --argjson sanitized_scope "$sanitized_scope" '. + $sanitized_scope' <<< $current_scope) || return
+            new_scope=$(jq --argjson sanitized_scope "$sanitized_scope" '. + $sanitized_scope' <<<$current_scope) || return
         fi
-    
-        new_scopes=$(jq --argjson new_scope "$new_scope" '.? + [$new_scope]' <<< $new_scopes) || return
+
+        new_scopes=$(jq --argjson new_scope "$new_scope" '.? + [$new_scope]' <<<$new_scopes) || return
     done < <(echo "${iterate_scopes[@]}")
 
     patch=$(jq -n --argjson new_scopes "$new_scopes" '{"api":{"oauth2PermissionScopes":$new_scopes}}' .) || return
@@ -426,8 +431,8 @@ function create_oidc_and_federated_credentials() {
 
     #printf "Update owners of service principal..."
     update_service_principal_owners "${APP_NAME}"
-    script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    config=$(envsubst < "${script_dir_path}/oidc.json")
+    script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    config=$(envsubst <"${script_dir_path}/oidc.json")
     printf "Checking if federated identity credential already exists..."
     fic=$(echo "$config" | jq '.federatedCredential')
 
@@ -460,7 +465,7 @@ function create_oidc_and_federated_credentials() {
         role=$(echo "$ra" | jq -r '.role')
         scope=$(echo "$ra" | jq -r '.scope')
         #echo "Assigning role '$role' at scope '$scope'..."
-        az role assignment create --role Contributor --subscription ${SUBSCRIPTION_ID} --assignee-object-id ${sp_id} --assignee-principal-type ServicePrincipal --scope "${scope}" --output none 2>&1 > /dev/null
+        az role assignment create --role Contributor --subscription ${SUBSCRIPTION_ID} --assignee-object-id ${sp_id} --assignee-principal-type ServicePrincipal --scope "${scope}" --output none 2>&1 >/dev/null
         printf " Done.\n"
     done
 
@@ -469,8 +474,8 @@ function create_oidc_and_federated_credentials() {
 
 function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 
-    local name          # Input 1
-    local description   # Input 2, optional
+    local name        # Input 1
+    local description # Input 2, optional
     local password
     local id
 
@@ -493,8 +498,8 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 
 function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
-    local name          # Input 1
-    local description   # Input 2, optional
+    local name        # Input 1
+    local description # Input 2, optional
     local password
     local id
 
@@ -548,7 +553,7 @@ function delete_ad_app_and_stored_credentials() {
     printf "Done.\n"
 }
 
-function exit_if_user_does_not_have_required_ad_role(){
+function exit_if_user_does_not_have_required_ad_role() {
     # Based on https://docs.microsoft.com/en-us/graph/api/rbacapplication-list-roleassignments?view=graph-rest-1.0
     # There is no azcli way of doing this, just powershell or rest api, so we will have to query the graph api.
     local currentUserRoleAssignment
@@ -556,8 +561,8 @@ function exit_if_user_does_not_have_required_ad_role(){
     printf "Checking if you have required AZ AD role active..."
     currentUserRoleAssignment="$(az rest \
         --method GET \
-        --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" \
-        | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
+        --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" |
+        jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
 
     if [[ -z "$currentUserRoleAssignment" ]]; then
         echo "You must activate AZ AD role \"Application Developer\" in PIM before using this script. Exiting..." >&2
@@ -572,17 +577,17 @@ function wait_for_pim_app_developer_role() {
     printf "Checking if you have required AZ AD role active..."
     currentUserRoleAssignment="$(az rest \
         --method GET \
-        --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" \
-        | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
-    
+        --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" |
+        jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
+
     if [[ -z "$currentUserRoleAssignment" ]]; then
         printf "\n\"Application Developer\" in PIM not actived. Please do and wait for the progress dots\n"
         printf "Waiting."
         while [[ -z "$currentUserRoleAssignment" ]]; do
             currentUserRoleAssignment="$(az rest \
                 --method GET \
-                --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" \
-                | jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
+                --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\$filter=roleDefinitionId eq 'cf1c38e5-3621-4004-a7cb-879624dced7c'&\$expand=principal" |
+                jq '.value[] | select(.principalId=="'$(az ad signed-in-user show --query id -otsv)'")')"
             printf "."
             sleep 5
         done
