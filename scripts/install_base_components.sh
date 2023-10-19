@@ -388,5 +388,5 @@ wait
 ###
 
 echo ""
-printf "%s%s%s\n" "${yel}" "Install of base components is done!" "${normal}"
+printf "%s Install of base components is done! %s\n" "${yel}" "${normal}"
 echo ""

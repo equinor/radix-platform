@@ -106,20 +106,42 @@ function create_role_assignment_for_identity() {
         --output tsv \
         2>/dev/null)"
     if [ "${testID}" ]; then
-        testRA="$(az role assignment list --assignee ${id_name} --subscription ${AZ_SUBSCRIPTION_ID} --all --query "[?roleDefinitionName=='${role_name}']" --output tsv 2>/dev/null)"
-        if [ -z "${testRA}" ]; then
-            az role assignment create \
-                --role "${role_name}" \
-                --assignee "${testID}" \
-                --scope "${scope}" \
-                --output none \
-                --only-show-errors
-            printf "Done.\n"
-        else
-            printf "exists, skipping.\n"
-        fi
+        assign_role "$id_name" "$role_name" "$scope" "$testID"
     else
         printf "missing identity.\n"
+    fi
+}
+
+function assign_role() {
+    local id_name=$1
+    local role_name=$2
+    local scope=$3
+    local testID=$4
+
+    local id="${testID}"
+
+    if [[ -z $id ]]; then
+        id=$(az ad app list --filter "displayName eq '$id_name'" --query [].appId --output tsv)
+    fi
+
+    testRA="$(az role assignment list \
+        --assignee "${id}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --all \
+        --query "[?roleDefinitionName=='${role_name}']" \
+        --output tsv 2>/dev/null)"
+
+    printf "Assigning \"%s\" to \"%s\"... " "${role_name}" "${id_name}"
+    if [ -z "${testRA}" ]; then
+        az role assignment create \
+            --role "${role_name}" \
+            --assignee "${id}" \
+            --scope "${scope}" \
+            --output none \
+            --only-show-errors
+        printf "Done.\n"
+    else
+        printf "exists, skipping.\n"
     fi
 }
 
