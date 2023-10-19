@@ -2,6 +2,8 @@ name: lock-resources
 on:
   schedule:
     - cron: '0 18 * * *'
+  workflow_dispatch:
+
 permissions:
   id-token: write
   contents: read
