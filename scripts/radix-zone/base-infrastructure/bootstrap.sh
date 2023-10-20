@@ -115,6 +115,13 @@ if [[ ! -f "$AD_APP_MANIFEST_PATH" ]]; then
     exit 1
 fi
 
+
+update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
+if [[ -f "$update_app_registration_permissions" ]]; then
+    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
+    exit 1
+fi
+
 #######################################################################################
 ### Prepare az session
 ###
@@ -190,21 +197,6 @@ if [[ $USER_PROMPT == true ]]; then
         esac
     done
 fi
-
-
-#######################################################################################
-### App registration permissions
-###
-
-function update_app_registrations(){
-    update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
-    if [[ -f "$update_app_registration_permissions" ]]; then
-        echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
-        exit 1
-    else
-        source "$update_app_registration_permissions"
-    fi
-}
 
 #######################################################################################
 ### Resource groups
@@ -649,7 +641,6 @@ function update_acr_whitelist() {
 ### MAIN
 ###
 
-update_app_registrations
 create_resource_groups
 create_common_resources
 create_outbound_public_ip_prefix
