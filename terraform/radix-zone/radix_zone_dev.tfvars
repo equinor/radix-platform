@@ -78,7 +78,8 @@ AZ_PRIVATE_DNS_ZONES = [
   "privatelink.mysql.database.azure.com",
   "privatelink.mariadb.database.azure.com",
   "privatelink.vaultcore.azure.net",
-  "private.radix.equinor.com"
+  "private.radix.equinor.com",
+  "privatelink.azurecr.io"
 ]
 
 #To do
