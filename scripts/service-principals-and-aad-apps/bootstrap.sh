@@ -213,7 +213,7 @@ if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
     assign_role "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "Reader" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.KeyVault/vaults/${AZ_RESOURCE_KEYVAULT}"
 
     #TODO: This doesn't work, the policy is not created :( @Sondre
-    set-kv-policy "$(az ad app list --filter "displayName eq '$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR'" | jq '.[].id' -r)" "get"
+    set-kv-policy "$(az ad app list --filter "displayName eq '$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR'" | jq -r '.[].appId')" "get"
 
     create_github_maintenance_mi
 fi
