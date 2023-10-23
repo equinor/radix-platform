@@ -101,8 +101,8 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-# exit_if_user_does_not_have_required_ad_role
-# check_for_ad_owner_role
+exit_if_user_does_not_have_required_ad_role
+check_for_ad_owner_role
 
 #######################################################################################
 ### Verify task at hand
@@ -153,66 +153,66 @@ fi
 ### Create service principal
 ###
 
-# create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
-# create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
-# create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
+create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
+create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
+create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
 
 #######################################################################################
 ### Create managed identity
 ###
 
-# create_github_maintenance_mi() {
-#     permission=(
-#         "Microsoft.Authorization/roleAssignments/write"
-#         "Microsoft.ContainerService/managedClusters/write"
-#         "Microsoft.Insights/dataCollectionRuleAssociations/write"
-#         "Microsoft.Insights/dataCollectionRules/read"
-#         "Microsoft.Insights/dataCollectionRules/write"
-#         "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action"
-#         "Microsoft.Network/dnszones/A/read"
-#         "Microsoft.Network/dnszones/A/write"
-#         "Microsoft.Network/publicIPAddresses/join/action"
-#         "Microsoft.Network/virtualNetworks/subnets/join/action"
-#         "Microsoft.OperationalInsights/workspaces/read"
-#         "Microsoft.OperationalInsights/workspaces/sharedKeys/action"
-#         "Microsoft.OperationalInsights/workspaces/sharedkeys/read"
-#         "Microsoft.OperationsManagement/solutions/read"
-#         "Microsoft.OperationsManagement/solutions/write"
-#     )
-#     permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
+create_github_maintenance_mi() {
+    permission=(
+        "Microsoft.Authorization/roleAssignments/write"
+        "Microsoft.ContainerService/managedClusters/write"
+        "Microsoft.Insights/dataCollectionRuleAssociations/write"
+        "Microsoft.Insights/dataCollectionRules/read"
+        "Microsoft.Insights/dataCollectionRules/write"
+        "Microsoft.ManagedIdentity/userAssignedIdentities/assign/action"
+        "Microsoft.Network/dnszones/A/read"
+        "Microsoft.Network/dnszones/A/write"
+        "Microsoft.Network/publicIPAddresses/join/action"
+        "Microsoft.Network/virtualNetworks/subnets/join/action"
+        "Microsoft.OperationalInsights/workspaces/read"
+        "Microsoft.OperationalInsights/workspaces/sharedKeys/action"
+        "Microsoft.OperationalInsights/workspaces/sharedkeys/read"
+        "Microsoft.OperationsManagement/solutions/read"
+        "Microsoft.OperationsManagement/solutions/write"
+    )
+    permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
 
-#     scopes=(
-#         "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-#         "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
-#         "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
-#     )
-#     scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
+    scopes=(
+        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
+        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
+    )
+    scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
 
-#     role_name="radix-maintenance"
+    role_name="radix-maintenance"
 
-#     create-az-role "${role_name}" "Permission needed for cluster maintenance" "$permission_json" "$scopes_json"
-#     create_managed_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
-#     create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-#     create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-#     create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
-#     create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
-#     add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master" "maintenance-${RADIX_ENVIRONMENT}"
+    create-az-role "${role_name}" "Permission needed for cluster maintenance" "$permission_json" "$scopes_json"
+    create_managed_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+    create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+    create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+    create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}"
+    create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
+    add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master" "maintenance-${RADIX_ENVIRONMENT}"
 
-#     MI_ID=$(az ad sp list --display-name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --query [].appId --output tsv)
-#     gh_federated_credentials "radix-flux" "${MI_ID}" "${AZ_SUBSCRIPTION_ID}" "maintenance-${RADIX_ENVIRONMENT}"
-# }
+    MI_ID=$(az ad sp list --display-name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --query [].appId --output tsv)
+    gh_federated_credentials "radix-flux" "${MI_ID}" "${AZ_SUBSCRIPTION_ID}" "maintenance-${RADIX_ENVIRONMENT}"
+}
 
 #######################################################################################
 ### Create OIDC
 ###
 
 if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
-    # create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operations"
-    # create_oidc_and_federated_credentials "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "lock-operations-dev"
-    # assign_role "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "Omnia Authorization Locks Operator" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-    # assign_role "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "Reader" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.KeyVault/vaults/${AZ_RESOURCE_KEYVAULT}"
+    create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operations"
+    create_oidc_and_federated_credentials "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "lock-operations-dev"
+    assign_role "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "Omnia Authorization Locks Operator" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
+    assign_role "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "Reader" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.KeyVault/vaults/${AZ_RESOURCE_KEYVAULT}"
     set-kv-policy "$(az ad sp list --filter "displayname eq '$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR'" | jq -r .[].id)" "get"
-    # create_github_maintenance_mi
+    create_github_maintenance_mi
 fi
 
 #######################################################################################
