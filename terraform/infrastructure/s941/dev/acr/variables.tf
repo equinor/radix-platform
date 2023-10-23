@@ -8,6 +8,10 @@ variable "AZ_LOCATION" {
   type        = string
 }
 
+variable "AZ_SUBSCRIPTION_ID" {
+  type = string
+}
+
 variable "RADIX_ENVIRONMENT" {
   description = "Radix Environment"
   type        = string
@@ -15,16 +19,30 @@ variable "RADIX_ENVIRONMENT" {
 
 variable "private_link" {
   description = "Subnet connection."
-  type = map(object({
+  type        = map(object({
     linkname = string
   }))
   default = null
 }
-
-variable "vnet_rg_names" {
-  type = map(any)
+variable "virtual_networks" {
+  type = map(object({
+    rg_name = string
+  }))
   default = {
-    dev        = "cluster-vnet-hub-dev"
-  #  playground = "cluster-vnet-hub-playground"
+    "dev" = {
+      rg_name = "cluster-vnet-hub-dev"
+    }
+    "playground" = {
+      rg_name = "cluster-vnet-hub-playground"
+    }
   }
+}
+
+variable "AZ_RESOURCE_GROUP_CLUSTERS" {
+  type = string
+}
+
+variable "K8S_ENVIROMENTS" {
+  description = "A list of cluster enviroments"
+  type        = list(string)
 }

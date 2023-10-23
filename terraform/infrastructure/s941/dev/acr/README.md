@@ -3,7 +3,8 @@
 - Get cache ACR up and running
   - [x] Set up Cache ACR
   - [x] Make sure our DNS zone have a records to ACR and Storage (needs 2 IP addresses)
-  - [ ] Make sure our DNS zone have a link to both the vnet hub, and AKS vnet
+  - [x] Make sure our DNS zone have a link to both the vnet hub, and AKS vnet
+  - [ ] Add loops for all clusters
   - [ ] Figgure out a way to get credentials from our Identity in to Kubernetes secrets
   - [ ] Move other ACRs in to Terraform 
 
