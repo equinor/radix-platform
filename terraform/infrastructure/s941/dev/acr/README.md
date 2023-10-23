@@ -5,8 +5,8 @@
   - [x] Make sure our DNS zone have a records to ACR and Storage (needs 2 IP addresses)
   - [x] Make sure our DNS zone have a link to both the vnet hub, and AKS vnet
   - [X] Add loops for all clusters
+  - [X] ~~App Registration or~~ **ACR Token w/Scope map** 
   - [ ] Figgure out a way to get credentials from our Identity in to Kubernetes secrets
-  - [ ] Move other ACRs in to Terraform 
 
 ## How to use (locally)
 
