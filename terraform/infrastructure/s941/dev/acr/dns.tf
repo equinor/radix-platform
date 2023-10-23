@@ -40,7 +40,7 @@ data "azurerm_virtual_network" "vnet" {
 resource "azurerm_private_dns_zone_virtual_network_link" "link" {
   for_each = data.azurerm_virtual_network.vnet
 
-  name                  = "${each.value.name}-link"
+  name                  = each.key # Cluster Name
   private_dns_zone_name = "privatelink.azurecr.io"
   resource_group_name   = var.virtual_networks[local.clusterEnvironment[each.key]].rg_name
   virtual_network_id    = each.value.id
