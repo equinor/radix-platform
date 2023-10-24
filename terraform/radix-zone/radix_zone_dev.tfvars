@@ -88,8 +88,8 @@ AZ_PRIVATE_DNS_ZONES = [
 ###
 
 managed_identity = {
-  "radix-logicapp-operator-dev" = {
-    name    = "radix-logicapp-operator-dev"
+  "id-radix-logicapp-operator-dev" = {
+    name    = "id-radix-logicapp-operator-dev"
     rg_name = "Logs-Dev"
   }
 }
@@ -111,10 +111,10 @@ loganalytics = {
 ###
 
 logic_app_workflow = {
-  "archive-s941-northeurope-diagnostics-playground" = {
+  "archive-s941-northeurope-diagnostics" = {
     name                  = "archive-s941-northeurope-diagnostics"
     rg_name               = "Logs-Dev"
-    managed_identity_name = "radix-logicapp-operator-dev"
+    managed_identity_name = "id-radix-logicapp-operator-dev"
     loganalytics          = "s941-northeurope-diagnostics"
     storageaccount        = "radixflowlogsplayground"
     folder                = "playground"

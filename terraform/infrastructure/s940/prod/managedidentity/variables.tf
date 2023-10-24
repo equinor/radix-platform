@@ -2,7 +2,7 @@ variable "managed_identity" {
   type = map(object({
     name     = string
     location = optional(string, "northeurope")
-    rg_name  = optional(string, "Logs")
+    rg_name  = string
   }))
   default = {}
 }

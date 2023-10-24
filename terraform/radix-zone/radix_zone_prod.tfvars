@@ -88,9 +88,14 @@ AZ_PRIVATE_DNS_ZONES = [
 ###
 
 managed_identity = {
-  "radix-logicapp-operator-prod" = {
-    name = "radix-logicapp-operator-prod"
+  "id-radix-logicapp-operator-prod" = {
+    name = "id-radix-logicapp-operator-prod"
     rg_name = "Logs"
+  }
+  "id-radix-logicapp-operator-c2" = {
+    name = "id-radix-logicapp-operator-c2"
+    location = "westeurope"
+    rg_name = "logs-westeurope"
   }
 }
 
@@ -106,8 +111,33 @@ loganalytics = {
   }
   "s940-westeurope-diagnostics" = {
     name             = "s940-westeurope-diagnostics"
-    rg_name          = "Logs-westeurope"
+    rg_name          = "logs-westeurope"
     managed_identity = true
+  }
+}
+
+
+#######################################################################################
+### Logic Apps
+###
+
+logic_app_workflow = {
+  "archive-s940-northeurope-diagnostics" = {
+    name                  = "archive-s940-northeurope-diagnostics"
+    rg_name               = "Logs"
+    managed_identity_name = "id-radix-logicapp-operator-prod"
+    loganalytics          = "s940-northeurope-diagnostics"
+    storageaccount        = "radixflowlogsprod"
+    folder                = "prod"
+  }
+  "archive-s940-westeurope-diagnostics" = {
+    name                  = "archive-s940-westeurope-diagnostics"
+    location              = "westeurope"
+    rg_name               = "logs-westeurope"
+    managed_identity_name = "id-radix-logicapp-operator-c2"
+    loganalytics          = "s940-westeurope-diagnostics"
+    storageaccount        = "radixflowlogsc2prod"
+    folder                = "c2"
   }
 }
 
