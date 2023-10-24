@@ -59,6 +59,11 @@ resource "azurerm_key_vault_secret" "secret" {
   name            = "radix-buildah-repo-cache-secret-${each.key}"
   value           = azurerm_container_registry_token_password.password[each.key].password1[0].value
   expiration_date = timeadd(plantimestamp(), var.ACR_TOKEN_LIFETIME)
+  tags            = {
+    "rotate-strategy" = "Manually recreate password1 in ACR, and copy secret to cluster"
+    "source-token"    = "buildah-cache-${each.key}"
+    "source-acr"      = azurerm_container_registry.acr[each.key].name
+  }
 
   lifecycle {
     ignore_changes = [expiration_date]
