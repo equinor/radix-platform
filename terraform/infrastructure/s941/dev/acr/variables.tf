@@ -46,3 +46,16 @@ variable "K8S_ENVIROMENTS" {
   description = "A list of cluster enviroments"
   type        = list(string)
 }
+
+variable "key_vault_by_k8s_environment" {
+  description = "Name of Keyvault."
+  type        = map(object({
+    name    = string
+    rg_name = string
+  }))
+  default = {}
+}
+
+variable "ACR_TOKEN_LIFETIME" {
+  type = string
+}

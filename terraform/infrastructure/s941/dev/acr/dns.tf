@@ -4,7 +4,7 @@ locals {
     startswith( lower(cluster.name), "weekly-" ) ? "dev" :
     startswith(lower( cluster.name), "playground-") ? "playground" :
     startswith(lower( cluster.name), "eu-") ? "prod" :
-    startswith(lower( cluster.name), "c2-") ? "prod" : "unknown"
+    startswith(lower( cluster.name), "c2-") ? "c2" : "unknown"
   }
 }
 output "clusters" {
