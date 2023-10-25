@@ -12,11 +12,6 @@ variable "AZ_SUBSCRIPTION_ID" {
   type = string
 }
 
-variable "RADIX_ENVIRONMENT" {
-  description = "Radix Environment"
-  type        = string
-}
-
 variable "private_link" {
   description = "Subnet connection."
   type        = map(object({

@@ -9,8 +9,6 @@ The AKS Bootstraping/Migration script will *also* copy the secret from the key v
 
 Changes here must be reflected in the relevant scripts.
 
-
-
 ## How to use (locally)
 
 1. cluster name will be the same as folder name

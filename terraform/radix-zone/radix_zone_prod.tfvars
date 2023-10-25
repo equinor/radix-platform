@@ -471,4 +471,4 @@ GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations"
 
-ACR_TOKEN_LIFETIME = "4380h" # Aprox. 6 months
+ACR_TOKEN_LIFETIME = "9000h" # Aprox. 12 months

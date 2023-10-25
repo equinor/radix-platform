@@ -1,25 +1,3 @@
-locals {
-  clusterEnvironment = {
-    for cluster in data.azurerm_kubernetes_cluster.k8s : cluster.name =>
-    startswith( lower(cluster.name), "weekly-" ) ? "dev" :
-    startswith(lower( cluster.name), "playground-") ? "playground" :
-    startswith(lower( cluster.name), "eu-") ? "prod" :
-    startswith(lower( cluster.name), "c2-") ? "c2" : "unknown"
-  }
-}
-output "clusters" {
-  value = local.clusterEnvironment
-}
-data "azurerm_virtual_network" "k8s" {
-  for_each = data.azurerm_kubernetes_cluster.k8s
-
-  name                = "vnet-${each.value.name}"
-  resource_group_name = var.AZ_RESOURCE_GROUP_CLUSTERS
-}
-
-
-# Create Private DNS Zone
-
 resource "azurerm_private_dns_zone" "zone" {
   for_each = toset(var.K8S_ENVIROMENTS)
 
