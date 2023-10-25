@@ -46,7 +46,9 @@ locals {
     }
   }
 
-  config = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => base64encode(v.kube_admin_config_raw)}
+  nodeCount = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => sum(v.agent_pool_profile[*].count)}
+
+  config = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => base64encode(v.kube_config_raw)}
 
   secret = {
     for k, v in data.azurerm_kubernetes_cluster.k8s : k => base64encode(<<-EOF
@@ -76,7 +78,9 @@ locals {
 
 resource "null_resource" "create_token" {
   triggers = { always_run = "${timestamp()}" }
-  for_each = data.azurerm_kubernetes_cluster.k8s
+
+  # Dont try to exec on clusters that are off, it will fail
+  for_each = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => v if local.nodeCount[k] > 0}
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]

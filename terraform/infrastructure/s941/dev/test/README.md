@@ -1,15 +1,4 @@
-# ACR Buildah Cache Setup
-
-**IMPORTANT**: This script will recreate passwords to he container registry, 
-it might take a few seconds before the secrets are available in the cluster, 
-and it might cause some downime for Buildah.
-
-The generated password is uploaded to a Azure Key Vault, and inserted into the cluster.
-The AKS Bootstraping/Migration script will *also* copy the secret from the key vault to the cluster.
-
-Changes here must be reflected in the relevant scripts.
-
-
+# TEST Folder to test random terraform stuff
 
 ## How to use (locally)
 

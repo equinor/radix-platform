@@ -46,7 +46,7 @@ AZ_SUBSCRIPTION_SHORTNAME = "s941"
 AAD_RADIX_GROUP = "radix"
 
 #######################################################################################
-### System users
+### user assigned identities
 ###
 
 MI_AKSKUBELET = [
@@ -64,6 +64,8 @@ MI_AKS = [
     object_id = "7112e202-51f7-4fd2-b6a1-b944f14f0be3"
   }
 ]
+
+# Private DNS Zones
 
 AZ_PRIVATE_DNS_ZONES = [
   "privatelink.database.windows.net",
