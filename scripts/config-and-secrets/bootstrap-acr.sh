@@ -90,6 +90,8 @@ printf "Done.\n"
 ###
 verify_cluster_access
 
+printf "Installing registry sp secret in k8s cluster...\n"
+
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
     --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
@@ -115,5 +117,29 @@ kubectl create secret docker-registry radix-docker \
     kubectl apply -f -
 
 rm -f sp_credentials.json
+
+printf "\nDone\n"
+
+### Adding buildah cache repo secret
+
+printf "Installing Buildah cache registry secret in k8s cluster...\n"
+
+az keyvault secret download \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --name "${AZ_SYSTEM_USER_CACHE_REGISTRY_SECRET_KEY}" \
+    --file acr_password.json
+
+# create secret for authenticating to ACR via buildah client (same value as other ACR secret)
+acr_password="$(cat acr_password.json )"
+
+kubectl create secret docker-registry radix-buildah-cache-repo \
+    --docker-server="$AZ_RESOURCE_CACHE_REGISTRY.azurecr.io" \
+    --docker-username="$AZ_SYSTEM_USER_CACHE_REGISTRY_USERNAME" \
+    --docker-password="$acr_password" \
+    --docker-email=not@used.com \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+kubectl annotate secret radix-buildah-cache-repo kubed.appscode.com/sync="radix-env=app" --overwrite
+rm -f acr_password.json
 
 printf "\nDone\n"
