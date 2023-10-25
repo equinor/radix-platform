@@ -32,31 +32,3 @@ resource "azurerm_private_endpoint" "acr_dev" {
     private_dns_zone_ids = [azurerm_private_dns_zone.zone[each.key].id]
   }
 }
-
-
-# Access control
-
-resource "azurerm_user_assigned_identity" "acr_id" {
-  for_each = toset(var.K8S_ENVIROMENTS)
-
-  name                = "id_radix_acr_cache-${each.value}-${var.AZ_LOCATION}"
-  location            = var.AZ_LOCATION
-  resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
-}
-
-resource "azurerm_role_assignment" "RADIX_ACR_CACHE_PULL" {
-  for_each = toset(var.K8S_ENVIROMENTS)
-
-  principal_id                     = azurerm_user_assigned_identity.acr_id[each.key].principal_id
-  scope                            = azurerm_container_registry.acr[each.key].id
-  role_definition_name             = "AcrPull"
-  skip_service_principal_aad_check = true
-}
-resource "azurerm_role_assignment" "RADIX_ACR_CACHE_PUSH" {
-  for_each = toset(var.K8S_ENVIROMENTS)
-
-  principal_id                     = azurerm_user_assigned_identity.acr_id[each.key].principal_id
-  scope                            = azurerm_container_registry.acr[each.key].id
-  role_definition_name             = "AcrPush"
-  skip_service_principal_aad_check = true
-}
