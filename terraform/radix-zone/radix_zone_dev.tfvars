@@ -177,15 +177,20 @@ storage_accounts = {
     backup_center = true
   }
   "radixflowlogsplayground" = {
-    name             = "radixflowlogsplayground"
-    rg_name          = "Logs-Dev"
-    backup_center    = true
-    managed_identity = true
+    name                 = "radixflowlogsplayground"
+    rg_name              = "Logs-Dev"
+    backup_center        = true
+    managed_identity     = true
+    life_cycle           = true
+    life_cycle_version   = 3
+    life_cycle_blob      = 90
+    life_cycle_blob_cool = 7
   }
   "s941radixinfra" = {
     name                            = "s941radixinfra"
     rg_name                         = "s941-tfstate"
     backup_center                   = true
+    life_cycle                      = false
     repl                            = "RAGRS"
     allow_nested_items_to_be_public = false
     create_with_rbac                = true

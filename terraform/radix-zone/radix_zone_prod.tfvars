@@ -227,23 +227,31 @@ storage_accounts = {
     rg_name       = "logs-westeurope"
     location      = "westeurope"
     backup_center = true
-    life_cycle    = false
     managed_identity = true
+    life_cycle           = true
+    life_cycle_version   = 3
+    life_cycle_blob      = 90
+    life_cycle_blob_cool = 7
   }
   "radixflowlogsprod" = {
     name          = "radixflowlogsprod"
     rg_name       = "Logs"
     backup_center = true
-    life_cycle    = false
     managed_identity = true
+    life_cycle           = true
+    life_cycle_version   = 3
+    life_cycle_blob      = 90
+    life_cycle_blob_cool = 7
   }
   "s940radixinfra" = {
     name             = "s940radixinfra"
     rg_name          = "s940-tfstate"
     repl             = "RAGRS"
+    life_cycle       = true
     backup_center    = true
     firewall         = false
     create_with_rbac = true
+    life_cycle_blob = 0
   }
   "s940radixveleroc2" = {
     name             = "s940radixveleroc2"

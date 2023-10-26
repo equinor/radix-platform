@@ -43,6 +43,9 @@ variable "storage_accounts" {
     versioning_enabled                = optional(bool, true)
     change_feed_enabled               = optional(bool, true)
     change_feed_days                  = optional(number, 35)
+    life_cycle_version                = optional(number, 60)
+    life_cycle_blob                   = optional(number, 90)
+    life_cycle_blob_cool              = optional(number, 30)
     create_with_rbac                  = optional(bool, false)
     private_endpoint                  = optional(bool, false)
   }))
@@ -73,18 +76,18 @@ variable "resource_groups" {
   default = {}
 }
 
-variable "private_link" {
-  description = "Subnet connection."
-  type = map(object({
-    linkname = string
-  }))
-  default = null
-}
+# variable "private_link" {
+#   description = "Subnet connection."
+#   type = map(object({
+#     linkname = string
+#   }))
+#   default = null
+# }
 
-variable "resource_groups" {
-  type = map(object({
-    name     = string                          # Mandatory
-    location = optional(string, "northeurope") # Optional
-  }))
-  default = {}
-}
+# variable "resource_groups" {
+#   type = map(object({
+#     name     = string                          # Mandatory
+#     location = optional(string, "northeurope") # Optional
+#   }))
+#   default = {}
+# }
