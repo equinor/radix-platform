@@ -54,23 +54,13 @@ locals {
     for k, v in data.azurerm_kubernetes_cluster.k8s : k => base64encode(<<-EOF
         apiVersion: v1
         data:
-          .dockerconfigjson: ${base64encode(jsonencode({
-              auths = {
-                local.auth[k].server = {
-                  "username" = local.auth[k].user
-                  "password" = local.auth[k].pass
-                  "email"    = "not@used.com"
-                  "auth"     = base64encode("${local.auth[k].user}:${local.auth[k].pass}")
-                }
-              }
-            }))}
+          username: ${base64encode(local.auth[k].user)}
+          password: ${base64encode(local.auth[k].pass)}
         kind: Secret
         metadata:
           name: radix-buildah-cache-repo
           namespace: default
-          annotations:
-            kubed.appscode.com/sync: "radix-env=app"
-        type: kubernetes.io/dockerconfigjson
+        type: Opaque
         EOF
     )
   }

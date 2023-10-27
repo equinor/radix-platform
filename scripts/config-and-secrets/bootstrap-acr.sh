@@ -132,14 +132,11 @@ az keyvault secret download \
 # create secret for authenticating to ACR via buildah client (same value as other ACR secret)
 acr_password="$(cat acr_password.json )"
 
-kubectl create secret docker-registry radix-buildah-cache-repo \
-    --docker-server="$AZ_RESOURCE_CACHE_REGISTRY.azurecr.io" \
-    --docker-username="$AZ_SYSTEM_USER_CACHE_REGISTRY_USERNAME" \
-    --docker-password="$acr_password" \
-    --docker-email=not@used.com \
+kubectl create secret generic radix-buildah-cache-repo \
+    --from-literal="username=$AZ_SYSTEM_USER_CACHE_REGISTRY_USERNAME" \
+    --from-literal="password=$acr_password" \
     --dry-run=client -o yaml |
     kubectl apply -f -
-kubectl annotate secret radix-buildah-cache-repo kubed.appscode.com/sync="radix-env=app" --overwrite
 rm -f acr_password.json
 
 printf "\nDone\n"
