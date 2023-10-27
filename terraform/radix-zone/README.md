@@ -66,3 +66,6 @@ testRA:
 /subscriptions/939950ec-da7e-4349-8b8d-77d9c278af04/providers/Microsoft.Authorization/policyAssignments/Kubernetes-vnets-in-dev
 
 /subscriptions/939950ec-da7e-4349-8b8d-77d9c278af04/providers/Microsoft.Authorization/policyDefinitions/Kubernetes-vnets-in-dev
+
+
+az network vnet peering list --resource-group clusters --vnet-name vnet-weekly-dr-test --query "[].id" --output tsv
