@@ -523,7 +523,7 @@ VNET_ID="$(az network vnet show \
     --output tsv)"
 
 echo ""
-printf "Checking if %s are associated with %s" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
+printf "Checking if %s are associated with %s\n" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
 printf "Waiting for %s to get associated with %s..." "$VNET_NAME" "$AZ_VNET_HUB_NAME"
 while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
     printf "."

@@ -20,7 +20,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix_zone_dev.env ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix_zone_dr.env ./bootstrap.sh
 
 #######################################################################################
 ### START
@@ -124,7 +124,7 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-exit_if_user_does_not_have_required_ad_role
+# exit_if_user_does_not_have_required_ad_role
 
 #######################################################################################
 ### Verify task at hand
@@ -235,7 +235,7 @@ function create_common_resources() {
 
     printf "Set access policy for group \"Radix Platform Operators\" in key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
     az keyvault set-policy \
-        --object-id "$(az ad group show --group "Radix Platform Operators" --query objectId --output tsv --only-show-errors)" \
+        --object-id "$(az ad group show --group "Radix Platform Operators" --query id --output tsv --only-show-errors)" \
         --name "${AZ_RESOURCE_KEYVAULT}" \
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
@@ -649,24 +649,24 @@ function update_acr_whitelist() {
 ### MAIN
 ###
 
-update_app_registrations
-create_resource_groups
+# update_app_registrations
+# create_resource_groups
 create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
-update_acr_whitelist
-create_base_system_users_and_store_credentials
-create_servicenow_proxy_server_app_registration
-update_app_registration
+# update_acr_whitelist
+# create_base_system_users_and_store_credentials
+# create_servicenow_proxy_server_app_registration
+# update_app_registration
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
-create_acr_tasks
+# create_acr_tasks
 set_permissions_on_dns
-create_dns_role_definition_for_cert_manager
+# create_dns_role_definition_for_cert_manager
 create_log_analytics_workspace
 set_permissions_on_log_analytics_workspace
-create_sql_logs_storageaccount
+# create_sql_logs_storageaccount
 
 #######################################################################################
 ### END

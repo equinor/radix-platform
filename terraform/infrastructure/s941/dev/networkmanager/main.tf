@@ -10,7 +10,9 @@ data "azurerm_resource_group" "rg_group" {
   name = "clusters"
 }
 
-data "azurerm_subscription" "current" {}
+data "azurerm_subscription" "current" {
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+}
 
 resource "azurerm_network_manager" "networkmanager" {
   name                = "${var.AZ_SUBSCRIPTION_SHORTNAME}-ANVM"
@@ -53,4 +55,16 @@ resource "azurerm_network_manager_connectivity_configuration" "config" {
     resource_id   = data.azurerm_virtual_network.vnet-hub[each.key].id
     resource_type = "Microsoft.Network/virtualNetworks"
   }
+}
+
+resource "azurerm_subscription_policy_assignment" "assign_vnets_in_zone_policy" {
+  for_each = azurerm_network_manager_network_group.group
+  name = data.azurerm_policy_definition.vnets_in_zone_policy[each.key].name
+  policy_definition_id = data.azurerm_policy_definition.vnets_in_zone_policy[each.key].id
+  subscription_id      = data.azurerm_subscription.current.id
+}
+
+data "azurerm_policy_definition" "vnets_in_zone_policy" {
+  for_each     = toset(var.K8S_ENVIROMENTS)
+  name         = "Kubernetes-vnets-in-${each.key}"
 }

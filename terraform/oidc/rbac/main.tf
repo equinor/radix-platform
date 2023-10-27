@@ -114,7 +114,7 @@ resource "azurerm_storage_account" "SA_INFRASTRUCTURE" {
 }
 
 resource "azurerm_storage_container" "SA_INFRASTRUCTURE_CONTAINER_CLUSTERS" {
-  for_each             = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"] }
+  for_each             = azurerm_storage_account.SA_INFRASTRUCTURE
   storage_account_name = each.value["name"]
   name                 = "clusters"
 }
