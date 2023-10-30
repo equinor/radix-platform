@@ -374,6 +374,8 @@ firewall_rules = {
   }
 }
 
+EQUINOR_WIFI_IP_CIDR = "143.97.110.1/32"
+
 KV_RADIX_VAULT = "radix-vault-dev"
 
 private_link = {

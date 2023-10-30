@@ -93,13 +93,13 @@ AZ_PRIVATE_DNS_ZONES = [
 
 managed_identity = {
   "id-radix-logicapp-operator-prod" = {
-    name = "id-radix-logicapp-operator-prod"
+    name    = "id-radix-logicapp-operator-prod"
     rg_name = "Logs"
   }
   "id-radix-logicapp-operator-c2" = {
-    name = "id-radix-logicapp-operator-c2"
+    name     = "id-radix-logicapp-operator-c2"
     location = "westeurope"
-    rg_name = "logs-westeurope"
+    rg_name  = "logs-westeurope"
   }
 }
 
@@ -431,6 +431,8 @@ firewall_rules = {
     end_ip_address   = "0.0.0.0"
   }
 }
+
+EQUINOR_WIFI_IP_CIDR = "143.97.110.1/32"
 
 KV_RADIX_VAULT = "radix-vault-prod"
 

@@ -54,3 +54,8 @@ variable "key_vault_by_k8s_environment" {
 variable "ACR_TOKEN_LIFETIME" {
   type = string
 }
+
+variable "EQUINOR_WIFI_IP_CIDR" {
+  description = "Range of IP addresses to allow firewall connections."
+  type        = string
+}

@@ -9,7 +9,17 @@ resource "azurerm_container_registry" "app" {
   admin_enabled           = false
   anonymous_pull_enabled  = false
 
-  public_network_access_enabled = false
+  public_network_access_enabled = true
+
+  network_rule_set {
+    default_action = "Deny"
+    ip_rule        = [
+      {
+        action   = "Allow"
+        ip_range = var.EQUINOR_WIFI_IP_CIDR
+      }
+    ]
+  }
 }
 
 resource "azurerm_private_endpoint" "acr_app" {
