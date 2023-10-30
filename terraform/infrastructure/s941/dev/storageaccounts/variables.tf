@@ -75,27 +75,3 @@ variable "resource_groups" {
   }))
   default = {}
 }
-
-# variable "virtual_networks" {
-#   type = map(object({
-#     name    = optional(string, "vnet-hub")
-#     rg_name = string
-#   }))
-#   default = {}
-# }
-
-# variable "private_link" {
-#   description = "Subnet connection."
-#   type = map(object({
-#     linkname = string
-#   }))
-#   default = null
-# }
-
-# variable "resource_groups" {
-#   type = map(object({
-#     name     = string                          # Mandatory
-#     location = optional(string, "northeurope") # Optional
-#   }))
-#   default = {}
-# }

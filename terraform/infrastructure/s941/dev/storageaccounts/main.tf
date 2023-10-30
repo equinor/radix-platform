@@ -134,7 +134,7 @@ resource "azurerm_private_endpoint" "northeurope" {
 
 }
 
-# ## DNS 
+## DNS 
 resource "azurerm_private_dns_a_record" "dns_a_northeurope" {
   for_each            = { for key in compact([for key, value in local.privatelink_dns_record : value.private_endpoint ? key : ""]) : key => local.privatelink_dns_record[key] }
   name                = each.value["name"]
@@ -145,9 +145,9 @@ resource "azurerm_private_dns_a_record" "dns_a_northeurope" {
   depends_on          = [azurerm_private_endpoint.northeurope]
 }
 
-# #######################################################################################
-# ### Role assignment
-# ###
+#######################################################################################
+### Role assignment
+###
 
 resource "azurerm_role_assignment" "northeurope" {
   for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
@@ -157,9 +157,9 @@ resource "azurerm_role_assignment" "northeurope" {
   depends_on           = [azurerm_storage_account.storageaccounts]
 }
 
-# #######################################################################################
-# ### Blob Protection
-# ###
+#######################################################################################
+### Blob Protection
+###
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
   for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
@@ -171,9 +171,9 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
   depends_on         = [azurerm_role_assignment.northeurope]
 }
 
-# #######################################################################################
-# ### Management Policy
-# ###
+#######################################################################################
+### Management Policy
+###
 
 resource "azurerm_storage_management_policy" "sapolicy" {
   for_each           = { for key in compact([for key, value in var.storage_accounts : value.life_cycle ? key : ""]) : key => var.storage_accounts[key] }
@@ -207,9 +207,9 @@ resource "azurerm_storage_management_policy" "sapolicy" {
   }
 }
 
-# #######################################################################################
-# ### Protection Vault
-# ###
+#######################################################################################
+### Protection Vault
+###
 
 resource "azurerm_data_protection_backup_vault" "northeurope" {
   name                = "${var.AZ_SUBSCRIPTION_SHORTNAME}-backupvault-${var.AZ_LOCATION}"
@@ -223,9 +223,9 @@ resource "azurerm_data_protection_backup_vault" "northeurope" {
   }
 }
 
-# #######################################################################################
-# ### Protection Backup Policy
-# ###
+#######################################################################################
+### Protection Backup Policy
+###
 
 resource "azurerm_data_protection_backup_policy_blob_storage" "northeurope" {
   name               = "${var.AZ_SUBSCRIPTION_SHORTNAME}-backuppolicy-${var.AZ_LOCATION}"
