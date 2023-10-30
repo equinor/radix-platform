@@ -8,6 +8,11 @@ variable "AZ_SUBSCRIPTION_ID" {
   type        = string
 }
 
+variable "AZ_LOCATION" {
+  description = "Azure location"
+  type        = string
+}
+
 variable "K8S_ENVIROMENTS" {
   description = "A list of cluster enviroments"
   type        = list(string)

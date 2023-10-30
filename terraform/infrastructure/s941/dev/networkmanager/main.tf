@@ -58,13 +58,21 @@ resource "azurerm_network_manager_connectivity_configuration" "config" {
 }
 
 resource "azurerm_subscription_policy_assignment" "assign_vnets_in_zone_policy" {
-  for_each = azurerm_network_manager_network_group.group
-  name = data.azurerm_policy_definition.vnets_in_zone_policy[each.key].name
+  for_each             = azurerm_network_manager_network_group.group
+  name                 = data.azurerm_policy_definition.vnets_in_zone_policy[each.key].name
   policy_definition_id = data.azurerm_policy_definition.vnets_in_zone_policy[each.key].id
   subscription_id      = data.azurerm_subscription.current.id
 }
 
 data "azurerm_policy_definition" "vnets_in_zone_policy" {
-  for_each     = toset(var.K8S_ENVIROMENTS)
-  name         = "Kubernetes-vnets-in-${each.key}"
+  for_each = toset(var.K8S_ENVIROMENTS)
+  name     = "Kubernetes-vnets-in-${each.key}"
+}
+
+resource "azurerm_network_manager_deployment" "connectivity_topology" {
+  for_each           = toset(var.K8S_ENVIROMENTS)
+  network_manager_id = azurerm_network_manager.networkmanager.id
+  location           = var.AZ_LOCATION
+  scope_access       = "Connectivity"
+  configuration_ids  = [azurerm_network_manager_connectivity_configuration.config[each.key].id]
 }
