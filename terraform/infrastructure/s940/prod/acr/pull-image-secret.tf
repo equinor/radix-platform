@@ -1,16 +1,16 @@
-resource "azurerm_container_registry_token" "acr" {
+resource "azurerm_container_registry_token" "app_acr" {
   for_each = toset(var.K8S_ENVIROMENTS)
 
-  name                    = "buildah-cache-${each.key}"
+  name                    = "radix-app-registry-secret-${each.key}"
   resource_group_name     = var.AZ_RESOURCE_GROUP_COMMON
-  scope_map_id            = "${azurerm_container_registry.acr[each.key].id}/scopeMaps/_repositories_admin"
-  container_registry_name = azurerm_container_registry.acr[each.key].name
+  scope_map_id            = "${azurerm_container_registry.app[each.key].id}/scopeMaps/_repositories_admin"
+  container_registry_name = azurerm_container_registry.app[each.key].name
 }
 
 resource "azurerm_container_registry_token_password" "password" {
   for_each = toset(var.K8S_ENVIROMENTS)
 
-  container_registry_token_id = azurerm_container_registry_token.acr[each.key].id
+  container_registry_token_id = azurerm_container_registry_token.app_acr[each.key].id
   password1 {
     expiry = timeadd(plantimestamp(), var.ACR_TOKEN_LIFETIME)
   }
@@ -27,21 +27,21 @@ resource "azurerm_key_vault_secret" "secret" {
   for_each = toset(var.K8S_ENVIROMENTS)
 
   key_vault_id    = data.azurerm_key_vault.vault[each.key].id
-  name            = "radix-buildah-repo-cache-secret-${each.key}"
+  name            = "radix-app-registry-secret-${each.key}"
   value           = azurerm_container_registry_token_password.password[each.key].password1[0].value
   expiration_date = timeadd(plantimestamp(), var.ACR_TOKEN_LIFETIME)
   tags            = {
     "rotate-strategy" = "Manually recreate password1 in ACR, then copy secret to cluster"
-    "source-token"    = "buildah-cache-${each.key}"
-    "source-acr"      = azurerm_container_registry.acr[each.key].name
+    "source-token"    = "radix-app-registry-secret-${each.key}"
+    "source-acr"      = azurerm_container_registry.app[each.key].name
   }
 }
 
 locals {
   auth = {
     for k, v in data.azurerm_kubernetes_cluster.k8s : k =>{
-      server = azurerm_container_registry.acr[local.clusterEnvironment[k]].login_server
-      user   = "buildah-cache-${local.clusterEnvironment[k]}",
+      server = azurerm_container_registry.app[local.clusterEnvironment[k]].login_server
+      user   = "radix-app-registry-secret-${local.clusterEnvironment[k]}",
       pass   = azurerm_container_registry_token_password.password[local.clusterEnvironment[k]].password1[0].value
     }
   }
@@ -58,7 +58,7 @@ locals {
           password: ${base64encode(local.auth[k].pass)}
         kind: Secret
         metadata:
-          name: radix-buildah-cache-repo
+          name: radix-app-registry
           namespace: default
         type: Opaque
         EOF

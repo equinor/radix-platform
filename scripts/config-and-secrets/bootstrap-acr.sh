@@ -126,14 +126,14 @@ printf "Installing Buildah cache registry secret in k8s cluster...\n"
 
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "${AZ_SYSTEM_USER_CACHE_REGISTRY_SECRET_KEY}" \
+    --name "${AZ_SYSTEM_USER_APP_REGISTRY_SECRET_KEY}" \
     --file acr_password.json
 
 # create secret for authenticating to ACR via buildah client (same value as other ACR secret)
 acr_password="$(cat acr_password.json )"
 
-kubectl create secret generic radix-buildah-cache-repo \
-    --from-literal="username=$AZ_SYSTEM_USER_CACHE_REGISTRY_USERNAME" \
+kubectl create secret generic radix-app-registry \
+    --from-literal="username=$AZ_SYSTEM_USER_APP_REGISTRY_USERNAME" \
     --from-literal="password=$acr_password" \
     --dry-run=client -o yaml |
     kubectl apply -f -
