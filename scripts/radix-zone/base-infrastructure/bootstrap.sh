@@ -198,11 +198,9 @@ fi
 
 function update_app_registrations(){
     update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
-    if [[ -f "$update_app_registration_permissions" ]]; then
+    if [[ ! -f "$update_app_registration_permissions" ]]; then
         echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
         exit 1
-    else
-        source "$update_app_registration_permissions"
     fi
 }
 
@@ -485,7 +483,7 @@ EOF
 }
 
 function update_app_registration() {
-    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}{"api": "Azure Kubernetes Service AAD Server","permissions": ["user.read"]}{"api": "ar-radix-servicenow-proxy-server","permissions": ["Application.Read"]}' source "${update_app_registration_permissions}")
+    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" PERMISSIONS='{"api": "Microsoft Graph","permissions": ["User.Read","GroupMember.Read.All"]}{"api": "Azure Kubernetes Service AAD Server","permissions": ["user.read"]}{"api": "ar-radix-servicenow-proxy-server-dr","permissions": ["Application.Read"]}' source "${update_app_registration_permissions}")
 }
 
 # Create managed identities
@@ -495,7 +493,7 @@ function create_managed_identities_and_role_assignments() {
     create_role_assignment_for_identity \
         "${MI_AKS}" \
         "Managed Identity Operator" \
-        "$(az identity show --name ${MI_AKS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query id 2>/dev/null)"
+        "$(az identity show --name ${MI_AKS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query id --output tsv 2>/dev/null)"
 
     # Kubelet identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-kubelet-mi
     create_managed_identity "${MI_AKSKUBELET}"
@@ -649,16 +647,16 @@ function update_acr_whitelist() {
 ### MAIN
 ###
 
-# update_app_registrations
+update_app_registrations
 # create_resource_groups
 create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
-# update_acr_whitelist
-# create_base_system_users_and_store_credentials
+update_acr_whitelist
+create_base_system_users_and_store_credentials
 # create_servicenow_proxy_server_app_registration
-# update_app_registration
+update_app_registration
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
 # create_acr_tasks
