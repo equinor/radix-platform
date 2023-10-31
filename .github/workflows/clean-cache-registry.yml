@@ -12,37 +12,37 @@ jobs:
     runs-on: ubuntu-latest
     environment: s941
 
-  steps:
-    - uses: actions/checkout@v4
-      with:
-        repository: Azure/acr-cli
-        ref: v0.8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Azure/acr-cli
+          ref: v0.8
 
-    - uses: actions/setup-go@v4
-    - run: go version
-    - run: make binaries
+      - uses: actions/setup-go@v4
+      - run: go version
+      - run: make binaries
 
-    - name: Get GitHub Public IP
-      id: github_public_ip
-      uses: haythem/public-ip@v1.3
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        uses: haythem/public-ip@v1.3
 
-    - name: 'Az CLI login'
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Add GitHub IP to StorageAccount
-      run: az acr network-rule add --name radixdevapp --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }}
+      - name: Add GitHub IP to StorageAccount
+        run: az acr network-rule add --name radixdevapp --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }}
 
-    - name: Create ACR Token
-      run: echo "token=$(az acr login --name=radixdevapp --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
-      id: token
+      - name: Create ACR Token
+        run: echo "token=$(az acr login --name=radixdevapp --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
+        id: token
 
-    - name: Purge old cache
-      run: /bin/acr purge --registry=radixdevapp.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=12h --untagged --dry-run
+      - name: Purge old cache
+        run: /bin/acr purge --registry=radixdevapp.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=12h --untagged --dry-run
 
-    - name: Revoke GitHub IP on StorageAccount
-      run: az acr network-rule remove --name radixdevapp --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }}
+      - name: Revoke GitHub IP on StorageAccount
+        run: az acr network-rule remove --name radixdevapp --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }}
 
