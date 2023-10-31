@@ -41,7 +41,7 @@ jobs:
         id: token
 
       - name: Purge old cache
-        run: /bin/acr purge --registry=radixdevapp.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=12h --untagged --dry-run
+        run: ./bin/acr purge --registry=radixdevapp.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=12h --untagged --dry-run
 
       - name: Revoke GitHub IP on StorageAccount
         run: az acr network-rule remove --name radixdevapp --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }}
