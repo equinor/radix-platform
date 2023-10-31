@@ -49,17 +49,21 @@ AAD_RADIX_GROUP = "radix"
 ### System users
 ###
 
-MI_AKSKUBELET = [{
-  client_id = "a991a23f-13fd-433e-8e69-a6493f7aadae"
-  id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-production-northeurope"
-  object_id = "a6d8e609-ec92-4336-bc80-045b3d9e04a8"
-}]
+MI_AKSKUBELET = [
+  {
+    client_id = "a991a23f-13fd-433e-8e69-a6493f7aadae"
+    id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-production-northeurope"
+    object_id = "a6d8e609-ec92-4336-bc80-045b3d9e04a8"
+  }
+]
 
-MI_AKS = [{
-  client_id = "e9f15eab-a6c1-47e7-b840-5a2178c0995c"
-  id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-production-northeurope"
-  object_id = "3206534b-99a1-4a17-b238-5354129ccc44"
-}]
+MI_AKS = [
+  {
+    client_id = "e9f15eab-a6c1-47e7-b840-5a2178c0995c"
+    id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-production-northeurope"
+    object_id = "3206534b-99a1-4a17-b238-5354129ccc44"
+  }
+]
 
 AZ_PRIVATE_DNS_ZONES = [
   "privatelink.database.windows.net",
@@ -89,13 +93,13 @@ AZ_PRIVATE_DNS_ZONES = [
 
 managed_identity = {
   "id-radix-logicapp-operator-prod" = {
-    name = "id-radix-logicapp-operator-prod"
+    name    = "id-radix-logicapp-operator-prod"
     rg_name = "Logs"
   }
   "id-radix-logicapp-operator-c2" = {
-    name = "id-radix-logicapp-operator-c2"
+    name     = "id-radix-logicapp-operator-c2"
     location = "westeurope"
-    rg_name = "logs-westeurope"
+    rg_name  = "logs-westeurope"
   }
 }
 
@@ -223,18 +227,18 @@ resource_groups = {
 
 storage_accounts = {
   "radixflowlogsc2prod" = {
-    name          = "radixflowlogsc2prod"
-    rg_name       = "logs-westeurope"
-    location      = "westeurope"
-    backup_center = true
-    life_cycle    = false
+    name             = "radixflowlogsc2prod"
+    rg_name          = "logs-westeurope"
+    location         = "westeurope"
+    backup_center    = true
+    life_cycle       = false
     managed_identity = true
   }
   "radixflowlogsprod" = {
-    name          = "radixflowlogsprod"
-    rg_name       = "Logs"
-    backup_center = true
-    life_cycle    = false
+    name             = "radixflowlogsprod"
+    rg_name          = "Logs"
+    backup_center    = true
+    life_cycle       = false
     managed_identity = true
   }
   "s940radixinfra" = {
@@ -287,7 +291,7 @@ sql_server = {
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
     vault               = "radix-vault-c2-prod"
-    tags = {
+    tags                = {
       "displayName" = "SqlServer"
     }
     identity = false
@@ -299,7 +303,7 @@ sql_server = {
     minimum_tls_version = "Disabled"
     vault               = "radix-vault-prod"
     sku_name            = "S3"
-    tags = {
+    tags                = {
       "displayName" = "SqlServer"
     }
   }
@@ -328,7 +332,7 @@ sql_database = {
   "sql-radix-cost-allocation-c2-prod" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-c2-prod"
-    tags = {
+    tags   = {
       "displayName" = "Database"
     }
   }
@@ -336,7 +340,7 @@ sql_database = {
     name     = "sqldb-radix-cost-allocation"
     server   = "sql-radix-cost-allocation-prod"
     sku_name = "S3"
-    tags = {
+    tags     = {
       "displayName" = "Database"
     }
   }
@@ -390,6 +394,21 @@ key_vault = {
   }
 }
 
+key_vault_by_k8s_environment = {
+  "prod" = {
+    name    = "radix-vault-prod"
+    rg_name = "common"
+  }
+  "c2" = {
+    name    = "radix-vault-c2-prod"
+    rg_name = "common-westeurope"
+  }
+  "monitoring" = {
+    name    = "kv-radix-monitoring-prod"
+    rg_name = "monitoring"
+  }
+}
+
 firewall_rules = {
   "equinor-wifi" = {
     start_ip_address = "143.97.110.1"
@@ -412,6 +431,8 @@ firewall_rules = {
     end_ip_address   = "0.0.0.0"
   }
 }
+
+EQUINOR_WIFI_IP_CIDR = "143.97.110.1/32"
 
 KV_RADIX_VAULT = "radix-vault-prod"
 
@@ -451,3 +472,5 @@ SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "043e5510-738f-4c30-8b9d-ee32578c7fe8"
 GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations"
+
+ACR_TOKEN_LIFETIME = "9000h" # Aprox. 12 months
