@@ -13,7 +13,7 @@ jobs:
     environment: s941
 
   steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v4
       with:
         repository: Azure/acr-cli
         ref: v0.8
