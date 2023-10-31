@@ -19,8 +19,9 @@ jobs:
           ref: v0.8
 
       - uses: actions/setup-go@v4
-      - run: go version
-      - run: make binaries
+
+      - name: Compile ACR binary
+        run: make binaries
 
       - name: Get GitHub Public IP
         id: github_public_ip
@@ -35,7 +36,6 @@ jobs:
 
       - name: Add GitHub IP to StorageAccount
         run: az acr network-rule add --name radixdevapp --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
-
 
       - name: Create ACR Token
         run: echo "token=$(az acr login --name=radixdevapp --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
