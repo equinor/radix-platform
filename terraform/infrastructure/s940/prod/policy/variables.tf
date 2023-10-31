@@ -1,6 +1,9 @@
 variable "K8S_ENVIROMENTS" {
-  description = "A list of cluster enviroments"
-  type        = list(string)
+  description = "A map of cluster enviroments and their resource group"
+  type        = map(object({
+    name          = string
+    resourceGroup = string
+  }))
 }
 
 variable "AZ_SUBSCRIPTION_SHORTNAME" {

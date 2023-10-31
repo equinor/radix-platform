@@ -22,7 +22,10 @@ CLUSTER_TYPE                   = "development"
 RADIX_ZONE                     = "dev"
 RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
-K8S_ENVIROMENTS                = ["dev", "playground"]
+K8S_ENVIROMENTS                = {
+  "dev"        = { "name" = "dev", "resourceGroup" = "clusters" },
+  "playground" = { "name" = "playground", "resourceGroup" = "clusters" }
+}
 
 #######################################################################################
 ### Resource groups
@@ -172,6 +175,8 @@ resource_groups = {
     name = "vulnerability-scan"
   }
 }
+
+aks_clouster_resource_groups = ["clusters"]
 
 #######################################################################################
 ### Storage Accounts

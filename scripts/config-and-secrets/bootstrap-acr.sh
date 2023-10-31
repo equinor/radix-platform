@@ -122,7 +122,7 @@ printf "\nDone\n"
 
 ### Adding buildah cache repo secret
 
-printf "Installing Buildah cache registry secret in k8s cluster...\n"
+printf "Installing app registry secret in k8s cluster...\n"
 
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
