@@ -117,6 +117,7 @@ declare -A DNS_ZONE_MAP=(
     ["mysqlServer"]="privatelink.mysql.database.azure.com"
     ["mariadbServer"]="privatelink.mariadb.database.azure.com"
     ["sqlServer"]="privatelink.database.windows.net"
+    ["registry"]="privatelink.azurecr.io"
 )
 
 dns_zone=${DNS_ZONE_MAP[$TARGET_SUBRESOURCE]} 2>/dev/null # can't figure out how to properly suppress this error message
@@ -126,16 +127,16 @@ if [[ -z ${dns_zone} ]]; then
     dns_zone=${AZ_PRIVATE_DNS_ZONES[-1]}
     warning_msg=$(
         cat <<-END
-        WARNING: Target sub-resource ${TARGET_SUBRESOURCE} does not map to a private DNS zone. If an appropriate mapping is documented 
-        at https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns#azure-services-dns-zone-configuration, you can add 
-        this mapping to the logic in this script. If you proceed without a mapping, this script will not create a DNS record in our 
+        WARNING: Target sub-resource ${TARGET_SUBRESOURCE} does not map to a private DNS zone. If an appropriate mapping is documented
+        at https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns#azure-services-dns-zone-configuration, you can add
+        this mapping to the logic in this script. If you proceed without a mapping, this script will not create a DNS record in our
         Private DNS Zones to make the current FQDN of the target resource resolve to the Private Endpoint's IP address from within Radix.
-        E.g., if you create a PE to a blob containerin a storage account with FQDN radixblob.core.windows.net _without_ creating the 
+        E.g., if you create a PE to a blob containerin a storage account with FQDN radixblob.core.windows.net _without_ creating the
         appropriate record in the private DNS zone .privatelink.blob.core.windows.net, the result will be that radixblob.core.windows.net
         is resolvable outside of the Radix cluster, but _not_ inside the Radix cluster.
 
         However, a default DNS record by name of ${RESOURCE_NAME}.${dns_zone} will still be created. If you're creating
-        a PE to a service which does not resolve to a particular FQDN by default, like an Azure Load Balancer or an Azure Application 
+        a PE to a service which does not resolve to a particular FQDN by default, like an Azure Load Balancer or an Azure Application
         Gateway, this is appropriate.
 END
     )
