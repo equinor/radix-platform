@@ -10,8 +10,7 @@ permissions:
 jobs:
   purge-prod:
     runs-on: ubuntu-latest
-    environment: s941
-    if: false
+    environment: s940
     strategy:
       matrix:
         registry: [radixc2app, radixprodapp]
