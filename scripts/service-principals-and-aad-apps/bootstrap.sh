@@ -206,14 +206,19 @@ create_github_maintenance_mi() {
 ### Create OIDC
 ###
 
-if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
-    create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operations"
-    create_oidc_and_federated_credentials "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "lock-operations-dev"
+create_github_resource_lock_operator() {
+    create_oidc_and_federated_credentials "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "lock-operations-${RADIX_ENVIRONMENT}"
     assign_role "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "Omnia Authorization Locks Operator" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
     assign_role "$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR" "Reader" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.KeyVault/vaults/${AZ_RESOURCE_KEYVAULT}"
     set-kv-policy "$(az ad sp list --filter "displayname eq '$APP_REGISTRATION_RESOURCE_LOCK_OPERATOR'" | jq -r .[].id)" "get"
+}
+
+if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
+    create_oidc_and_federated_credentials "$APP_REGISTRATION_GITHUB_MAINTENANCE" "${AZ_SUBSCRIPTION_ID}" "radix-platform" "operations"
     create_github_maintenance_mi
 fi
+
+create_github_resource_lock_operator
 
 #######################################################################################
 ### END
