@@ -5,6 +5,8 @@ resource "azurerm_container_registry_token" "app_acr" {
   resource_group_name     = var.AZ_RESOURCE_GROUP_COMMON
   scope_map_id            = "${azurerm_container_registry.app[each.key].id}/scopeMaps/_repositories_admin"
   container_registry_name = azurerm_container_registry.app[each.key].name
+
+  depends_on = [azurerm_container_registry.app]
 }
 
 resource "azurerm_container_registry_token_password" "password" {
@@ -78,4 +80,5 @@ resource "null_resource" "create_token" {
     interpreter = ["/bin/bash", "-c"]
     command     = "kubectl --kubeconfig <(echo ${local.config[each.key]} | base64 --decode) apply -f <(echo ${local.secret[each.key]} | base64 --decode)"
   }
+
 }
