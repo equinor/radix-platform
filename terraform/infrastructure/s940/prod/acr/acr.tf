@@ -20,6 +20,11 @@ resource "azurerm_container_registry" "app" {
       }
     ]
   }
+
+  georeplications {
+    location                = var.resource_groups[each.value.resourceGroup].location == "northeurope" ? "westeurope" : "northeurope"
+    zone_redundancy_enabled = false
+  }
 }
 
 resource "azurerm_private_endpoint" "acr_app" {
