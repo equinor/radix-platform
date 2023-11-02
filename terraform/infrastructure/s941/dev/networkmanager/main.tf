@@ -25,20 +25,20 @@ resource "azurerm_network_manager" "networkmanager" {
 }
 
 resource "azurerm_network_manager_network_group" "group" {
-  for_each           = toset(var.K8S_ENVIROMENTS)
+  for_each           = var.K8S_ENVIROMENTS
   name               = each.key
   network_manager_id = azurerm_network_manager.networkmanager.id
   description        = "Network Group for ${each.key} virtual networks"
 }
 
 data "azurerm_virtual_network" "vnet-hub" {
-  for_each            = toset(var.K8S_ENVIROMENTS)
+  for_each            = var.K8S_ENVIROMENTS
   name                = "vnet-hub"
   resource_group_name = lookup(var.vnet_rg_names, "${each.key}", "")
 }
 
 resource "azurerm_network_manager_connectivity_configuration" "config" {
-  for_each              = toset(var.K8S_ENVIROMENTS)
+  for_each              = var.K8S_ENVIROMENTS
   name                  = "Hub-and-Spoke-${each.key}"
   description           = "Hub-and-Spoke config"
   network_manager_id    = azurerm_network_manager.networkmanager.id

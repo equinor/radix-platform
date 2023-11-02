@@ -1,25 +1,44 @@
-resource "azurerm_kubernetes_cluster" "test" {
-  location            = azurerm_resource_group.test.location
-  name                = "rihag-test-deleteme"
-  resource_group_name = azurerm_resource_group.test.name
-  dns_prefix          = "rihag-tet"
+data "azapi_resource_list" "clusters" {
+  for_each = toset(var.aks_clouster_resource_groups)
 
-  kubernetes_version = "1.26"
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  default_node_pool {
-    name       = "test"
-    vm_size    = "Standard_B4ms"
-    node_count = 1
-  }
+  type                   = "Microsoft.ContainerService/managedClusters@2023-09-01"
+  parent_id              = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourcegroups/${var.resource_groups[each.value].name}"
+  response_export_values = ["*"]
 }
 
-resource "azurerm_kubernetes_cluster_node_pool" "test" {
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.test.id
-  name                  = "user"
-  vm_size               = "Standard_B4ms"
-  node_count            = 1
+locals {
+  k8s_resources = flatten([
+    for key, resource in data.azapi_resource_list.clusters :[
+      for cluster in jsondecode(resource.output).value :
+      {
+        id : cluster.id,
+        name : cluster.name,
+        rgName : key,
+        location : cluster.location
+      }
+    ]
+  ])
 }
+
+
+data "azurerm_kubernetes_cluster" "k8s" {
+  for_each = {for cluster in local.k8s_resources : cluster.name => cluster}
+
+  name                = each.value.name
+  resource_group_name = each.value.rgName
+}
+output "clusters" {
+  value = [for c in data.azurerm_kubernetes_cluster.k8s : c.name]
+}
+
+#
+#locals {
+#  clusterEnvironment = {
+#    for cluster in data.azurerm_kubernetes_cluster.k8s : cluster.name =>
+#    startswith( lower(cluster.name), "weekly-" ) ? "dev" :
+#    startswith(lower( cluster.name), "playground-") ? "playground" :
+#    startswith(lower( cluster.name), "eu-") ? "prod" :
+#    startswith(lower( cluster.name), "c2-") ? "c2" : "unknown"
+#  }
+#}
+#

@@ -22,8 +22,11 @@ CLUSTER_TYPE                   = "production"
 RADIX_ZONE                     = "prod"
 RADIX_ENVIRONMENT              = "prod"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
-K8S_ENVIROMENTS                = ["prod", "c2"]
 
+K8S_ENVIROMENTS = {
+  "prod" = { "name" = "prod", "resourceGroup" = "clusters" },
+  "c2"   = { "name" = "c2", "resourceGroup" = "clusters-westeurope" }
+}
 #######################################################################################
 ### Resource groups
 ###
@@ -220,6 +223,8 @@ resource_groups = {
     location = "westeurope"
   }
 }
+
+aks_clouster_resource_groups = ["clusters-westeurope", "clusters"]
 
 #######################################################################################
 ### Storage Accounts

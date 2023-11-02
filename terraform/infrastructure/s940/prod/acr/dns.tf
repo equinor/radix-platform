@@ -1,8 +1,8 @@
 resource "azurerm_private_dns_zone" "zone" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   name                = "privatelink.azurecr.io"
-  resource_group_name = var.virtual_networks[each.value].rg_name
+  resource_group_name = var.virtual_networks[each.key].rg_name
 }
 
 
@@ -12,7 +12,7 @@ data "azurerm_virtual_network" "vnet" {
   for_each = data.azurerm_kubernetes_cluster.k8s
 
   name                = "vnet-${each.value.name}"
-  resource_group_name = var.AZ_RESOURCE_GROUP_CLUSTERS
+  resource_group_name = data.azurerm_kubernetes_cluster.k8s[each.key].resource_group_name
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "link" {

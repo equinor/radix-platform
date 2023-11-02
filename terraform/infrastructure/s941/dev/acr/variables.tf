@@ -33,13 +33,27 @@ variable "virtual_networks" {
   }
 }
 
+variable "aks_clouster_resource_groups" {
+  type = list(string)
+}
+variable "resource_groups" {
+  type = map(object({
+    name     = string                          # Mandatory
+    location = optional(string, "northeurope") # Optional
+  }))
+  default = {}
+}
+
 variable "AZ_RESOURCE_GROUP_CLUSTERS" {
   type = string
 }
 
 variable "K8S_ENVIROMENTS" {
-  description = "A list of cluster enviroments"
-  type        = list(string)
+  description = "A map of cluster enviroments and their resource group"
+  type        = map(object({
+    name          = string
+    resourceGroup = string
+  }))
 }
 
 variable "key_vault_by_k8s_environment" {

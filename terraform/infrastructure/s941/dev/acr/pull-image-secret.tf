@@ -1,5 +1,5 @@
 resource "azurerm_container_registry_token" "app_acr" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   name                    = "radix-app-registry-secret-${each.key}"
   resource_group_name     = var.AZ_RESOURCE_GROUP_COMMON
@@ -7,24 +7,32 @@ resource "azurerm_container_registry_token" "app_acr" {
   container_registry_name = azurerm_container_registry.app[each.key].name
 }
 
+locals {
+  currentMonth = formatdate("YYYY-MM", plantimestamp())
+  now          = timestamp()
+  today        = formatdate("YYYY-MM-DD", local.now)
+}
+
 resource "azurerm_container_registry_token_password" "password" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   container_registry_token_id = azurerm_container_registry_token.app_acr[each.key].id
   password1 {
     expiry = timeadd(plantimestamp(), var.ACR_TOKEN_LIFETIME)
   }
+
+  lifecycle { ignore_changes = [password1["expiry"]] }
 }
 
 data "azurerm_key_vault" "vault" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   name                = var.key_vault_by_k8s_environment[each.key].name
   resource_group_name = var.key_vault_by_k8s_environment[each.key].rg_name
 }
 
 resource "azurerm_key_vault_secret" "secret" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   key_vault_id    = data.azurerm_key_vault.vault[each.key].id
   name            = "radix-app-registry-secret-${each.key}"
@@ -35,6 +43,8 @@ resource "azurerm_key_vault_secret" "secret" {
     "source-token"    = "radix-app-registry-secret-${each.key}"
     "source-acr"      = azurerm_container_registry.app[each.key].name
   }
+
+  lifecycle { ignore_changes = [expiration_date] }
 }
 
 locals {
@@ -67,7 +77,7 @@ locals {
 }
 
 resource "null_resource" "create_token" {
-  triggers = { always_run = "${timestamp()}" }
+  triggers = { always_run = azurerm_key_vault_secret.secret[local.clusterEnvironment[each.key]].expiration_date }
 
   # Dont try to exec on clusters that are off, it will fail
   for_each = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => v if local.nodeCount[k] > 0}

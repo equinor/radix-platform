@@ -1,14 +1,30 @@
 data "azapi_resource_list" "clusters" {
+  for_each = toset(var.aks_clouster_resource_groups)
+
   type                   = "Microsoft.ContainerService/managedClusters@2023-09-01"
-  parent_id              = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourcegroups/${var.AZ_RESOURCE_GROUP_CLUSTERS}"
+  parent_id              = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourcegroups/${var.resource_groups[each.value].name}"
   response_export_values = ["*"]
 }
 
+locals {
+  k8s_resources = flatten([
+    for key, resource in data.azapi_resource_list.clusters :[
+      for cluster in jsondecode(resource.output).value :
+      {
+        id : cluster.id,
+        name : cluster.name,
+        rgName : key,
+        location : cluster.location
+      }
+    ]
+  ])
+}
+
 data "azurerm_kubernetes_cluster" "k8s" {
-  for_each = {for cluster in jsondecode(data.azapi_resource_list.clusters.output).value : cluster.name => cluster}
+  for_each = {for cluster in local.k8s_resources : cluster.name => cluster}
 
   name                = each.value.name
-  resource_group_name = var.AZ_RESOURCE_GROUP_CLUSTERS
+  resource_group_name = each.value.rgName
 }
 
 locals {

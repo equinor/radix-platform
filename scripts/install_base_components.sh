@@ -283,7 +283,7 @@ echo ""
 echo "Start on radix platform shared configs and secrets..."
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-acr.sh" "${normal}"
-(./config-and-secrets/bootstrap-acr.sh)
+(CLUSTER_NAME=$CLUSTER_NAME ./config-and-secrets/bootstrap-acr.sh)
 wait
 
 echo "Done."

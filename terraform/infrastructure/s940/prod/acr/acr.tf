@@ -1,8 +1,8 @@
 resource "azurerm_container_registry" "app" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
-  name                    = "radix${each.value}app"
-  location                = var.AZ_LOCATION
+  name                    = "radix${each.key}app"
+  location                = var.resource_groups[each.value.resourceGroup].location # Create ACR in same location as k8s
   sku                     = "Premium"
   resource_group_name     = var.AZ_RESOURCE_GROUP_COMMON
   zone_redundancy_enabled = false
@@ -23,11 +23,11 @@ resource "azurerm_container_registry" "app" {
 }
 
 resource "azurerm_private_endpoint" "acr_app" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
-  name                = "pe-radix-acr-app-${each.value}"
+  name                = "pe-radix-acr-app-${each.key}"
   resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
-  location            = var.AZ_LOCATION
+  location            = var.resource_groups[each.value.resourceGroup].location # Create ACR in same location as k8s
   subnet_id           = var.private_link[each.key].linkname
 
   private_service_connection {
@@ -38,7 +38,7 @@ resource "azurerm_private_endpoint" "acr_app" {
   }
 
   private_dns_zone_group {
-    name                 = "dns-acr-app-${each.value}"
+    name                 = "dns-acr-app-${each.key}"
     private_dns_zone_ids = [azurerm_private_dns_zone.zone[each.key].id]
   }
 }

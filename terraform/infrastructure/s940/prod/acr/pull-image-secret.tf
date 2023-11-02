@@ -1,5 +1,5 @@
 resource "azurerm_container_registry_token" "app_acr" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   name                    = "radix-app-registry-secret-${each.key}"
   resource_group_name     = var.AZ_RESOURCE_GROUP_COMMON
@@ -8,7 +8,7 @@ resource "azurerm_container_registry_token" "app_acr" {
 }
 
 resource "azurerm_container_registry_token_password" "password" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   container_registry_token_id = azurerm_container_registry_token.app_acr[each.key].id
   password1 {
@@ -17,14 +17,14 @@ resource "azurerm_container_registry_token_password" "password" {
 }
 
 data "azurerm_key_vault" "vault" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   name                = var.key_vault_by_k8s_environment[each.key].name
   resource_group_name = var.key_vault_by_k8s_environment[each.key].rg_name
 }
 
 resource "azurerm_key_vault_secret" "secret" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
 
   key_vault_id    = data.azurerm_key_vault.vault[each.key].id
   name            = "radix-app-registry-secret-${each.key}"
