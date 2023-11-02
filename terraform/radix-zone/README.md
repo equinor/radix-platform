@@ -1,10 +1,6 @@
 # DR:
 # Comment out backend "azurerm" {} to run local
 scripts/radix-zone/base-infrastructure/bootstrap.sh
-    create_common_resources
-    create_outbound_public_ip_prefix
-    create_inbound_public_ip_prefix
-    create_acr
 terraform/infrastructure/s941/dev/resourcegroups/main.tf # local
 terraform/infrastructure/s941/dev/keyvaults/main.tf # local
 terraform/infrastructure/s941/dev/storageaccounts/main.tf # local
