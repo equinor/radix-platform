@@ -88,7 +88,7 @@ jobs:
         id: token
 
       - name: Purge old cache
-        run: ./bin/acr purge --registry=${{ matrix.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=12h --untagged --dry-run
+        run: ./bin/acr purge --registry=${{ matrix.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
 
       - name: Revoke GitHub IP on StorageAccount
         run: az acr network-rule remove --name ${{ matrix.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
