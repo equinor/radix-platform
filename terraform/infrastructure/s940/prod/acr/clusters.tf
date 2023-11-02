@@ -36,7 +36,3 @@ locals {
     startswith(lower( cluster.name), "c2-") ? "c2" : "unknown"
   }
 }
-
-output "clusters" {
-  value = local.clusterEnvironment
-}

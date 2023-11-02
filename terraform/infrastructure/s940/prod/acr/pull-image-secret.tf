@@ -35,6 +35,8 @@ resource "azurerm_key_vault_secret" "secret" {
     "source-token"    = "radix-app-registry-secret-${each.key}"
     "source-acr"      = azurerm_container_registry.app[each.key].name
   }
+
+  lifecycle { ignore_changes = [expiration_date] }
 }
 
 locals {
@@ -67,7 +69,7 @@ locals {
 }
 
 resource "null_resource" "create_token" {
-  triggers = { always_run = "${timestamp()}" }
+  triggers = { always_run = azurerm_key_vault_secret.secret[local.clusterEnvironment[each.key]].expiration_date }
 
   # Dont try to exec on clusters that are off, it will fail
   for_each = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => v if local.nodeCount[k] > 0}
