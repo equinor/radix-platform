@@ -150,9 +150,15 @@ function create_custom_role() {
     custom_role_json_file=$1
     role_name=$2
     role_definition=$(az role definition list --name "$role_name" --query [].assignableScopes[] --output tsv)
+
+    echo "custom_role_json_file: $custom_role_json_file"
+    echo "role_name: $role_name"
+    echo "role_definition: $role_definition"
+
     if [[ -z ${role_definition} ]]; then
         printf "Creating role definition..."
-        az role definition create --role-definition "@${custom_role_json_file}" 2>/dev/null
+        cat $custom_role_json_file
+        az role definition create --role-definition "@${custom_role_json_file}"
         while [ -z "$(az role definition list --query "[?roleName=='$role_name'].name" -otsv)" ]; do
             sleep 5
             printf "."
