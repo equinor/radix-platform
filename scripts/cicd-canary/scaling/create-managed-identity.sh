@@ -166,7 +166,7 @@ mi-exists ${mi_name} || {
 permission=("Microsoft.ContainerService/managedClusters/listClusterUserCredential/action" "Microsoft.ContainerService/managedClusters/read" "Microsoft.ContainerService/managedClusters/runCommand/action" "Microsoft.ContainerService/managedclusters/commandResults/read")
 permission_json=$(jq -c -n '$ARGS.positional' --args "${permission[@]}")
 # scopes=("/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b" "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a")
-scopes=("/subscriptions/939950ec-da7e-4349-8b8d-77d9c278af04")
+scopes=("/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b" "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a" "/subscriptions/939950ec-da7e-4349-8b8d-77d9c278af04")
 scopes_json=$(jq -c -n '$ARGS.positional' --args "${scopes[@]}")
 
 create-az-role "${AKS_COMMAND_RUNNER_ROLE_NAME}" "Can execute 'az aks command invoke' on AKS cluster." "$permission_json" "$scopes_json"

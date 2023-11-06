@@ -172,8 +172,8 @@ resource_groups = {
 ###
 
 storage_accounts = {
-  "radixflowlogsdev" = {
-    name          = "radixflowlogsdev"
+  "radixflowlogsdevdr" = {
+    name          = "radixflowlogsdevdr"
     rg_name       = "Logs-Dev"
     backup_center = true
   }

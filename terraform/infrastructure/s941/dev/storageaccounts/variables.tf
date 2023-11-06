@@ -72,3 +72,8 @@ variable "private_link" {
   }))
   default = null
 }
+
+variable "KV_RADIX_VAULT" {
+  description = "Radix keyvault"
+  type        = string
+}

@@ -27,7 +27,7 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dr.env ./bootstrap.sh
 
 
 #######################################################################################
@@ -101,7 +101,7 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done."
 echo ""
 
-exit_if_user_does_not_have_required_ad_role
+# exit_if_user_does_not_have_required_ad_role
 
 
 #######################################################################################

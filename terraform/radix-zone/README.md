@@ -8,6 +8,7 @@ terraform/oidc/rbac/main.tf # local
 terraform/infrastructure/s941/dev/policy/main.tf
 terraform/infrastructure/s941/dev/networkmanager/main.tf
 scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh
+scripts/velero/bootstrap.sh
 
 
 

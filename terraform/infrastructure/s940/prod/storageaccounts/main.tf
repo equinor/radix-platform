@@ -38,7 +38,7 @@ data "azurerm_key_vault" "keyvault_env" {
 }
 
 data "azurerm_key_vault_secret" "whitelist_ips" {
-  name         = "acr-whitelist-sa-${var.RADIX_ZONE}"
+  name         = "acr-whitelist-ips-${var.RADIX_ZONE}"
   key_vault_id = data.azurerm_key_vault.keyvault_env.id
 }
 
