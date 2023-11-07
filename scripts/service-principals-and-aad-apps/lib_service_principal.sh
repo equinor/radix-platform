@@ -147,7 +147,7 @@ function update_ad_app_owners() {
         ad_group="Radix"
     fi
 
-    id="$(az ad app list --display-name "${name}" --query [].appId --output tsv --only-show-errors)"
+    id="$(az ad app list --filter "displayname eq '${name}'" --query [].appId --output tsv --only-show-errors)"
     printf "Updating owners of app registration \"${name}\"..."
 
     ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[id,userPrincipalName]" --output tsv --only-show-errors)
@@ -282,7 +282,7 @@ function create_app_registration_and_service_principal() {
     fi
 
     printf "\nCreate AAD app registration and service principal "${name}"... "
-    app_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].appId -o tsv)"
+    app_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].appId -o tsv)"
     if [[ -z $app_id ]]; then
         printf "creating app registration... "
         app_id=$(az ad app create --display-name $name --query appId -o tsv) || return
@@ -321,7 +321,7 @@ function set_app_registration_identifier_uris {
 
     printf "\nUpdating identifierUris for app "${name}"... "
 
-    app_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].appId -o tsv)"
+    app_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].appId -o tsv)"
     if [[ -z $app_id ]]; then
         echo "ERROR: Could not find app registration "${name}". Quitting..." >&2
         return 1
@@ -350,7 +350,7 @@ function set_app_registration_api_scopes {
 
     printf "\nUpdating oauth2PermissionScopes for app "${name}"... "
 
-    app_obj_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].id -o tsv)"
+    app_obj_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].id -o tsv)"
     if [[ -z $app_obj_id ]]; then
         echo "ERROR: Could not find app registration "${name}". Quitting..." >&2
         return 1
@@ -508,7 +508,7 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
-    id="$(az ad app list --display-name "${name}" --query '[].appId' --output tsv)"
+    id="$(az ad app list --filter "displayname eq '${name}'" --query '[].appId' --output tsv)"
     password="$(az ad app credential reset --id "${id}" --display-name "rbac" --append --query password --output tsv)"
     sleep 5
     secret="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"

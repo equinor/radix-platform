@@ -156,7 +156,7 @@ function create_monitoring_ar_secret(){
     description="$3"
  
     echo "Create secret for ${name}"
-    id="$(az ad app list --display-name "${name}" --query [].id --output tsv)"
+    id="$(az ad app list --filter "displayname eq '${name}'" --query [].id --output tsv)"
     
     password="$(az ad app credential reset --id "${id}" --display-name "${secretname}" --append --query password --output tsv --only-show-errors)"
     secret="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${secretname}'], &endDateTime)[-1].{endDateTime:endDateTime,keyId:keyId}")"
