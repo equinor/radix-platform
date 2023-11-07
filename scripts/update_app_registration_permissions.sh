@@ -75,7 +75,7 @@ if [[ -z "$PERMISSIONS" ]]; then
 fi
 
 function update_app_registration_permissions() {
-    APP_REGISTRATION_ID="$(az ad sp list --display-name "${APP_REGISTRATION_WEB_CONSOLE}" --query [].appId --output tsv 2>/dev/null)"
+    APP_REGISTRATION_ID="$(az ad sp list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].appId --output tsv 2>/dev/null)"
     if [ -z "$APP_REGISTRATION_ID" ]; then
         printf "    Could not find app registration. Exiting...\n"
         return

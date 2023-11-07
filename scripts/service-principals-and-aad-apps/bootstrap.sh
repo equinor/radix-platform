@@ -198,7 +198,7 @@ create_github_maintenance_mi() {
     create_role_assignment_for_identity "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "${role_name}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_LOGS}"
     add-federated-gh-credentials "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" "radix-flux" "master" "maintenance-${RADIX_ENVIRONMENT}"
 
-    MI_ID=$(az ad sp list --display-name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}" --query [].appId --output tsv)
+    MI_ID=$(az ad sp list --filter "displayname eq '${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}'" --query [].appId --output tsv)
     gh_federated_credentials "radix-flux" "${MI_ID}" "${AZ_SUBSCRIPTION_ID}" "maintenance-${RADIX_ENVIRONMENT}"
 }
 

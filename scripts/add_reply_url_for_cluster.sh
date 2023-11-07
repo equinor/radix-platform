@@ -66,7 +66,7 @@ function updateWebRedirectUris() {
     local additionalWebReplyURL
     local newWebRedirectUris
 
-    aadAppId="$(az ad app list --display-name "${AAD_APP_NAME}" --only-show-errors --query [].appId -o tsv)"
+    aadAppId="$(az ad app list --filter "displayname eq '${AAD_APP_NAME}'" --only-show-errors --query [].appId --output tsv)"
     if [[ -z $aadAppId ]]; then
         echo "ERROR: Could not find app registration. Quitting..." >&2
         return 1
@@ -129,7 +129,7 @@ function updateSpaRedirectUris() {
     local additionalSpaReplyURI
     local newSpaRedirectUris
 
-    aadObjId="$(az ad app list --display-name "${AAD_APP_NAME}" --only-show-errors --query [].id -o tsv)"
+    aadObjId="$(az ad app list --filter "displayname eq '${AAD_APP_NAME}'" --only-show-errors --query [].id --output tsv)"
     if [[ -z $aadObjId ]]; then
         echo "ERROR: Could not find app registration. Quitting..." >&2
         return 1

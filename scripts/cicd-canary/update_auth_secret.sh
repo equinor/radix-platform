@@ -92,7 +92,7 @@ fi
 
 # Generate new secret for App Registration.
 printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\"..."
-APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_NAME" | jq -r '.[].appId')
+APP_REGISTRATION_CLIENT_ID=$(az ad app list --filter "displayname eq '${APP_REGISTRATION_NAME}'" | jq -r '.[].appId')
 
 UPDATED_PRIVATE_IMAGE_HUB_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --display-name "rdx-cicd-canary" 2>/dev/null | jq -r '.password')
 if [[ -z "$UPDATED_PRIVATE_IMAGE_HUB_PASSWORD" ]]; then
