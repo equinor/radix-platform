@@ -6,14 +6,6 @@ provider "azurerm" {
   features {}
 }
 
-# locals {
-#   arm_file_path = jsondecode(file("arm.json"))
-# }
-
-# data "template_file" "workflow" {
-#   template = file(local.arm_file_path)
-# }
-
 data "azurerm_managed_api" "azureblob" {
   name     = "azureblob"
   location = var.AZ_LOCATION
@@ -210,63 +202,3 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
     }
   )
 }
-
-# data "azurerm_resource_group" "example" {
-#   name = "logs-dev"
-# }
-
-# resource "azurerm_storage_account" "example" {
-#   name                     = "archives941diagnostics"
-#   resource_group_name      = data.azurerm_resource_group.example.name
-#   location                 = data.azurerm_resource_group.example.location
-#   account_tier             = "Standard"
-#   account_replication_type = "LRS"
-# }
-
-# resource "azurerm_service_plan" "example" {
-#   name                = "archives941diagnostics-plan"
-#   resource_group_name = data.azurerm_resource_group.example.name
-#   location            = data.azurerm_resource_group.example.location
-#   os_type             = "Linux"
-#   sku_name            = "WS1"
-# }
-
-# resource "azurerm_logic_app_standard" "example" {
-#   name                       = "archive-s941-northeurope"
-#   location                   = data.azurerm_resource_group.example.location
-#   resource_group_name        = data.azurerm_resource_group.example.name
-#   app_service_plan_id        = azurerm_service_plan.example.id
-#   storage_account_name       = azurerm_storage_account.example.name
-#   storage_account_access_key = azurerm_storage_account.example.primary_access_key
-#   version = "~4"
-
-  
-
-#   identity {
-#     identity_ids = [
-#       #data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
-#       data.azurerm_user_assigned_identity.managed_identity["id-radix-logicapp-operator-dev"].id
-#     ]
-#     type = "UserAssigned"
-#   }
-
-  
-
-#   app_settings = {
-#     "FUNCTIONS_WORKER_RUNTIME"     = "node"
-#     "WEBSITE_NODE_DEFAULT_VERSION" = "~18"
-#   }
-# }
-
-# resource "azurerm_logic_app_trigger_recurrence" "example" {
-#   name         = "run-every-day"
-#   logic_app_id = azurerm_logic_app_standard.example.id
-#   frequency    = "Day"
-#   interval     = 1
-# }
-
-# resource "azurerm_logic_app_workflow" "example" {
-#   name                = "workflow1"
-#   location            = data.azurerm_resource_group.example.location
-#   resource_group_name = data.azurerm_resource_group.example.name
-# }
