@@ -181,7 +181,7 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
         method = "post",
         path   = "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${each.value["storageaccount"]}'))}/files",
         queries = {
-          folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy-MM-dd')}",
+          folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy')}/@{formatDateTime(utcNow(), 'MM')}/@{formatDateTime(utcNow(), 'dd')}",
           name                         = "@{subtractFromTime(formatDateTime(utcNow(),'yyyy-MM-ddTHH:00:00'), 1,'Hour')}",
           queryParametersSingleEncoded = true
         }

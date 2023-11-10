@@ -22,6 +22,7 @@ data "azurerm_user_assigned_identity" "managed_identity" {
   resource_group_name = each.value["rg_name"]
 }
 
+
 resource "azurerm_logic_app_workflow" "logic_app_workflow" {
   for_each            = var.logic_app_workflow
   name                = each.value["name"]
@@ -72,6 +73,7 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
     )
   }
 }
+
 
 resource "azurerm_logic_app_trigger_recurrence" "recurrence" {
   for_each     = var.logic_app_workflow
@@ -181,7 +183,7 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
         method = "post",
         path   = "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${each.value["storageaccount"]}'))}/files",
         queries = {
-          folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy-MM-dd')}",
+          folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy')}/@{formatDateTime(utcNow(), 'MM')}/@{formatDateTime(utcNow(), 'dd')}",
           name                         = "@{subtractFromTime(formatDateTime(utcNow(),'yyyy-MM-ddTHH:00:00'), 1,'Hour')}",
           queryParametersSingleEncoded = true
         }
@@ -200,4 +202,3 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
     }
   )
 }
-
