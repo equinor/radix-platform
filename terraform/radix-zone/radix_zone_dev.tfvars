@@ -259,7 +259,7 @@ sql_server = {
     name     = "sql-radix-vulnerability-scan-dev"
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
-    identity = true
+    identity = false
     vault    = "radix-vault-dev"
     env      = "dev"
   }
