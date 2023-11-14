@@ -170,6 +170,9 @@ function update_ad_app_owners() {
         user_email=${line[1]}
         if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
             printf "Removing ${user_email} from ${name}"
+            echo "id: $id"
+            echo "user_object_id: $user_object_id"
+            echo "user_email: $user_object_id"
             az ad app owner remove --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
             printf " Done.\n"
         fi
@@ -221,7 +224,7 @@ function update_service_principal_owners() {
         user_email=${line[1]}
         if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
             echo "Removing ${user_email} from ${name}..."
-            az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/\$ref \
+            az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/$user_object_id/\$ref \
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
             printf " Done.\n"
         fi
@@ -262,10 +265,10 @@ function create_service_principal_and_store_credentials() {
         printf "${name} exists.\n"
     fi
 
-    printf "Update owners of app registration..."
+    printf "    Update owners of app registration..."
     update_ad_app_owners "${name}"
 
-    printf "Update owners of service principal..."
+    printf "    Update owners of service principal..."
     update_service_principal_owners "${name}"
 
     printf "Done.\n"
@@ -411,31 +414,18 @@ function gh_federated_credentials() {
     gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}
 }
 
-function create_oidc_and_federated_credentials() {
-    echo ""
-    APP_NAME="$1"
-    export SUBSCRIPTION_ID="$2"
-    export REPO="$3"
-    export ENVIRONMENT="$4"
-    printf "Working on \"${APP_NAME}\"\n"
-    wait_for_pim_app_developer_role
-    wait_for_ad_owner_role
-    app_id=$(az ad app list --filter "displayName eq '$APP_NAME'" --query [].appId --output tsv)
-    if [ -z "$app_id" ]; then
-        printf "creating ${APP_NAME}...\n"
-        app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
-    fi
+function create_federated_credentials() {
+    local APP_NAME="$1"
+    local SUBSCRIPTION_ID="$2"
+    local REPO="$3"
+    local ENVIRONMENT="$4"
+    local CONFIG="$5"
 
-    #printf "Update owners of app registration..."
-    update_ad_app_owners "${APP_NAME}"
+    printf "Working on \"%s\"\n" "${APP_NAME}"
 
-    #printf "Update owners of service principal..."
-    update_service_principal_owners "${APP_NAME}"
-    script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    config=$(envsubst <"${script_dir_path}/oidc.json")
     printf "Checking if federated identity credential already exists..."
-    fic=$(echo "$config" | jq '.federatedCredential')
-
+    app_id=$(az ad app list --filter "displayName eq '$APP_NAME'" --query [].appId --output tsv)
+    fic=$(echo "$CONFIG" | jq '.federatedCredential')
     fic_name=$(echo "$fic" | jq -r '.name')
     fic_id=$(az ad app federated-credential list --id "$app_id" --query "[?name == '$fic_name'].id" --output tsv)
 
@@ -449,10 +439,31 @@ function create_oidc_and_federated_credentials() {
         az ad app federated-credential update --id "$app_id" --federated-credential-id "$fic_id" --parameters "$fic" --output none
         printf " Done.\n"
     fi
+}
+
+function create_oidc_and_federated_credentials() {
+    echo ""
+    APP_NAME="$1"
+    export SUBSCRIPTION_ID="$2"
+    export REPO="$3"
+    export ENVIRONMENT="$4"
+
+    printf "Working on \"%s\"\n" "${APP_NAME}"
+    wait_for_pim_app_developer_role
+    wait_for_ad_owner_role
+
+    update_ad_app_owners "${APP_NAME}"
+    update_service_principal_owners "${APP_NAME}"
+
+    app_id=$(az ad app list --filter "displayName eq '$APP_NAME'" --query [].appId --output tsv)
+    if [ -z "$app_id" ]; then
+        printf "creating %s...\n" "${APP_NAME}"
+        app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
+    fi
+
     printf "Checking if service principal already exists..."
     sp_id=$(az ad sp list --filter "appId eq '$app_id'" --query [].id --output tsv)
     if [[ -z "$sp_id" ]]; then
-        #printf "Creating service principal..."
         sp_id=$(az ad sp create --id "$app_id" --query id --output tsv)
         printf " Done.\n"
     else
@@ -460,15 +471,17 @@ function create_oidc_and_federated_credentials() {
     fi
 
     printf "Creating role assignments..."
+    script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    config=$(envsubst <"${script_dir_path}/oidc.json")
     ras=$(echo "$config" | jq -c '.roleAssignments[]')
     echo "$ras" | while read -r ra; do
         role=$(echo "$ra" | jq -r '.role')
         scope=$(echo "$ra" | jq -r '.scope')
-        #echo "Assigning role '$role' at scope '$scope'..."
-        az role assignment create --role Contributor --subscription ${SUBSCRIPTION_ID} --assignee-object-id ${sp_id} --assignee-principal-type ServicePrincipal --scope "${scope}" --output none 2>&1 >/dev/null
+        az role assignment create --role "${role}" --subscription "${SUBSCRIPTION_ID}" --assignee-object-id "${sp_id}" --assignee-principal-type ServicePrincipal --scope "${scope}" --output none 2>&1 >/dev/null
         printf " Done.\n"
     done
 
+    create_federated_credentials "${APP_NAME}" "${SUBSCRIPTION_ID}" "${REPO}" "${ENVIRONMENT}" "${config}"
     gh_federated_credentials "${REPO}" "${app_id}" "${SUBSCRIPTION_ID}" "${ENVIRONMENT}"
 }
 
