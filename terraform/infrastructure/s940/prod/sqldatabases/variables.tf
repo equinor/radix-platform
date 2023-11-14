@@ -13,6 +13,7 @@ variable "sql_server" {
     identity = optional(bool, true)
     db_admin = string # Used in azurerm_key_vault_secret
     vault    = string
+    env      = string
   }))
   default = {}
 }
@@ -34,6 +35,14 @@ variable "sql_database" {
 variable "key_vault" {
   type = map(object({
     name    = string
+    rg_name = string
+  }))
+  default = {}
+}
+
+variable "virtual_networks" {
+  type = map(object({
+    name    = optional(string, "vnet-hub")
     rg_name = string
   }))
   default = {}
