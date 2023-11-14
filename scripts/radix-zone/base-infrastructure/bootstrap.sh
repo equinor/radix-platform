@@ -462,6 +462,13 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$APP_REGISTRATION_LOG_API" "Service principal that provides read-only access to radix-container-logs Log Analytics workspace"
 }
 
+function create_acr_github_app_registration_with_federated_credentials() {
+    create_app_registration_and_service_principal "radix-github-workflows-dev" ""
+    create_app_registration_and_service_principal "radix-github-workflows-dev-1" ""
+
+    create_federated_credentials ""
+}
+
 function create_servicenow_proxy_server_app_registration() {
     create_app_registration_and_service_principal "$APP_REGISTRATION_SERVICENOW_SERVER"
     set_app_registration_identifier_uris "$APP_REGISTRATION_SERVICENOW_SERVER"
