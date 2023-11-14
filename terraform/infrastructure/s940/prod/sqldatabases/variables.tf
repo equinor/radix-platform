@@ -13,7 +13,7 @@ variable "sql_server" {
     identity = optional(bool, true)
     db_admin = string # Used in azurerm_key_vault_secret
     vault    = string
-    env = string
+    env      = string
   }))
   default = {}
 }
@@ -42,7 +42,7 @@ variable "key_vault" {
 
 variable "K8S_ENVIROMENTS" {
   description = "A map of cluster enviroments and their resource group"
-  type        = map(object({
+  type = map(object({
     name          = string
     resourceGroup = string
   }))
