@@ -24,14 +24,14 @@ data "azurerm_key_vault_secret" "keyvault_secrets" {
 }
 
 data "azurerm_subnet" "subnet" {
-  for_each             = var.K8S_ENVIROMENTS
+  for_each             = var.virtual_networks
   name                 = "private-links"
   virtual_network_name = "vnet-hub"
   resource_group_name  = "cluster-vnet-hub-${each.key}"
 }
 
 data "azurerm_private_dns_zone" "dns_zone" {
-  for_each            = var.K8S_ENVIROMENTS
+  for_each            = var.virtual_networks
   name                = "privatelink.database.windows.net"
   resource_group_name = "cluster-vnet-hub-${each.key}"
 }

@@ -40,10 +40,10 @@ variable "key_vault" {
   default = {}
 }
 
-variable "K8S_ENVIROMENTS" {
-  description = "A map of cluster enviroments and their resource group"
+variable "virtual_networks" {
   type = map(object({
-    name          = string
-    resourceGroup = string
+    name    = optional(string, "vnet-hub")
+    rg_name = string
   }))
+  default = {}
 }
