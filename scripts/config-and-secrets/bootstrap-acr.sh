@@ -19,13 +19,14 @@
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
+# - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 #######################################################################################
 ### HOW TO USE
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap-acr.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-44 ./bootstrap-acr.sh
 
 #######################################################################################
 ### START
@@ -72,6 +73,10 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
+    exit 1
+fi
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -85,10 +90,23 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
+
 #######################################################################################
 ### Verify cluster access
 ###
+
+# Exit if cluster does not exist
+printf "Connecting kubectl..."
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
+    # Send message to stderr
+    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
+    exit 0
+}
+printf "...Done.\n"
+
 verify_cluster_access
+
+printf "Installing registry sp secret in k8s cluster...\n"
 
 az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
@@ -115,5 +133,26 @@ kubectl create secret docker-registry radix-docker \
     kubectl apply -f -
 
 rm -f sp_credentials.json
+
+printf "\nDone\n"
+
+### Adding buildah cache repo secret
+
+printf "Installing app registry secret in k8s cluster...\n"
+
+az keyvault secret download \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --name "${AZ_SYSTEM_USER_APP_REGISTRY_SECRET_KEY}" \
+    --file acr_password.json
+
+# create secret for authenticating to ACR via buildah client (same value as other ACR secret)
+acr_password="$(cat acr_password.json )"
+
+kubectl create secret generic radix-app-registry \
+    --from-literal="username=$AZ_SYSTEM_USER_APP_REGISTRY_USERNAME" \
+    --from-literal="password=$acr_password" \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+rm -f acr_password.json
 
 printf "\nDone\n"

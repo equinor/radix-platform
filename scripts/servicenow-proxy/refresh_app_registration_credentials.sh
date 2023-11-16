@@ -118,7 +118,7 @@ fi
 function resetAppRegistrationPassword() {
     # Generate new secret for App Registration.
     printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_SERVICENOW_CLIENT\"...\n"
-    APP_REGISTRATION_CLIENT_ID=$(az ad app list --display-name "$APP_REGISTRATION_SERVICENOW_CLIENT" | jq -r '.[].appId')
+    APP_REGISTRATION_CLIENT_ID=$(az ad app list --filter "displayname eq '${APP_REGISTRATION_SERVICENOW_CLIENT}'" | jq -r '.[].appId')
     if [ -z "$APP_REGISTRATION_CLIENT_ID" ]; then
         echo -e "\nERROR: Could not find app registration \"$APP_REGISTRATION_SERVICENOW_CLIENT\"." >&2; 
         return 1;

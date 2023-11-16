@@ -523,11 +523,13 @@ VNET_ID="$(az network vnet show \
     --output tsv)"
 
 echo ""
-echo "Check if $VNET_NAME are associated with $AZ_VNET_HUB_NAME"
+printf "Checking if %s are associated with %s" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
+printf "Waiting for %s to get associated with %s..." "$VNET_NAME" "$AZ_VNET_HUB_NAME"
 while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
     printf "."
     sleep 5
 done
+printf " Done.\n"
 
 function linkPrivateDnsZoneToVNET() {
     local dns_zone
@@ -793,7 +795,7 @@ EOF
     cilium status --wait
 
     printf "Done.\n"
-    
+
     rm -f "${WORK_DIR}/${CILIUM_VALUES}"
 fi
 

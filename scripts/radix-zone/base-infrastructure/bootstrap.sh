@@ -402,7 +402,7 @@ function set_permissions_on_dns() {
     # Grant 'DNS Zone Contributor' permissions to a specific zone
     # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
     printf "Azure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
-    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_DNS} --query [].appId --output tsv)"
+    id="$(az ad sp list --filter "displayname eq '${AZ_SYSTEM_USER_DNS}'" --query [].appId --output tsv)"
     az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
     printf "...Done\n"
 }
@@ -532,7 +532,7 @@ function set_permissions_on_log_analytics_workspace() {
     printf "Working on log analytics workspace \"${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}\": "
 
     printf "Setting permissions for \"${APP_REGISTRATION_LOG_API}\"..." # radix-cr-reader-dev
-    id="$(az ad sp list --display-name ${APP_REGISTRATION_LOG_API} --query [].appId --output tsv)"
+    id="$(az ad sp list --filter "displayname eq '${APP_REGISTRATION_LOG_API}'" --query [].appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles

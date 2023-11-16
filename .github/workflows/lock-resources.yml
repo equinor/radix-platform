@@ -1,0 +1,25 @@
+name: lock-resources
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  lock-clusters-prod:
+    runs-on: ubuntu-latest
+    environment: lock-operations-prod
+    steps:
+      - uses: actions/checkout@v3
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: lock-resources-prod
+        run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_prod.env .github/workflows/scripts/check_resource_lock.sh
+      - name: lock-resources-c2
+        run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_c2.env .github/workflows/scripts/check_resource_lock.sh
