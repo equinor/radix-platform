@@ -232,23 +232,23 @@ aks_clouster_resource_groups = ["clusters-westeurope", "clusters"]
 
 storage_accounts = {
   "radixflowlogsc2prod" = {
-    name             = "radixflowlogsc2prod"
-    rg_name          = "logs-westeurope"
-    location         = "westeurope"
-    backup_center    = true
-    life_cycle       = false
-    managed_identity = true
+    name                 = "radixflowlogsc2prod"
+    rg_name              = "logs-westeurope"
+    location             = "westeurope"
+    backup_center        = true
+    life_cycle           = false
+    managed_identity     = true
     life_cycle           = true
     life_cycle_version   = 3
     life_cycle_blob      = 90
     life_cycle_blob_cool = 7
   }
   "radixflowlogsprod" = {
-    name             = "radixflowlogsprod"
-    rg_name          = "Logs"
-    backup_center    = true
-    life_cycle       = false
-    managed_identity = true
+    name                 = "radixflowlogsprod"
+    rg_name              = "Logs"
+    backup_center        = true
+    life_cycle           = false
+    managed_identity     = true
     life_cycle           = true
     life_cycle_version   = 3
     life_cycle_blob      = 90
@@ -262,7 +262,7 @@ storage_accounts = {
     backup_center    = true
     firewall         = false
     create_with_rbac = true
-    life_cycle_blob = 0
+    life_cycle_blob  = 0
   }
   "s940radixveleroc2" = {
     name             = "s940radixveleroc2"
@@ -300,25 +300,25 @@ storage_accounts = {
 
 sql_server = {
   "sql-radix-cost-allocation-c2-prod" = {
-    name                = "sql-radix-cost-allocation-c2-prod"
-    rg_name             = "cost-allocation-westeurope"
-    location            = "westeurope"
-    db_admin            = "radix-cost-allocation-db-admin"
-    minimum_tls_version = "Disabled"
-    vault               = "radix-vault-c2-prod"
-    tags                = {
+    name     = "sql-radix-cost-allocation-c2-prod"
+    rg_name  = "cost-allocation-westeurope"
+    location = "westeurope"
+    db_admin = "radix-cost-allocation-db-admin"
+    vault    = "radix-vault-c2-prod"
+    env      = "c2"
+    tags = {
       "displayName" = "SqlServer"
     }
     identity = false
   }
   "sql-radix-cost-allocation-prod" = {
-    name                = "sql-radix-cost-allocation-prod"
-    rg_name             = "cost-allocation"
-    db_admin            = "radix-cost-allocation-db-admin"
-    minimum_tls_version = "Disabled"
-    vault               = "radix-vault-prod"
-    sku_name            = "S3"
-    tags                = {
+    name     = "sql-radix-cost-allocation-prod"
+    rg_name  = "cost-allocation"
+    db_admin = "radix-cost-allocation-db-admin"
+    vault    = "radix-vault-prod"
+    env      = "prod"
+    sku_name = "S3"
+    tags = {
       "displayName" = "SqlServer"
     }
   }
@@ -329,12 +329,14 @@ sql_server = {
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
     vault    = "radix-vault-c2-prod"
+    env      = "c2"
   }
   "sql-radix-vulnerability-scan-prod" = {
     name     = "sql-radix-vulnerability-scan-prod"
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
     vault    = "radix-vault-prod"
+    env      = "prod"
     sku_name = "S3"
   }
 }
@@ -347,7 +349,7 @@ sql_database = {
   "sql-radix-cost-allocation-c2-prod" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-c2-prod"
-    tags   = {
+    tags = {
       "displayName" = "Database"
     }
   }
@@ -355,7 +357,7 @@ sql_database = {
     name     = "sqldb-radix-cost-allocation"
     server   = "sql-radix-cost-allocation-prod"
     sku_name = "S3"
-    tags     = {
+    tags = {
       "displayName" = "Database"
     }
   }

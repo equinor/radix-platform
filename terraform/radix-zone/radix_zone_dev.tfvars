@@ -22,7 +22,7 @@ CLUSTER_TYPE                   = "development"
 RADIX_ZONE                     = "dev"
 RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
-K8S_ENVIROMENTS                = {
+K8S_ENVIROMENTS = {
   "dev"        = { "name" = "dev", "resourceGroup" = "clusters" },
   "playground" = { "name" = "playground", "resourceGroup" = "clusters" }
 }
@@ -236,20 +236,22 @@ storage_accounts = {
 
 sql_server = {
   "sql-radix-cost-allocation-dev" = {
-    name                = "sql-radix-cost-allocation-dev"
-    rg_name             = "cost-allocation"
-    db_admin            = "radix-cost-allocation-db-admin"
-    vault               = "radix-vault-dev"
-    tags                = {
+    name     = "sql-radix-cost-allocation-dev"
+    rg_name  = "cost-allocation"
+    db_admin = "radix-cost-allocation-db-admin"
+    vault    = "radix-vault-dev"
+    env      = "dev"
+    tags = {
       "displayName" = "SqlServer"
     }
   }
   "sql-radix-cost-allocation-playground" = {
-    name                = "sql-radix-cost-allocation-playground"
-    rg_name             = "cost-allocation"
-    db_admin            = "radix-cost-allocation-db-admin-playground"
-    vault               = "radix-vault-dev"
-    tags                = {
+    name     = "sql-radix-cost-allocation-playground"
+    rg_name  = "cost-allocation"
+    db_admin = "radix-cost-allocation-db-admin-playground"
+    vault    = "radix-vault-dev"
+    env      = "playground"
+    tags = {
       "displayName" = "SqlServer"
     }
   }
@@ -257,8 +259,9 @@ sql_server = {
     name     = "sql-radix-vulnerability-scan-dev"
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
-    identity = false
+    identity = true
     vault    = "radix-vault-dev"
+    env      = "dev"
   }
   "sql-radix-vulnerability-scan-playground" = {
     name     = "sql-radix-vulnerability-scan-playground"
@@ -266,6 +269,7 @@ sql_server = {
     db_admin = "radix-vulnerability-scan-db-admin-playground"
     identity = false
     vault    = "radix-vault-dev"
+    env      = "playground"
   }
 }
 
@@ -277,14 +281,14 @@ sql_database = {
   "sql-radix-cost-allocation-dev" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-dev"
-    tags   = {
+    tags = {
       "displayName" = "Database"
     }
   }
   "sql-radix-cost-allocation-playground" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-playground"
-    tags   = {
+    tags = {
       "displayName" = "Database"
     }
   }
