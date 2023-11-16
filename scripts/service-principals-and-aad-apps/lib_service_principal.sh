@@ -414,8 +414,8 @@ function gh_federated_credentials() {
 function create_federated_credentials() {
     local APP_NAME="$1"
     local SUBSCRIPTION_ID="$2"
-    local REPO="$3"
-    local ENVIRONMENT="$4"
+    export REPO="$3"
+    export ENVIRONMENT="$4"
     local CONFIG="$5"
 
     printf "Working on \"%s\"\n" "${APP_NAME}"
