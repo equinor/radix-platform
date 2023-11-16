@@ -170,9 +170,6 @@ function update_ad_app_owners() {
         user_email=${line[1]}
         if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
             printf "Removing ${user_email} from ${name}"
-            echo "id: $id"
-            echo "user_object_id: $user_object_id"
-            echo "user_email: $user_object_id"
             az ad app owner remove --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
             printf " Done.\n"
         fi
