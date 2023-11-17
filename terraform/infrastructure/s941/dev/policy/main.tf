@@ -7,7 +7,7 @@ provider "azurerm" {
 }
 
 resource "azurerm_policy_definition" "policy" {
-  for_each     = toset(var.K8S_ENVIROMENTS)
+  for_each     = var.K8S_ENVIROMENTS
   name         = "Kubernetes-vnets-in-${each.key}"
   policy_type  = "Custom"
   mode         = "Microsoft.Network.Data"

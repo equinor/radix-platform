@@ -147,7 +147,7 @@ function update_ad_app_owners() {
         ad_group="Radix"
     fi
 
-    id="$(az ad app list --display-name "${name}" --query [].appId --output tsv --only-show-errors)"
+    id="$(az ad app list --filter "displayname eq '${name}'" --query [].appId --output tsv --only-show-errors)"
     printf "Updating owners of app registration \"${name}\"..."
 
     ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[id,userPrincipalName]" --output tsv --only-show-errors)
@@ -196,7 +196,7 @@ function update_service_principal_owners() {
         ad_group="Radix"
     fi
 
-    sp_obj_id="$(az ad sp list --display-name "${name}" --query [].id --output tsv --only-show-errors)"
+    sp_obj_id="$(az ad sp list --filter "displayname eq '${name}'" --query [].id --output tsv --only-show-errors)"
 
     printf "Updating owners of service principal \"${name}\"..."
 
@@ -221,7 +221,7 @@ function update_service_principal_owners() {
         user_email=${line[1]}
         if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
             echo "Removing ${user_email} from ${name}..."
-            az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/\$ref \
+            az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/$user_object_id/\$ref \
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
             printf " Done.\n"
         fi
@@ -245,11 +245,11 @@ function create_service_principal_and_store_credentials() {
 
     # Skip creation if the sp exist
     local testSP
-    testSP="$(az ad sp list --display-name "${name}" --query [].appId --output tsv 2>/dev/null)"
+    testSP="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv 2>/dev/null)"
     if [ -z "$testSP" ]; then
         printf "creating ${name}..."
         password="$(az ad sp create-for-rbac --name "${name}" --query password --output tsv)"
-        id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
+        id="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv)"
         secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
         secret_id="$(echo "${secret}" | jq -r .[].keyId)"
         expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
@@ -262,10 +262,10 @@ function create_service_principal_and_store_credentials() {
         printf "${name} exists.\n"
     fi
 
-    printf "Update owners of app registration..."
+    printf "    Update owners of app registration..."
     update_ad_app_owners "${name}"
 
-    printf "Update owners of service principal..."
+    printf "    Update owners of service principal..."
     update_service_principal_owners "${name}"
 
     printf "Done.\n"
@@ -282,10 +282,10 @@ function create_app_registration_and_service_principal() {
     fi
 
     printf "\nCreate AAD app registration and service principal "${name}"... "
-    app_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].appId -o tsv)"
+    app_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].appId -o tsv)"
     if [[ -z $app_id ]]; then
         printf "creating app registration... "
-        app_id=$(az ad app create --display-name $name --query appId -o tsv) || return
+        app_id=$(az ad app create --filter "displayname eq '${name}'" --query appId -o tsv) || return
 
         app_objectId=$(az ad app list \
             --filter "displayName eq '$name'" \
@@ -321,7 +321,7 @@ function set_app_registration_identifier_uris {
 
     printf "\nUpdating identifierUris for app "${name}"... "
 
-    app_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].appId -o tsv)"
+    app_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].appId -o tsv)"
     if [[ -z $app_id ]]; then
         echo "ERROR: Could not find app registration "${name}". Quitting..." >&2
         return 1
@@ -350,7 +350,7 @@ function set_app_registration_api_scopes {
 
     printf "\nUpdating oauth2PermissionScopes for app "${name}"... "
 
-    app_obj_id="$(az ad app list --display-name "${name}" --only-show-errors --query [0].id -o tsv)"
+    app_obj_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].id -o tsv)"
     if [[ -z $app_obj_id ]]; then
         echo "ERROR: Could not find app registration "${name}". Quitting..." >&2
         return 1
@@ -411,31 +411,18 @@ function gh_federated_credentials() {
     gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}
 }
 
-function create_oidc_and_federated_credentials() {
-    echo ""
-    APP_NAME="$1"
-    export SUBSCRIPTION_ID="$2"
+function create_federated_credentials() {
+    local APP_NAME="$1"
+    local SUBSCRIPTION_ID="$2"
     export REPO="$3"
     export ENVIRONMENT="$4"
-    printf "Working on \"${APP_NAME}\"\n"
-    wait_for_pim_app_developer_role
-    wait_for_ad_owner_role
-    app_id=$(az ad app list --filter "displayName eq '$APP_NAME'" --query [].appId --output tsv)
-    if [ -z "$app_id" ]; then
-        printf "creating ${APP_NAME}...\n"
-        app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
-    fi
+    local CONFIG="$5"
 
-    #printf "Update owners of app registration..."
-    update_ad_app_owners "${APP_NAME}"
+    printf "Working on \"%s\"\n" "${APP_NAME}"
 
-    #printf "Update owners of service principal..."
-    update_service_principal_owners "${APP_NAME}"
-    script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    config=$(envsubst <"${script_dir_path}/oidc.json")
     printf "Checking if federated identity credential already exists..."
-    fic=$(echo "$config" | jq '.federatedCredential')
-
+    app_id=$(az ad app list --filter "displayName eq '$APP_NAME'" --query [].appId --output tsv)
+    fic=$(echo "$CONFIG" | jq '.federatedCredential')
     fic_name=$(echo "$fic" | jq -r '.name')
     fic_id=$(az ad app federated-credential list --id "$app_id" --query "[?name == '$fic_name'].id" --output tsv)
 
@@ -449,10 +436,31 @@ function create_oidc_and_federated_credentials() {
         az ad app federated-credential update --id "$app_id" --federated-credential-id "$fic_id" --parameters "$fic" --output none
         printf " Done.\n"
     fi
+}
+
+function create_oidc_and_federated_credentials() {
+    echo ""
+    APP_NAME="$1"
+    export SUBSCRIPTION_ID="$2"
+    export REPO="$3"
+    export ENVIRONMENT="$4"
+
+    printf "Working on \"%s\"\n" "${APP_NAME}"
+    wait_for_pim_app_developer_role
+    wait_for_ad_owner_role
+
+    update_ad_app_owners "${APP_NAME}"
+    update_service_principal_owners "${APP_NAME}"
+
+    app_id=$(az ad app list --filter "displayName eq '$APP_NAME'" --query [].appId --output tsv)
+    if [ -z "$app_id" ]; then
+        printf "creating %s...\n" "${APP_NAME}"
+        app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
+    fi
+
     printf "Checking if service principal already exists..."
     sp_id=$(az ad sp list --filter "appId eq '$app_id'" --query [].id --output tsv)
     if [[ -z "$sp_id" ]]; then
-        #printf "Creating service principal..."
         sp_id=$(az ad sp create --id "$app_id" --query id --output tsv)
         printf " Done.\n"
     else
@@ -460,15 +468,17 @@ function create_oidc_and_federated_credentials() {
     fi
 
     printf "Creating role assignments..."
+    script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    config=$(envsubst <"${script_dir_path}/oidc.json")
     ras=$(echo "$config" | jq -c '.roleAssignments[]')
     echo "$ras" | while read -r ra; do
         role=$(echo "$ra" | jq -r '.role')
         scope=$(echo "$ra" | jq -r '.scope')
-        #echo "Assigning role '$role' at scope '$scope'..."
-        az role assignment create --role Contributor --subscription ${SUBSCRIPTION_ID} --assignee-object-id ${sp_id} --assignee-principal-type ServicePrincipal --scope "${scope}" --output none 2>&1 >/dev/null
+        az role assignment create --role "${role}" --subscription "${SUBSCRIPTION_ID}" --assignee-object-id "${sp_id}" --assignee-principal-type ServicePrincipal --scope "${scope}" --output none 2>&1 >/dev/null
         printf " Done.\n"
     done
 
+    create_federated_credentials "${APP_NAME}" "${SUBSCRIPTION_ID}" "${REPO}" "${ENVIRONMENT}" "${config}"
     gh_federated_credentials "${REPO}" "${app_id}" "${SUBSCRIPTION_ID}" "${ENVIRONMENT}"
 }
 
@@ -484,7 +494,7 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
-    id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
+    id="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv)"
     password="$(az ad sp credential reset --name "${id}" --display-name "rbac" --append --query password --output tsv)"
     secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
     secret_id="$(echo "${secret}" | jq -r .[].keyId)"
@@ -508,7 +518,7 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
-    id="$(az ad app list --display-name "${name}" --query '[].appId' --output tsv)"
+    id="$(az ad app list --filter "displayname eq '${name}'" --query '[].appId' --output tsv)"
     password="$(az ad app credential reset --id "${id}" --display-name "rbac" --append --query password --output tsv)"
     sleep 5
     secret="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
@@ -528,7 +538,7 @@ function delete_service_principal_and_stored_credentials() {
     printf "Working on service principal \"${name}\": "
 
     printf "deleting user in az ad..."
-    id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
+    id="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv)"
     az ad sp delete --id "${id}" --output none
 
     printf "deleting credentials in keyvault..."

@@ -6,22 +6,6 @@ provider "azurerm" {
   features {}
 }
 
-locals {
-  azurerm_logic_app_workflow_identites = merge([for logic_app_workflow_key, logic_app_workflow_value in var.logic_app_workflow : {
-    for mi_key, mi_value in data.azurerm_user_assigned_identity.managed_identity :
-    "${logic_app_workflow_key}-${mi_key}" => {
-      managedidentity_id = mi_value.id
-      name               = join("", [logic_app_workflow_value.name, "-", logic_app_workflow_value.folder])
-      location           = logic_app_workflow_value.location
-      rg_name            = logic_app_workflow_value.rg_name
-      loganalytics       = logic_app_workflow_value.loganalytics
-      storageaccount     = logic_app_workflow_value.storageaccount
-      folder             = logic_app_workflow_value.folder
-    }
-  }]...)
-
-}
-
 data "azurerm_managed_api" "azureblob" {
   name     = "azureblob"
   location = var.AZ_LOCATION
@@ -38,15 +22,16 @@ data "azurerm_user_assigned_identity" "managed_identity" {
   resource_group_name = each.value["rg_name"]
 }
 
+
 resource "azurerm_logic_app_workflow" "logic_app_workflow" {
-  for_each            = local.azurerm_logic_app_workflow_identites
+  for_each            = var.logic_app_workflow
   name                = each.value["name"]
   location            = each.value["location"]
   resource_group_name = each.value["rg_name"]
   enabled             = true
   identity {
     identity_ids = [
-      each.value["managedidentity_id"]
+      data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
     ]
     type = "UserAssigned"
   }
@@ -59,7 +44,7 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
           connectionName = data.azurerm_managed_api.azureblob.name
           connectionProperties = {
             authentication = {
-              identity = each.value["managedidentity_id"]
+              identity = data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
               type     = "ManagedServiceIdentity"
             }
           }
@@ -70,7 +55,7 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
           connectionName = data.azurerm_managed_api.azuremonitorlogs.name
           connectionProperties = {
             authentication = {
-              identity = each.value["managedidentity_id"]
+              identity = data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
               type     = "ManagedServiceIdentity"
             }
           }
@@ -78,7 +63,6 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
         }
       }
     )
-
   }
   workflow_parameters = {
     "$connections" = jsonencode(
@@ -90,22 +74,24 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
   }
 }
 
+
 resource "azurerm_logic_app_trigger_recurrence" "recurrence" {
-  for_each     = local.azurerm_logic_app_workflow_identites
+  for_each     = var.logic_app_workflow
   name         = "Recurrence"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
   frequency    = "Hour"
   interval     = 1
+  depends_on = [ data.azurerm_user_assigned_identity.managed_identity ]
 }
 
 resource "azurerm_logic_app_action_custom" "query" {
-  for_each     = local.azurerm_logic_app_workflow_identites
+  for_each     = var.logic_app_workflow
   name         = "Run_query_and_list_results"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
+  depends_on = [ azurerm_logic_app_trigger_recurrence.recurrence ]
 
   body = jsonencode(
     {
-
       inputs = {
         body = "let dt = now();\nlet year = datetime_part('year', dt);\nlet month = datetime_part('month', dt);\nlet day = datetime_part('day', dt);\nlet hour = datetime_part('hour', dt);\nlet startTime = make_datetime(year,month,day,hour,0)-1h;\nlet endTime = startTime + 1h - 1tick;\nAzureDiagnostics\n| where ingestion_time() between(startTime .. endTime)\n| project\n    TenantId,\n    TimeGenerated,\n    ResourceId,\n    Category,\n    ResourceGroup,\n    SubscriptionId,\n    ResourceProvider,\n    Resource,\n    ResourceType,\n    OperationName,\n    SourceSystem,\n    stream_s,\n    pod_s,\n    collectedBy_s,\n    log_s,\n    containerID_s,\n    Type,\n    _ResourceId",
         host = {
@@ -125,15 +111,15 @@ resource "azurerm_logic_app_action_custom" "query" {
       },
       runAfter = {},
       type     = "ApiConnection"
-
     }
   )
 }
 
 resource "azurerm_logic_app_action_custom" "parse_json" {
-  for_each     = local.azurerm_logic_app_workflow_identites
+  for_each     = var.logic_app_workflow
   name         = "Parse_JSON"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
+  depends_on = [ azurerm_logic_app_action_custom.query ]
 
   body = jsonencode(
     {
@@ -148,15 +134,15 @@ resource "azurerm_logic_app_action_custom" "parse_json" {
         ]
       },
       type = "ParseJson"
-
     }
   )
 }
 
 resource "azurerm_logic_app_action_custom" "compose" {
-  for_each     = local.azurerm_logic_app_workflow_identites
+  for_each     = var.logic_app_workflow
   name         = "Compose"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
+  depends_on = [ azurerm_logic_app_action_custom.parse_json ]
 
   body = jsonencode(
     {
@@ -171,15 +157,15 @@ resource "azurerm_logic_app_action_custom" "compose" {
         ]
       },
       type = "ParseJson"
-
     }
   )
 }
 
 resource "azurerm_logic_app_action_custom" "create_blob" {
-  for_each     = local.azurerm_logic_app_workflow_identites
+  for_each     = var.logic_app_workflow
   name         = "Create_blob_(V2)"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
+  depends_on = [ azurerm_logic_app_action_custom.compose ]
 
   body = jsonencode(
     {
@@ -197,7 +183,7 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
         method = "post",
         path   = "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${each.value["storageaccount"]}'))}/files",
         queries = {
-          folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy-MM-dd')}",
+          folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy')}/@{formatDateTime(utcNow(), 'MM')}/@{formatDateTime(utcNow(), 'dd')}",
           name                         = "@{subtractFromTime(formatDateTime(utcNow(),'yyyy-MM-ddTHH:00:00'), 1,'Hour')}",
           queryParametersSingleEncoded = true
         }
@@ -213,8 +199,6 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
         }
       },
       type = "ApiConnection"
-
     }
   )
 }
-

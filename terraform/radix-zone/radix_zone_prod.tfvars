@@ -22,8 +22,11 @@ CLUSTER_TYPE                   = "production"
 RADIX_ZONE                     = "prod"
 RADIX_ENVIRONMENT              = "prod"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
-K8S_ENVIROMENTS                = ["prod", "c2"]
 
+K8S_ENVIROMENTS = {
+  "prod" = { "name" = "prod", "resourceGroup" = "clusters" },
+  "c2"   = { "name" = "c2", "resourceGroup" = "clusters-westeurope" }
+}
 #######################################################################################
 ### Resource groups
 ###
@@ -49,17 +52,21 @@ AAD_RADIX_GROUP = "radix"
 ### System users
 ###
 
-MI_AKSKUBELET = [{
-  client_id = "a991a23f-13fd-433e-8e69-a6493f7aadae"
-  id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-production-northeurope"
-  object_id = "a6d8e609-ec92-4336-bc80-045b3d9e04a8"
-}]
+MI_AKSKUBELET = [
+  {
+    client_id = "a991a23f-13fd-433e-8e69-a6493f7aadae"
+    id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-production-northeurope"
+    object_id = "a6d8e609-ec92-4336-bc80-045b3d9e04a8"
+  }
+]
 
-MI_AKS = [{
-  client_id = "e9f15eab-a6c1-47e7-b840-5a2178c0995c"
-  id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-production-northeurope"
-  object_id = "3206534b-99a1-4a17-b238-5354129ccc44"
-}]
+MI_AKS = [
+  {
+    client_id = "e9f15eab-a6c1-47e7-b840-5a2178c0995c"
+    id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-production-northeurope"
+    object_id = "3206534b-99a1-4a17-b238-5354129ccc44"
+  }
+]
 
 AZ_PRIVATE_DNS_ZONES = [
   "privatelink.database.windows.net",
@@ -88,9 +95,14 @@ AZ_PRIVATE_DNS_ZONES = [
 ###
 
 managed_identity = {
-  "radix-logicapp-operator-prod" = {
-    name = "radix-logicapp-operator-prod"
+  "id-radix-logicapp-operator-prod" = {
+    name    = "id-radix-logicapp-operator-prod"
     rg_name = "Logs"
+  }
+  "id-radix-logicapp-operator-c2" = {
+    name     = "id-radix-logicapp-operator-c2"
+    location = "westeurope"
+    rg_name  = "logs-westeurope"
   }
 }
 
@@ -106,8 +118,33 @@ loganalytics = {
   }
   "s940-westeurope-diagnostics" = {
     name             = "s940-westeurope-diagnostics"
-    rg_name          = "Logs-westeurope"
+    rg_name          = "logs-westeurope"
     managed_identity = true
+  }
+}
+
+
+#######################################################################################
+### Logic Apps
+###
+
+logic_app_workflow = {
+  "archive-s940-northeurope-diagnostics" = {
+    name                  = "archive-s940-northeurope-diagnostics"
+    rg_name               = "Logs"
+    managed_identity_name = "id-radix-logicapp-operator-prod"
+    loganalytics          = "s940-northeurope-diagnostics"
+    storageaccount        = "radixflowlogsprod"
+    folder                = "prod"
+  }
+  "archive-s940-westeurope-diagnostics" = {
+    name                  = "archive-s940-westeurope-diagnostics"
+    location              = "westeurope"
+    rg_name               = "logs-westeurope"
+    managed_identity_name = "id-radix-logicapp-operator-c2"
+    loganalytics          = "s940-westeurope-diagnostics"
+    storageaccount        = "radixflowlogsc2prod"
+    folder                = "c2"
   }
 }
 
@@ -187,33 +224,45 @@ resource_groups = {
   }
 }
 
+aks_clouster_resource_groups = ["clusters-westeurope", "clusters"]
+
 #######################################################################################
 ### Storage Accounts
 ###
 
 storage_accounts = {
   "radixflowlogsc2prod" = {
-    name          = "radixflowlogsc2prod"
-    rg_name       = "logs-westeurope"
-    location      = "westeurope"
-    backup_center = true
-    life_cycle    = false
-    managed_identity = true
+    name                 = "radixflowlogsc2prod"
+    rg_name              = "logs-westeurope"
+    location             = "westeurope"
+    backup_center        = true
+    life_cycle           = false
+    managed_identity     = true
+    life_cycle           = true
+    life_cycle_version   = 3
+    life_cycle_blob      = 90
+    life_cycle_blob_cool = 7
   }
   "radixflowlogsprod" = {
-    name          = "radixflowlogsprod"
-    rg_name       = "Logs"
-    backup_center = true
-    life_cycle    = false
-    managed_identity = true
+    name                 = "radixflowlogsprod"
+    rg_name              = "Logs"
+    backup_center        = true
+    life_cycle           = false
+    managed_identity     = true
+    life_cycle           = true
+    life_cycle_version   = 3
+    life_cycle_blob      = 90
+    life_cycle_blob_cool = 7
   }
   "s940radixinfra" = {
     name             = "s940radixinfra"
     rg_name          = "s940-tfstate"
     repl             = "RAGRS"
+    life_cycle       = true
     backup_center    = true
     firewall         = false
     create_with_rbac = true
+    life_cycle_blob  = 0
   }
   "s940radixveleroc2" = {
     name             = "s940radixveleroc2"
@@ -251,24 +300,24 @@ storage_accounts = {
 
 sql_server = {
   "sql-radix-cost-allocation-c2-prod" = {
-    name                = "sql-radix-cost-allocation-c2-prod"
-    rg_name             = "cost-allocation-westeurope"
-    location            = "westeurope"
-    db_admin            = "radix-cost-allocation-db-admin"
-    minimum_tls_version = "Disabled"
-    vault               = "radix-vault-c2-prod"
+    name     = "sql-radix-cost-allocation-c2-prod"
+    rg_name  = "cost-allocation-westeurope"
+    location = "westeurope"
+    db_admin = "radix-cost-allocation-db-admin"
+    vault    = "radix-vault-c2-prod"
+    env      = "c2"
     tags = {
       "displayName" = "SqlServer"
     }
     identity = false
   }
   "sql-radix-cost-allocation-prod" = {
-    name                = "sql-radix-cost-allocation-prod"
-    rg_name             = "cost-allocation"
-    db_admin            = "radix-cost-allocation-db-admin"
-    minimum_tls_version = "Disabled"
-    vault               = "radix-vault-prod"
-    sku_name            = "S3"
+    name     = "sql-radix-cost-allocation-prod"
+    rg_name  = "cost-allocation"
+    db_admin = "radix-cost-allocation-db-admin"
+    vault    = "radix-vault-prod"
+    env      = "prod"
+    sku_name = "S3"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -280,12 +329,14 @@ sql_server = {
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
     vault    = "radix-vault-c2-prod"
+    env      = "c2"
   }
   "sql-radix-vulnerability-scan-prod" = {
     name     = "sql-radix-vulnerability-scan-prod"
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
     vault    = "radix-vault-prod"
+    env      = "prod"
     sku_name = "S3"
   }
 }
@@ -360,6 +411,21 @@ key_vault = {
   }
 }
 
+key_vault_by_k8s_environment = {
+  "prod" = {
+    name    = "radix-vault-prod"
+    rg_name = "common"
+  }
+  "c2" = {
+    name    = "radix-vault-c2-prod"
+    rg_name = "common-westeurope"
+  }
+  "monitoring" = {
+    name    = "kv-radix-monitoring-prod"
+    rg_name = "monitoring"
+  }
+}
+
 firewall_rules = {
   "equinor-wifi" = {
     start_ip_address = "143.97.110.1"
@@ -382,6 +448,8 @@ firewall_rules = {
     end_ip_address   = "0.0.0.0"
   }
 }
+
+EQUINOR_WIFI_IP_CIDR = "143.97.110.1/32"
 
 KV_RADIX_VAULT = "radix-vault-prod"
 
@@ -421,3 +489,5 @@ SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "043e5510-738f-4c30-8b9d-ee32578c7fe8"
 GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations"
+
+ACR_TOKEN_LIFETIME = "9000h" # Aprox. 12 months
