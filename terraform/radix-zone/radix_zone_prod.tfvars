@@ -85,7 +85,8 @@ AZ_PRIVATE_DNS_ZONES = [
   "privatelink.mysql.database.azure.com",
   "privatelink.mariadb.database.azure.com",
   "privatelink.vaultcore.azure.net",
-  "private.radix.equinor.com"
+  "private.radix.equinor.com",
+  "privatelink.azurecr.io"
 ]
 
 #To do
@@ -306,7 +307,7 @@ sql_server = {
     db_admin = "radix-cost-allocation-db-admin"
     vault    = "radix-vault-c2-prod"
     env      = "c2"
-    tags = {
+    tags     = {
       "displayName" = "SqlServer"
     }
     identity = false
@@ -318,7 +319,7 @@ sql_server = {
     vault    = "radix-vault-prod"
     env      = "prod"
     sku_name = "S3"
-    tags = {
+    tags     = {
       "displayName" = "SqlServer"
     }
   }
@@ -349,7 +350,7 @@ sql_database = {
   "sql-radix-cost-allocation-c2-prod" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-c2-prod"
-    tags = {
+    tags   = {
       "displayName" = "Database"
     }
   }
@@ -357,7 +358,7 @@ sql_database = {
     name     = "sqldb-radix-cost-allocation"
     server   = "sql-radix-cost-allocation-prod"
     sku_name = "S3"
-    tags = {
+    tags     = {
       "displayName" = "Database"
     }
   }
@@ -490,4 +491,6 @@ GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations"
 
-ACR_TOKEN_LIFETIME = "9000h" # Aprox. 12 months
+# Update this and run terraform in acr to rotate secrets.
+# Remember to restart Operator afterwards to get refreshed tokens
+ACR_TOKEN_EXPIRES_AT = "2024-11-01T12:00:00+00:00"

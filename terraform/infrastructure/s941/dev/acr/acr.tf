@@ -45,7 +45,7 @@ resource "azurerm_private_endpoint" "acr_app" {
 
 
 locals {
-  tmpDnsData = flatten([
+  acrDnsRecords = flatten([
     for key, value in var.K8S_ENVIROMENTS :
     [
       for ip in azurerm_private_endpoint.acr_app[key].custom_dns_configs :
@@ -57,14 +57,11 @@ locals {
       }
     ]
   ])
-  # Adds a unique key to each value to use it in for_each
-  acrDnsRecords = {
-    for value in local.tmpDnsData : join("-", [value.env, value.subdomain]) => value
-  }
 }
 
 resource "azurerm_private_dns_a_record" "dns_record" {
-  for_each = local.acrDnsRecords
+  # Adds a unique key to each value to use it in for_each
+  for_each = {for value in local.acrDnsRecords : join("-", [value.env, value.subdomain]) => value}
 
   name                = each.value.subdomain
   zone_name           = azurerm_private_dns_zone.zone[each.value.env].name
