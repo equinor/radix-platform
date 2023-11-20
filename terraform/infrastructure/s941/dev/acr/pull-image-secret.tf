@@ -14,7 +14,11 @@ resource "azurerm_container_registry_token_password" "password" {
 
   container_registry_token_id = azurerm_container_registry_token.app_acr[each.key].id
   password1 {
-    expiry = timeadd(plantimestamp(), var.ACR_TOKEN_LIFETIME)
+    expiry = var.ACR_TOKEN_EXPIRES_AT
+  }
+
+  lifecycle {
+    ignore_changes = [password2]
   }
 }
 
@@ -31,14 +35,12 @@ resource "azurerm_key_vault_secret" "secret" {
   key_vault_id    = data.azurerm_key_vault.vault[each.key].id
   name            = "radix-app-registry-secret-${each.key}"
   value           = azurerm_container_registry_token_password.password[each.key].password1[0].value
-  expiration_date = timeadd(plantimestamp(), var.ACR_TOKEN_LIFETIME)
+  expiration_date = formatdate("YYYY-MM-DD'T'HH:mm:ssZ", var.ACR_TOKEN_EXPIRES_AT)
   tags            = {
     "rotate-strategy" = "Manually recreate password1 in ACR, then copy secret to cluster"
     "source-token"    = "radix-app-registry-secret-${each.key}"
     "source-acr"      = azurerm_container_registry.app[each.key].name
   }
-
-  lifecycle { ignore_changes = [expiration_date] }
 }
 
 locals {
@@ -71,7 +73,7 @@ locals {
 }
 
 resource "null_resource" "create_token" {
-  triggers = { always_run = azurerm_key_vault_secret.secret[local.clusterEnvironment[each.key]].expiration_date }
+  triggers = { always_run = var.ACR_TOKEN_EXPIRES_AT }
 
   # Dont try to exec on clusters that are off, it will fail
   for_each = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => v if local.nodeCount[k] > 0}

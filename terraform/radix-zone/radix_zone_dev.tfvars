@@ -22,7 +22,7 @@ CLUSTER_TYPE                   = "development"
 RADIX_ZONE                     = "dev"
 RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
-K8S_ENVIROMENTS = {
+K8S_ENVIROMENTS                = {
   "dev"        = { "name" = "dev", "resourceGroup" = "clusters" },
   "playground" = { "name" = "playground", "resourceGroup" = "clusters" }
 }
@@ -241,7 +241,7 @@ sql_server = {
     db_admin = "radix-cost-allocation-db-admin"
     vault    = "radix-vault-dev"
     env      = "dev"
-    tags = {
+    tags     = {
       "displayName" = "SqlServer"
     }
   }
@@ -251,7 +251,7 @@ sql_server = {
     db_admin = "radix-cost-allocation-db-admin-playground"
     vault    = "radix-vault-dev"
     env      = "playground"
-    tags = {
+    tags     = {
       "displayName" = "SqlServer"
     }
   }
@@ -281,14 +281,14 @@ sql_database = {
   "sql-radix-cost-allocation-dev" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-dev"
-    tags = {
+    tags   = {
       "displayName" = "Database"
     }
   }
   "sql-radix-cost-allocation-playground" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-playground"
-    tags = {
+    tags   = {
       "displayName" = "Database"
     }
   }
@@ -427,4 +427,6 @@ GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations"
 
-ACR_TOKEN_LIFETIME = "9000h" # Aprox. 12 months
+# Update this and run terraform in acr to rotate secrets.
+# Remember to restart Operator afterwards to get refreshed tokens
+ACR_TOKEN_EXPIRES_AT = "2024-11-01T12:00:00+00:00"
