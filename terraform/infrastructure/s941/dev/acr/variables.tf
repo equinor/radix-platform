@@ -65,7 +65,7 @@ variable "key_vault_by_k8s_environment" {
   default = {}
 }
 
-variable "ACR_TOKEN_LIFETIME" {
+variable "ACR_TOKEN_EXPIRES_AT" {
   type = string
 }
 
