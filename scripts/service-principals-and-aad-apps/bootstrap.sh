@@ -122,7 +122,9 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 echo -e "   -  AZ_SYSTEM_USER_DNS                       : $AZ_SYSTEM_USER_DNS"
-echo -e "   -  MI_GITHUB_MAINTENANCE                    : ${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
+    echo -e "   -  MI_GITHUB_MAINTENANCE                    : ${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+fi
 echo -e "   -  RESOURCE-LOCK-OPERATOR                   : ${APP_REGISTRATION_RESOURCE_LOCK_OPERATOR}"
 echo -e ""
 echo -e "   > WHO:"
