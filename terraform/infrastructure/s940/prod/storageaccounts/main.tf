@@ -3,6 +3,8 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+
   features {}
 }
 
@@ -148,7 +150,7 @@ resource "azurerm_private_endpoint" "westeurope" {
   }
 }
 
-## DNS 
+## DNS
 resource "azurerm_private_dns_a_record" "dns_a_northeurope" {
   for_each            = { for key in compact([for key, value in local.privatelink_dns_record : endswith(key, "prod") && endswith(value.name, "prod") && value.private_endpoint ? key : ""]) : key => local.privatelink_dns_record[key] }
   name                = each.value["name"]
