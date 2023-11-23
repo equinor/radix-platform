@@ -10,7 +10,7 @@ variable "AZ_SUBSCRIPTION_ID" {
 
 variable "logic_app_workflow" {
   description = "Logic App Workflows"
-  type = map(object({
+  type        = map(object({
     name                  = string
     location              = optional(string, "northeurope")
     rg_name               = string
@@ -24,7 +24,7 @@ variable "logic_app_workflow" {
 
 variable "managed_identity" {
   description = "Managed Identity"
-  type = map(object({
+  type        = map(object({
     name    = string
     rg_name = string
   }))

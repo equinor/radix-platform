@@ -70,7 +70,7 @@ variable "CLUSTER_TYPE" {
 
 variable "MI_AKSKUBELET" {
   description = "Manage identity to assign to cluster"
-  type = list(object({
+  type        = list(object({
     client_id = string
     id        = string
     object_id = string
@@ -79,7 +79,7 @@ variable "MI_AKSKUBELET" {
 
 variable "MI_AKS" {
   description = "Manage identity to assign to cluster"
-  type = list(object({
+  type        = list(object({
     client_id = string
     id        = string
     object_id = string

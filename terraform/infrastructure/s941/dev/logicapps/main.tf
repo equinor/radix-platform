@@ -42,8 +42,8 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
     "$connections" = jsonencode(
       {
         azureblob = {
-          connectionId   = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azureblob.name}"
-          connectionName = data.azurerm_managed_api.azureblob.name
+          connectionId         = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azureblob.name}"
+          connectionName       = data.azurerm_managed_api.azureblob.name
           connectionProperties = {
             authentication = {
               identity = data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
@@ -53,8 +53,8 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
           id = data.azurerm_managed_api.azureblob.id
         }
         azuremonitorlogs = {
-          connectionId   = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azuremonitorlogs.name}"
-          connectionName = data.azurerm_managed_api.azuremonitorlogs.name
+          connectionId         = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azuremonitorlogs.name}"
+          connectionName       = data.azurerm_managed_api.azuremonitorlogs.name
           connectionProperties = {
             authentication = {
               identity = data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
@@ -83,14 +83,14 @@ resource "azurerm_logic_app_trigger_recurrence" "recurrence" {
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
   frequency    = "Hour"
   interval     = 1
-  depends_on = [ data.azurerm_user_assigned_identity.managed_identity ]
+  depends_on   = [data.azurerm_user_assigned_identity.managed_identity]
 }
 
 resource "azurerm_logic_app_action_custom" "query" {
   for_each     = var.logic_app_workflow
   name         = "Run_query_and_list_results"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_trigger_recurrence.recurrence ]
+  depends_on   = [azurerm_logic_app_trigger_recurrence.recurrence]
 
   body = jsonencode(
     {
@@ -101,8 +101,8 @@ resource "azurerm_logic_app_action_custom" "query" {
             name = "@parameters('$connections')['azuremonitorlogs']['connectionId']"
           }
         },
-        method = "post",
-        path   = "/queryData",
+        method  = "post",
+        path    = "/queryData",
         queries = {
           resourcegroups = each.value["rg_name"],
           resourcename   = each.value["loganalytics"],
@@ -121,7 +121,7 @@ resource "azurerm_logic_app_action_custom" "parse_json" {
   for_each     = var.logic_app_workflow
   name         = "Parse_JSON"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_action_custom.query ]
+  depends_on   = [azurerm_logic_app_action_custom.query]
 
   body = jsonencode(
     {
@@ -144,7 +144,7 @@ resource "azurerm_logic_app_action_custom" "compose" {
   for_each     = var.logic_app_workflow
   name         = "Compose"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_action_custom.parse_json ]
+  depends_on   = [azurerm_logic_app_action_custom.parse_json]
 
   body = jsonencode(
     {
@@ -167,13 +167,13 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
   for_each     = var.logic_app_workflow
   name         = "Create_blob_(V2)"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_action_custom.compose ]
+  depends_on   = [azurerm_logic_app_action_custom.compose]
 
   body = jsonencode(
     {
 
       inputs = {
-        body = "@outputs('Compose')",
+        body    = "@outputs('Compose')",
         headers = {
           ReadFileMetadataFromServer = true
         },
@@ -182,8 +182,8 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
             name = "@parameters('$connections')['azureblob']['connectionId']"
           }
         },
-        method = "post",
-        path   = "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${each.value["storageaccount"]}'))}/files",
+        method  = "post",
+        path    = "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${each.value["storageaccount"]}'))}/files",
         queries = {
           folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy')}/@{formatDateTime(utcNow(), 'MM')}/@{formatDateTime(utcNow(), 'dd')}",
           name                         = "@{subtractFromTime(formatDateTime(utcNow(),'yyyy-MM-ddTHH:00:00'), 1,'Hour')}",

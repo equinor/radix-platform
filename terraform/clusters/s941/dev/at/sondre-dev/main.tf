@@ -27,8 +27,13 @@ locals {
       max_count             = 1
       mode                  = "User"
       vnet_subnet_id        = module.aks.subnet_cluster.id
-      node_labels           = tomap({ sku = "gpu", gpu = "nvidia-v100", gpu-count = "1", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "1" })
-      node_taints           = ["sku=gpu:NoSchedule", "gpu=nvidia-v100:NoSchedule", "gpu-count=1:NoSchedule", "radix-node-gpu=nvidia-v100:NoSchedule", "radix-node-gpu-count=1:NoSchedule"]
+      node_labels           = tomap({
+        sku = "gpu", gpu = "nvidia-v100", gpu-count = "1", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "1"
+      })
+      node_taints = [
+        "sku=gpu:NoSchedule", "gpu=nvidia-v100:NoSchedule", "gpu-count=1:NoSchedule",
+        "radix-node-gpu=nvidia-v100:NoSchedule", "radix-node-gpu-count=1:NoSchedule"
+      ]
 
     },
     {
@@ -39,8 +44,13 @@ locals {
       max_count             = 1
       mode                  = "User"
       vnet_subnet_id        = module.aks.subnet_cluster.id
-      node_labels           = tomap({ sku = "gpu", gpu = "nvidia-v100", gpu-count = "2", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "2" })
-      node_taints           = ["sku=gpu:NoSchedule", "gpu=nvidia-v100:NoSchedule", "gpu-count=2:NoSchedule", "radix-node-gpu=nvidia-v100:NoSchedule", "radix-node-gpu-count=2:NoSchedule"]
+      node_labels           = tomap({
+        sku = "gpu", gpu = "nvidia-v100", gpu-count = "2", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "2"
+      })
+      node_taints = [
+        "sku=gpu:NoSchedule", "gpu=nvidia-v100:NoSchedule", "gpu-count=2:NoSchedule",
+        "radix-node-gpu=nvidia-v100:NoSchedule", "radix-node-gpu-count=2:NoSchedule"
+      ]
     },
     {
       name                  = "nc24sv3"
@@ -50,8 +60,13 @@ locals {
       max_count             = 1
       mode                  = "User"
       vnet_subnet_id        = module.aks.subnet_cluster.id
-      node_labels           = tomap({ sku = "gpu", gpu = "nvidia-v100", gpu-count = "4", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "4" })
-      node_taints           = ["sku=gpu:NoSchedule", "gpu=nvidia-v100:NoSchedule", "gpu-count=4:NoSchedule", "radix-node-gpu=nvidia-v100:NoSchedule", "radix-node-gpu-count=4:NoSchedule"]
+      node_labels           = tomap({
+        sku = "gpu", gpu = "nvidia-v100", gpu-count = "4", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "4"
+      })
+      node_taints = [
+        "sku=gpu:NoSchedule", "gpu=nvidia-v100:NoSchedule", "gpu-count=4:NoSchedule",
+        "radix-node-gpu=nvidia-v100:NoSchedule", "radix-node-gpu-count=4:NoSchedule"
+      ]
     }
   ]
   AZ_IPPRE_OUTBOUND_NAME         = "ippre-radix-aks-${var.CLUSTER_TYPE}-${var.AZ_LOCATION}-001"

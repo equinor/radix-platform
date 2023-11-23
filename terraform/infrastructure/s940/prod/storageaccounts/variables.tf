@@ -31,7 +31,7 @@ variable "storage_accounts" {
     kind                              = optional(string, "StorageV2")   # Optional
     repl                              = optional(string, "LRS")         # Optional
     tier                              = optional(string, "Standard")    # Optional
-    backup_center                     = optional(bool, false)           # Optional      
+    backup_center                     = optional(bool, false)           # Optional
     life_cycle                        = optional(bool, true)
     firewall                          = optional(bool, true)
     container_delete_retention_policy = optional(bool, true)
@@ -70,7 +70,7 @@ variable "virtual_networks" {
 
 variable "private_link" {
   description = "Subnet connection."
-  type = map(object({
+  type        = map(object({
     linkname = string
   }))
   default = null

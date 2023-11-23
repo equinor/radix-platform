@@ -9,25 +9,29 @@ provider "azurerm" {
 }
 
 locals {
-  mysql_flexible_server_firewall_rules = merge([for server_key, server_value in var.mysql_flexible_server : {
-    for rule_key, rule_value in var.firewall_rules :
-    "${server_key}-${rule_key}" => {
-      start_ip_address    = rule_value.start_ip_address
-      end_ip_address      = rule_value.end_ip_address
-      server_name         = server_value.name
-      resource_group_name = server_value.rg_name
+  mysql_flexible_server_firewall_rules = merge([
+    for server_key, server_value in var.mysql_flexible_server : {
+      for rule_key, rule_value in var.firewall_rules :
+      "${server_key}-${rule_key}" => {
+        start_ip_address    = rule_value.start_ip_address
+        end_ip_address      = rule_value.end_ip_address
+        server_name         = server_value.name
+        resource_group_name = server_value.rg_name
+      }
     }
-  }]...)
+  ]...)
 
-  mysql_server_firewall_rules = merge([for server_key, server_value in var.mysql_server : {
-    for rule_key, rule_value in var.firewall_rules :
-    "${server_key}-${rule_key}" => {
-      start_ip_address    = rule_value.start_ip_address
-      end_ip_address      = rule_value.end_ip_address
-      server_name         = server_value.name
-      resource_group_name = server_value.rg_name
+  mysql_server_firewall_rules = merge([
+    for server_key, server_value in var.mysql_server : {
+      for rule_key, rule_value in var.firewall_rules :
+      "${server_key}-${rule_key}" => {
+        start_ip_address    = rule_value.start_ip_address
+        end_ip_address      = rule_value.end_ip_address
+        server_name         = server_value.name
+        resource_group_name = server_value.rg_name
+      }
     }
-  }]...)
+  ]...)
 
   all_sql_servers = merge(
     (var.mysql_flexible_server),
