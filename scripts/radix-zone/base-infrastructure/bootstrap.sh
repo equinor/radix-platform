@@ -157,7 +157,6 @@ printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
 printf "\n"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-printf "\n   -  AZ_SYSTEM_USER_DNS                          : $AZ_SYSTEM_USER_DNS"
 printf "\n   -  APP_REGISTRATION_WEB_CONSOLE                : $APP_REGISTRATION_WEB_CONSOLE"
 printf "\n   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
 printf "\n   -  APP_REGISTRATION_CERT_MANAGER               : $APP_REGISTRATION_CERT_MANAGER"
@@ -384,29 +383,6 @@ function create_inbound_public_ip_prefix() {
     fi
 }
 
-
-function set_permissions_on_dns() {
-    local scope
-    local id
-    local dns # Optional input 1
-
-    if [ -n "$1" ]; then
-        dns="$1"
-    else
-        dns="$AZ_RESOURCE_DNS"
-    fi
-
-    # Use service principle.
-    scope="$(az network dns zone show --name ${dns} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
-
-    # Grant 'DNS Zone Contributor' permissions to a specific zone
-    # https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#dns-zone-contributor
-    printf "Azure dns zone: Setting permissions for \"${AZ_SYSTEM_USER_DNS}\" on \"${dns}\"..."
-    id="$(az ad sp list --filter "displayname eq '${AZ_SYSTEM_USER_DNS}'" --query [].appId --output tsv)"
-    az role assignment create --assignee "${id}" --role "DNS Zone Contributor" --scope "${scope}" --output none
-    printf "...Done\n"
-}
-
 function create_dns_role_definition_for_cert_manager() {
     # Create DNS TXT Contributor role to be used by Cert Manager
     temp_file_role_definition="/tmp/$(uuidgen)"
@@ -454,7 +430,6 @@ EOF
 function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Service principal that provide read-only access to container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
-    create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_CERT_MANAGER" "Cert-Manager"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
@@ -662,7 +637,6 @@ update_app_registration
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
 create_acr_tasks
-set_permissions_on_dns
 create_dns_role_definition_for_cert_manager
 create_log_analytics_workspace
 set_permissions_on_log_analytics_workspace
