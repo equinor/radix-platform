@@ -325,14 +325,6 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/vulnerability-scan
 wait
 
 #######################################################################################
-### Deploy dynatrace
-###
-
-#echo ""
-#(./dynatrace/bootstrap.sh)
-#wait
-
-#######################################################################################
 ### Install prerequisites for Velero
 ###
 
