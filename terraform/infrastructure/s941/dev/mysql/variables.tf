@@ -1,3 +1,8 @@
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+
 variable "mysql_flexible_server" {
   type = map(object({
     name                  = string
@@ -16,7 +21,7 @@ variable "mysql_flexible_server" {
 
 variable "mysql_server" {
   description = "Legacy Mysql servers"
-  type = map(object({
+  type        = map(object({
     name                             = string
     rg_name                          = optional(string, "monitoring")
     location                         = optional(string, "northeurope")
@@ -34,7 +39,7 @@ variable "mysql_server" {
 
 variable "firewall_rules" {
   description = "Range of IP addresses to allow firewall connections."
-  type = map(object({
+  type        = map(object({
     start_ip_address = string
     end_ip_address   = string
   }))
@@ -43,7 +48,7 @@ variable "firewall_rules" {
 
 variable "key_vault" {
   description = "Name of Keyvault."
-  type = map(object({
+  type        = map(object({
     name    = string
     rg_name = string
   }))

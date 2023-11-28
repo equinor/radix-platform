@@ -3,6 +3,11 @@ variable "AZ_TENANT_ID" {
   type        = string
 }
 
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+
 variable "AZ_RESOURCE_GROUP_COMMON" {
   description = "Resource group name for common"
   type        = string

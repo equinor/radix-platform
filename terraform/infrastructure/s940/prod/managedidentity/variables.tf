@@ -1,3 +1,8 @@
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+
 variable "managed_identity" {
   type = map(object({
     name     = string
