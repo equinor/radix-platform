@@ -44,10 +44,6 @@ variable "resource_groups" {
   default = {}
 }
 
-variable "AZ_RESOURCE_GROUP_CLUSTERS" {
-  type = string
-}
-
 variable "K8S_ENVIROMENTS" {
   description = "A map of cluster enviroments and their resource group"
   type        = map(object({
