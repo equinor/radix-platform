@@ -2,8 +2,8 @@
 ### Zone and cluster settings
 ###
 
-AZ_LOCATION                    = "northeurope"
-RADIX_ZONE                     = "prod"
+AZ_LOCATION = "northeurope"
+RADIX_ZONE  = "prod"
 
 K8S_ENVIROMENTS = {
   "prod" = { "name" = "prod", "resourceGroup" = "clusters" },
@@ -13,7 +13,7 @@ K8S_ENVIROMENTS = {
 ### Resource groups
 ###
 
-AZ_RESOURCE_GROUP_COMMON   = "common"
+AZ_RESOURCE_GROUP_COMMON = "common"
 
 #######################################################################################
 ### Shared environment, az region and az subscription
@@ -245,7 +245,7 @@ sql_server = {
     db_admin = "radix-cost-allocation-db-admin"
     vault    = "radix-vault-c2-prod"
     env      = "c2"
-    tags     = {
+    tags = {
       "displayName" = "SqlServer"
     }
     identity = false
@@ -257,7 +257,7 @@ sql_server = {
     vault    = "radix-vault-prod"
     env      = "prod"
     sku_name = "S3"
-    tags     = {
+    tags = {
       "displayName" = "SqlServer"
     }
   }
@@ -288,7 +288,7 @@ sql_database = {
   "sql-radix-cost-allocation-c2-prod" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-c2-prod"
-    tags   = {
+    tags = {
       "displayName" = "Database"
     }
   }
@@ -296,7 +296,7 @@ sql_database = {
     name     = "sqldb-radix-cost-allocation"
     server   = "sql-radix-cost-allocation-prod"
     sku_name = "S3"
-    tags     = {
+    tags = {
       "displayName" = "Database"
     }
   }

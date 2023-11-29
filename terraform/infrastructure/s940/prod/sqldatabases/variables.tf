@@ -1,3 +1,8 @@
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+
 variable "sql_server" {
   type = map(object({
     administrator_login = optional(string, "radix")

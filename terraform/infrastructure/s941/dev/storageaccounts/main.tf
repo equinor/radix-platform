@@ -3,6 +3,8 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+
   features {}
 }
 
@@ -12,24 +14,28 @@ data "azurerm_subscription" "AZ_SUBSCRIPTION" {
 
 locals {
   WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
-  storageaccount_private_subnet = merge([for sa_key, sa_value in var.storage_accounts : {
-    for privlink_key, privlink_value in var.private_link :
-    "${sa_key}-${privlink_key}" => {
-      name                = sa_value.name
-      resource_group_name = sa_value.rg_name
-      location            = sa_value.location
-      subnet_id           = privlink_value.linkname
-      private_endpoint    = sa_value.private_endpoint
+  storageaccount_private_subnet = merge([
+    for sa_key, sa_value in var.storage_accounts : {
+      for privlink_key, privlink_value in var.private_link :
+      "${sa_key}-${privlink_key}" => {
+        name                = sa_value.name
+        resource_group_name = sa_value.rg_name
+        location            = sa_value.location
+        subnet_id           = privlink_value.linkname
+        private_endpoint    = sa_value.private_endpoint
+      }
     }
-  }]...)
-  privatelink_dns_record = merge([for sa_key, sa_value in var.storage_accounts : {
-    for virtual_networks_key, virtual_networks_value in var.virtual_networks :
-    "${sa_key}-${virtual_networks_key}" => {
-      name                = sa_value.name
-      resource_group_name = virtual_networks_value.rg_name
-      private_endpoint    = sa_value.private_endpoint
+  ]...)
+  privatelink_dns_record = merge([
+    for sa_key, sa_value in var.storage_accounts : {
+      for virtual_networks_key, virtual_networks_value in var.virtual_networks :
+      "${sa_key}-${virtual_networks_key}" => {
+        name                = sa_value.name
+        resource_group_name = virtual_networks_value.rg_name
+        private_endpoint    = sa_value.private_endpoint
+      }
     }
-  }]...)
+  ]...)
 }
 
 data "azurerm_key_vault" "keyvault_env" {
@@ -43,14 +49,18 @@ data "azurerm_key_vault_secret" "whitelist_ips" {
 }
 
 data "azurerm_subnet" "virtual_subnets" {
-  for_each             = { for key, value in var.resource_groups : key => value if length(regexall("cluster-vnet-hub", key)) > 0 }
+  for_each = {
+    for key, value in var.resource_groups : key => value if length(regexall("cluster-vnet-hub", key)) > 0
+  }
   name                 = "private-links"
   virtual_network_name = "vnet-hub"
   resource_group_name  = each.value["name"]
 }
 
 data "azurerm_private_dns_zone" "dns-zone" {
-  for_each            = { for key, value in var.resource_groups : key => value if length(regexall("cluster-vnet-hub", key)) > 0 }
+  for_each = {
+    for key, value in var.resource_groups : key => value if length(regexall("cluster-vnet-hub", key)) > 0
+  }
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = each.value["name"]
 }
@@ -60,13 +70,18 @@ data "azurerm_private_dns_zone" "dns-zone" {
 ###
 
 data "azurerm_storage_account" "storageaccounts" {
-  for_each            = { for key in compact([for key, value in var.storage_accounts : value.create_with_rbac ? key : ""]) : key => var.storage_accounts[key] }
+  for_each = {
+    for key in compact([for key, value in var.storage_accounts : value.create_with_rbac ? key : ""]) : key =>
+    var.storage_accounts[key]
+  }
   name                = each.value["name"]
   resource_group_name = each.value["rg_name"]
 }
 
 resource "azurerm_storage_account" "storageaccounts" {
-  for_each                         = { for key, value in var.storage_accounts : key => var.storage_accounts[key] if !value["create_with_rbac"] }
+  for_each = {
+    for key, value in var.storage_accounts : key => var.storage_accounts[key] if !value["create_with_rbac"]
+  }
   name                             = each.value["name"]
   resource_group_name              = each.value["rg_name"]
   location                         = each.value["location"]
@@ -118,7 +133,12 @@ resource "azurerm_storage_account" "storageaccounts" {
 ###
 
 resource "azurerm_private_endpoint" "northeurope" {
-  for_each            = { for key in compact([for key, value in local.storageaccount_private_subnet : value.location == var.AZ_LOCATION && value.private_endpoint ? key : ""]) : key => local.storageaccount_private_subnet[key] }
+  for_each = {
+    for key in compact([
+      for key, value in local.storageaccount_private_subnet :
+    value.location == var.AZ_LOCATION && value.private_endpoint ? key : ""]) : key =>
+    local.storageaccount_private_subnet[key]
+  }
   name                = each.key
   resource_group_name = each.value["resource_group_name"]
   location            = each.value["location"]
@@ -134,9 +154,12 @@ resource "azurerm_private_endpoint" "northeurope" {
 
 }
 
-## DNS 
+## DNS
 resource "azurerm_private_dns_a_record" "dns_a_northeurope" {
-  for_each            = { for key in compact([for key, value in local.privatelink_dns_record : value.private_endpoint ? key : ""]) : key => local.privatelink_dns_record[key] }
+  for_each = {
+    for key in compact([for key, value in local.privatelink_dns_record : value.private_endpoint ? key : ""]) : key =>
+    local.privatelink_dns_record[key]
+  }
   name                = each.value["name"]
   zone_name           = "privatelink.blob.core.windows.net"
   resource_group_name = each.value["resource_group_name"]
@@ -150,7 +173,12 @@ resource "azurerm_private_dns_a_record" "dns_a_northeurope" {
 ###
 
 resource "azurerm_role_assignment" "northeurope" {
-  for_each             = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each = {
+    for key in compact([
+      for key, value in var.storage_accounts :
+    value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key =>
+    var.storage_accounts[key]
+  }
   scope                = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
   role_definition_name = "Storage Account Backup Contributor"
   principal_id         = azurerm_data_protection_backup_vault.northeurope.identity[0].principal_id
@@ -162,7 +190,12 @@ resource "azurerm_role_assignment" "northeurope" {
 ###
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key => var.storage_accounts[key] }
+  for_each = {
+    for key in compact([
+      for key, value in var.storage_accounts :
+    value.backup_center && value.location == var.AZ_LOCATION && value.kind == "StorageV2" ? key : ""]) : key =>
+    var.storage_accounts[key]
+  }
   name               = each.value.name
   vault_id           = azurerm_data_protection_backup_vault.northeurope.id
   location           = each.value.location
@@ -176,7 +209,10 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "northeurope" {
 ###
 
 resource "azurerm_storage_management_policy" "sapolicy" {
-  for_each           = { for key in compact([for key, value in var.storage_accounts : value.life_cycle ? key : ""]) : key => var.storage_accounts[key] }
+  for_each = {
+    for key in compact([for key, value in var.storage_accounts : value.life_cycle ? key : ""]) : key =>
+    var.storage_accounts[key]
+  }
   storage_account_id = var.storage_accounts[each.key].create_with_rbac ? data.azurerm_storage_account.storageaccounts[each.key].id : azurerm_storage_account.storageaccounts[each.key].id
   depends_on         = [azurerm_storage_account.storageaccounts]
 

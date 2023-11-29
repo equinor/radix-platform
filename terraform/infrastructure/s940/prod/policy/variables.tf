@@ -1,6 +1,11 @@
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+
 variable "K8S_ENVIROMENTS" {
   description = "A map of cluster enviroments and their resource group"
-  type        = map(object({
+  type = map(object({
     name          = string
     resourceGroup = string
   }))
@@ -8,11 +13,6 @@ variable "K8S_ENVIROMENTS" {
 
 variable "AZ_SUBSCRIPTION_SHORTNAME" {
   description = "Subscription shortname"
-  type        = string
-}
-
-variable "AZ_SUBSCRIPTION_ID" {
-  description = "Azure subscription id"
   type        = string
 }
 

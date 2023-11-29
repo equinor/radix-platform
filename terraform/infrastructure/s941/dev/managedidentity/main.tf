@@ -3,37 +3,49 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+
   features {}
 }
 
 locals {
-  storageaccount_role_assignment = merge([for storageaccount_key, storageaccount_value in data.azurerm_storage_account.storageaccounts : {
-    for mi_key, mi_value in var.managed_identity :
-    "${storageaccount_key}-${mi_key}" => {
-      managedidentity = mi_value.name
-      storageaccount  = storageaccount_value.name
-      id              = storageaccount_value.id
+  storageaccount_role_assignment = merge([
+    for storageaccount_key, storageaccount_value in data.azurerm_storage_account.storageaccounts : {
+      for mi_key, mi_value in var.managed_identity :
+      "${storageaccount_key}-${mi_key}" => {
+        managedidentity = mi_value.name
+        storageaccount  = storageaccount_value.name
+        id              = storageaccount_value.id
+      }
     }
-  }]...)
+  ]...)
 
-  loganalytics_role_assignment = merge([for loganalytics_key, loganalytics_value in data.azurerm_log_analytics_workspace.loganalytics : {
-    for mi_key, mi_value in var.managed_identity :
-    "${loganalytics_key}-${mi_key}" => {
-      managedidentity = mi_value.name
-      storageaccount  = loganalytics_value.name
-      id              = loganalytics_value.id
+  loganalytics_role_assignment = merge([
+    for loganalytics_key, loganalytics_value in data.azurerm_log_analytics_workspace.loganalytics : {
+      for mi_key, mi_value in var.managed_identity :
+      "${loganalytics_key}-${mi_key}" => {
+        managedidentity = mi_value.name
+        storageaccount  = loganalytics_value.name
+        id              = loganalytics_value.id
+      }
     }
-  }]...)
+  ]...)
 }
 
 data "azurerm_log_analytics_workspace" "loganalytics" {
-  for_each            = { for key in compact([for key, value in var.loganalytics : value.managed_identity ? key : ""]) : key => var.loganalytics[key] }
+  for_each = {
+    for key in compact([for key, value in var.loganalytics : value.managed_identity ? key : ""]) : key =>
+    var.loganalytics[key]
+  }
   name                = each.value["name"]
   resource_group_name = each.value["rg_name"]
 }
 
 data "azurerm_storage_account" "storageaccounts" {
-  for_each            = { for key in compact([for key, value in var.storage_accounts : value.managed_identity ? key : ""]) : key => var.storage_accounts[key] }
+  for_each = {
+    for key in compact([for key, value in var.storage_accounts : value.managed_identity ? key : ""]) : key =>
+    var.storage_accounts[key]
+  }
   name                = each.value["name"]
   resource_group_name = each.value["rg_name"]
 }

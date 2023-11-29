@@ -3,6 +3,8 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+
   features {}
 }
 
@@ -79,14 +81,14 @@ resource "azurerm_logic_app_trigger_recurrence" "recurrence" {
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
   frequency    = "Hour"
   interval     = 1
-  depends_on = [ data.azurerm_user_assigned_identity.managed_identity ]
+  depends_on   = [data.azurerm_user_assigned_identity.managed_identity]
 }
 
 resource "azurerm_logic_app_action_custom" "query" {
   for_each     = var.logic_app_workflow
   name         = "Run_query_and_list_results"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_trigger_recurrence.recurrence ]
+  depends_on   = [azurerm_logic_app_trigger_recurrence.recurrence]
 
   body = jsonencode(
     {
@@ -117,7 +119,7 @@ resource "azurerm_logic_app_action_custom" "parse_json" {
   for_each     = var.logic_app_workflow
   name         = "Parse_JSON"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_action_custom.query ]
+  depends_on   = [azurerm_logic_app_action_custom.query]
 
   body = jsonencode(
     {
@@ -140,7 +142,7 @@ resource "azurerm_logic_app_action_custom" "compose" {
   for_each     = var.logic_app_workflow
   name         = "Compose"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_action_custom.parse_json ]
+  depends_on   = [azurerm_logic_app_action_custom.parse_json]
 
   body = jsonencode(
     {
@@ -163,7 +165,7 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
   for_each     = var.logic_app_workflow
   name         = "Create_blob_(V2)"
   logic_app_id = azurerm_logic_app_workflow.logic_app_workflow[each.key].id
-  depends_on = [ azurerm_logic_app_action_custom.compose ]
+  depends_on   = [azurerm_logic_app_action_custom.compose]
 
   body = jsonencode(
     {
