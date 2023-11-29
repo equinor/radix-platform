@@ -106,7 +106,6 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-echo -e "   -  AZ_SYSTEM_USER_DNS                       : $AZ_SYSTEM_USER_DNS"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -145,7 +144,6 @@ function delete_service_principal() {
 
 delete_service_principal "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 delete_service_principal "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-delete_service_principal "$AZ_SYSTEM_USER_DNS"
 
 
 #######################################################################################
