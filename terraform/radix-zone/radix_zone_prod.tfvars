@@ -2,8 +2,8 @@
 ### Zone and cluster settings
 ###
 
-AZ_LOCATION                    = "northeurope"
-RADIX_ZONE                     = "prod"
+AZ_LOCATION = "northeurope"
+RADIX_ZONE  = "prod"
 
 K8S_ENVIROMENTS = {
   "prod" = { "name" = "prod", "resourceGroup" = "clusters" },
@@ -13,7 +13,7 @@ K8S_ENVIROMENTS = {
 ### Resource groups
 ###
 
-AZ_RESOURCE_GROUP_COMMON   = "common"
+AZ_RESOURCE_GROUP_COMMON = "common"
 
 #######################################################################################
 ### Shared environment, az region and az subscription
