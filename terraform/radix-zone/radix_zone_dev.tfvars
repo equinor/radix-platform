@@ -241,7 +241,7 @@ sql_server = {
     db_admin = "radix-cost-allocation-db-admin"
     vault    = "radix-vault-dev"
     env      = "dev"
-    tags     = {
+    tags = {
       "displayName" = "SqlServer"
     }
   }
@@ -251,7 +251,7 @@ sql_server = {
     db_admin = "radix-cost-allocation-db-admin-playground"
     vault    = "radix-vault-dev"
     env      = "playground"
-    tags     = {
+    tags = {
       "displayName" = "SqlServer"
     }
   }
@@ -281,14 +281,14 @@ sql_database = {
   "sql-radix-cost-allocation-dev" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-dev"
-    tags   = {
+    tags = {
       "displayName" = "Database"
     }
   }
   "sql-radix-cost-allocation-playground" = {
     name   = "sqldb-radix-cost-allocation"
     server = "sql-radix-cost-allocation-playground"
-    tags   = {
+    tags = {
       "displayName" = "Database"
     }
   }

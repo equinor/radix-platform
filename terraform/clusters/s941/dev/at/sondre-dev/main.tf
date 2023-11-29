@@ -27,7 +27,7 @@ locals {
       max_count             = 1
       mode                  = "User"
       vnet_subnet_id        = module.aks.subnet_cluster.id
-      node_labels           = tomap({
+      node_labels = tomap({
         sku = "gpu", gpu = "nvidia-v100", gpu-count = "1", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "1"
       })
       node_taints = [
@@ -44,7 +44,7 @@ locals {
       max_count             = 1
       mode                  = "User"
       vnet_subnet_id        = module.aks.subnet_cluster.id
-      node_labels           = tomap({
+      node_labels = tomap({
         sku = "gpu", gpu = "nvidia-v100", gpu-count = "2", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "2"
       })
       node_taints = [
@@ -60,7 +60,7 @@ locals {
       max_count             = 1
       mode                  = "User"
       vnet_subnet_id        = module.aks.subnet_cluster.id
-      node_labels           = tomap({
+      node_labels = tomap({
         sku = "gpu", gpu = "nvidia-v100", gpu-count = "4", radix-node-gpu = "nvidia-v100", radix-node-gpu-count = "4"
       })
       node_taints = [
