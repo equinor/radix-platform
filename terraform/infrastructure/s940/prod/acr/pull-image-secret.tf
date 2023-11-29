@@ -36,7 +36,7 @@ resource "azurerm_key_vault_secret" "secret" {
   name            = "radix-app-registry-secret-${each.key}"
   value           = azurerm_container_registry_token_password.password[each.key].password1[0].value
   expiration_date = formatdate("YYYY-MM-DD'T'HH:mm:ssZ", var.ACR_TOKEN_EXPIRES_AT)
-  tags            = {
+  tags = {
     "rotate-strategy" = "Manually recreate password1 in ACR, then copy secret to cluster"
     "source-token"    = "radix-app-registry-secret-${each.key}"
     "source-acr"      = azurerm_container_registry.app[each.key].name
@@ -45,16 +45,16 @@ resource "azurerm_key_vault_secret" "secret" {
 
 locals {
   auth = {
-    for k, v in data.azurerm_kubernetes_cluster.k8s : k =>{
+    for k, v in data.azurerm_kubernetes_cluster.k8s : k => {
       server = azurerm_container_registry.app[local.clusterEnvironment[k]].login_server
       user   = "radix-app-registry-secret-${local.clusterEnvironment[k]}",
       pass   = azurerm_container_registry_token_password.password[local.clusterEnvironment[k]].password1[0].value
     }
   }
 
-  nodeCount = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => sum(v.agent_pool_profile[*].count)}
+  nodeCount = { for k, v in data.azurerm_kubernetes_cluster.k8s : k => sum(v.agent_pool_profile[*].count) }
 
-  config = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => base64encode(v.kube_config_raw)}
+  config = { for k, v in data.azurerm_kubernetes_cluster.k8s : k => base64encode(v.kube_config_raw) }
 
   secret = {
     for k, v in data.azurerm_kubernetes_cluster.k8s : k => base64encode(<<-EOF
@@ -76,7 +76,7 @@ resource "null_resource" "create_token" {
   triggers = { always_run = var.ACR_TOKEN_EXPIRES_AT }
 
   # Dont try to exec on clusters that are off, it will fail
-  for_each = {for k, v in data.azurerm_kubernetes_cluster.k8s : k => v if local.nodeCount[k] > 0}
+  for_each = { for k, v in data.azurerm_kubernetes_cluster.k8s : k => v if local.nodeCount[k] > 0 }
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]

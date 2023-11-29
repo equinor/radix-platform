@@ -41,8 +41,8 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
     "$connections" = jsonencode(
       {
         azureblob = {
-          connectionId         = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azureblob.name}"
-          connectionName       = data.azurerm_managed_api.azureblob.name
+          connectionId   = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azureblob.name}"
+          connectionName = data.azurerm_managed_api.azureblob.name
           connectionProperties = {
             authentication = {
               identity = data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
@@ -52,8 +52,8 @@ resource "azurerm_logic_app_workflow" "logic_app_workflow" {
           id = data.azurerm_managed_api.azureblob.id
         }
         azuremonitorlogs = {
-          connectionId         = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azuremonitorlogs.name}"
-          connectionName       = data.azurerm_managed_api.azuremonitorlogs.name
+          connectionId   = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourceGroups/${each.value["rg_name"]}/providers/Microsoft.Web/connections/${data.azurerm_managed_api.azuremonitorlogs.name}"
+          connectionName = data.azurerm_managed_api.azuremonitorlogs.name
           connectionProperties = {
             authentication = {
               identity = data.azurerm_user_assigned_identity.managed_identity[each.value["managed_identity_name"]].id
@@ -99,8 +99,8 @@ resource "azurerm_logic_app_action_custom" "query" {
             name = "@parameters('$connections')['azuremonitorlogs']['connectionId']"
           }
         },
-        method  = "post",
-        path    = "/queryData",
+        method = "post",
+        path   = "/queryData",
         queries = {
           resourcegroups = each.value["rg_name"],
           resourcename   = each.value["loganalytics"],
@@ -171,7 +171,7 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
     {
 
       inputs = {
-        body    = "@outputs('Compose')",
+        body = "@outputs('Compose')",
         headers = {
           ReadFileMetadataFromServer = true
         },
@@ -180,8 +180,8 @@ resource "azurerm_logic_app_action_custom" "create_blob" {
             name = "@parameters('$connections')['azureblob']['connectionId']"
           }
         },
-        method  = "post",
-        path    = "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${each.value["storageaccount"]}'))}/files",
+        method = "post",
+        path   = "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${each.value["storageaccount"]}'))}/files",
         queries = {
           folderPath                   = "/archive-log-analytics-${each.value["folder"]}/@{formatDateTime(utcNow(), 'yyyy')}/@{formatDateTime(utcNow(), 'MM')}/@{formatDateTime(utcNow(), 'dd')}",
           name                         = "@{subtractFromTime(formatDateTime(utcNow(),'yyyy-MM-ddTHH:00:00'), 1,'Hour')}",

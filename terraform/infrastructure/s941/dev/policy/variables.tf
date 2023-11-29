@@ -5,7 +5,7 @@ variable "AZ_SUBSCRIPTION_ID" {
 
 variable "K8S_ENVIROMENTS" {
   description = "A map of cluster enviroments and their resource group"
-  type        = map(object({
+  type = map(object({
     name          = string
     resourceGroup = string
   }))

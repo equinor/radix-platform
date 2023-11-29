@@ -5,13 +5,13 @@ variable "AZ_SUBSCRIPTION_ID" {
 
 variable "sql_server" {
   type = map(object({
-    administrator_login   = optional(string, "radix")
-    location              = optional(string, "northeurope")
-    minimum_tls_version   = optional(string, "1.2")
-    name                  = string
-    rg_name               = string
-    tags                  = optional(map(string), {})
-    version               = optional(string, "12.0")
+    administrator_login = optional(string, "radix")
+    location            = optional(string, "northeurope")
+    minimum_tls_version = optional(string, "1.2")
+    name                = string
+    rg_name             = string
+    tags                = optional(map(string), {})
+    version             = optional(string, "12.0")
     azuread_administrator = optional(object({
       azuread_authentication_only = optional(bool, false)
     }), {})

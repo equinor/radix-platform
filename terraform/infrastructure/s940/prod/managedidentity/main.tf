@@ -33,7 +33,7 @@ locals {
 }
 
 data "azurerm_log_analytics_workspace" "loganalytics" {
-  for_each            = {
+  for_each = {
     for key in compact([for key, value in var.loganalytics : value.managed_identity ? key : ""]) : key =>
     var.loganalytics[key]
   }
@@ -42,7 +42,7 @@ data "azurerm_log_analytics_workspace" "loganalytics" {
 }
 
 data "azurerm_storage_account" "storageaccounts" {
-  for_each            = {
+  for_each = {
     for key in compact([for key, value in var.storage_accounts : value.managed_identity ? key : ""]) : key =>
     var.storage_accounts[key]
   }

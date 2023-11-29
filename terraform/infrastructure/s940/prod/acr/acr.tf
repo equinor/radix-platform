@@ -13,7 +13,7 @@ resource "azurerm_container_registry" "app" {
 
   network_rule_set {
     default_action = "Deny"
-    ip_rule        = [
+    ip_rule = [
       {
         action   = "Allow"
         ip_range = var.EQUINOR_WIFI_IP_CIDR
@@ -61,7 +61,7 @@ locals {
 
 resource "azurerm_private_dns_a_record" "dns_record" {
   # Adds a unique key to each value to use it in for_each
-  for_each = {for value in local.acrDnsRecords : join("-", [value.env, value.subdomain]) => value}
+  for_each = { for value in local.acrDnsRecords : join("-", [value.env, value.subdomain]) => value }
 
   name                = each.value.subdomain
   zone_name           = azurerm_private_dns_zone.zone[each.value.env].name

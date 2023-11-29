@@ -70,7 +70,7 @@ variable "virtual_networks" {
 
 variable "private_link" {
   description = "Subnet connection."
-  type        = map(object({
+  type = map(object({
     linkname = string
   }))
   default = null
