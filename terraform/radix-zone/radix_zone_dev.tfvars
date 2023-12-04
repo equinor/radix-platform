@@ -349,6 +349,35 @@ virtual_networks = {
 }
 
 #######################################################################################
+### Github workflow
+###
+
+github_workflow_repos = {
+  "radix_canary" : ["release", "master"],
+  "radix_cost-allocation1" : ["release"]
+  "radix_cost-allocation2" : ["release"]
+  "radix_cost-allocation3" : ["release"]
+  "radix_cost-allocation4" : ["release"]
+  "radix_cost-allocation5" : ["release"]
+  "radix_cost-allocation6" : ["release"]
+  "radix_cost-allocation7" : ["release"]
+  "radix_cost-allocation8" : ["release"]
+  "radix_cost-allocation9" : ["release"]
+  "radix_cost-allocation10" : ["release"]
+  "radix_cost-allocation11" : ["release"]
+  "radix_cost-allocation12" : ["release"]
+  "radix_cost-allocation13" : ["release"]
+  "radix_cost-allocation14" : ["release"]
+  "radix_cost-allocation15" : ["release"]
+  "radix_cost-allocation16" : ["release"]
+  "radix_cost-allocation17" : ["release"]
+  "radix_cost-allocation18" : ["release"]
+  "radix_cost-allocation19" : ["release"]
+  "radix_cost-allocation20" : ["release"]
+  "radix_cost-allocation21" : ["release"]
+}
+
+#######################################################################################
 ### Service principal
 ###
 
