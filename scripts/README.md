@@ -46,6 +46,7 @@ The whole process should be handled by the [migrate.sh](./migrate.sh) script. Se
 
 - Run SQL Server scripts to fix user accounts for vulnerability scanner and cost api
 - Trigger Github Action to migrate custom ingresses. Change active cluster here: https://github.com/equinor/radix-flux/edit/master/clusters/development/postBuild.yaml (development)
+  - Make sure the scripts completes without errors... often fails because of Token Timeout
 
 ### 2.2 Setting up a cluster from scratch
 
