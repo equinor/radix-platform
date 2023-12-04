@@ -33,7 +33,7 @@
 # RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
 
 # Example: Restore into different cluster from where the backup was done
-# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-49 DEST_CLUSTER=dev-2 BACKUP_NAME=migration-20231204101304 ./restore_apps.sh
 
 #######################################################################################
 ### DEVELOPMENT

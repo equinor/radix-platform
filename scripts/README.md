@@ -42,6 +42,11 @@ This scripts takes care of bootstrapping new cluster (if it hasn't been created 
 
 The whole process should be handled by the [migrate.sh](./migrate.sh) script. See file header in for usage. The only exception is the last manual step to make the cluster the active one.
 
+#### 2.1.2 Manuall steps:
+
+- Run SQL Server scripts to fix user accounts for vulnerability scanner and cost api
+- Trigger Github Action to migrate custom ingresses. Change active cluster here: https://github.com/equinor/radix-flux/edit/master/clusters/development/postBuild.yaml (development)
+
 ### 2.2 Setting up a cluster from scratch
 
 There are seven steps to setting up a Radix cluster from scratch. These steps can be run individually when modifying an existing cluster, or sequentially when setting up a new cluster:
