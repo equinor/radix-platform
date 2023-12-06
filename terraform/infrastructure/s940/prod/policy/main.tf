@@ -57,6 +57,3 @@ METADATA
   }
   POLICY_RULE
 }
-
-##TO DO:
-#Make config for resource "azurerm_resource_policy_assignment"

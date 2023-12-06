@@ -672,14 +672,14 @@ managed_identity_id=$(az identity show \
     --query principalId \
     --output tsv)
 
-printf "Assigning Contributor role to ${MI_AKS} on scope of resource group ${node_pool_resource_group}..."
+printf "Assigning Contributor role to %s on scope of resource group %s..." "${MI_AKS}" "${node_pool_resource_group}"
 az role assignment create \
     --role Contributor \
     --assignee "$managed_identity_id" \
     --scope "$(az group show --name "${node_pool_resource_group}" --query id --output tsv)"
 printf "Done.\n"
 
-printf "Assigning Contributor role to ${MI_AKS} on scope of resource group ${AZ_RESOURCE_GROUP_COMMON}... \n"
+printf "Assigning Contributor role to %s on scope of resource group %s... \n" "${MI_AKS}" "${AZ_RESOURCE_GROUP_COMMON}"
 az role assignment create \
     --role Contributor \
     --assignee "$managed_identity_id" \
