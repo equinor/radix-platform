@@ -142,16 +142,6 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-#TEMP
-echo ""
-echo "Deleting Dynatrace integration..."
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/teardown.sh" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="true" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/dashboard/teardown-dashboard.sh" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="true" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
-
 #######################################################################################
 ### Check if cluster or network resources are locked
 ###
@@ -388,16 +378,6 @@ wait # wait for subshell to finish
 #######################################################################################
 ### Delete related stuff
 ###
-
-#To be deleted
-# echo ""
-# echo "Deleting Dynatrace integration..."
-# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/teardown.sh" "${normal}"
-# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/teardown.sh)
-
-# echo ""
-# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dynatrace/dashboard/teardown-dashboard.sh" "${normal}"
-# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" USER_PROMPT="false" CLUSTER_NAME="$CLUSTER_NAME" ../dynatrace/dashboard/teardown-dashboard.sh)
 
 echo "Delete Data collection rule... "
 APIVersion="2022-06-01"

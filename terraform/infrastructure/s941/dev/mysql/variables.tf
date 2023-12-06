@@ -1,3 +1,8 @@
+variable "AZ_SUBSCRIPTION_ID" {
+  description = "Azure subscription id"
+  type        = string
+}
+
 variable "mysql_flexible_server" {
   type = map(object({
     name                  = string

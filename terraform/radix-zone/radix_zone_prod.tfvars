@@ -1,27 +1,9 @@
 #######################################################################################
-### AKS
-###
-
-AKS_KUBERNETES_VERSION    = "1.23.8"
-AKS_NODE_POOL_VM_SIZE     = "Standard_E16as_v4"
-AKS_SYSTEM_NODE_MAX_COUNT = "3"
-AKS_SYSTEM_NODE_MIN_COUNT = "2"
-AKS_SYSTEM_NODE_POOL_NAME = "systempool"
-AKS_USER_NODE_MAX_COUNT   = "30"
-AKS_USER_NODE_MIN_COUNT   = "16"
-AKS_USER_NODE_POOL_NAME   = "nodepool1"
-TAGS_AA                   = { "migrationStrategy" = "aa" }
-TAGS_AT                   = { "migrationStrategy" = "at" }
-
-#######################################################################################
 ### Zone and cluster settings
 ###
 
-AZ_LOCATION                    = "northeurope"
-CLUSTER_TYPE                   = "production"
-RADIX_ZONE                     = "prod"
-RADIX_ENVIRONMENT              = "prod"
-RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
+AZ_LOCATION = "northeurope"
+RADIX_ZONE  = "prod"
 
 K8S_ENVIROMENTS = {
   "prod" = { "name" = "prod", "resourceGroup" = "clusters" },
@@ -31,8 +13,7 @@ K8S_ENVIROMENTS = {
 ### Resource groups
 ###
 
-AZ_RESOURCE_GROUP_CLUSTERS = "clusters"
-AZ_RESOURCE_GROUP_COMMON   = "common"
+AZ_RESOURCE_GROUP_COMMON = "common"
 
 #######################################################################################
 ### Shared environment, az region and az subscription
@@ -48,48 +29,6 @@ AZ_SUBSCRIPTION_SHORTNAME = "s940"
 
 AAD_RADIX_GROUP = "radix"
 
-#######################################################################################
-### System users
-###
-
-MI_AKSKUBELET = [
-  {
-    client_id = "a991a23f-13fd-433e-8e69-a6493f7aadae"
-    id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-akskubelet-production-northeurope"
-    object_id = "a6d8e609-ec92-4336-bc80-045b3d9e04a8"
-  }
-]
-
-MI_AKS = [
-  {
-    client_id = "e9f15eab-a6c1-47e7-b840-5a2178c0995c"
-    id        = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-aks-production-northeurope"
-    object_id = "3206534b-99a1-4a17-b238-5354129ccc44"
-  }
-]
-
-AZ_PRIVATE_DNS_ZONES = [
-  "privatelink.database.windows.net",
-  "privatelink.blob.core.windows.net",
-  "privatelink.table.core.windows.net",
-  "privatelink.queue.core.windows.net",
-  "privatelink.file.core.windows.net",
-  "privatelink.web.core.windows.net",
-  "privatelink.dfs.core.windows.net",
-  "privatelink.documents.azure.com",
-  "privatelink.mongo.cosmos.azure.com",
-  "privatelink.cassandra.cosmos.azure.com",
-  "privatelink.gremlin.cosmos.azure.com",
-  "privatelink.table.cosmos.azure.com",
-  "privatelink.postgres.database.azure.com",
-  "privatelink.mysql.database.azure.com",
-  "privatelink.mariadb.database.azure.com",
-  "privatelink.vaultcore.azure.net",
-  "private.radix.equinor.com"
-]
-
-#To do
-#Alphabetical order
 #######################################################################################
 ### Managed Identities
 ###
@@ -490,4 +429,6 @@ GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations"
 
-ACR_TOKEN_LIFETIME = "9000h" # Aprox. 12 months
+# Update this and run terraform in acr to rotate secrets.
+# Remember to restart Operator afterwards to get refreshed tokens
+ACR_TOKEN_EXPIRES_AT = "2024-11-01T12:00:00+00:00"

@@ -136,14 +136,6 @@ echo "Azure DNS: Creating ${AZ_RESOURCE_DNS}..."
 az network dns zone create -g "${AZ_RESOURCE_GROUP_COMMON}" -n "${AZ_RESOURCE_DNS}" 2>&1 >/dev/null
 echo "...Done."
 
-# Permissions
-ROLE_SCOPE="$(az network dns zone show --name ${AZ_RESOURCE_DNS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query "id" --output tsv)"
-
-echo "Azure DNS: Update permissions for SP ${AZ_SYSTEM_USER_DNS}..."
-assignRoleForResourceToUser "DNS Zone Contributor" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_DNS}"
-echo "...Done."
-
-
 #######################################################################################
 ### END
 ###

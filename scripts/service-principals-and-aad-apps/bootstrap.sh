@@ -121,8 +121,9 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-echo -e "   -  AZ_SYSTEM_USER_DNS                       : $AZ_SYSTEM_USER_DNS"
-echo -e "   -  MI_GITHUB_MAINTENANCE                    : ${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+if [[ "$RADIX_ENVIRONMENT" == "dev" ]]; then
+    echo -e "   -  MI_GITHUB_MAINTENANCE                    : ${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMENT}"
+fi
 echo -e "   -  RESOURCE-LOCK-OPERATOR                   : ${APP_REGISTRATION_RESOURCE_LOCK_OPERATOR}"
 echo -e ""
 echo -e "   > WHO:"
@@ -155,7 +156,6 @@ fi
 
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
-create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_DNS" "Can make changes in the DNS zone"
 
 #######################################################################################
 ### Create managed identity

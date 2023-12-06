@@ -128,7 +128,7 @@ function assign_role() {
         --assignee "${id}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --all \
-        --query "[?roleDefinitionName=='${role_name}']" \
+        --query "[?roleDefinitionName=='${role_name}' && scope=='${scope}']" \
         --output tsv 2>/dev/null)"
 
     printf "Assigning \"%s\" to \"%s\"... " "${role_name}" "${id_name}"

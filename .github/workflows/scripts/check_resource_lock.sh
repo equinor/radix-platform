@@ -37,7 +37,7 @@ SLACK_WEBHOOK_URL="$(az keyvault secret show \
     --name "${KV_SECRET_SLACK_WEBHOOK}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" |
     jq -r .value)"
-CLUSTERS=$(az aks list --output json | jq '{k8s:[.[] | {name: .name, resourceGroup: .resourceGroup, id: .id}]}')
+CLUSTERS=$(az aks list --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --output json | jq '{k8s:[.[] | {name: .name, resourceGroup: .resourceGroup, id: .id}]}')
 
 createLock() {
     local NAME=$1

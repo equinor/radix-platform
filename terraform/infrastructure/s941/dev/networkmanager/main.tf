@@ -3,6 +3,8 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id = var.AZ_SUBSCRIPTION_ID
+
   features {}
 }
 
@@ -65,12 +67,12 @@ resource "azurerm_subscription_policy_assignment" "assign_vnets_in_zone_policy" 
 }
 
 data "azurerm_policy_definition" "vnets_in_zone_policy" {
-  for_each = toset(var.K8S_ENVIROMENTS)
+  for_each = var.K8S_ENVIROMENTS
   name     = "Kubernetes-vnets-in-${each.key}"
 }
 
 resource "azurerm_network_manager_deployment" "connectivity_topology" {
-  for_each           = toset(var.K8S_ENVIROMENTS)
+  for_each           = var.K8S_ENVIROMENTS
   network_manager_id = azurerm_network_manager.networkmanager.id
   location           = var.AZ_LOCATION
   scope_access       = "Connectivity"

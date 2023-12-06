@@ -14,7 +14,7 @@ variable "AZ_SUBSCRIPTION_ID" {
 
 variable "private_link" {
   description = "Subnet connection."
-  type        = map(object({
+  type = map(object({
     linkname = string
   }))
   default = null
@@ -44,13 +44,9 @@ variable "resource_groups" {
   default = {}
 }
 
-variable "AZ_RESOURCE_GROUP_CLUSTERS" {
-  type = string
-}
-
 variable "K8S_ENVIROMENTS" {
   description = "A map of cluster enviroments and their resource group"
-  type        = map(object({
+  type = map(object({
     name          = string
     resourceGroup = string
   }))
@@ -58,14 +54,14 @@ variable "K8S_ENVIROMENTS" {
 
 variable "key_vault_by_k8s_environment" {
   description = "Name of Keyvault."
-  type        = map(object({
+  type = map(object({
     name    = string
     rg_name = string
   }))
   default = {}
 }
 
-variable "ACR_TOKEN_LIFETIME" {
+variable "ACR_TOKEN_EXPIRES_AT" {
   type = string
 }
 

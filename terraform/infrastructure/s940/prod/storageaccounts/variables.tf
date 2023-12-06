@@ -31,7 +31,7 @@ variable "storage_accounts" {
     kind                              = optional(string, "StorageV2")   # Optional
     repl                              = optional(string, "LRS")         # Optional
     tier                              = optional(string, "Standard")    # Optional
-    backup_center                     = optional(bool, false)           # Optional      
+    backup_center                     = optional(bool, false)           # Optional
     life_cycle                        = optional(bool, true)
     firewall                          = optional(bool, true)
     container_delete_retention_policy = optional(bool, true)
@@ -52,6 +52,14 @@ variable "storage_accounts" {
   default = {}
 }
 
+variable "resource_groups" {
+  type = map(object({
+    name     = string                          # Mandatory
+    location = optional(string, "northeurope") # Optional
+  }))
+  default = {}
+}
+
 variable "virtual_networks" {
   type = map(object({
     name    = optional(string, "vnet-hub")
@@ -68,10 +76,7 @@ variable "private_link" {
   default = null
 }
 
-variable "resource_groups" {
-  type = map(object({
-    name     = string                          # Mandatory
-    location = optional(string, "northeurope") # Optional
-  }))
-  default = {}
+variable "KV_RADIX_VAULT" {
+  description = "Radix keyvault"
+  type        = string
 }

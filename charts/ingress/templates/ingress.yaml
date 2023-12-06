@@ -3,8 +3,6 @@ kind: Ingress
 metadata:
   annotations:
     ingress.kubernetes.io/force-ssl-redirect: "true"
-    kubernetes.io/ingress.class: nginx
-
     {{- if .Values.authSecret }}
     nginx.ingress.kubernetes.io/auth-realm: Authentication Required - ok
     nginx.ingress.kubernetes.io/auth-secret: {{ .Values.authSecret }}
@@ -24,6 +22,7 @@ metadata:
   {{ end }}
   namespace: {{ .Values.namespace }}
 spec:
+  ingressClassName: nginx
   rules:
     - host: {{ .Values.aliasUrl }}
       http:

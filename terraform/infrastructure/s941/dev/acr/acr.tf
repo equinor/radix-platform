@@ -13,7 +13,7 @@ resource "azurerm_container_registry" "app" {
 
   network_rule_set {
     default_action = "Deny"
-    ip_rule        = [
+    ip_rule = [
       {
         action   = "Allow"
         ip_range = var.EQUINOR_WIFI_IP_CIDR
@@ -41,9 +41,33 @@ resource "azurerm_private_endpoint" "acr_app" {
     is_manual_connection           = false
     subresource_names              = ["registry"]
   }
+}
 
-  private_dns_zone_group {
-    name                 = "dns-acr-app-${each.key}"
-    private_dns_zone_ids = [azurerm_private_dns_zone.zone[each.key].id]
-  }
+
+locals {
+  acrDnsRecords = flatten([
+    for key, value in var.K8S_ENVIROMENTS :
+    [
+      for ip in azurerm_private_endpoint.acr_app[key].custom_dns_configs :
+      {
+        ips : ip.ip_addresses,
+        fqdn : ip.fqdn,
+        subdomain : replace(ip.fqdn, ".azurecr.io", ""),
+        env : key
+      }
+    ]
+  ])
+}
+
+resource "azurerm_private_dns_a_record" "dns_record" {
+  # Adds a unique key to each value to use it in for_each
+  for_each = { for value in local.acrDnsRecords : join("-", [value.env, value.subdomain]) => value }
+
+  name                = each.value.subdomain
+  zone_name           = azurerm_private_dns_zone.zone[each.value.env].name
+  resource_group_name = join("", ["cluster-vnet-hub-", each.value.env])
+  ttl                 = 300
+  records             = each.value.ips
+
+  depends_on = [azurerm_private_endpoint.acr_app]
 }
