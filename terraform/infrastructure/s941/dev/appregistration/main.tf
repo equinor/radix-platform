@@ -101,3 +101,9 @@ resource "azuread_application_federated_identity_credential" "AR_GITHUB_WORKFLOW
 
   timeouts {}
 }
+
+# TODO
+# create managed identity for each enviroment and each branch
+
+# mi-radix-operator-workflow-release etc...
+# find ACR with "Data and name"
