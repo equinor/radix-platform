@@ -137,6 +137,7 @@ function assign_role() {
             --role "${role_name}" \
             --assignee "${id}" \
             --scope "${scope}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
             --output none \
             --only-show-errors
         printf "Done.\n"

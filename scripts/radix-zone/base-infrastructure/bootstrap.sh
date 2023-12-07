@@ -33,6 +33,11 @@ echo "Start bootstrap of base infrastructure... "
 ### Check for prerequisites binaries
 ###
 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
 echo ""
@@ -130,54 +135,54 @@ exit_if_user_does_not_have_required_ad_role
 ### Verify task at hand
 ###
 
-printf "\n"
-printf "\nBootstrap of base infrastructure will use the following configuration:"
-printf "\n"
-printf "\n   > WHERE:"
-printf "\n   ------------------------------------------------------------------"
-printf "\n   -  RADIX_ZONE                                  : $RADIX_ZONE"
-printf "\n   -  AZ_RADIX_ZONE_LOCATION                      : $AZ_RADIX_ZONE_LOCATION"
-printf "\n   -  RADIX_ENVIRONMENT                           : $RADIX_ENVIRONMENT"
-printf "\n"
-printf "\n   > WHAT:"
-printf "\n   -------------------------------------------------------------------"
-printf "\n   -  AZ_RESOURCE_GROUP_CLUSTERS                  : $AZ_RESOURCE_GROUP_CLUSTERS"
-printf "\n   -  AZ_RESOURCE_GROUP_COMMON                    : $AZ_RESOURCE_GROUP_COMMON"
-printf "\n   -  AZ_RESOURCE_GROUP_MONITORING                : $AZ_RESOURCE_GROUP_MONITORING"
-printf "\n"
-printf "\n   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
-printf "\n   -  AZ_IPPRE_OUTBOUND_NAME                      : $AZ_IPPRE_OUTBOUND_NAME"
-printf "\n   -  AZ_IPPRE_OUTBOUND_IP_PREFIX                 : $AZ_IPPRE_OUTBOUND_IP_PREFIX"
-printf "\n   -  AZ_IPPRE_OUTBOUND_LENGTH                    : $AZ_IPPRE_OUTBOUND_LENGTH"
-printf "\n   -  AZ_IPPRE_INBOUND_NAME                       : $AZ_IPPRE_INBOUND_NAME"
-printf "\n   -  AZ_IPPRE_INBOUND_IP_PREFIX                  : $AZ_IPPRE_INBOUND_IP_PREFIX"
-printf "\n   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_LENGTH"
-printf "\n   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
-printf "\n   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
-printf "\n"
-printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
-printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
-printf "\n   -  APP_REGISTRATION_WEB_CONSOLE                : $APP_REGISTRATION_WEB_CONSOLE"
-printf "\n   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
-printf "\n   -  APP_REGISTRATION_CERT_MANAGER               : $APP_REGISTRATION_CERT_MANAGER"
-printf "\n   -  APP_REGISTRATION_VELERO                     : $APP_REGISTRATION_VELERO"
-printf "\n   -  APP_REGISTRATION_SERVICENOW_SERVER          : $APP_REGISTRATION_SERVICENOW_SERVER"
-printf "\n   -  APP_REGISTRATION_LOG_API                    : $APP_REGISTRATION_LOG_API"
-printf "\n"
-printf "\n   -  MI_AKS                                      : $MI_AKS"
-printf "\n   -  MI_AKSKUBELET                               : $MI_AKSKUBELET"
-printf "\n"
-printf "\n   > WHO:"
-printf "\n   -------------------------------------------------------------------"
-printf "\n   -  AZ_SUBSCRIPTION                             : $(az account show --query name -otsv)"
-printf "\n   -  AZ_USER                                     : $(az account show --query user.name -o tsv)"
-printf "\n"
+echo -e ""
+echo -e "Bootstrap of base infrastructure will use the following configuration:"
+echo -e ""
+echo -e "   > WHERE:"
+echo -e "   ------------------------------------------------------------------"
+echo -e "   -  RADIX_ZONE                                  : $RADIX_ZONE"
+echo -e "   -  AZ_RADIX_ZONE_LOCATION                      : $AZ_RADIX_ZONE_LOCATION"
+echo -e "   -  RADIX_ENVIRONMENT                           : $RADIX_ENVIRONMENT"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_RESOURCE_GROUP_CLUSTERS                  : $AZ_RESOURCE_GROUP_CLUSTERS"
+echo -e "   -  AZ_RESOURCE_GROUP_COMMON                    : $AZ_RESOURCE_GROUP_COMMON"
+echo -e "   -  AZ_RESOURCE_GROUP_MONITORING                : $AZ_RESOURCE_GROUP_MONITORING"
+echo -e ""
+echo -e "   -  AZ_RESOURCE_KEYVAULT                        : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  AZ_IPPRE_OUTBOUND_NAME                      : $AZ_IPPRE_OUTBOUND_NAME"
+echo -e "   -  AZ_IPPRE_OUTBOUND_IP_PREFIX                 : $AZ_IPPRE_OUTBOUND_IP_PREFIX"
+echo -e "   -  AZ_IPPRE_OUTBOUND_LENGTH                    : $AZ_IPPRE_OUTBOUND_LENGTH"
+echo -e "   -  AZ_IPPRE_INBOUND_NAME                       : $AZ_IPPRE_INBOUND_NAME"
+echo -e "   -  AZ_IPPRE_INBOUND_IP_PREFIX                  : $AZ_IPPRE_INBOUND_IP_PREFIX"
+echo -e "   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_LENGTH"
+echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
+echo -e "   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
+echo -e ""
+echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
+echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
+echo -e "   -  APP_REGISTRATION_WEB_CONSOLE                : $APP_REGISTRATION_WEB_CONSOLE"
+echo -e "   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
+echo -e "   -  APP_REGISTRATION_CERT_MANAGER               : $APP_REGISTRATION_CERT_MANAGER"
+echo -e "   -  APP_REGISTRATION_VELERO                     : $APP_REGISTRATION_VELERO"
+echo -e "   -  APP_REGISTRATION_SERVICENOW_SERVER          : $APP_REGISTRATION_SERVICENOW_SERVER"
+echo -e "   -  APP_REGISTRATION_LOG_API                    : $APP_REGISTRATION_LOG_API"
+echo -e ""
+echo -e "   -  MI_AKS                                      : $MI_AKS"
+echo -e "   -  MI_AKSKUBELET                               : $MI_AKSKUBELET"
+echo -e ""
+echo -e "   > WHO:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  AZ_SUBSCRIPTION                             : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                                     : $(az account show --query user.name -o tsv)"
+echo -e ""
 
 echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
         [Yy]*) break ;;
         [Nn]*)
@@ -197,11 +202,9 @@ fi
 
 function update_app_registrations(){
     update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
-    if [[ -f "$update_app_registration_permissions" ]]; then
+    if [[ ! -f "$update_app_registration_permissions" ]]; then
         echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
         exit 1
-    else
-        source "$update_app_registration_permissions"
     fi
 }
 
@@ -211,10 +214,29 @@ function update_app_registrations(){
 
 function create_resource_groups() {
     printf "Creating all resource groups..."
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_COMMON}"--subscription "${AZ_SUBSCRIPTION_ID}" --output none
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_MONITORING}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
-    az group create --location "${AZ_RADIX_ZONE_LOCATION}" --name "${AZ_RESOURCE_GROUP_LOGS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
+    az group create \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --name "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none
+    
+    az group create \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --name "${AZ_RESOURCE_GROUP_COMMON}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none
+    
+    az group create \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --name "${AZ_RESOURCE_GROUP_MONITORING}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none
+    
+    az group create \
+        --location "${AZ_RADIX_ZONE_LOCATION}" \
+        --name "${AZ_RESOURCE_GROUP_LOGS}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none
     printf "...Done\n"
 }
 
@@ -223,7 +245,7 @@ function create_resource_groups() {
 ###
 
 function create_common_resources() {
-    printf "Creating key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
+    printf "Creating key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
     az keyvault create \
         --name "${AZ_RESOURCE_KEYVAULT}" \
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
@@ -232,9 +254,9 @@ function create_common_resources() {
         --output none
     printf "...Done\n"
 
-    printf "Set access policy for group \"Radix Platform Operators\" in key vault: ${AZ_RESOURCE_KEYVAULT}...\n"
+    printf "Set access policy for group \"Radix Platform Operators\" in key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
     az keyvault set-policy \
-        --object-id "$(az ad group show --group "Radix Platform Operators" --query objectId --output tsv --only-show-errors)" \
+        --object-id "$(az ad group show --group "Radix Platform Operators" --query id --output tsv --only-show-errors)" \
         --name "${AZ_RESOURCE_KEYVAULT}" \
         --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
@@ -246,15 +268,45 @@ function create_common_resources() {
         --only-show-errors
     printf "...Done\n"
 
-    printf "Creating Azure DNS: ${AZ_RESOURCE_DNS}\n"
-    az network dns zone create --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --output none
+    printf "Creating Azure DNS: %s\n" "${AZ_RESOURCE_DNS}"
+    az network dns zone create \
+        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --name "${AZ_RESOURCE_DNS}" \
+        --subscription "${AZ_SUBSCRIPTION_ID}" \
+        --output none
     printf "...Done\n"
     # DNS CAA
     if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
         printf "Adding CAA records..."
-        az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "letsencrypt.org" --output none
-        az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "digicert.com" --output none
-        az network dns record-set caa add-record --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --zone-name "${AZ_RESOURCE_DNS}" --subscription "${AZ_SUBSCRIPTION_ID}" --record-set-name @ --flags 0 --tag "issue" --value "godaddy.com" --output none
+        az network dns record-set caa add-record \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --zone-name "${AZ_RESOURCE_DNS}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
+            --record-set-name @ \
+            --flags 0 \
+            --tag "issue" \
+            --value "letsencrypt.org" \
+            --output none
+        
+        az network dns record-set caa add-record \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --zone-name "${AZ_RESOURCE_DNS}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
+            --record-set-name @ \
+            --flags 0 \
+            --tag "issue" \
+            --value "digicert.com" \
+            --output none
+        
+        az network dns record-set caa add-record \
+            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --zone-name "${AZ_RESOURCE_DNS}" \
+            --subscription "${AZ_SUBSCRIPTION_ID}" \
+            --record-set-name @ \
+            --flags 0 \
+            --tag "issue" \
+            --value "godaddy.com" \
+            --output none
         printf "...Done\n"
     fi
     ../private-endpoint-infrastructure/bootstrap.sh
@@ -264,10 +316,10 @@ function create_outbound_public_ip_prefix() {
     # Create public ip prefixes
     if [[ -n $AZ_IPPRE_OUTBOUND_NAME ]]; then
         if [[ -z $(az network public-ip prefix show --name "${AZ_IPPRE_OUTBOUND_NAME}" --resource-group "${AZ_RESOURCE_GROUP_COMMON}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "name" -otsv 2>/dev/null) ]]; then
-            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} does not exist.\n"
+            printf "Public IP Prefix %s does not exist.\n" "${AZ_IPPRE_OUTBOUND_NAME}"
             if [[ $USER_PROMPT == true ]]; then
                 while true; do
-                    read -p "Create Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}? (Y/n) " yn
+                    read -r -p "Create Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}? (Y/n) " yn
                     case $yn in
                     [Yy]*) break ;;
                     [Nn]*)
@@ -278,7 +330,7 @@ function create_outbound_public_ip_prefix() {
                     *) echo "Please answer yes or no." ;;
                     esac
                 done
-                printf "Creating Public IP Prefix: ${AZ_IPPRE_OUTBOUND_NAME}...\n"
+                printf "Creating Public IP Prefix: %s...\n" "${AZ_IPPRE_OUTBOUND_NAME}"
                 az network public-ip prefix create \
                     --length "${AZ_IPPRE_OUTBOUND_LENGTH}" \
                     --name "${AZ_IPPRE_OUTBOUND_NAME}" \
@@ -288,7 +340,7 @@ function create_outbound_public_ip_prefix() {
                 printf "...Done.\n"
             fi
         else
-            printf "Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME} already exists."
+            printf "Public IP Prefix %s already exists." "${AZ_IPPRE_OUTBOUND_NAME}"
         fi
         # Create IPs
         echo "Creating IPs in Public IP Prefix ${AZ_IPPRE_OUTBOUND_NAME}..."
@@ -328,7 +380,7 @@ function create_inbound_public_ip_prefix() {
             printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} does not exist.\n"
             if [[ $USER_PROMPT == true ]]; then
                 while true; do
-                    read -p "Create Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}? (Y/n) " yn
+                    read -r -p "Create Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}? (Y/n) " yn
                     case $yn in
                     [Yy]*) break ;;
                     [Nn]*)
@@ -339,7 +391,7 @@ function create_inbound_public_ip_prefix() {
                     *) echo "Please answer yes or no." ;;
                     esac
                 done
-                printf "Creating Public IP Prefix: ${AZ_IPPRE_INBOUND_NAME}...\n"
+                printf "Creating Public IP Prefix: %s...\n" "${AZ_IPPRE_INBOUND_NAME}"
                 az network public-ip prefix create \
                     --length "${AZ_IPPRE_INBOUND_LENGTH}" \
                     --name "${AZ_IPPRE_INBOUND_NAME}" \
@@ -349,7 +401,7 @@ function create_inbound_public_ip_prefix() {
                 printf "...Done.\n"
             fi
         else
-            printf "Public IP Prefix ${AZ_IPPRE_INBOUND_NAME} already exists."
+            printf "Public IP Prefix %s already exists." "${AZ_IPPRE_INBOUND_NAME}"
         fi
         # Create IPs
         echo "Creating IPs in Public IP Prefix ${AZ_IPPRE_INBOUND_NAME}..."
@@ -470,7 +522,7 @@ function create_managed_identities_and_role_assignments() {
     create_role_assignment_for_identity \
         "${MI_AKS}" \
         "Managed Identity Operator" \
-        "$(az identity show --name ${MI_AKS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query id 2>/dev/null)"
+        "$(az identity show --name ${MI_AKS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query id --output tsv 2>/dev/null)"
 
     # Kubelet identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-kubelet-mi
     create_managed_identity "${MI_AKSKUBELET}"
@@ -504,16 +556,25 @@ function set_permissions_on_log_analytics_workspace() {
     # Note that to be able to use "az acr build" you have to have the role "Contributor".
 
     local id
-    printf "Working on log analytics workspace \"${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}\": "
+    printf "Working on log analytics workspace \"%s\": " "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}"
 
-    printf "Setting permissions for \"${APP_REGISTRATION_LOG_API}\"..." # radix-cr-reader-dev
+    printf "Setting permissions for \"%s\"..." "${APP_REGISTRATION_LOG_API}" # radix-cr-reader-dev
     id="$(az ad sp list --filter "displayname eq '${APP_REGISTRATION_LOG_API}'" --query [].appId --output tsv)"
+    
     # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
+    az role assignment delete \
+        --assignee "${id}" \
+        --scope "${scope}" \
+        --output none
+    
     # Configure new roles
-    az role assignment create --assignee "${id}" --role "Log Analytics Reader" --scope "${scope}" --output none
-    printf "$scope"
-    printf $id
+    az role assignment create \
+        --assignee "${id}" \
+        --role "Log Analytics Reader" \
+        --scope "${scope}" \
+        --output none
+    printf "%s" "$scope"
+    printf "%s" "$id"
     printf "...Done\n"
 }
 
@@ -537,11 +598,11 @@ function create_sql_logs_storageaccount() {
             --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
             --location "$AZ_RADIX_ZONE_LOCATION" \
             --subscription "$AZ_SUBSCRIPTION_ID" \
-            --only-show-errors
             --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
             --sku "${AZ_STORAGEACCOUNT_SKU}" \
             --kind "${AZ_STORAGEACCOUNT_KIND}" \
-            --access-tier "${AZ_STORAGEACCOUNT_TIER}"
+            --access-tier "${AZ_STORAGEACCOUNT_TIER}" \
+            --only-show-errors
         printf "Done.\n"
     else
         printf "    Storage account exists...skipping\n"
@@ -609,9 +670,9 @@ function update_acr_whitelist() {
     ###
 
     printf "Whitelisting cluster egress IP(s) in ACR network rules\n"
-    printf "Retrieving egress IP range for ${CLUSTER_NAME} cluster...\n"
+    printf "Retrieving egress IP range for %s cluster...\n" "${CLUSTER_NAME}"
     local egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
-    printf "Retrieved IP range ${egress_ip_range}.\n"
+    printf "Retrieved IP range %s.\n" "${egress_ip_range}"
     # Update ACR IP whitelist with cluster egress IP(s)
     printf "\n"
     printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
