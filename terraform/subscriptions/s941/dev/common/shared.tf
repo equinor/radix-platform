@@ -8,5 +8,6 @@ locals {
     location                  = "northeurope"
     AZ_SUBSCRIPTION_SHORTNAME = "s941"
     subscription_shortname    = "s941"
+    resource_group            = "common"
   }
 }
