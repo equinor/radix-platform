@@ -1,6 +1,7 @@
 locals {
 
   external_outputs = {
+    global =  data.terraform_remote_state.global
     common = data.terraform_remote_state.common.outputs
     clusters = data.terraform_remote_state.clusters
   }
@@ -19,6 +20,7 @@ data "terraform_remote_state" "common" {
   config = merge(
     local.backend,
   { key = "dev/common/terraform.tfstate" })
+
 }
 
 data "terraform_remote_state" "clusters" {
@@ -26,4 +28,5 @@ data "terraform_remote_state" "clusters" {
   config = merge(
     local.backend,
   { key = "dev/clusters/terraform.tfstate" })
+
 }

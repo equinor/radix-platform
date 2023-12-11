@@ -1,20 +1,28 @@
 
 data "azurerm_subscription" "current" {}
 
-resource "azurerm_network_manager" "networkmanager" {
-  name                = "${local.external_outputs.common.shared.AZ_SUBSCRIPTION_SHORTNAME}-ANVM"
-  location            = local.external_outputs.common.shared.location
-  resource_group_name = "${local.external_outputs.clusters.outputs.clusters.resource_group}"
-  scope_accesses      = ["Connectivity"]
-  description         = "${local.external_outputs.common.shared.AZ_SUBSCRIPTION_SHORTNAME}-Azure Network Mananger - ${local.external_outputs.clusters.outputs.clusters.location}"
+# resource "azurerm_network_manager" "networkmanager" {
+#   name                = "${local.external_outputs.common.shared.AZ_SUBSCRIPTION_SHORTNAME}-ANVM"
+#   location            = local.external_outputs.common.shared.location
+#   resource_group_name = local.external_outputs.clusters.outputs.clusters.resource_group
+#   scope_accesses      = ["Connectivity"]
+#   description         = "${local.external_outputs.common.shared.AZ_SUBSCRIPTION_SHORTNAME}-Azure Network Mananger - ${local.external_outputs.clusters.outputs.clusters.location}"
 
-  scope {
-    subscription_ids = [data.azurerm_subscription.current.id]
-  }
+#   scope {
+#     subscription_ids = [data.azurerm_subscription.current.id]
+#   }
+# }
+
+module "azurerm_network_manager" {
+  source                 = "../../../modules/azurerm/networkmanager"
+  subscription_shortname = local.external_outputs.common.shared.subscription_shortname
+  location               = local.external_outputs.common.shared.location
+  resource_group         = local.external_outputs.clusters.outputs.clusters.resource_group
+  subscription           = data.azurerm_subscription.current.id
 }
 
 resource "azurerm_network_manager_network_group" "group" {
-  name               = "${local.external_outputs.clusters.outputs.clusters.enviroment}"
+  name               = local.external_outputs.clusters.outputs.clusters.enviroment
   network_manager_id = local.external_outputs.networkmanager.outputs.networkmanager_id
   description        = "Network Group for ${local.external_outputs.clusters.outputs.clusters.enviroment} virtual networks"
 }
