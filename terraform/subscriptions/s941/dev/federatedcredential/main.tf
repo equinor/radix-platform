@@ -4,6 +4,6 @@ module "federatedcredential" {
   audiences = ["api://AzureADTokenExchange"]
   name = "radix-canary-master"
   issuer = "https://token.actions.githubusercontent.com"
-  subject = "repo:equinor/canary:ref:refs/heads/master"
+  subject = "repo:equinor/radix-canary:ref:refs/heads/master"
   resource_group_name = "common"
 }
