@@ -14,7 +14,7 @@ data "azurerm_subscription" "current" {}
 # }
 
 module "azurerm_network_manager" {
-  source                 = "../../../modules/azurerm/networkmanager"
+  source                 = "../../../modules/networkmanager"
   subscription_shortname = local.external_outputs.common.shared.subscription_shortname
   location               = local.external_outputs.common.shared.location
   resource_group         = local.external_outputs.clusters.outputs.clusters.resource_group

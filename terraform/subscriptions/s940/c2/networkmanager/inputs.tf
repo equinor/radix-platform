@@ -1,9 +1,4 @@
 locals {
-  ## Stack
-  stack = {
-    name = "clusters"
-  }
-
   external_outputs = {
     common         = data.terraform_remote_state.common.outputs
     networkmanager = data.terraform_remote_state.networkmanager

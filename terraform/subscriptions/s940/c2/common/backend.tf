@@ -4,14 +4,8 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "<=3.69.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "<=3.5.1"
-    }
-    azapi = {
-      source = "Azure/azapi"
-    }
   }
+
   backend "azurerm" {
     tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
     subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
@@ -25,7 +19,4 @@ terraform {
 
 provider "azurerm" {
   features {}
-}
-
-provider "azapi" {
 }

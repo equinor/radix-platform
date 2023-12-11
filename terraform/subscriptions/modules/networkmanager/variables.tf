@@ -1,8 +1,3 @@
-# variable "enviroment" {
-#   description = "Name of the Enviroment."
-#   type        = string
-# }
-
 variable "location" {
   description = "Specifies the Azure Region where the Network Managers should exist. Changing this forces a new resource to be created."
   type        = string

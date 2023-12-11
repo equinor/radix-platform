@@ -1,5 +1,4 @@
 locals {
-
   external_outputs = {
     common = data.terraform_remote_state.common.outputs
     clusters = data.terraform_remote_state.clusters

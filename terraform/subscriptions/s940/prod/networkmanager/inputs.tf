@@ -1,9 +1,5 @@
 locals {
   policy_notcontains_name = "c2"
-  ## Stack
-  stack = {
-    name = "clusters"
-  }
 
   external_outputs = {
     common = data.terraform_remote_state.common.outputs
