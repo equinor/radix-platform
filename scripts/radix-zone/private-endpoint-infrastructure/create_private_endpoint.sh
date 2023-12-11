@@ -119,7 +119,6 @@ declare -A DNS_ZONE_MAP=(
     ["sqlServer"]="privatelink.database.windows.net"
     ["registry"]="privatelink.azurecr.io"
     ["coordinator"]="privatelink.postgres.cosmos.azure.com"
-    ["namespace"]="privatelink.servicebus.windows.net"
 )
 
 dns_zone=${DNS_ZONE_MAP[$TARGET_SUBRESOURCE]} 2>/dev/null # can't figure out how to properly suppress this error message
