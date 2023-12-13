@@ -2,10 +2,11 @@ locals {
   policy_notcontains_name = "playground"
 
   external_outputs = {
+    global   = data.terraform_remote_state.global.outputs
     common = data.terraform_remote_state.common.outputs
-    networkmanager = data.terraform_remote_state.networkmanager
-    virtualnetwork = data.terraform_remote_state.virtualnetwork
-    clusters       = data.terraform_remote_state.clusters
+    networkmanager = data.terraform_remote_state.networkmanager.outputs
+    virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
+    clusters       = data.terraform_remote_state.clusters.outputs
   }
   ## Backend Config
    backend = {
@@ -46,3 +47,11 @@ data "terraform_remote_state" "clusters" {
     local.backend,
   { key = "dev/clusters/terraform.tfstate" })
 }
+
+data "terraform_remote_state" "global" {
+  backend = "azurerm"
+  config = merge(
+    local.backend,
+  { key = "dev/globals/terraform.tfstate" })
+}
+

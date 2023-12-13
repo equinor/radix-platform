@@ -3,9 +3,9 @@ locals {
 
   external_outputs = {
     common = data.terraform_remote_state.common.outputs
-    networkmanager = data.terraform_remote_state.networkmanager
-    virtualnetwork = data.terraform_remote_state.virtualnetwork
-    clusters       = data.terraform_remote_state.clusters
+    networkmanager = data.terraform_remote_state.networkmanager.outputs
+    virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
+    clusters       = data.terraform_remote_state.clusters.outputs
   }
   ## Backend Config
   backend = {

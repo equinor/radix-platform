@@ -1,3 +1,3 @@
-output "shared" {
-  value = local.shared
+output "data" {
+  value = local.outputs
 }

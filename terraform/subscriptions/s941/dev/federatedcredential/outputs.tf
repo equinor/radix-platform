@@ -1,3 +1,3 @@
-output "federatedcredential" {
+output "data" {
   value = module.federatedcredential.data
 }

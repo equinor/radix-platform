@@ -1,12 +1,13 @@
 locals {
   external_outputs = {
-    common = data.terraform_remote_state.common.outputs
-    networkmanager = data.terraform_remote_state.networkmanager
-    virtualnetwork = data.terraform_remote_state.virtualnetwork
-    clusters       = data.terraform_remote_state.clusters
+    global         = data.terraform_remote_state.global.outputs
+    common         = data.terraform_remote_state.common.outputs
+    networkmanager = data.terraform_remote_state.networkmanager.outputs
+    virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
+    clusters       = data.terraform_remote_state.clusters.outputs
   }
   ## Backend Config
-   backend = {
+  backend = {
     resource_group_name  = "s941-tfstate"
     storage_account_name = "s941radixinfra"
     container_name       = "infrastructure"
@@ -43,4 +44,11 @@ data "terraform_remote_state" "clusters" {
   config = merge(
     local.backend,
   { key = "playground/clusters/terraform.tfstate" })
+}
+
+data "terraform_remote_state" "global" {
+  backend = "azurerm"
+  config = merge(
+    local.backend,
+  { key = "dev/globals/terraform.tfstate" })
 }
