@@ -1,3 +1,3 @@
-output "clusters" {
+output "data" {
   value = local.output
 }
