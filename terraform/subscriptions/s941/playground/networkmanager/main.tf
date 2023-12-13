@@ -1,34 +1,25 @@
 
 data "azurerm_subscription" "current" {}
 
-resource "azurerm_network_manager_network_group" "group" {
-  name               = "${local.external_outputs.clusters.outputs.clusters.enviroment}"
-  network_manager_id = local.external_outputs.networkmanager.outputs.networkmanager_id
-  description        = "Network Group for ${local.external_outputs.clusters.outputs.clusters.enviroment} virtual networks"
+module "azurerm_network_manager_network_group" {
+  source             = "../../../modules/networkmanager_networkgroup"
+  enviroment         = local.external_outputs.clusters.data.enviroment
+  network_manager_id = local.external_outputs.networkmanager.data.id
 }
 
-resource "azurerm_network_manager_connectivity_configuration" "config" {
-  name                  = "Hub-and-Spoke-${local.external_outputs.clusters.outputs.clusters.enviroment}"
-  description           = "Hub-and-Spoke config"
-  network_manager_id    = local.external_outputs.networkmanager.outputs.networkmanager_id
-  connectivity_topology = "HubAndSpoke"
-
-  applies_to_group {
-    group_connectivity = "None"
-    network_group_id   = azurerm_network_manager_network_group.group.id
-  }
-
-  hub {
-    resource_id   = local.external_outputs.virtualnetwork.outputs.vnethub_id
-    resource_type = "Microsoft.Network/virtualNetworks"
-  }
+module "azurerm_network_manager_connectivity_configuration" {
+  source             = "../../../modules/networkmanager_connectivity"
+  enviroment         = local.external_outputs.clusters.data.enviroment
+  network_manager_id = local.external_outputs.networkmanager.data.id
+  network_group_id   = module.azurerm_network_manager_network_group.data.id
+  vnethub_id         = local.external_outputs.virtualnetwork.data.id
 }
 
 resource "azurerm_policy_definition" "policy" {
-  name         = "Kubernetes-vnets-in-${local.external_outputs.clusters.outputs.clusters.enviroment}"
+  name         = "Kubernetes-vnets-in-${local.external_outputs.clusters.data.enviroment}"
   policy_type  = "Custom"
   mode         = "Microsoft.Network.Data"
-  display_name = "Kubernetes vnets in ${local.external_outputs.clusters.outputs.clusters.enviroment}"
+  display_name = "Kubernetes vnets in ${local.external_outputs.clusters.data.enviroment}"
 
   metadata = <<METADATA
     {
@@ -49,15 +40,15 @@ METADATA
           "allOf": [
             {
               "value": "[resourceGroup().Name]",
-              "contains": "${local.external_outputs.clusters.outputs.clusters.resource_group}"
+              "contains": "${local.external_outputs.clusters.data.resource_group}"
             },
             {
               "field": "location",
-              "contains": "${local.external_outputs.clusters.outputs.clusters.location}"
+              "contains": "${local.external_outputs.clusters.data.location}"
             },
             {
               "field": "Name",
-              "contains": "${local.external_outputs.clusters.outputs.clusters.enviroment}"
+              "contains": "${local.external_outputs.clusters.data.enviroment}"
             }
           ]
         }
@@ -66,23 +57,17 @@ METADATA
     "then": {
       "effect": "addToNetworkGroup",
       "details": {
-        "networkGroupId": "/subscriptions/${local.external_outputs.common.shared.subscription_id}/resourceGroups/clusters/providers/Microsoft.Network/networkManagers/${local.external_outputs.common.shared.AZ_SUBSCRIPTION_SHORTNAME}-ANVM/networkGroups/${local.external_outputs.clusters.outputs.clusters.enviroment}"
+        "networkGroupId": "/subscriptions/${local.external_outputs.global.data.subscription_id}/resourceGroups/clusters/providers/Microsoft.Network/networkManagers/${local.external_outputs.global.data.subscription_shortname}-ANVM/networkGroups/${local.external_outputs.clusters.data.enviroment}"
       }
     }
   }
   POLICY_RULE
 }
 
-resource "azurerm_subscription_policy_assignment" "assignment" {
-  display_name         = "Kubernetes-vnets-in-${local.external_outputs.clusters.outputs.clusters.enviroment}"
-  name                 = "Kubernetes-vnets-in-${local.external_outputs.clusters.outputs.clusters.enviroment}"
-  location             = "${local.external_outputs.clusters.outputs.clusters.location}"
-  policy_definition_id = azurerm_policy_definition.policy.id
-  subscription_id      = data.azurerm_subscription.current.id
-  parameters           = jsonencode({})
-  identity {
-    identity_ids = []
-    type         = "SystemAssigned"
-  }
-
+module "azurerm_subscription_policy_assignment" {
+  source       = "../../../modules/policyassignment"
+  enviroment   = local.external_outputs.clusters.data.enviroment
+  location     = local.external_outputs.common.data.location
+  policy_id    = azurerm_policy_definition.policy.id
+  subscription = data.azurerm_subscription.current.id
 }

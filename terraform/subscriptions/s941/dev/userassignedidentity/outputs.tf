@@ -1,3 +1,3 @@
-output "userassignedidentity" {
+output "data" {
   value = module.userassignedidentity.data
 }
