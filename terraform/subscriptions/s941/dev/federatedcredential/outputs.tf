@@ -1,3 +1,3 @@
 output "data" {
-  value = module.federatedcredential.data
+  value = module.federatedcredential
 }
