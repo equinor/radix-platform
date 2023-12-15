@@ -94,10 +94,10 @@ module "kv" {
   #access_policy             = var.access_policies
 }
 
-output "test" {
-  value = module.keyvault.module.kv.azurerm_key_vault.this
+# output "test" {
+#   value = module.keyvault.module.kv.azurerm_key_vault.this
   
-}
+# }
 # locals {
 #   access_policies = [
 #     for p in var.access_policies : {
