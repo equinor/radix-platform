@@ -1,3 +1,3 @@
 output "data" {
-  value = module.userassignedidentity.data
+  value = module.userassignedidentity
 }
