@@ -186,7 +186,7 @@ echo "Done."
 printf "Working on \"${APP_REGISTRATION_VELERO}\": Creating service principal..."
 AZ_VELERO_SERVICE_PRINCIPAL_SCOPE="$(az group show --name ${AZ_VELERO_RESOURCE_GROUP} | jq -r '.id')"
 AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD="$(az ad sp create-for-rbac --name "$APP_REGISTRATION_VELERO" --scope="${AZ_VELERO_SERVICE_PRINCIPAL_SCOPE}" --role "Contributor" --query 'password' -o tsv)"
-AZ_VELERO_SERVICE_PRINCIPAL_ID="$(az ad sp list --filter "displayname eq '${APP_REGISTRATION_VELERO}'" --query '[0].appId' -o tsv)"
+AZ_VELERO_SERVICE_PRINCIPAL_ID="$(az ad sp list --display-name "$APP_REGISTRATION_VELERO" --query '[0].appId' -o tsv)"
 AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION="Used by Velero to access Azure resources"
 
 printf "Update credentials in keyvault..."

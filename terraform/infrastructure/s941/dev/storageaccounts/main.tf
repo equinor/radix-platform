@@ -13,7 +13,7 @@ data "azurerm_subscription" "AZ_SUBSCRIPTION" {
 }
 
 locals {
-  WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
+  # WHITELIST_IPS = jsondecode(textdecodebase64("${data.azurerm_key_vault_secret.whitelist_ips.value}", "UTF-8"))
   storageaccount_private_subnet = merge([
     for sa_key, sa_value in var.storage_accounts : {
       for privlink_key, privlink_value in var.private_link :
@@ -43,10 +43,10 @@ data "azurerm_key_vault" "keyvault_env" {
   resource_group_name = var.AZ_RESOURCE_GROUP_COMMON
 }
 
-data "azurerm_key_vault_secret" "whitelist_ips" {
-  name         = "acr-whitelist-ips-${var.RADIX_ZONE}"
-  key_vault_id = data.azurerm_key_vault.keyvault_env.id
-}
+# data "azurerm_key_vault_secret" "whitelist_ips" {
+#   name         = "acr-whitelist-ips-${var.RADIX_ZONE}"
+#   key_vault_id = data.azurerm_key_vault.keyvault_env.id
+# }
 
 data "azurerm_subnet" "virtual_subnets" {
   for_each = {

@@ -224,7 +224,7 @@ sql_server = {
     rg_name             = "cost-allocation"
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
-    vault               = "radix-vault-dev-dr"
+    vault               = "radix-vault-dev-dr2"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -234,7 +234,7 @@ sql_server = {
   #   rg_name             = "cost-allocation"
   #   db_admin            = "radix-cost-allocation-db-admin-playground"
   #   minimum_tls_version = "Disabled"
-  #   vault               = "radix-vault-dev-dr"
+  #   vault               = "radix-vault-dev-dr2"
   #   tags = {
   #     "displayName" = "SqlServer"
   #   }
@@ -244,14 +244,14 @@ sql_server = {
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
-    vault    = "radix-vault-dev-dr"
+    vault    = "radix-vault-dev-dr2"
   }
   # "sql-radix-vulnerability-scan-playground" = {
   #   name     = "sql-radix-vulnerability-scan-playground"
   #   rg_name  = "vulnerability-scan"
   #   db_admin = "radix-vulnerability-scan-db-admin-playground"
   #   identity = false
-  #   vault    = "radix-vault-dev-dr"
+  #   vault    = "radix-vault-dev-dr2"
   # }
 }
 
@@ -320,8 +320,8 @@ key_vault = {
     name    = "kv-radix-monitoring-dev"
     rg_name = "monitoring"
   }
-  "radix-vault-dev-dr" = {
-    name    = "radix-vault-dev-dr"
+  "radix-vault-dev-dr2" = {
+    name    = "radix-vault-dev-dr2"
     rg_name = "common"
   }
 }
@@ -353,7 +353,7 @@ firewall_rules = {
   }
 }
 
-KV_RADIX_VAULT = "radix-vault-dev-dr"
+KV_RADIX_VAULT = "radix-vault-dev-dr2"
 
 private_link = {
   "dev" = {

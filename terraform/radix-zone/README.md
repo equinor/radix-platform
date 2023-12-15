@@ -1,10 +1,10 @@
 # DR:
 # Comment out backend "azurerm" {} to run local
-scripts/radix-zone/base-infrastructure/bootstrap.sh
 terraform/infrastructure/s941/dev/resourcegroups/main.tf # local
+scripts/radix-zone/base-infrastructure/bootstrap.sh
 terraform/infrastructure/s941/dev/keyvaults/main.tf # local
-terraform/infrastructure/s941/dev/storageaccounts/main.tf # local
 terraform/oidc/rbac/main.tf # local
+terraform/infrastructure/s941/dev/storageaccounts/main.tf # local
 terraform/infrastructure/s941/dev/policy/main.tf
 terraform/infrastructure/s941/dev/networkmanager/main.tf
 scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh
