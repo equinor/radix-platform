@@ -4,6 +4,7 @@ module "loganalytics" {
   resource_group_name = local.log_analytics_workspace.resource_group
   location            = local.external_outputs.common.data.location
   retention_in_days   = 30
+  local_authentication_disabled = false
   
 }
 
