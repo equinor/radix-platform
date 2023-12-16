@@ -22,7 +22,9 @@ CLUSTER_TYPE                   = "development"
 RADIX_ZONE                     = "dev"
 RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
-K8S_ENVIROMENTS                = ["dev"]
+K8S_ENVIROMENTS = {
+  "dev"        = { "name" = "dev", "resourceGroup" = "clusters" },
+}
 # K8S_ENVIROMENTS                = ["dev", "playground"]
 
 #######################################################################################
