@@ -14,9 +14,6 @@ scripts/velero/bootstrap.sh
 
 
 
-# TODO
-find SP_GITHUB_ACTION_CLUSTER_CLIENT_ID with name instead of hardcoding ID
-
 # Testing
 #ar-radix-hub-dev
 

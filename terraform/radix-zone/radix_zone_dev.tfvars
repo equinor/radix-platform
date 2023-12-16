@@ -353,7 +353,6 @@ virtual_networks = {
 ###
 
 APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance"
-SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
 
 #######################################################################################
 ### Github

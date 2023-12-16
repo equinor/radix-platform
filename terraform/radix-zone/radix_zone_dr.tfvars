@@ -381,8 +381,7 @@ virtual_networks = {
 ### Service principal
 ###
 
-APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance-sp"
-SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "98bf071a-ed22-4a9b-a374-24d7c653ec4e"
+APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance-dr"
 
 #######################################################################################
 ### Github

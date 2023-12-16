@@ -10,13 +10,13 @@ terraform init
 Run below commands to deploy
 
 ```sh
-terraform apply --var-file=../../radix-zone/radix_zone_dev.tfvars
+terraform apply --var-file=../../radix-zone/radix_zone_dr.tfvars
 ```
 
 Run below commands to destroy
 
 ```sh
-terraform destroy --var-file=../../radix-zone/radix_zone_dev.tfvars
+terraform destroy --var-file=../../radix-zone/radix_zone_dr.tfvars
 ```
 
 <!-- BEGIN_TF_DOCS -->
