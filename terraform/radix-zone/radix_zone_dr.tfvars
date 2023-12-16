@@ -221,12 +221,13 @@ storage_accounts = {
 ###
 
 sql_server = {
-  "sql-radix-cost-allocation-dev" = {
-    name                = "sql-radix-cost-allocation-dev"
+  "sql-radix-cost-allocation-dev-dr" = {
+    name                = "sql-radix-cost-allocation-dev-dr"
     rg_name             = "cost-allocation"
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
     vault               = "radix-vault-dev-dr2"
+    env      = "dev"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -241,12 +242,13 @@ sql_server = {
   #     "displayName" = "SqlServer"
   #   }
   # }
-  "sql-radix-vulnerability-scan-dev" = {
-    name     = "sql-radix-vulnerability-scan-dev"
+  "sql-radix-vulnerability-scan-dev-dr" = {
+    name     = "sql-radix-vulnerability-scan-dev-dr"
     rg_name  = "vulnerability-scan"
     db_admin = "radix-vulnerability-scan-db-admin"
     identity = false
     vault    = "radix-vault-dev-dr2"
+    env      = "dev"
   }
   # "sql-radix-vulnerability-scan-playground" = {
   #   name     = "sql-radix-vulnerability-scan-playground"
@@ -262,9 +264,9 @@ sql_server = {
 ###
 
 sql_database = {
-  "sql-radix-cost-allocation-dev" = {
+  "sql-radix-cost-allocation-dev-dr" = {
     name   = "sqldb-radix-cost-allocation"
-    server = "sql-radix-cost-allocation-dev"
+    server = "sql-radix-cost-allocation-dev-dr"
     tags = {
       "displayName" = "Database"
     }
@@ -276,9 +278,9 @@ sql_database = {
   #     "displayName" = "Database"
   #   }
   # }
-  "sql-radix-vulnerability-scan-dev" = {
+  "sql-radix-vulnerability-scan-dev-dr" = {
     name   = "radix-vulnerability-scan"
-    server = "sql-radix-vulnerability-scan-dev"
+    server = "sql-radix-vulnerability-scan-dev-dr"
   }
   # "sql-radix-vulnerability-scan-playground" = {
   #   name   = "radix-vulnerability-scan"
@@ -318,8 +320,8 @@ mysql_server = {
 ###
 
 key_vault = {
-  "kv-radix-monitoring-dev" = {
-    name    = "kv-radix-monitoring-dev"
+  "radix-monitoring-dev-dr" = {
+    name    = "radix-monitoring-dev-dr"
     rg_name = "monitoring"
   }
   "radix-vault-dev-dr2" = {

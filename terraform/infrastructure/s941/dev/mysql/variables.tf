@@ -14,7 +14,7 @@ variable "mysql_flexible_server" {
     version               = optional(string, "5.7")
     zone                  = optional(number, 2)
     secret                = string
-    vault                 = optional(string, "kv-radix-monitoring-dev") # Vault that keeps the secret
+    vault                 = optional(string, "radix-monitoring-dev-dr") # Vault that keeps the secret
   }))
   default = {}
 }
@@ -32,7 +32,7 @@ variable "mysql_server" {
     storage_mb                       = optional(number, 102400)
     tags                             = optional(map(string), {})
     secret                           = string
-    vault                            = optional(string, "kv-radix-monitoring-dev") # Vault that keeps the secret
+    vault                            = optional(string, "radix-monitoring-dev-dr") # Vault that keeps the secret
   }))
   default = {}
 }
