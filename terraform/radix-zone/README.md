@@ -50,9 +50,7 @@ scripts/cost-allocation/bootstrap.sh REGENERATE_API_PASSWORD=true REGENERATE_COL
 
 ## secrets
 acr-whitelist-ips-dev
-// flux-github-deploy-key-private
-// flux-github-deploy-key-public
+flux-github-deploy-key-private
+flux-github-deploy-key-public
 slack-webhook-dev
-
-# TODO find a way to genereate secret
 radix-cicd-canary-values
