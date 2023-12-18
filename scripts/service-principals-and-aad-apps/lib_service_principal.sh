@@ -308,6 +308,12 @@ function create_app_registration_and_service_principal() {
         printf "service principal already exist... "
     fi
 
+    printf "    Update owners of app registration..."
+    update_ad_app_owners "${name}"
+
+    printf "    Update owners of service principal..."
+    update_service_principal_owners "${name}"
+
     echo "Done"
 }
 
