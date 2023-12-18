@@ -330,6 +330,18 @@ key_vault = {
   }
 }
 
+key_vault_by_k8s_environment = {
+  "dev" = {
+    name    = "radix-vault-dev-dr2"
+    rg_name = "common"
+  }
+  }
+  "monitoring" = {
+    name    = "radix-monitoring-dev-dr"
+    rg_name = "monitoring"
+  }
+}
+
 firewall_rules = {
   "equinor-wifi" = {
     start_ip_address = "143.97.110.1"
@@ -356,6 +368,8 @@ firewall_rules = {
     end_ip_address   = "0.0.0.0"
   }
 }
+
+EQUINOR_WIFI_IP_CIDR = "143.97.110.1/32"
 
 KV_RADIX_VAULT = "radix-vault-dev-dr2"
 
@@ -394,3 +408,7 @@ APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maint
 GH_ORGANIZATION = "equinor"
 GH_REPOSITORY   = "radix-platform"
 GH_ENVIRONMENT  = "operations-dr"
+
+# Update this and run terraform in acr to rotate secrets.
+# Remember to restart Operator afterwards to get refreshed tokens
+ACR_TOKEN_EXPIRES_AT = "2024-11-01T12:00:00+00:00"
