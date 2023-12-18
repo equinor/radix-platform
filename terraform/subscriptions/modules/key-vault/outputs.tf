@@ -1,7 +1,7 @@
 output "vault_id" {
   description = "The ID of this Key vault."
   # value       = azurerm_key_vault.this.id
-  value       = module.kv
+  value       = module.kv.vault_id
 }
 
 # output "vault_name" {
