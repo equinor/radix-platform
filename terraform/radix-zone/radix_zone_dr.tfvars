@@ -23,7 +23,7 @@ RADIX_ZONE                     = "dev"
 RADIX_ENVIRONMENT              = "dev"
 RADIX_WEB_CONSOLE_ENVIRONMENTS = ["qa", "prod"]
 K8S_ENVIROMENTS = {
-  "dev"        = { "name" = "dev", "resourceGroup" = "clusters" },
+  "dev" = { "name" = "dev", "resourceGroup" = "clusters" },
 }
 # K8S_ENVIROMENTS                = ["dev", "playground"]
 
@@ -227,7 +227,7 @@ sql_server = {
     db_admin            = "radix-cost-allocation-db-admin"
     minimum_tls_version = "Disabled"
     vault               = "radix-vault-dev-dr2"
-    env      = "dev"
+    env                 = "dev"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -335,7 +335,6 @@ key_vault_by_k8s_environment = {
     name    = "radix-vault-dev-dr2"
     rg_name = "common"
   }
-  }
   "monitoring" = {
     name    = "radix-monitoring-dev-dr"
     rg_name = "monitoring"
@@ -399,7 +398,7 @@ virtual_networks = {
 ### Service principal
 ###
 
-APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance-dr"
+APP_GITHUB_ACTION_CLUSTER_NAME = "ar-radix-platform-github-dev-cluster-maintenance-dr"
 
 #######################################################################################
 ### Github

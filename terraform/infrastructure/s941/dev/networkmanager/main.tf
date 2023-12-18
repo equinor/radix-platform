@@ -60,7 +60,7 @@ resource "azurerm_network_manager_connectivity_configuration" "config" {
 }
 
 resource "azurerm_policy_definition" "policy" {
-  depends_on = [ azurerm_network_manager.networkmanager ]
+  depends_on   = [azurerm_network_manager.networkmanager]
   for_each     = var.K8S_ENVIROMENTS
   name         = "Kubernetes-vnets-in-${each.key}"
   policy_type  = "Custom"
@@ -112,7 +112,7 @@ METADATA
 }
 
 resource "azurerm_subscription_policy_assignment" "assign_vnets_in_zone_policy" {
-  depends_on = [ azurerm_policy_definition.policy ]
+  depends_on           = [azurerm_policy_definition.policy]
   for_each             = azurerm_network_manager_network_group.group
   name                 = azurerm_policy_definition.policy[each.key].name
   policy_definition_id = azurerm_policy_definition.policy[each.key].id
