@@ -559,14 +559,14 @@ function set_permissions_on_log_analytics_workspace() {
     printf "Working on log analytics workspace \"%s\": " "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}"
 
     printf "Setting permissions for \"%s\"..." "${APP_REGISTRATION_LOG_API}" # radix-cr-reader-dev
-    id="$(az ad sp list --filter "displayname eq '${APP_REGISTRATION_LOG_API}'" --query [].appId --output tsv)"
-    
+    id="$(az ad sp list --display-name ${APP_REGISTRATION_LOG_API} --query [].appId --output tsv)"
+
     # Delete any existing roles
     az role assignment delete \
         --assignee "${id}" \
         --scope "${scope}" \
         --output none
-    
+
     # Configure new roles
     az role assignment create \
         --assignee "${id}" \
@@ -664,44 +664,44 @@ END
     printf "Done.\n"
 }
 
-function update_acr_whitelist() {
-    #######################################################################################
-    ### Add ACR network rule
-    ###
+# function update_acr_whitelist() {
+#     #######################################################################################
+#     ### Add ACR network rule
+#     ###
 
-    printf "Whitelisting cluster egress IP(s) in ACR network rules\n"
-    printf "Retrieving egress IP range for %s cluster...\n" "${CLUSTER_NAME}"
-    local egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
-    printf "Retrieved IP range %s.\n" "${egress_ip_range}"
-    # Update ACR IP whitelist with cluster egress IP(s)
-    printf "\n"
-    printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=add $WHITELIST_IP_IN_ACR_SCRIPT)
-    wait # wait for subshell to finish
-    printf "\n"
-}
+#     printf "Whitelisting cluster egress IP(s) in ACR network rules\n"
+#     printf "Retrieving egress IP range for %s cluster...\n" "${CLUSTER_NAME}"
+#     local egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
+#     printf "Retrieved IP range %s.\n" "${egress_ip_range}"
+#     # Update ACR IP whitelist with cluster egress IP(s)
+#     printf "\n"
+#     printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=add $WHITELIST_IP_IN_ACR_SCRIPT)
+#     wait # wait for subshell to finish
+#     printf "\n"
+# }
 
 #######################################################################################
 ### MAIN
 ###
 
 update_app_registrations
-create_resource_groups
+# create_resource_groups
 create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
 create_acr
-update_acr_whitelist
+# update_acr_whitelist
 create_base_system_users_and_store_credentials
 create_servicenow_proxy_server_app_registration
 update_app_registration
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
 create_acr_tasks
-create_dns_role_definition_for_cert_manager
+# create_dns_role_definition_for_cert_manager
 create_log_analytics_workspace
 set_permissions_on_log_analytics_workspace
-create_sql_logs_storageaccount
+# create_sql_logs_storageaccount
 
 #######################################################################################
 ### END

@@ -128,7 +128,7 @@ function assignRoleForResourceToUser() {
 
     ROLE="${1}"
     ROLE_SCOPE="${2}"
-    USER_ID="$(az ad sp list --filter "displayname eq '${3}'" --query [].appId --output tsv)"
+    USER_ID="$(az ad sp list --display-name "${3}" --query [].appId --output tsv)"
 
     # Delete any existing roles before creating new roles
     CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
