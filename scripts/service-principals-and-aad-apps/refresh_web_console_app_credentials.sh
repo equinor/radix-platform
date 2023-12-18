@@ -3,13 +3,13 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Refresh credentials for Radix Web Console AAD app and store in keyvault
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -20,14 +20,14 @@
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./refresh_web_console_app_credentials.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dr.env ./refresh_web_console_app_credentials.sh
 
 
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start refreshing credentials for Radix Web Console AAD app... "
@@ -64,7 +64,7 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-WEB_CONSOLE_DISPLAY_NAME=$(az ad app show --id "${OAUTH2_PROXY_CLIENT_ID}" --query displayName --output tsv) || exit
+APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].appId --output tsv --only-show-errors)"
 
 #######################################################################################
 ### Prepare az session
@@ -91,7 +91,7 @@ echo -e "   -  VAULT_CLIENT_SECRET_NAME                 : $VAULT_CLIENT_SECRET_N
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  Radix Web Console App Name               : $WEB_CONSOLE_DISPLAY_NAME"
+echo -e "   -  Radix Web Console App Name               : $APP_REGISTRATION_WEB_CONSOLE"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -117,13 +117,13 @@ fi
 ### Refresh credentials for Radix Web Console app in Azure AD and store in key vault
 ###
 
-printf "Generating new app secret for ${WEB_CONSOLE_DISPLAY_NAME} in Azure AD..."
+printf "Generating new app secret for ${APP_REGISTRATION_WEB_CONSOLE} in Azure AD..."
 
-password="$(az ad app credential reset --id "${OAUTH2_PROXY_CLIENT_ID}" --display-name "web console" --append --query password --output tsv)"
-secret="$(az ad app credential list --id "${OAUTH2_PROXY_CLIENT_ID}" --query "sort_by([?displayName=='web console'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
+password="$(az ad app credential reset --id "${APP_REGISTRATION_ID}" --display-name "web console" --append --query password --output tsv)"
+secret="$(az ad app credential list --id "${APP_REGISTRATION_ID}" --query "sort_by([?displayName=='web console'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
 expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')" || exit
 
-printf "Update credentials for ${WEB_CONSOLE_DISPLAY_NAME} in keyvault ${AZ_RESOURCE_KEYVAULT}..."
+printf "Update credentials for ${APP_REGISTRATION_WEB_CONSOLE} in keyvault ${AZ_RESOURCE_KEYVAULT}..."
 
 # Upload to keyvault
 az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${VAULT_CLIENT_SECRET_NAME}" --value "${password}" --expires "${expiration_date}" --output none || exit

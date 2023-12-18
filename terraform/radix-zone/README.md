@@ -1,4 +1,7 @@
 # DR:
+
+Make sure you have the role **"Application Developer"** and is **"Owner"** on the subscription before starting.
+
 # Comment out backend "azurerm" {} to run local
 terraform/infrastructure/s941/dev/resourcegroups/main.tf # local
 scripts/radix-zone/base-infrastructure/bootstrap.sh
@@ -6,13 +9,21 @@ terraform/oidc/rbac/main.tf # local
 terraform/infrastructure/s941/dev/keyvaults/main.tf # local
 terraform/infrastructure/s941/dev/storageaccounts/main.tf # local
 
-USE BACKEND
+## USE BACKEND
 change values in .env files:
+```
 resource_group_name="s612-tfstate"
 storage_account_name ="s612radixinfra"
 client_id="github maintenance clientid"
 client_secret="github maintenance secret"
 subscription_id="DR subscription"
+```
+in:
+- terraform/infrastructure/s941/dev/networkmanager/main.tf
+- terraform/infrastructure/s941/dev/sqldatabases/main.tf
+- terraform/infrastructure/s941/dev/mysql/main.tf
+
+## Continue recovery: 
 
 terraform/infrastructure/s941/dev/networkmanager/main.tf
 scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh
