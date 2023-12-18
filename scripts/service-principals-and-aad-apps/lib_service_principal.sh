@@ -468,11 +468,7 @@ function create_oidc_and_federated_credentials() {
         printf "creating %s...\n" "${APP_NAME}"
         app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
 
-        az rest \
-            --method patch \
-            --url "https://graph.microsoft.com/v1.0/applications/${app_objectId}" \
-            --headers 'Content-Type=application/json' \
-            --body "{\"serviceManagementReference\":\"${SERVICE_MANAGEMENT_REFERENCE}\"}"
+        add_ci "$name"
     fi
 
     printf "Checking if service principal already exists..."
