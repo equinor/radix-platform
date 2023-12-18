@@ -150,17 +150,23 @@ function create_resource_groups() {
 # }
 
 function create_keyvault() {
-    echo "Creating key vault: ${AZ_RESOURCE_MON_KEYVAULT}..."
-    az keyvault create \
-        --name "${AZ_RESOURCE_MON_KEYVAULT}" \
-        --resource-group "${AZ_RESOURCE_GROUP_MONITORING}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --enable-purge-protection \
-        --only-show-errors || {
-        echo -e "\nERROR: Failed to create keyvault. Exiting... " >&2
-        exit 1
+
+    echo "Check if keyvault exists..."
+
+    # TODO: Create a better check if the keyvault exist
+    az keyvault show --name "${AZ_RESOURCE_MON_KEYVAULT}" --only-show-errors --resource-group "${AZ_RESOURCE_GROUP_MONITORING}" || {
+      echo "Missing, creating new key vault: ${AZ_RESOURCE_MON_KEYVAULT}..."
+      az keyvault create \
+          --name "${AZ_RESOURCE_MON_KEYVAULT}" \
+          --resource-group "${AZ_RESOURCE_GROUP_MONITORING}" \
+          --subscription "${AZ_SUBSCRIPTION_ID}" \
+          --enable-purge-protection \
+          --only-show-errors || {
+          echo -e "\nERROR: Failed to create keyvault. Exiting... " >&2
+          exit 1
+      }
+      echo "...Done"
     }
-    echo "...Done"
 
     echo "Set access policy for group Radix Platform Operators in key vault: ${AZ_RESOURCE_MON_KEYVAULT}..."
     az keyvault set-policy \
