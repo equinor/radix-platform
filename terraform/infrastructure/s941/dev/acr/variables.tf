@@ -2,6 +2,10 @@ variable "AZ_RESOURCE_GROUP_COMMON" {
   description = "Resource group name for common"
   type        = string
 }
+variable "ACR_SUFFIX" {
+  description = "Suffix added to ACR Name"
+  type        = string
+}
 
 variable "AZ_LOCATION" {
   description = "Azure resource location"

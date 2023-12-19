@@ -13,6 +13,7 @@ AKS_USER_NODE_POOL_NAME   = "userpool"
 TAGS_AA                   = { "autostartupschedule " = "true", "migrationStrategy" = "aa" }
 TAGS_AT                   = { "autostartupschedule " = "false", "migrationStrategy" = "at" }
 
+aks_clouster_resource_groups = ["clusters"]
 #######################################################################################
 ### Zone and cluster settings
 ###
@@ -411,3 +412,4 @@ GH_ENVIRONMENT  = "operations-dr"
 # Update this and run terraform in acr to rotate secrets.
 # Remember to restart Operator afterwards to get refreshed tokens
 ACR_TOKEN_EXPIRES_AT = "2024-11-01T12:00:00+00:00"
+ACR_SUFFIX           = "DR"
