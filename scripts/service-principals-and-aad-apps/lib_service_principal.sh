@@ -231,6 +231,23 @@ function update_service_principal_owners() {
     printf " Done.\n"
 }
 
+function add_ci() {
+    local name
+    name=$1
+
+    app_objectId=$(az ad app list \
+        --filter "displayName eq '$name'" \
+        --query [].id --output tsv)
+
+    printf "Adding Ci to App registration %s... " "$name"
+    az rest \
+        --method patch \
+        --url "https://graph.microsoft.com/v1.0/applications/${app_objectId}" \
+        --headers 'Content-Type=application/json' \
+        --body "{\"serviceManagementReference\":\"${SERVICE_MANAGEMENT_REFERENCE}\"}"
+    printf "Done\n"
+}
+
 function create_service_principal_and_store_credentials() {
 
     local name        # Input 1
@@ -268,6 +285,8 @@ function create_service_principal_and_store_credentials() {
     printf "    Update owners of service principal..."
     update_service_principal_owners "${name}"
 
+    add_ci "$name"
+
     printf "Done.\n"
 }
 
@@ -286,16 +305,6 @@ function create_app_registration_and_service_principal() {
     if [[ -z $app_id ]]; then
         printf "creating app registration... "
         app_id=$(az ad app create --display-name "${name}" --query appId -o tsv) || return
-
-        app_objectId=$(az ad app list \
-            --filter "displayName eq '$name'" \
-            --query [].id --output tsv)
-
-        az rest \
-            --method patch \
-            --url "https://graph.microsoft.com/v1.0/applications/${app_objectId}" \
-            --headers 'Content-Type=application/json' \
-            --body "{\"serviceManagementReference\":\"${SERVICE_MANAGEMENT_REFERENCE}\"}"
     else
         printf "app registration already exist... "
     fi
@@ -313,6 +322,8 @@ function create_app_registration_and_service_principal() {
 
     printf "    Update owners of service principal..."
     update_service_principal_owners "${name}"
+
+    add_ci "$name"
 
     echo "Done"
 }
@@ -462,6 +473,8 @@ function create_oidc_and_federated_credentials() {
     if [ -z "$app_id" ]; then
         printf "creating %s...\n" "${APP_NAME}"
         app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
+
+        add_ci "$name"
     fi
 
     printf "Checking if service principal already exists..."
