@@ -5,6 +5,6 @@ locals {
     location = "northeurope"
     #subscription_shortname    = "s941"
     resource_group  = "common"
-    radix_key_vault = "radix-vault-dev"
   }
+  
 }
