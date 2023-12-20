@@ -80,3 +80,12 @@ module "azurerm_subscription_policy_assignment" {
   policy_id    = azurerm_policy_definition.policy.id
   subscription = data.azurerm_subscription.current.id
 }
+
+module "network_publicipprefix" {
+  for_each            = local.flattened_publicipprefix
+  source              = "../../../modules/network_publicipprefix"
+  publicipprefixname  = "ippre-${each.key}-aks-${local.external_outputs.common.data.cluster_type}-${local.external_outputs.common.data.location}-001"
+  location            = local.external_outputs.common.data.location
+  resource_group_name = local.external_outputs.common.data.resource_group
+  zones               = each.value.zones
+}

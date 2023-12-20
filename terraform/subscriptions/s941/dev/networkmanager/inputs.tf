@@ -1,15 +1,21 @@
 locals {
   policy_notcontains_name = "playground"
-
+  flattened_publicipprefix = {
+    for key, value in var.publicipprefix : key =>  {
+      name  = key
+      zones = value.zones
+    }
+  }
+  
   external_outputs = {
-    global   = data.terraform_remote_state.global.outputs
-    common = data.terraform_remote_state.common.outputs
+    global         = data.terraform_remote_state.global.outputs
+    common         = data.terraform_remote_state.common.outputs
     networkmanager = data.terraform_remote_state.networkmanager.outputs
     virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
     clusters       = data.terraform_remote_state.clusters.outputs
   }
   ## Backend Config
-   backend = {
+  backend = {
     resource_group_name  = "s941-tfstate"
     storage_account_name = "s941radixinfra"
     container_name       = "infrastructure"
