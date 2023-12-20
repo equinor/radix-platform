@@ -1,5 +1,5 @@
 locals {
-
+  
   log_analytics_workspace = {
     name           = "log-key-vault"
     resource_group = "Logs-Dev"
@@ -19,7 +19,7 @@ locals {
           "Get",
         ]
         storage_permissions = []
-        tenant_id           = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id           = local.external_outputs.global.data.tenant_id
       },
       {
         certificate_permissions = [
@@ -35,7 +35,7 @@ locals {
           "Get",
           "List",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         certificate_permissions = [
@@ -51,14 +51,14 @@ locals {
           "Get",
           "List",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "cfedc110-6bd8-4b9b-82ad-d17fe6a88665"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         certificate_permissions = [
@@ -99,14 +99,14 @@ locals {
           "Backup",
           "Restore",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "482b3662-b336-4041-8cea-9366175b7711"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         certificate_permissions = [
@@ -147,7 +147,7 @@ locals {
           "Backup",
           "Restore",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "e1cab00e-9c12-4ce1-9882-842a57e89643"
@@ -156,7 +156,7 @@ locals {
           "List",
           "Set",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         key_permissions = [
@@ -168,35 +168,35 @@ locals {
           "Backup",
           "Restore",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "0d5c3b22-ee9b-4240-831e-9e5e5201d854"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "c527d489-b9c7-46db-aed7-bdd6ca27115d"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "917fe078-3ea4-4fc7-a728-fec7b41c155a"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "620c1a93-b744-4b26-bb0b-986c141fcc1b"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "dd4dd75c-6e56-4c2b-9404-e76d2c29c67f"
@@ -204,21 +204,21 @@ locals {
           "Get",
           "Set",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "17be8596-0d2f-445b-be4b-9fdbae8e046f"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "c488da80-c7bd-4751-b52e-cb9a852826bd"
         secret_permissions = [
           "Get",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       }
     ]
   }

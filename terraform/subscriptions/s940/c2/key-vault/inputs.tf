@@ -19,7 +19,7 @@ locals {
           "Get",
         ]
         storage_permissions = []
-        tenant_id           = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id           = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "2784c69e-a017-4333-87e3-fa22cb7d77d9"
@@ -27,7 +27,7 @@ locals {
           "Get",
         ]
         storage_permissions = []
-        tenant_id           = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id           = local.external_outputs.global.data.tenant_id
       },
       {
         certificate_permissions = [
@@ -78,7 +78,7 @@ locals {
           "Restore",
         ]
         storage_permissions = []
-        tenant_id           = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id           = local.external_outputs.global.data.tenant_id
       },
       {
         certificate_permissions = [
@@ -131,7 +131,7 @@ locals {
         storage_permissions = [
           "all",
         ]
-        tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "bc5e10a1-ff38-4139-bd4d-0c7300102b61"
@@ -139,7 +139,7 @@ locals {
           "Get",
         ]
         storage_permissions = []
-        tenant_id           = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id           = local.external_outputs.global.data.tenant_id
       },
       {
         object_id = "8ab3d792-1724-4e5f-aa27-76a2b943c502"
@@ -147,7 +147,7 @@ locals {
           "Get",
         ]
         storage_permissions = []
-        tenant_id           = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+        tenant_id           = local.external_outputs.global.data.tenant_id
       }
     ]
   }

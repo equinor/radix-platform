@@ -1,6 +1,8 @@
-output "workspace_id" {
+output "data" {
   description = "The ID of this Log Analytics workspace."
-  value       = module.la.workspace_id
+  value = {
+    "workspace_id" = module.la.workspace_id
+  }
 }
 
 # output "workspace_customer_id" {
