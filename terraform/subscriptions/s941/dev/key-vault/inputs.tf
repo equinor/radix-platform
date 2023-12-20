@@ -7,7 +7,7 @@ locals {
 
   key_vault = {
     name                        = "radix-vault-dev"
-    resource_group              = "common"
+    resource_group              = local.external_outputs.common.data.resource_group
     soft_delete_retention_days  = 30
     enable_rbac_authorization   = false
     purge_protection_enabled    = true
