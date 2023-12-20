@@ -80,17 +80,3 @@ module "azurerm_subscription_policy_assignment" {
   policy_id    = azurerm_policy_definition.policy.id
   subscription = data.azurerm_subscription.current.id
 }
-
-# resource "azurerm_subscription_policy_assignment" "assignment" {
-#   display_name         = "Kubernetes-vnets-in-${local.external_outputs.clusters.outputs.data.enviroment}"
-#   name                 = "Kubernetes-vnets-in-${local.external_outputs.clusters.outputs.data.enviroment}"
-#   location             = "${local.external_outputs.clusters.outputs.data.location}"
-#   policy_definition_id = azurerm_policy_definition.policy.id
-#   subscription_id      = data.azurerm_subscription.current.id
-#   parameters           = jsonencode({})
-#   identity {
-#     identity_ids = []
-#     type         = "SystemAssigned"
-#   }
-
-# }
