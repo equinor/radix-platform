@@ -115,11 +115,11 @@ function create_monitoring_service_principal() {
 
     # Skip creation if the sp exist
     local testSP
-    testSP="$(az ad sp list --filter "displayname eq '${name}'" --query [].id --output tsv 2> /dev/null)"
+    testSP="$(az ad sp list --display-name "${name}" --query [].id --output tsv 2>/dev/null)"
     if [ -z "$testSP" ]; then
         echo "creating ${name}..."
         password="$(az ad sp create-for-rbac --name "${name}" --query password --output tsv)"
-        id="$(az ad sp list --filter "displayname eq '${name}'" --query [].id --output tsv)"
+        id="$(az ad sp list --display-name "${name}" --query [].id --output tsv)"
         secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
         secret_id="$(echo "${secret}" | jq -r .[].keyId)"
         expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
@@ -138,9 +138,9 @@ function create_monitoring_service_principal() {
     update_service_principal_owners "${name}"
 
     echo "Update additional SP info..."
-        id="$(az ad sp list --filter "displayname eq '${name}'" --query [].id --output tsv)"
-        echo "This id ${id} and description: ${description}"
-        az ad sp update --id "${id}" --set notes="${description}"
+    id="$(az ad sp list --display-name "${name}" --query [].id --output tsv)"
+    echo "This id ${id} and description: ${description}"
+    az ad sp update --id "${id}" --set notes="${description}"
 
     echo "Done."
 }

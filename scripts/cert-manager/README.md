@@ -1,4 +1,4 @@
-# Cert-manager - v1.1
+# Cert-manager
 
 We use [cert-manager](https://github.com/jetstack/cert-manager) to provide automatic SSL/TLS certificate generation in the cluster using Let's Encrypt.  
 Depending on use case we can use it to either create certificates according to a crd manifest, or auto-create the certificate based on an ingress notation.  
@@ -6,8 +6,6 @@ For certificate management in general in Radix then please see [radix certificat
 
 - [Overview](#overview)
 - [Bootstrap](#bootstrap)
-- [Teardown](#teardown)
-- [Upgrade](#upgrade)
 - [Credentials](#credentials)
 - [Troubleshooting](#troubleshooting)
 
@@ -70,44 +68,6 @@ RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster .
 # Step 3: bootstrap cert-manager - note the use of STAGING to avoid messing with the LetsEncrypt weekly quota for real certs
 RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster STAGING=true ./bootstrap.sh
 # Done!
-```
-
-
-## Teardown
-
-Run script [`./teardown.sh`](./teardown.sh), see script header for more info.  
-
-Teardown will
-1. Delete cert-manager and all related custom resources
-1. It will _not_ delete the k8s tls secrets
-
-
-## Upgrade
-
-As long as cert-manager has the following status
-
-> As this project is pre-1.0, we do not currently offer strong guarantees around our API stability.
->
-> Notably, we may choose to make breaking changes to our API specification (i.e. the Issuer, ClusterIssuer and Certificate resources) in new minor releases.
-
-then we need to handle deployment of cert-manager by scripts that are customized for that specific version.
-
-Due to the high possibility of breaking changes you will need to 
-1. Verify that the custom resources are still valid (old version vs new version)
-1. Prepare bootstrap and removal script of new version
-1. Remove any trace of old version from the cluster (use the teardown script for the old version)
-1. When previous version is gone, install new version (use the bootstrap script for the new version)
-1. Update this `README.md` title to show the new version number
-
-The k8s tls secrets will be kept intact during this process as it does not belong to cert-manager.
-
-Example:
-```sh
-# Upgrading cert-manager from v0.8.1 to v0.11.0 in cluster "my-little-cluster" that lives in radix-zone "dev"
-# Step 1: Remove v0.8.1
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster ./teardown_v0.8.1.sh
-# Step 2: Install v0.11.0
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster ./bootstrap.sh
 ```
 
 ## Credentials

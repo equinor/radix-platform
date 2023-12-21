@@ -196,7 +196,7 @@ function update_service_principal_owners() {
         ad_group="Radix"
     fi
 
-    sp_obj_id="$(az ad sp list --filter "displayname eq '${name}'" --query [].id --output tsv --only-show-errors)"
+    sp_obj_id="$(az ad sp list --display-name "${name}" --query [].id --output tsv --only-show-errors)"
 
     printf "Updating owners of service principal \"${name}\"..."
 
@@ -231,6 +231,23 @@ function update_service_principal_owners() {
     printf " Done.\n"
 }
 
+function add_ci() {
+    local name
+    name=$1
+
+    app_objectId=$(az ad app list \
+        --filter "displayName eq '$name'" \
+        --query [].id --output tsv)
+
+    printf "Adding Ci to App registration %s... " "$name"
+    az rest \
+        --method patch \
+        --url "https://graph.microsoft.com/v1.0/applications/${app_objectId}" \
+        --headers 'Content-Type=application/json' \
+        --body "{\"serviceManagementReference\":\"${SERVICE_MANAGEMENT_REFERENCE}\"}"
+    printf "Done\n"
+}
+
 function create_service_principal_and_store_credentials() {
 
     local name        # Input 1
@@ -245,11 +262,11 @@ function create_service_principal_and_store_credentials() {
 
     # Skip creation if the sp exist
     local testSP
-    testSP="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv 2>/dev/null)"
+    testSP="$(az ad sp list --display-name "${name}" --query [].appId --output tsv 2>/dev/null)"
     if [ -z "$testSP" ]; then
         printf "creating ${name}..."
         password="$(az ad sp create-for-rbac --name "${name}" --query password --output tsv)"
-        id="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv)"
+        id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
         secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
         secret_id="$(echo "${secret}" | jq -r .[].keyId)"
         expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
@@ -268,6 +285,8 @@ function create_service_principal_and_store_credentials() {
     printf "    Update owners of service principal..."
     update_service_principal_owners "${name}"
 
+    add_ci "$name"
+
     printf "Done.\n"
 }
 
@@ -285,17 +304,7 @@ function create_app_registration_and_service_principal() {
     app_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].appId -o tsv)"
     if [[ -z $app_id ]]; then
         printf "creating app registration... "
-        app_id=$(az ad app create --filter "displayname eq '${name}'" --query appId -o tsv) || return
-
-        app_objectId=$(az ad app list \
-            --filter "displayName eq '$name'" \
-            --query [].id --output tsv)
-
-        az rest \
-            --method patch \
-            --url "https://graph.microsoft.com/v1.0/applications/${app_objectId}" \
-            --headers 'Content-Type=application/json' \
-            --body "{\"serviceManagementReference\":\"${SERVICE_MANAGEMENT_REFERENCE}\"}"
+        app_id=$(az ad app create --display-name "${name}" --query appId -o tsv) || return
     else
         printf "app registration already exist... "
     fi
@@ -307,6 +316,14 @@ function create_app_registration_and_service_principal() {
     else
         printf "service principal already exist... "
     fi
+    
+    printf "    Update owners of app registration..."
+    update_ad_app_owners "${name}"
+
+    printf "    Update owners of service principal..."
+    update_service_principal_owners "${name}"
+
+    add_ci "$name"
 
     echo "Done"
 }
@@ -456,6 +473,8 @@ function create_oidc_and_federated_credentials() {
     if [ -z "$app_id" ]; then
         printf "creating %s...\n" "${APP_NAME}"
         app_id=$(az ad app create --display-name "$APP_NAME" --query appId --output tsv)
+
+        add_ci "$name"
     fi
 
     printf "Checking if service principal already exists..."
@@ -494,7 +513,7 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
-    id="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv)"
+    id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
     password="$(az ad sp credential reset --name "${id}" --display-name "rbac" --append --query password --output tsv)"
     secret="$(az ad sp credential list --id "${id}" --query "sort_by([?displayName=='rbac'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
     secret_id="$(echo "${secret}" | jq -r .[].keyId)"
@@ -538,7 +557,7 @@ function delete_service_principal_and_stored_credentials() {
     printf "Working on service principal \"${name}\": "
 
     printf "deleting user in az ad..."
-    id="$(az ad sp list --filter "displayname eq '${name}'" --query [].appId --output tsv)"
+    id="$(az ad sp list --display-name "${name}" --query [].appId --output tsv)"
     az ad sp delete --id "${id}" --output none
 
     printf "deleting credentials in keyvault..."
