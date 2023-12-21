@@ -102,11 +102,13 @@ scripts/cost-allocation/bootstrap.sh REGENERATE_API_PASSWORD=true REGENERATE_COL
     radix-cost-allocation-db-writer-dev  
 ```
 
-#### Required
+## Install base components
 ```
 OVERRIDE_GIT_BRANCH=dr-test scripts/install_base_components.sh  
 ```
 [readme](../../scripts/readme.md#step-3-deploy-base-components)
+
+### Wait for Flux to do it's things
 
 ## secrets
 acr-whitelist-ips-dev  
@@ -114,7 +116,7 @@ flux-github-deploy-key-public (manually copy this to radix-flux github repo)
 slack-webhook-dev  
 radix-cicd-canary-values  
 
-### Manuall steps...
+### Manual steps...
 Added AKS Public egress ip to main ACR  
 
 ## Grafana
@@ -139,12 +141,12 @@ upload existing backup:
 
 
 ## Flux
-Aded radix_acr_repo_url to development, updated postbuild flag to match dr
+Add radix_acr_repo_url to development, updated postbuild flag to match dr  
 
 ## RadixDeployments
-Run the go application scripts/acr/update-rd-acr.go (run go mod download first), check the old and new repository names matches your expectations
+Run the go application scripts/acr/update-rd-acr.go (run go mod download first), check the old and new repository names matches your expectations  
 
 ## Web console
-Changed redirect url in auth secrets to https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/oauth2/callback
-Add redirect url "https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/oauth2/callback" in 5687b237-eda3-4ec3-a2a1-023e85a2bd84 / "Omnia Radix Web Console - Development Clusters"
-Added redirect url "https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/applications" to "Single page applications" section
+Change redirect url in auth secrets to https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/oauth2/callback  
+Add redirect url "https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/oauth2/callback" in 5687b237-eda3-4ec3-a2a1-023e85a2bd84 / "Omnia Radix Web Console - Development Clusters"  
+Add redirect url "https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/applications" to "Single page applications" section  
