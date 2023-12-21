@@ -170,9 +170,6 @@ az storage blob upload-batch --account-name s612radixvelerodevdr --destination w
 RADIX_ZONE_ENV=../../radix-zone/radix_zone_dr.env SOURCE_CLUSTER=weekly-dr-test BACKUP_NAME=all-hourly-20231219090009 ./restore_apps.sh
 ```
 
-## Flux
-Add radix_acr_repo_url to development, updated postbuild flag to match dr  
-
 ## Update Radix Deployments
 
 If ACR is different than original, this must be updated
