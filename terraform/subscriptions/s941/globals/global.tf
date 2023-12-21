@@ -1,7 +1,4 @@
 locals {
-  gh_repos = {
-    "radix-canary" : ["release", "master"]
-  }
 
   outputs = {
     tenant_id              = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
@@ -19,5 +16,6 @@ locals {
         }
       ]
     ]) : item.name => item }
+    # resourcegroups = module.resourcegroups
   }
 }

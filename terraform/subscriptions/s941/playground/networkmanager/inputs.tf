@@ -1,4 +1,11 @@
 locals {
+  flattened_publicipprefix = {
+    for key, value in var.publicipprefix : key =>  {
+      name  = key
+      zones = value.zones
+    }
+  }
+
   external_outputs = {
     global         = data.terraform_remote_state.global.outputs
     common         = data.terraform_remote_state.common.outputs

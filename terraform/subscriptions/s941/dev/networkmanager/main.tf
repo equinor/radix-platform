@@ -18,7 +18,7 @@ module "azurerm_network_manager_network_group" {
 module "azurerm_network_manager_connectivity_configuration" {
   source             = "../../../modules/networkmanager_connectivity"
   enviroment         = local.external_outputs.clusters.data.enviroment
-  network_manager_id = local.external_outputs.networkmanager.data.id
+  network_manager_id = module.azurerm_network_manager.data.id
   network_group_id   = module.azurerm_network_manager_network_group.data.id
   vnethub_id         = local.external_outputs.virtualnetwork.data.id
 }
@@ -81,16 +81,11 @@ module "azurerm_subscription_policy_assignment" {
   subscription = data.azurerm_subscription.current.id
 }
 
-# resource "azurerm_subscription_policy_assignment" "assignment" {
-#   display_name         = "Kubernetes-vnets-in-${local.external_outputs.clusters.outputs.data.enviroment}"
-#   name                 = "Kubernetes-vnets-in-${local.external_outputs.clusters.outputs.data.enviroment}"
-#   location             = "${local.external_outputs.clusters.outputs.data.location}"
-#   policy_definition_id = azurerm_policy_definition.policy.id
-#   subscription_id      = data.azurerm_subscription.current.id
-#   parameters           = jsonencode({})
-#   identity {
-#     identity_ids = []
-#     type         = "SystemAssigned"
-#   }
-
-# }
+module "network_publicipprefix" {
+  for_each            = local.flattened_publicipprefix
+  source              = "../../../modules/network_publicipprefix"
+  publicipprefixname  = "ippre-${each.key}-aks-${local.external_outputs.common.data.cluster_type}-${local.external_outputs.common.data.location}-001"
+  location            = local.external_outputs.common.data.location
+  resource_group_name = local.external_outputs.common.data.resource_group
+  zones               = each.value.zones
+}
