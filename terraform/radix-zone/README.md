@@ -17,8 +17,8 @@ Restore/Recover keyvaults, storage accounts, databases
 
 scripts/radix-zone/base-infrastructure/bootstrap.sh  
 terraform/oidc/rbac/main.tf - terraform/oidc/rbac/readme.md # local  
-terraform/infrastructure/s941/dev/keyvaults/main.tf [readme](../terraform/infrastructure/s941/dev/keyvaults/readme.md) # local  
-terraform/infrastructure/s941/dev/storageaccounts/main.tf - [readme](../terraform/infrastructure/s941/dev/storageaccounts/readme.md) # local  
+terraform/infrastructure/s941/dev/keyvaults/main.tf [readme](../infrastructure/s941/dev/keyvaults/readme.md) # local  
+terraform/infrastructure/s941/dev/storageaccounts/main.tf - [readme](../infrastructure/s941/dev/storageaccounts/readme.md) # local  
 
 ## USE BACKEND
 change values in .env files:
@@ -41,7 +41,7 @@ scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh
 scripts/velero/bootstrap.sh  
 
 scripts/radix-zone/monitoring-infrastructure/bootstrap.sh  
-terraform/infrastructure/s941/dev/sqldatabases/main.tf - [readme](../terraform/infrastructure/s941/dev/sqldatabases/readme.md)  
+terraform/infrastructure/s941/dev/sqldatabases/main.tf - [readme](../infrastructure/s941/dev/sqldatabases/readme.md)  
 
 move state file to azure with sync.sh
 
@@ -65,7 +65,7 @@ grafana-database-password
     az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "grafana-database-password" --value "${password}"  
 
 
-terraform/infrastructure/s941/dev/mysql/main.tf - [readme](../terraform/infrastructure/s941/dev/mysql/readme.md)
+terraform/infrastructure/s941/dev/mysql/main.tf - [readme](../infrastructure/s941/dev/mysql/readme.md)
 terraform / acr (**untested at this stage**) (Comment out `azurerm_private_dns_a_record` on the first run, run it over again with it included)  
 
 ### Optional Components
