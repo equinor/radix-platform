@@ -16,6 +16,6 @@ locals {
         }
       ]
     ]) : item.name => item }
-    resourcegroups = module.resourcegroups
+    # resourcegroups = module.resourcegroups
   }
 }
