@@ -103,7 +103,10 @@ scripts/cost-allocation/bootstrap.sh REGENERATE_API_PASSWORD=true REGENERATE_COL
 ```
 
 #### Required
+```
 OVERRIDE_GIT_BRANCH=dr-test scripts/install_base_components.sh  
+```
+[readme](../../scripts/readme.md#step-3-deploy-base-components)
 
 ## secrets
 acr-whitelist-ips-dev  
