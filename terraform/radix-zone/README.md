@@ -86,7 +86,11 @@ az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "grafana-da
 
 
 terraform/infrastructure/s941/dev/mysql/main.tf - [readme](../infrastructure/s941/dev/mysql/readme.md)  
-terraform / acr (**untested at this stage**) (Comment out `azurerm_private_dns_a_record` on the first run, run it over again with it included)   
+> terraform / acr (**untested at this stage**) (Comment out `azurerm_private_dns_a_record` on the first run, run it over again with it included)
+
+terraform/infrastructure/s941/dev/acr/main.tf - [readme](../terraform/infrastructure/s941/dev/acr/readme.md)  
+
+
 
 ### Optional Components
 ```
@@ -103,24 +107,33 @@ OVERRIDE_GIT_BRANCH=dr-test scripts/install_base_components.sh
 
 ## secrets
 acr-whitelist-ips-dev  
-flux-github-deploy-key-public (manually copy this to radixu-flux github repo)  
+flux-github-deploy-key-public (manually copy this to radix-flux github repo)  
 slack-webhook-dev  
 radix-cicd-canary-values  
 
-# Manuall steps...
+### Manuall steps...
 Added AKS Public egress ip to main ACR  
 
 ## Grafana
 Scale grafana to 0 pods while restoring db  
+```
 CREATE USER 'grafana'@'%' IDENTIFIED BY 'new_password';  
-GRANT ALL ON grafana.* TO 'grafana'@'%';  
+GRANT ALL ON grafana.* TO 'grafana'@'%';
+```
 Use MySQL Workbench to transfer db from other instance to new, or figgure out a way to allow restore db to different subscription  
 Scale grafana to 2 pods when done
 
 ## Restore Velero backup
-Download existing backup: `az storage blob download-batch  --account-name s941radixvelerodev --destination ./backup --pattern "backups/all-hourly-20231219090009/*" --source weekly-51 --auth-mode login`
-upload existing backup: `az storage blob upload-batch --account-name s612radixvelerodevdr --destination weekly-dr-test --source ./`
-# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dr.env SOURCE_CLUSTER=weekly-dr-test BACKUP_NAME=all-hourly-20231219090009 ./restore_apps.sh
+Download existing backup:  
+```
+`az storage blob download-batch  --account-name s941radixvelerodev --destination ./backup --pattern "backups/all-hourly-20231219090009/*" --source weekly-51 --auth-mode login`  
+```
+upload existing backup:  
+```
+`az storage blob upload-batch --account-name s612radixvelerodevdr --destination weekly-dr-test --source ./`  
+```
+> RADIX_ZONE_ENV=../../radix-zone/radix_zone_dr.env SOURCE_CLUSTER=weekly-dr-test BACKUP_NAME=all-hourly-20231219090009 ./restore_apps.sh
+
 
 ## Flux
 Aded radix_acr_repo_url to development, updated postbuild flag to match dr
