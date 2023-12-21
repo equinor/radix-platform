@@ -19,7 +19,9 @@ scripts/radix-zone/base-infrastructure/bootstrap.sh
 ```
 Read all comments and warnings, in case of freeze, Ctrl + C **only once**
 Check ACR, add your IP in Networking
-```  
+```
+Import ACR images from a existing ACR  
+
 terraform/oidc/rbac/main.tf - [readme](../oidc/rbac/readme.md) # local  
 terraform/infrastructure/s941/dev/keyvaults/main.tf [readme](../infrastructure/s941/dev/keyvaults/readme.md) # local  
 terraform/infrastructure/s941/dev/storageaccounts/main.tf - [readme](../infrastructure/s941/dev/storageaccounts/readme.md) # local  
@@ -87,12 +89,14 @@ terraform/infrastructure/s941/dev/mysql/main.tf - [readme](../infrastructure/s94
 terraform / acr (**untested at this stage**) (Comment out `azurerm_private_dns_a_record` on the first run, run it over again with it included)   
 
 ### Optional Components
+```
 scripts/vulnerability-scanner/bootstrap.sh REGENERATE_SCANNER_PASSWORD=true REGENERATE_API_PASSWORD=true  
     radix-vulnerability-scan-db-writer-dev  
     radix-vulnerability-scan-db-api-dev  
 scripts/cost-allocation/bootstrap.sh REGENERATE_API_PASSWORD=true REGENERATE_COLLECTOR_PASSWORD=true  
     radix-cost-allocation-db-api-dev  
     radix-cost-allocation-db-writer-dev  
+```
 
 #### Required
 OVERRIDE_GIT_BRANCH=dr-test scripts/install_base_components.sh  
@@ -104,7 +108,7 @@ slack-webhook-dev
 radix-cicd-canary-values  
 
 # Manuall steps...
-Added AKS Puplic egress ip to main ACR
+Added AKS Public egress ip to main ACR  
 
 ## Grafana
 Scale grafana to 0 pods while restoring db  
