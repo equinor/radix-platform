@@ -53,7 +53,7 @@ move state file to azure with sync.sh #TODO update how
 
 scripts/aks/bootstrap.sh - [readme](../scripts/aks/readme.md)
 
-generate secrets for:
+### Generate secrets
 radix-cost-allocation-db-admin  
 ```
 password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
@@ -91,7 +91,6 @@ terraform/infrastructure/s941/dev/mysql/main.tf - [readme](../infrastructure/s94
 terraform/infrastructure/s941/dev/acr/main.tf - [readme](../terraform/infrastructure/s941/dev/acr/readme.md)  
 
 
-
 ### Optional Components
 ```
 scripts/vulnerability-scanner/bootstrap.sh REGENERATE_SCANNER_PASSWORD=true REGENERATE_API_PASSWORD=true  
@@ -110,16 +109,21 @@ OVERRIDE_GIT_BRANCH=dr-test scripts/install_base_components.sh
 
 ### Wait for Flux to do it's things
 
-## secrets
+## Manual steps...
+
+### Configure firewall for ACR
+Added AKS Public egress ip to main ACR  
+
+(For DR test DNS zone needs to be updated)
+
+## secrets (TODO)
 acr-whitelist-ips-dev  
 flux-github-deploy-key-public (manually copy this to radix-flux github repo)  
 slack-webhook-dev  
-radix-cicd-canary-values  
-
-### Manual steps...
-Added AKS Public egress ip to main ACR  
+radix-cicd-canary-values   
 
 ## Grafana
+**TODO How to create a backup of Grafana**  
 Scale grafana to 0 pods while restoring db  
 ```
 CREATE USER 'grafana'@'%' IDENTIFIED BY 'new_password';  
