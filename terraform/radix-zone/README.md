@@ -124,7 +124,7 @@ OVERRIDE_GIT_BRANCH=dr-test scripts/install_base_components.sh
 
 ***Wait for Flux to do it's things***
 
-## 8 - Optional Components
+## 9 - Optional Components
 ```
 scripts/vulnerability-scanner/bootstrap.sh REGENERATE_SCANNER_PASSWORD=true REGENERATE_API_PASSWORD=true  
     radix-vulnerability-scan-db-writer-dev  
@@ -136,18 +136,18 @@ scripts/cost-allocation/bootstrap.sh REGENERATE_API_PASSWORD=true REGENERATE_COL
 
 ## Manual steps...
 
-### 1 - Configure firewall for ACR
+### Manual 1 - Configure firewall for ACR
 Added AKS Public egress ip to main ACR  
 
 (For DR test DNS zone needs to be updated)
 
-### 2 - secrets (TODO)
+### Manual 2 - secrets (TODO)
 acr-whitelist-ips-dev  
 flux-github-deploy-key-public (manually copy this to radix-flux github repo)  
 slack-webhook-dev  
 radix-cicd-canary-values   
 
-### 3 - Grafana
+### Manual 3 - Grafana
 **TODO How to create a backup of Grafana**  
 Scale grafana to 0 pods while restoring db  
 ```
@@ -157,14 +157,14 @@ GRANT ALL ON grafana.* TO 'grafana'@'%';
 Use MySQL Workbench to transfer db from other instance to new, or figure out a way to allow restore db to different subscription  
 Scale grafana to 2 pods when done  
 
-### 4 - Restore Velero backup
+### Manual 4 - Restore Velero backup
 Download existing backup:  
 ```
-`az storage blob download-batch  --account-name s941radixvelerodev --destination ./backup --pattern "backups/all-hourly-20231219090009/*" --source weekly-51 --auth-mode login`  
+az storage blob download-batch  --account-name s941radixvelerodev --destination ./ --pattern "backups/all-hourly-20231219090009/*" --source weekly-51 --auth-mode login  
 ```
-upload existing backup:  
+upload existing backup:  **TODO** Add notes
 ```
-`az storage blob upload-batch --account-name s612radixvelerodevdr --destination weekly-dr-test --source ./`  
+az storage blob upload-batch --account-name s612radixvelerodevdr --destination weekly-dr-test --source ./  
 ```
 ```
 RADIX_ZONE_ENV=../../radix-zone/radix_zone_dr.env SOURCE_CLUSTER=weekly-dr-test BACKUP_NAME=all-hourly-20231219090009 ./restore_apps.sh
