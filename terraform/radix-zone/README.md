@@ -52,20 +52,35 @@ move state file to azure with sync.sh #TODO update how
 scripts/aks/bootstrap.sh - [readme](../scripts/aks/readme.md)
 
 generate secrets for:
-radix-cost-allocation-db-admin password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
-    az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-cost-allocation-db-admin" --value "${password}"  
+radix-cost-allocation-db-admin  
+```
+password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
+az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-cost-allocation-db-admin" --value "${password}"  
+```
     
-radix-vulnerability-scan-db-admin password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
-    az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-vulnerability-scan-db-admin" --value "${password}"  
+radix-vulnerability-scan-db-admin  
+```
+password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
+az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-vulnerability-scan-db-admin" --value "${password}"  
+```
     
-mysql-grafana-dev-admin-password password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
-    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "mysql-grafana-dev-admin-password" --value "${password}"  
+mysql-grafana-dev-admin-password  
+```
+password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
+az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "mysql-grafana-dev-admin-password" --value "${password}"  
+```
     
-s612-radix-grafana-dev-mysql-admin-pwd password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
-    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "s612-radix-grafana-dev-mysql-admin-pwd" --value "${password}"  
+s612-radix-grafana-dev-mysql-admin-pwd  
+```
+password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
+az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "s612-radix-grafana-dev-mysql-admin-pwd" --value "${password}"  
+```
     
-grafana-database-password password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
-    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "grafana-database-password" --value "${password}"  
+grafana-database-password  
+```
+password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
+az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "grafana-database-password" --value "${password}"  
+```
 
 
 terraform/infrastructure/s941/dev/mysql/main.tf - [readme](../infrastructure/s941/dev/mysql/readme.md)  
