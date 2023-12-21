@@ -40,7 +40,7 @@ in:
 - terraform/infrastructure/s941/dev/sqldatabases/main.tf  
 - terraform/infrastructure/s941/dev/mysql/main.tf  
 
-## Continue recovery: 
+## Continue recovery
 
 terraform/infrastructure/s941/dev/networkmanager/main.tf  
 scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh  
@@ -106,7 +106,7 @@ scripts/cost-allocation/bootstrap.sh REGENERATE_API_PASSWORD=true REGENERATE_COL
 ```
 OVERRIDE_GIT_BRANCH=dr-test scripts/install_base_components.sh  
 ```
-[readme](../../scripts/readme.md#step-3-deploy-base-components)
+[readme](../../scripts/readme.md#step-3-deploy-base-components)  
 
 ### Wait for Flux to do it's things
 
@@ -125,8 +125,8 @@ Scale grafana to 0 pods while restoring db
 CREATE USER 'grafana'@'%' IDENTIFIED BY 'new_password';  
 GRANT ALL ON grafana.* TO 'grafana'@'%';
 ```
-Use MySQL Workbench to transfer db from other instance to new, or figgure out a way to allow restore db to different subscription  
-Scale grafana to 2 pods when done
+Use MySQL Workbench to transfer db from other instance to new, or figure out a way to allow restore db to different subscription  
+Scale grafana to 2 pods when done  
 
 ## Restore Velero backup
 Download existing backup:  
