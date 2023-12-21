@@ -2,12 +2,23 @@
 
 Make sure you have the role **"Application Developer"** and is **"Owner"** on the subscription before starting.
 
-# Comment out backend "azurerm" {} to run local
-terraform/infrastructure/s941/dev/resourcegroups/main.tf # local
-scripts/radix-zone/base-infrastructure/bootstrap.sh
-terraform/oidc/rbac/main.tf # local
-terraform/infrastructure/s941/dev/keyvaults/main.tf # local
-terraform/infrastructure/s941/dev/storageaccounts/main.tf # local
+**Check** what can be recovered/restored
+
+- keyvaults
+- databases
+- storage accounts
+
+Ensure you have all tools installed -list of tools required (list in radis private)
+
+
+`Comment out backend "azurerm" {} to run local`  
+terraform/infrastructure/s941/dev/resourcegroups/main.tf # local  
+Restore/Recover keyvaults, storage accounts, databases  
+
+scripts/radix-zone/base-infrastructure/bootstrap.sh  
+terraform/oidc/rbac/main.tf - terraform/oidc/rbac/readme.md # local  
+terraform/infrastructure/s941/dev/keyvaults/main.tf [readme](../terraform/infrastructure/s941/dev/keyvaults/readme.md) # local  
+terraform/infrastructure/s941/dev/storageaccounts/main.tf - [readme](../terraform/infrastructure/s941/dev/storageaccounts/readme.md) # local  
 
 ## USE BACKEND
 change values in .env files:
@@ -30,7 +41,7 @@ scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh
 scripts/velero/bootstrap.sh
 
 scripts/radix-zone/monitoring-infrastructure/bootstrap.sh
-terraform/infrastructure/s941/dev/sqldatabases/main.tf
+terraform/infrastructure/s941/dev/sqldatabases/main.tf - [readme](../terraform/infrastructure/s941/dev/sqldatabases/readme.md)
 
 move state file to azure with sync.sh
 
