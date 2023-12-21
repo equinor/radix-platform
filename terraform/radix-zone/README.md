@@ -49,24 +49,24 @@ scripts/aks/bootstrap.sh
 
 generate secrets for:
 radix-cost-allocation-db-admin 
-    password=$(openssl rand -base64 32 | tr -- '+/' '-_')
-    az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-cost-allocation-db-admin" --value "${password}"
+    password=$(openssl rand -base64 32 | tr -- '+/' '-_') 
+    az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-cost-allocation-db-admin" --value "${password}"  
 radix-vulnerability-scan-db-admin 
     password=$(openssl rand -base64 32 | tr -- '+/' '-_')
-    az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-vulnerability-scan-db-admin" --value "${password}"
+    az keyvault secret set --vault-name "radix-vault-dev-dr2" --name "radix-vulnerability-scan-db-admin" --value "${password}"  
 mysql-grafana-dev-admin-password
     password=$(openssl rand -base64 32 | tr -- '+/' '-_')
-    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "mysql-grafana-dev-admin-password" --value "${password}"
+    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "mysql-grafana-dev-admin-password" --value "${password}"  
 s612-radix-grafana-dev-mysql-admin-pwd
     password=$(openssl rand -base64 32 | tr -- '+/' '-_')
-    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "s612-radix-grafana-dev-mysql-admin-pwd" --value "${password}"
+    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "s612-radix-grafana-dev-mysql-admin-pwd" --value "${password}"  
 grafana-database-password
     password=$(openssl rand -base64 32 | tr -- '+/' '-_')
-    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "grafana-database-password" --value "${password}"
+    az keyvault secret set --vault-name "radix-monitoring-dev-dr" --name "grafana-database-password" --value "${password}"  
 
 
-terraform/infrastructure/s941/dev/mysql/main.tf
-terraform / acr (**untested at this stage**) (Comment out `azurerm_private_dns_a_record` on the first run, run it over again with it included)
+terraform/infrastructure/s941/dev/mysql/main.tf - [readme](../terraform/infrastructure/s941/dev/mysql/readme.md)
+terraform / acr (**untested at this stage**) (Comment out `azurerm_private_dns_a_record` on the first run, run it over again with it included)  
 
 ### Optional Components
 scripts/vulnerability-scanner/bootstrap.sh REGENERATE_SCANNER_PASSWORD=true REGENERATE_API_PASSWORD=true
