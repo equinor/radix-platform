@@ -173,10 +173,23 @@ RADIX_ZONE_ENV=../../radix-zone/radix_zone_dr.env SOURCE_CLUSTER=weekly-dr-test 
 ## Flux
 Add radix_acr_repo_url to development, updated postbuild flag to match dr  
 
-## RadixDeployments
-Run the go application scripts/acr/update-rd-acr.go (run go mod download first), check the old and new repository names matches your expectations  
+## Update Radix Deployments
+
+If ACR is different than original, this must be updated
+Run the go application, (run go mod download first), check the old and new repository names matches your expectations  
+```
+scripts/acr/update-rd-acr.go 
+```  
 
 ## Web console
 Change redirect url in auth secrets to https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/oauth2/callback  
-Add redirect url "https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/oauth2/callback" in 5687b237-eda3-4ec3-a2a1-023e85a2bd84 / "Omnia Radix Web Console - Development Clusters"  
-Add redirect url "https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/applications" to "Single page applications" section  
+Add redirect url  
+```
+"https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/oauth2/callback"
+```
+in 5687b237-eda3-4ec3-a2a1-023e85a2bd84 / "Omnia Radix Web Console - Development Clusters"  
+Add redirect url 
+```
+"https://auth-radix-web-console-qa.weekly-dr-test.dev.radix.equinor.com/applications"
+```
+to "Single page applications" section  
