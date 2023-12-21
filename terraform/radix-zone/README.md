@@ -30,18 +30,18 @@ client_secret="github maintenance secret"
 subscription_id="DR subscription"
 ```
 in:
-- terraform/infrastructure/s941/dev/networkmanager/main.tf
-- terraform/infrastructure/s941/dev/sqldatabases/main.tf
-- terraform/infrastructure/s941/dev/mysql/main.tf
+- terraform/infrastructure/s941/dev/networkmanager/main.tf  
+- terraform/infrastructure/s941/dev/sqldatabases/main.tf  
+- terraform/infrastructure/s941/dev/mysql/main.tf  
 
 ## Continue recovery: 
 
-terraform/infrastructure/s941/dev/networkmanager/main.tf
-scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh
-scripts/velero/bootstrap.sh
+terraform/infrastructure/s941/dev/networkmanager/main.tf  
+scripts/service-principals-and-aad-apps/refresh_web_console_app_credentials.sh  
+scripts/velero/bootstrap.sh  
 
-scripts/radix-zone/monitoring-infrastructure/bootstrap.sh
-terraform/infrastructure/s941/dev/sqldatabases/main.tf - [readme](../terraform/infrastructure/s941/dev/sqldatabases/readme.md)
+scripts/radix-zone/monitoring-infrastructure/bootstrap.sh  
+terraform/infrastructure/s941/dev/sqldatabases/main.tf - [readme](../terraform/infrastructure/s941/dev/sqldatabases/readme.md)  
 
 move state file to azure with sync.sh
 
