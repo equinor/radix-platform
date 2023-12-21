@@ -5,4 +5,5 @@ locals {
     resource_group = "common"
     cluster_type   = "development"
   }
+
 }
