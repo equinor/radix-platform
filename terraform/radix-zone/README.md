@@ -14,9 +14,13 @@ Ensure you have all tools installed -list of tools required (list in radis priva
 `Comment out backend "azurerm" {} to run local`  
 terraform/infrastructure/s941/dev/resourcegroups/main.tf # local  
 Restore/Recover keyvaults, storage accounts, databases  
-
+```Remember to activate application developer role, and re-authorize azure again```  
 scripts/radix-zone/base-infrastructure/bootstrap.sh  
-terraform/oidc/rbac/main.tf - terraform/oidc/rbac/readme.md # local  
+```
+Read all comments and warnings, in case of freeze, Ctrl + C **only once**
+Check ACR, add your IP in Networking
+```  
+terraform/oidc/rbac/main.tf - [readme](../oidc/rbac/readme.md) # local  
 terraform/infrastructure/s941/dev/keyvaults/main.tf [readme](../infrastructure/s941/dev/keyvaults/readme.md) # local  
 terraform/infrastructure/s941/dev/storageaccounts/main.tf - [readme](../infrastructure/s941/dev/storageaccounts/readme.md) # local  
 
@@ -43,9 +47,9 @@ scripts/velero/bootstrap.sh
 scripts/radix-zone/monitoring-infrastructure/bootstrap.sh  
 terraform/infrastructure/s941/dev/sqldatabases/main.tf - [readme](../infrastructure/s941/dev/sqldatabases/readme.md)  
 
-move state file to azure with sync.sh
+move state file to azure with sync.sh #TODO update how
 
-scripts/aks/bootstrap.sh
+scripts/aks/bootstrap.sh - [readme](../scripts/aks/readme.md)
 
 generate secrets for:
 radix-cost-allocation-db-admin password=$(openssl rand -base64 32 | tr -- '+/' '-_')  
