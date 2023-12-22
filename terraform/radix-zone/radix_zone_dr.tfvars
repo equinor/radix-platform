@@ -13,7 +13,7 @@ AKS_USER_NODE_POOL_NAME   = "userpool"
 TAGS_AA                   = { "autostartupschedule " = "true", "migrationStrategy" = "aa" }
 TAGS_AT                   = { "autostartupschedule " = "false", "migrationStrategy" = "at" }
 
-aks_clouster_resource_groups = ["clusters"]
+aks_cluster_resource_groups = ["clusters"]
 #######################################################################################
 ### Zone and cluster settings
 ###

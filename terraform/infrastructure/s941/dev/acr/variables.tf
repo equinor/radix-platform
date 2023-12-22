@@ -12,6 +12,11 @@ variable "AZ_LOCATION" {
   type        = string
 }
 
+variable "ACR_SUFFIX" {
+  description = "Suffix added to ACR Name"
+  type        = string
+}
+
 variable "AZ_SUBSCRIPTION_ID" {
   type = string
 }
@@ -37,7 +42,7 @@ variable "virtual_networks" {
   }
 }
 
-variable "aks_clouster_resource_groups" {
+variable "aks_cluster_resource_groups" {
   type = list(string)
 }
 variable "resource_groups" {

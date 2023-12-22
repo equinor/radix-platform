@@ -163,7 +163,7 @@ resource_groups = {
   }
 }
 
-aks_clouster_resource_groups = ["clusters-westeurope", "clusters"]
+aks_cluster_resource_groups = ["clusters-westeurope", "clusters"]
 
 #######################################################################################
 ### Storage Accounts
