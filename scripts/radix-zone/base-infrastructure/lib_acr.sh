@@ -76,7 +76,7 @@ function set_permissions_on_acr() {
     az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
 
     printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..." # radix-cr-cicd-dev
-    id="$(az ad sp list --filter "displayname eq '${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}'" --query [].appId --output tsv)"
+    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query [].appId --output tsv)"
     # Delete any existing roles
     az role assignment delete --assignee "${id}" --scope "${scope}" --output none
     # Configure new roles

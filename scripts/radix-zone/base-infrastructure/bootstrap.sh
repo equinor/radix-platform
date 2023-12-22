@@ -195,12 +195,11 @@ if [[ $USER_PROMPT == true ]]; then
     done
 fi
 
-
 #######################################################################################
 ### App registration permissions
 ###
 
-function update_app_registrations(){
+function update_app_registrations() {
     update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
     if [[ ! -f "$update_app_registration_permissions" ]]; then
         echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
@@ -219,19 +218,19 @@ function create_resource_groups() {
         --name "${AZ_RESOURCE_GROUP_CLUSTERS}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none
-    
+
     az group create \
         --location "${AZ_RADIX_ZONE_LOCATION}" \
         --name "${AZ_RESOURCE_GROUP_COMMON}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none
-    
+
     az group create \
         --location "${AZ_RADIX_ZONE_LOCATION}" \
         --name "${AZ_RESOURCE_GROUP_MONITORING}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none
-    
+
     az group create \
         --location "${AZ_RADIX_ZONE_LOCATION}" \
         --name "${AZ_RESOURCE_GROUP_LOGS}" \
@@ -287,7 +286,7 @@ function create_common_resources() {
             --tag "issue" \
             --value "letsencrypt.org" \
             --output none
-        
+
         az network dns record-set caa add-record \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
             --zone-name "${AZ_RESOURCE_DNS}" \
@@ -297,7 +296,7 @@ function create_common_resources() {
             --tag "issue" \
             --value "digicert.com" \
             --output none
-        
+
         az network dns record-set caa add-record \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
             --zone-name "${AZ_RESOURCE_DNS}" \
@@ -493,7 +492,8 @@ function create_servicenow_proxy_server_app_registration() {
     create_app_registration_and_service_principal "$APP_REGISTRATION_SERVICENOW_SERVER"
     set_app_registration_identifier_uris "$APP_REGISTRATION_SERVICENOW_SERVER"
 
-    scopes=$(cat <<-EOF
+    scopes=$(
+        cat <<-EOF
 [
     {
         "value":"Application.Read",
@@ -506,7 +506,7 @@ function create_servicenow_proxy_server_app_registration() {
     }
 ]
 EOF
-)
+    )
 
     set_app_registration_api_scopes "$APP_REGISTRATION_SERVICENOW_SERVER" "$scopes"
 }
