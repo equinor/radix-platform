@@ -20,7 +20,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix_zone_dr.env ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix_zone_dev.env ./bootstrap.sh
 
 #######################################################################################
 ### START

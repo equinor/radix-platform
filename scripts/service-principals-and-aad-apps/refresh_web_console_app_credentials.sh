@@ -22,7 +22,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dr.env ./refresh_web_console_app_credentials.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./refresh_web_console_app_credentials.sh
 
 
 #######################################################################################

@@ -23,10 +23,10 @@
 ###
 
 # When creating a test cluster
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dr.env CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=at ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=at ./bootstrap.sh
 
 # When creating a cluster that will become an active cluster (creating a cluster in advance)
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dr.env CLUSTER_NAME=weekly-dr-test MIGRATION_STRATEGY=aa ./bootstrap.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=aa ./bootstrap.sh
 
 #######################################################################################
 ### START

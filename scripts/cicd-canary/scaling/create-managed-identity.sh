@@ -26,7 +26,7 @@
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dr.env CLUSTER_NAME="weekly-dr-test" ./create-managed-identity.sh
+# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./create-managed-identity.sh
 
 # Script is idempotent. Knock yourself out.
 

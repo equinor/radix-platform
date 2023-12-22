@@ -39,7 +39,7 @@
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./install_base_components.sh
 
 # Specify migration strategy.
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dr.env CLUSTER_NAME="weekly-dr-test" MIGRATION_STRATEGY="aa" ./install_base_components.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" MIGRATION_STRATEGY="aa" ./install_base_components.sh
 
 # Test cluster with staging certs
 #RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" MIGRATION_STRATEGY="at" STAGING="true" ./install_base_components.sh
