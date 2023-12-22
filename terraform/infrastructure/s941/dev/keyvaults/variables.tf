@@ -13,8 +13,8 @@ variable "AZ_RESOURCE_GROUP_COMMON" {
   type        = string
 }
 
-variable "SP_GITHUB_ACTION_CLUSTER_CLIENT_ID" {
-  description = "Service principal"
+variable "APP_GITHUB_ACTION_CLUSTER_NAME" {
+  description = "App registration name"
   type        = string
 }
 

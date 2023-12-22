@@ -1,7 +1,7 @@
 resource "azurerm_container_registry" "app" {
   for_each = var.K8S_ENVIROMENTS
 
-  name                    = "radix${each.key}app"
+  name                    = "radix${each.key}app${var.ACR_SUFFIX}"
   location                = var.resource_groups[each.value.resourceGroup].location # Create ACR in same location as k8s
   sku                     = "Premium"
   resource_group_name     = var.AZ_RESOURCE_GROUP_COMMON

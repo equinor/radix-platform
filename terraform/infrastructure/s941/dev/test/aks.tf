@@ -1,5 +1,5 @@
 data "azapi_resource_list" "clusters" {
-  for_each = toset(var.aks_clouster_resource_groups)
+  for_each = toset(var.aks_cluster_resource_groups)
 
   type                   = "Microsoft.ContainerService/managedClusters@2023-09-01"
   parent_id              = "/subscriptions/${var.AZ_SUBSCRIPTION_ID}/resourcegroups/${var.resource_groups[each.value].name}"
