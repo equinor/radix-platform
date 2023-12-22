@@ -33,7 +33,7 @@ variable "virtual_networks" {
   }
 }
 
-variable "aks_clouster_resource_groups" {
+variable "aks_cluster_resource_groups" {
   type = list(string)
 }
 variable "resource_groups" {

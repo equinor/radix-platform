@@ -163,7 +163,7 @@ resource_groups = {
   }
 }
 
-aks_clouster_resource_groups = ["clusters-westeurope", "clusters"]
+aks_cluster_resource_groups = ["clusters-westeurope", "clusters"]
 
 #######################################################################################
 ### Storage Accounts
@@ -419,7 +419,6 @@ virtual_networks = {
 ###
 
 APP_GITHUB_ACTION_CLUSTER_NAME     = "OP-Terraform-Github Action"
-SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "043e5510-738f-4c30-8b9d-ee32578c7fe8"
 
 #######################################################################################
 ### Github

@@ -112,7 +112,7 @@ resource_groups = {
   }
 }
 
-aks_clouster_resource_groups = ["clusters"]
+aks_cluster_resource_groups = ["clusters"]
 
 #######################################################################################
 ### Storage Accounts
@@ -172,11 +172,12 @@ storage_accounts = {
 
 sql_server = {
   "sql-radix-cost-allocation-dev" = {
-    name     = "sql-radix-cost-allocation-dev"
-    rg_name  = "cost-allocation"
-    db_admin = "radix-cost-allocation-db-admin"
-    vault    = "radix-vault-dev"
-    env      = "dev"
+    name                = "sql-radix-cost-allocation-dev"
+    rg_name             = "cost-allocation"
+    db_admin            = "radix-cost-allocation-db-admin"
+    minimum_tls_version = "Disabled"
+    vault               = "radix-vault-dev"
+    env                 = "dev"
     tags = {
       "displayName" = "SqlServer"
     }
@@ -352,8 +353,7 @@ virtual_networks = {
 ### Service principal
 ###
 
-APP_GITHUB_ACTION_CLUSTER_NAME     = "ar-radix-platform-github-dev-cluster-maintenance"
-SP_GITHUB_ACTION_CLUSTER_CLIENT_ID = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
+APP_GITHUB_ACTION_CLUSTER_NAME = "ar-radix-platform-github-dev-cluster-maintenance"
 
 #######################################################################################
 ### Github
@@ -366,3 +366,4 @@ GH_ENVIRONMENT  = "operations"
 # Update this and run terraform in acr to rotate secrets.
 # Remember to restart Operator afterwards to get refreshed tokens
 ACR_TOKEN_EXPIRES_AT = "2024-11-01T12:00:00+00:00"
+ACR_SUFFIX           = "dev"

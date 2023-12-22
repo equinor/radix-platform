@@ -9,7 +9,7 @@ provider "azurerm" {
 }
 
 data "azuread_service_principal" "SP_GITHUB_ACTION_CLUSTER" {
-  application_id = var.SP_GITHUB_ACTION_CLUSTER_CLIENT_ID
+  display_name = var.APP_GITHUB_ACTION_CLUSTER_NAME
 }
 
 data "azurerm_key_vault" "KV_RADIX_VAULT" {

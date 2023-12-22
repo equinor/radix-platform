@@ -122,6 +122,7 @@ resource "azurerm_storage_account" "SA_INFRASTRUCTURE" {
 }
 
 resource "azurerm_storage_container" "SA_INFRASTRUCTURE_CONTAINER_CLUSTERS" {
+  depends_on = [azurerm_storage_account.SA_INFRASTRUCTURE]
   for_each = {
     for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"]
   }
@@ -130,6 +131,7 @@ resource "azurerm_storage_container" "SA_INFRASTRUCTURE_CONTAINER_CLUSTERS" {
 }
 
 resource "azurerm_storage_container" "SA_INFRASTRUCTURE_CONTAINER_INFRASTRUCTURE" {
+  depends_on = [azurerm_storage_account.SA_INFRASTRUCTURE]
   for_each = {
     for key, value in var.storage_accounts : key => var.storage_accounts[key] if value["create_with_rbac"]
   }

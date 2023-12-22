@@ -50,10 +50,10 @@ data "azurerm_key_vault" "keyvault" {
 }
 
 data "azurerm_key_vault_secret" "keyvault_secret" {
+  depends_on   = [data.azurerm_key_vault.keyvault]
   for_each     = local.all_sql_servers
   name         = each.value["secret"]
   key_vault_id = data.azurerm_key_vault.keyvault[each.value["vault"]].id
-  depends_on   = [data.azurerm_key_vault.keyvault]
 }
 
 #######################################################################################
