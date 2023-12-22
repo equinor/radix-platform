@@ -129,7 +129,7 @@ az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-# exit_if_user_does_not_have_required_ad_role
+exit_if_user_does_not_have_required_ad_role
 
 #######################################################################################
 ### Verify task at hand

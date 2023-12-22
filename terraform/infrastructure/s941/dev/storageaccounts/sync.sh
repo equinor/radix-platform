@@ -16,11 +16,11 @@ if [[ ${ACTION} == "checkin" ]]; then
     # Exit if source cluster does not exist
     echo ""
     echo "Downloading terraform.state file..."
-    azcopy copy 'https://s612radixinfra.blob.core.windows.net/tfstate/storageaccounts/terraform.tfstate' terraform.tfstate
+    azcopy copy 'https://s941radixinfra.blob.core.windows.net/tfstate/storageaccounts/terraform.tfstate' terraform.tfstate
     echo ""
 elif [[ ${ACTION} == "checkout" ]]; then
     echo ""
     echo "Uploading terraform.state file..."
-    azcopy copy terraform.tfstate 'https://s612radixinfra.blob.core.windows.net/infrastructure/storageaccounts/terraform.tfstate'
+    azcopy copy terraform.tfstate 'https://s941radixinfra.blob.core.windows.net/infrastructure/storageaccounts/terraform.tfstate'
     echo ""
 fi

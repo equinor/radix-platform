@@ -10,7 +10,7 @@ First find the name of the backup you want to restore by either inspecting the s
 1. Run restore script     
    ```sh
    # See header of script for details on usage
-   RADIX_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20231219090009 ./restore_apps.sh
+   RADIX_ENVIRONMENT=dev SOURCE_CLUSTER=weekly-25 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
    ```
 
 ## Troubleshooting

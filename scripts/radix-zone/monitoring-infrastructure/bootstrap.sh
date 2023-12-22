@@ -20,7 +20,6 @@
 ### HOW TO USE
 ###
 
-# ./bootstrap.sh env
 # RADIX_ZONE_ENV=../radix_zone_dev.env ./bootstrap.sh
 
 #######################################################################################
@@ -140,15 +139,6 @@ function create_resource_groups() {
         --output none
 }
 
-## Create Grafana database
-
-# function create_grafana_mysql(){
-
-# TODO
-# See https://github.com/equinor/radix-grafana
-
-# }
-
 function create_keyvault() {
 
     echo "Check if keyvault exists..."
@@ -200,7 +190,6 @@ create_monitoring_service_principal "$APP_REGISTRATION_MONITORING" "Grafana Azur
 create_monitoring_ar_secret "$APP_REGISTRATION_MONITORING" "radix-grafana-azure" "Grafana Azure secret"
 create_monitoring_service_principal "$APP_REGISTRATION_GRAFANA" "Grafana Oauth, main app for user authentication to Grafana"
 create_monitoring_ar_secret "$APP_REGISTRATION_GRAFANA" "$APP_REGISTRATION_GRAFANA" "Grafana OAuth secret"
-# create_grafana_mysql
 
 echo ""
 echo "Bootstrap done!"
