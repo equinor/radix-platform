@@ -5,7 +5,7 @@
 ### PURPOSE
 ### 
 
-# Tear down cert-manager in a radix cluster, v1.1
+# Bootstrap secrets required by Flux to install cluster issuers for DigiCert ACME http01 and dns01
 
 
 #######################################################################################
@@ -14,7 +14,6 @@
 
 # - AKS cluster is available
 # - User has role cluster-admin
-# - Helm RBAC is configured in cluster
 
 
 #######################################################################################
@@ -34,14 +33,7 @@
 ### 
 
 # Normal usage
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./teardown.sh
-
-
-#######################################################################################
-### DOCS
-### 
-
-# - https://cert-manager.io/docs/installation/helm/#uninstalling
+# RADIX_ZONE_ENV=../../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-49" ./bootstrap.sh
 
 
 #######################################################################################
@@ -49,7 +41,7 @@
 ### 
 
 echo ""
-echo "Start tear down of cert-manager... "
+echo "Start bootstrap of DigiCert secrets for Flux... "
 
 
 #######################################################################################
@@ -57,10 +49,10 @@ echo "Start tear down of cert-manager... "
 ###
 
 echo ""
-printf "Check for neccesary executables... "
+printf "Check for necessary executables... "
 hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nERROR: helm not found in PATH. Exiting..." >&2;  exit 1; }
+hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 
@@ -97,12 +89,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Script vars
-
-WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -118,16 +104,12 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Tear down of cert-manager will use the following configuration:"
+echo -e "Bootstrap of DigiCert secrets for Flux will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
-echo -e ""
-echo -e "   > WHAT:"
-echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CERT-MANAGER                     : v1.1"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -155,10 +137,10 @@ fi
 
 # Exit if cluster does not exist
 printf "Connecting kubectl..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {   
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-    exit 1
+    exit 1        
 }
 printf "...Done.\n"
 
@@ -167,46 +149,37 @@ printf "...Done.\n"
 ###
 verify_cluster_access
 
-
 #######################################################################################
-### MAIN
+### Bootstrap Digicert external account secret for Flux
 ###
 
-# Step 1: Remove all custom resources
-#kubectl get Issuers,ClusterIssuers,Certificates,CertificateRequests,Orders,Challenges --all-namespaces
-printf "\nDelete all custom resources..."
-kubectl delete Issuers --all --all-namespaces 2>&1 >/dev/null
-kubectl delete ClusterIssuers --all --all-namespaces 2>&1 >/dev/null
-kubectl delete Certificates --all --all-namespaces 2>&1 >/dev/null
-kubectl delete CertificateRequests --all --all-namespaces 2>&1 >/dev/null
-kubectl delete Orders --all --all-namespaces 2>&1 >/dev/null
-kubectl delete Challenges --all --all-namespaces 2>&1 >/dev/null
-printf "...Done.\n"
+printf "\nCreating secret for Flux...\n"
 
-# Step 2: Remove the helm release
-printf "\nDelete the helm release..."
-helm --namespace cert-manager delete cert-manager 2>&1 >/dev/null
-printf "...Done.\n"
+# Create secret for flux
+account_values="$(az keyvault secret show \
+    --vault-name $AZ_RESOURCE_KEYVAULT \
+    --name $DIGICERT_EXTERNAL_ACCOUNT_KV_SECRET \
+    | jq '.value | fromjson')"
 
-# Step 3: Remove the namespace
-printf "\nDelete the namespace..."
-kubectl delete namespace cert-manager 2>&1 >/dev/null
-printf "...Done.\n"
+# Set variables used in the manifest template
+kid="$(echo $account_values | jq -r '.accountKeyID')"
+hmac="$(echo $account_values | jq -r '.accountHMACKey')"
+email="$(echo $account_values | jq -r '.accountEmail')"
+server="$(echo $account_values | jq -r '.acmeServer')"
 
-# Step 4: Remove all the custom resource definitions using the link to the version installed.
-printf "\nDelete all the custom resource definitions..."
-kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.crds.yaml
-printf "...Done.\n"
-
-# Step 5: Making sure the webhook is really gone
-printf "\nMaking sure the webhook is really gone..."
-kubectl delete apiservice v1beta1.webhook.cert-manager.io 2>&1 >/dev/null
-printf "...Done.\n"
-
-
-#######################################################################################
-### END
-###
+cat <<EOF | kubectl apply -f - || exit
+apiVersion: v1
+kind: Secret
+metadata:
+  name: digicert-clusterissuer-external-account-flux-values
+  namespace: flux-system
+type: Opaque
+stringData:
+  accountKeyID: ${kid}
+  accountHMACKey: ${hmac}
+  accountEmail: ${email}
+  acmeServer: ${server}
+EOF
 
 echo ""
-echo "Tear down of cert-manager is done!"
+printf "Bootstrapping of DigiCert secrets for Flux done!\n"
