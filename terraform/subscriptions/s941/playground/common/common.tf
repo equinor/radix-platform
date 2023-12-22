@@ -2,6 +2,8 @@ locals {
   outputs = {
     location       = "northeurope"
     resource_group = "common"
-    cluster_type   = "playground"
+    enviroment_L   = "playground"
+    enviroment_S   = "playground"
   }
 }
+

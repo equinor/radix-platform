@@ -1,9 +1,8 @@
 locals {
   outputs = {
-    location = "northeurope"
-    #subscription_shortname    = "s941"
+    location       = "northeurope"
     resource_group = "common"
-    cluster_type   = "development"
+    enviroment_L   = "development"
+    enviroment_S   = "dev"
   }
-
 }
