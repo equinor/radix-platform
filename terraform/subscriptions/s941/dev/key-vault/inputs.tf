@@ -1,5 +1,5 @@
 locals {
-  
+
   log_analytics_workspace = {
     name           = "log-key-vault"
     resource_group = "Logs-Dev"

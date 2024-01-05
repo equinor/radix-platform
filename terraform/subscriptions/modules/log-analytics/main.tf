@@ -5,4 +5,7 @@ module "la" {
   location                      = var.location
   retention_in_days             = var.retention_in_days
   local_authentication_disabled = var.local_authentication_disabled
+
 }
+
+

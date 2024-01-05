@@ -21,7 +21,7 @@ module "keyvault" {
   network_acls_default_action = local.key_vault.network_acls_default_action
   access_policies             = local.key_vault.access_policies
   depends_on                  = [module.loganalytics]
-  
+
 }
 
 resource "azurerm_management_lock" "loganalytics" {
