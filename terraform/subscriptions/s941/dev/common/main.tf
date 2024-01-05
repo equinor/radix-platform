@@ -25,7 +25,7 @@ module "backupvault" {
 
 module "storageaccount" {
   source                   = "../../../modules/storageaccount"
-  for_each                 = local.flattened_storageaccounts
+  for_each                 = var.storageaccounts
   name                     = "${local.external_outputs.global.data.subscription_shortname}${each.key}${local.outputs.enviroment_L}"
   tier                     = each.value.account_tier
   account_replication_type = each.value.account_replication_type

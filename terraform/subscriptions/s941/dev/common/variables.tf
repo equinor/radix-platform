@@ -5,6 +5,7 @@ variable "resource_groups" {
 
 variable "storageaccounts" {
   type = map(object({
+    name                     = string
     resource_group_name      = optional(string, "s941-development")
     location                 = optional(string, "northeurope")
     account_tier             = optional(string, "Standard")
@@ -18,6 +19,7 @@ variable "storageaccounts" {
   }))
   default = {
     diag = {
+      name          = "diag"
       enable_backup = true
       roleassignment = {
         "Storage Account Backup Contributor" = {
