@@ -1,8 +1,8 @@
 module "nsg" {
-  
   source                     = "../../../modules/networksecuritygroup"
-  networksecuritygroupname   = "nsg-weekly-50"
-  location                   = local.output.location
-  resource_group_name        = local.output.resource_group
-  destination_address_prefix = "20.223.40.151"
+  for_each                   = local.flattened_clusters
+  networksecuritygroupname   = "nsg-${each.key}"
+  location                   = each.value.location
+  resource_group_name        = each.value.resource_group_name
+  destination_address_prefix = each.value.destination_address_prefix
 }

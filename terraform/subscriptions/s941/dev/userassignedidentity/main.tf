@@ -1,6 +1,6 @@
 locals {
   aad_radix_group             = local.external_outputs.global.data.aad_radix_group
-    gh_repo_branch_combinations = local.external_outputs.global.data.gh_repo_branch_combinations
+  gh_repo_branch_combinations = local.external_outputs.global.data.gh_repo_branch_combinations
   gh_repos                    = local.external_outputs.global.data.gh_repos
   location                    = local.external_outputs.common.data.location
   resource_group              = local.external_outputs.common.data.resource_group

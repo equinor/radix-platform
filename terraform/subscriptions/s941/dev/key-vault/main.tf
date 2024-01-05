@@ -7,7 +7,6 @@ module "loganalytics" {
   location                      = local.external_outputs.common.data.location
   retention_in_days             = 30
   local_authentication_disabled = false
-
 }
 module "keyvault" {
   source                      = "../../../modules/key-vault"

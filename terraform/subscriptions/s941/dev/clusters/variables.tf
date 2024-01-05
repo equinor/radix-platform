@@ -1,13 +1,15 @@
 variable "clusters" {
   type = map(object({
-    resource_group_name = optional(string, "clusters")
-    #destination_address_prefix = string
+    resource_group_name        = optional(string, "clusters")
+    location                   = optional(string, "northeurope")
+    destination_address_prefix = string
   }))
   default = {
-    weekly-50 = {
-      destination_address_prefix = "20.223.40.151"
+    weekly-52 = {
+      destination_address_prefix = "20.223.40.149"
     }
-    # ,
-    # weekly-51 = {}
+    weekly-01 = {
+      destination_address_prefix = "20.223.40.148"
+    }
   }
 }
