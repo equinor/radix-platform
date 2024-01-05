@@ -42,7 +42,7 @@ resource "azurerm_role_assignment" "roleassignment" {
   scope                = azurerm_storage_account.storageaccount.id
   role_definition_name = each.key
   principal_id         = var.principal_id
-  depends_on = [ azurerm_storage_account.storageaccount ]
+  depends_on           = [azurerm_storage_account.storageaccount]
 }
 
 ######################################################################################

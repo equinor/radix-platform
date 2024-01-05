@@ -1,6 +1,6 @@
 locals {
   external_outputs = {
-    global   = data.terraform_remote_state.global.outputs
+    global = data.terraform_remote_state.global.outputs
   }
 
   ## Backend Config

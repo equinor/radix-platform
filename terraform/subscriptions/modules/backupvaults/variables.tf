@@ -1,6 +1,6 @@
 variable "name" {
   description = "Specifies the name of the Backup Vault"
-  type = string
+  type        = string
 }
 
 variable "resource_group_name" {
@@ -13,5 +13,5 @@ variable "location" {
 
 variable "policyblobstoragename" {
   description = "he name which should be used for this Backup Policy Blob Storage."
-  
+
 }

@@ -13,8 +13,8 @@ variable "storageaccounts" {
     change_feed_enabled      = optional(bool, false)
     versioning_enabled       = optional(bool, false)
     enable_backup            = optional(bool, false)
-    roleassignment           = optional(map(object({ backup = optional(bool, false)})))
-    principal_id = optional(string)
+    roleassignment           = optional(map(object({ backup = optional(bool, false) })))
+    principal_id             = optional(string)
   }))
   default = {
     diag = {

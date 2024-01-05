@@ -59,13 +59,13 @@ variable "container_delete_retention_policy" {
 
 variable "principal_id" {
   description = "The ID of the Principal (User, Group or Service Principal) to assign the Role Definition to"
-  type = string
+  type        = string
 }
 
 variable "roleassignment" {
   description = "Other role assignments to be added to this key vault"
   type = map(object({
-    backup   = bool
+    backup = bool
   }))
   default = {}
 }
@@ -73,17 +73,17 @@ variable "roleassignment" {
 variable "backupinstanceblobstorage" {
   description = "Other role assignments to be added to this key vault"
   type = map(object({
-    backup   = bool
+    backup = bool
   }))
   default = {}
 }
 
 variable "vault_id" {
   description = "The ID of the Backup Vault"
-  type = string
+  type        = string
 }
 
 variable "policyblobstorage_id" {
   description = "The ID of the Backup Policy."
-  type = string
+  type        = string
 }

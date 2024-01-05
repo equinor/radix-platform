@@ -1,6 +1,6 @@
 locals {
   flattened_publicipprefix = {
-    for key, value in var.publicipprefix : key =>  {
+    for key, value in var.publicipprefix : key => {
       name  = key
       zones = value.zones
     }

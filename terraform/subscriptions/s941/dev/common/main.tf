@@ -38,6 +38,6 @@ module "storageaccount" {
   roleassignment           = each.value.roleassignment
   principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
   vault_id                 = module.backupvault.data.backupvault.id
-  policyblobstorage_id = module.backupvault.data.policyblobstorage.id
+  policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
 
 }

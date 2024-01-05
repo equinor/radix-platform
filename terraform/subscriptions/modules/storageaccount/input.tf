@@ -3,7 +3,7 @@ locals {
     for key, value in var.roleassignment : key => {
       backup = value.backup
       kind   = var.kind
-      
+
     }
   }
 }
