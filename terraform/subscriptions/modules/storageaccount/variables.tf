@@ -87,3 +87,16 @@ variable "policyblobstorage_id" {
   description = "The ID of the Backup Policy."
   type        = string
 }
+
+variable "private_endpoint" {
+  type = bool
+}
+
+variable "subnet_id" {
+  type = string
+
+}
+
+variable "vnethub_resource_group" {
+  type = string
+}

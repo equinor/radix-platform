@@ -1,3 +1,4 @@
+
 module "resourcegroups" {
   for_each = toset(var.resource_groups)
   source   = "../../../modules/resourcegroups"
@@ -26,7 +27,7 @@ module "backupvault" {
 module "storageaccount" {
   source                   = "../../../modules/storageaccount"
   for_each                 = var.storageaccounts
-  name                     = "${local.external_outputs.global.data.subscription_shortname}${each.key}${local.outputs.enviroment_L}"
+  name                     = "${local.external_outputs.global.data.subscription_shortname}${each.key}${local.outputs.enviroment_S}"
   tier                     = each.value.account_tier
   account_replication_type = each.value.account_replication_type
   resource_group_name      = each.value.resource_group_name
@@ -39,4 +40,8 @@ module "storageaccount" {
   principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
+  private_endpoint         = each.value.private_endpoint
+  subnet_id                = local.external_outputs.virtualnetwork.data.vnet_subnet.id
+  vnethub_resource_group   = local.external_outputs.virtualnetwork.data.vnet_hub.resource_group_name
 }
+

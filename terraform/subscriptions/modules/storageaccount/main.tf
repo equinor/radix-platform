@@ -36,8 +36,8 @@ resource "azurerm_storage_account" "storageaccount" {
 
 resource "azurerm_role_assignment" "roleassignment" {
   for_each = {
-    for key in compact([for key, value in local.flattened_config : value.backup && value.kind == "StorageV2" ? key : ""]) : key =>
-    local.flattened_config[key]
+    for key in compact([for key, value in local.flattened_roleassignment : value.backup && value.kind == "StorageV2" ? key : ""]) : key =>
+    local.flattened_roleassignment[key]
   }
   scope                = azurerm_storage_account.storageaccount.id
   role_definition_name = each.key
@@ -50,15 +50,46 @@ resource "azurerm_role_assignment" "roleassignment" {
 ##
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceblobstorage" {
-  for_each = {
-    for key in compact([for key, value in local.flattened_config : value.backup && value.kind == "StorageV2" ? key : ""]) : key =>
-    local.flattened_config[key]
-  }
+  for_each           = { for key in compact([for key, value in local.flattened_roleassignment : value.backup && value.kind == "StorageV2" ? key : ""]) : key => local.flattened_roleassignment[key] }
   name               = azurerm_storage_account.storageaccount.name
   vault_id           = var.vault_id
   location           = var.location
   storage_account_id = azurerm_storage_account.storageaccount.id
   backup_policy_id   = var.policyblobstorage_id
   depends_on         = [azurerm_role_assignment.roleassignment]
+}
+
+######################################################################################
+## Private Link
+##
+
+resource "azurerm_private_endpoint" "this" {
+  for_each            = var.private_endpoint ? { "this" : "true" } : {}
+  name                = azurerm_storage_account.storageaccount.name
+  resource_group_name = azurerm_storage_account.storageaccount.resource_group_name
+  location            = azurerm_storage_account.storageaccount.location
+  subnet_id           = var.subnet_id
+  depends_on          = [azurerm_storage_account.storageaccount]
+
+  private_service_connection {
+    name                           = "Private_Service_Connection"
+    private_connection_resource_id = azurerm_storage_account.storageaccount.id
+    is_manual_connection           = false
+    subresource_names              = ["blob"]
+  }
+}
+
+
+######################################################################################
+## Private DNS
+##
+resource "azurerm_private_dns_a_record" "this" {
+  for_each            = var.private_endpoint ? { "this" : "true" } : {}
+  name                = azurerm_storage_account.storageaccount.name
+  zone_name           = "privatelink.blob.core.windows.net"
+  resource_group_name = var.vnethub_resource_group
+  ttl                 = 10
+  records             = ["10.0.0.16"]
+  # depends_on          = [azurerm_private_endpoint.this]
 }
 
