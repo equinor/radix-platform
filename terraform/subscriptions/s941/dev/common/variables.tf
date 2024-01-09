@@ -4,6 +4,7 @@ variable "resource_groups" {
 }
 
 variable "storageaccounts" {
+  description = "Max 15 characters lowercase in the storageaccount name"
   type = map(object({
     name                     = string
     resource_group_name      = optional(string, "s941-development")
@@ -13,14 +14,23 @@ variable "storageaccounts" {
     kind                     = optional(string, "StorageV2")
     change_feed_enabled      = optional(bool, false)
     versioning_enabled       = optional(bool, false)
-    enable_backup            = optional(bool, false)
     roleassignment           = optional(map(object({ backup = optional(bool, false) })))
     principal_id             = optional(string)
+    private_endpoint         = optional(bool, false)
   }))
   default = {
-    diag = {
-      name          = "diag"
-      enable_backup = true
+    diagnostics = {
+      name = "diagnostics"
+      roleassignment = {
+        "Storage Account Backup Contributor" = {
+          backup = true
+        }
+      }
+    }
+    terraform = {
+      name                     = "terraform"
+      account_replication_type = "RAGRS"
+      private_endpoint         = true
       roleassignment = {
         "Storage Account Backup Contributor" = {
           backup = true
