@@ -40,8 +40,9 @@ module "storageaccount" {
   principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
-  private_endpoint         = each.value.private_endpoint
   subnet_id                = local.external_outputs.virtualnetwork.data.vnet_subnet.id
   vnethub_resource_group   = local.external_outputs.virtualnetwork.data.vnet_hub.resource_group_name
+  priv_endpoint            = each.value.private_endpoint
+  firewall                 = each.value.firewall
 }
 

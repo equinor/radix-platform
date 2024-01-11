@@ -22,6 +22,20 @@ resource "azurerm_storage_account" "storageaccount" {
           days = container_delete_retention_policy.value
         }
       }
+      dynamic "delete_retention_policy" {
+        for_each = var.delete_retention_policy == true ? [35] : []
+
+        content {
+          days = delete_retention_policy.value
+        }
+      }
+      dynamic "restore_policy" {
+        for_each = var.backup_center == true ? [30] : []
+
+        content {
+          days = restore_policy.value
+        }
+      }
     }
   }
 
@@ -59,12 +73,21 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
   depends_on         = [azurerm_role_assignment.roleassignment]
 }
 
+resource "azurerm_storage_account_network_rules" "this" {
+  for_each                   = var.firewall ? { "${var.name}" : true } : {}
+  storage_account_id         = azurerm_storage_account.storageaccount.id
+  default_action             = "Deny"
+  ip_rules                   = ["143.97.110.1"]
+  virtual_network_subnet_ids = [var.subnet_id]
+  # bypass                     = ["Metrics"]
+}
+
 ######################################################################################
 ## Private Link
 ##
 
 resource "azurerm_private_endpoint" "this" {
-  for_each            = var.private_endpoint ? { "this" : "true" } : {}
+  for_each            = var.priv_endpoint ? { "${var.name}" : true } : {} # { for key in compact([for key, value in var.priv_endpoint : value.private_endpoint ? key : ""]) : key =>  var.priv_endpoint[key] }
   name                = azurerm_storage_account.storageaccount.name
   resource_group_name = azurerm_storage_account.storageaccount.resource_group_name
   location            = azurerm_storage_account.storageaccount.location
@@ -84,12 +107,12 @@ resource "azurerm_private_endpoint" "this" {
 ## Private DNS
 ##
 resource "azurerm_private_dns_a_record" "this" {
-  for_each            = var.private_endpoint ? { "this" : "true" } : {}
+  for_each            = var.priv_endpoint ? { "${var.name}" : true } : {}
   name                = azurerm_storage_account.storageaccount.name
   zone_name           = "privatelink.blob.core.windows.net"
   resource_group_name = var.vnethub_resource_group
   ttl                 = 10
-  records             = ["10.0.0.16"]
-  # depends_on          = [azurerm_private_endpoint.this]
+  records             = [azurerm_private_endpoint.this[each.key].private_service_connection.0.private_ip_address]
+  depends_on          = [azurerm_private_endpoint.this]
 }
 

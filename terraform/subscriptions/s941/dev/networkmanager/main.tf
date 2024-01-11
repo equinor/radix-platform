@@ -20,7 +20,8 @@ module "azurerm_network_manager_connectivity_configuration" {
   enviroment         = local.external_outputs.common.data.enviroment_S
   network_manager_id = module.azurerm_network_manager.data.id
   network_group_id   = module.azurerm_network_manager_network_group.data.id
-  vnethub_id         = local.external_outputs.virtualnetwork.data.id
+  vnethub_id         = local.external_outputs.virtualnetwork.data.vnet_hub.id
+  depends_on         = [data.terraform_remote_state.virtualnetwork]
 }
 
 
