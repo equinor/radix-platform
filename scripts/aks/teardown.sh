@@ -355,7 +355,7 @@ echo "Delete replyUrls"
 
 # Delete replyUrl for Radix web-console
 WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" # "Development", "Playground", "Production"
+APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^}" # "Development", "Playground", "Production"
 APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].appId --output tsv --only-show-errors)"
 APP_REGISTRATION_OBJ_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].id --output tsv --only-show-errors)"
 HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
