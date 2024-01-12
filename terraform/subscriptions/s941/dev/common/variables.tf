@@ -17,6 +17,7 @@ variable "storageaccounts" {
     roleassignment           = optional(map(object({ backup = optional(bool, false) })))
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
+    firewall                 = optional(bool, true)
   }))
   default = {
     diagnostics = {

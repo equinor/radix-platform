@@ -56,6 +56,18 @@ variable "container_delete_retention_policy" {
   default     = 30
 }
 
+variable "delete_retention_policy" {
+  description = "Specifies the number of days that the blob should be retained"
+  type        = bool
+  default     = true
+}
+
+variable "backup_center" {
+  description = "Specifies the number of days that the blob can be restored. This must be less than the days specified for delete_retention_policy"
+  type        = bool
+  default     = false
+}
+
 
 variable "principal_id" {
   description = "The ID of the Principal (User, Group or Service Principal) to assign the Role Definition to"
@@ -88,10 +100,6 @@ variable "policyblobstorage_id" {
   type        = string
 }
 
-variable "private_endpoint" {
-  type = bool
-}
-
 variable "subnet_id" {
   type = string
 
@@ -99,4 +107,17 @@ variable "subnet_id" {
 
 variable "vnethub_resource_group" {
   type = string
+}
+
+variable "priv_endpoint" {
+  description = "Create private endpoint?"
+  type        = bool
+  default     = false
+}
+
+variable "firewall" {
+  description = "Enable FW rules on StorageAccount?"
+  type        = bool
+  default     = true
+
 }

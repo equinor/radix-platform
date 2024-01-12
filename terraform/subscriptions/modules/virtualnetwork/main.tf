@@ -10,6 +10,7 @@ resource "azurerm_subnet" "this" {
   resource_group_name  = "cluster-vnet-hub-${var.enviroment}"
   virtual_network_name = azurerm_virtual_network.vnet-hub.name
   address_prefixes     = ["10.0.0.0/18"]
+  service_endpoints    = ["Microsoft.Storage"]
 }
 
 resource "azurerm_private_dns_zone" "this" {
