@@ -822,7 +822,7 @@ done
 
 echo "Ingress is ready, adding replyUrl for radix web-console..."
 
-(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^} Clusters" K8S_NAMESPACE="${WEB_CONSOLE_NAMESPACE}" K8S_INGRESS_NAME="${AUTH_PROXY_COMPONENT}" REPLY_PATH="${AUTH_PROXY_REPLY_PATH}" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" "${script_dir_path}/../../add_reply_url_for_cluster.sh")
+(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^}" K8S_NAMESPACE="${WEB_CONSOLE_NAMESPACE}" K8S_INGRESS_NAME="${AUTH_PROXY_COMPONENT}" REPLY_PATH="${AUTH_PROXY_REPLY_PATH}" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" "${script_dir_path}/../../add_reply_url_for_cluster.sh")
 wait # wait for subshell to finish
 
 
