@@ -33,6 +33,14 @@ on:
 
 jobs:
   dynamic-dropdown:
+    strategy:
+      matrix:
+        platform: [
+          {subscription: "s940", env: "prod" },
+          {subscription: "s940", env: "c2" },
+          {subscription: "s941", env: "dev" },
+          {subscription: "s941", env: "playground" },
+        ]
 
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +55,7 @@ jobs:
       - name: Retrieve dynamic options
         id: get_dynamic_options
         run: |
-          echo "${{github.event_type === "pull_request" ? "s941" : inputs.subscription }}"
+          echo "${{ matrix.platform.subscription }} / ${{ matrix.platform.env }}"
           IFS=',' read -ra INPUT_OPTIONS <<< "${{ inputs.subscription }}"
           DYNAMIC_OPTIONS=""
           for option in "${INPUT_OPTIONS[@]}"; do
