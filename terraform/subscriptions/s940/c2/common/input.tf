@@ -1,10 +1,10 @@
 locals {
   external_outputs = {
-    global         = data.terraform_remote_state.global.outputs
+    global = data.terraform_remote_state.global.outputs
     # virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
   }
 
-    backend = {
+  backend = {
     resource_group_name  = "s940-tfstate"
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
