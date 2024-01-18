@@ -1,5 +1,6 @@
 name: Check Terraform infrastructure
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       subscription:
@@ -32,6 +33,7 @@ on:
 
 jobs:
   dynamic-dropdown:
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -45,7 +47,8 @@ jobs:
       - name: Retrieve dynamic options
         id: get_dynamic_options
         run: |
-          IFS=',' read -ra INPUT_OPTIONS <<< "${{ github.event.inputs.list_1 }}"
+          echo "${{github.event_type === "pull_request" ? "s941" : inputs.subscription }}"
+          IFS=',' read -ra INPUT_OPTIONS <<< "${{ inputs.subscription }}"
           DYNAMIC_OPTIONS=""
           for option in "${INPUT_OPTIONS[@]}"; do
             OPTION_VALUES=$(jq ".$option | join(\",\")" dynamic_enviroments.json --raw-output)
@@ -55,10 +58,8 @@ jobs:
             DYNAMIC_OPTIONS+="$OPTION_VALUES"
           done
           echo "DYNAMIC_OPTIONS=$DYNAMIC_OPTIONS" >> $GITHUB_ENV
-
       - name: Use dynamic options
         run: |
-          echo "Selected options from List 1: ${{ github.event.inputs.list_1 }}"
+          echo "Selected options from List 1: ${{ inputs.subscription }}"
           echo "Selected options from List 2: $DYNAMIC_OPTIONS"
           # Continue with your workflow steps using the dynamic options
-    
