@@ -1,0 +1,64 @@
+name: Check Terraform infrastructure
+on:
+  workflow_dispatch:
+    inputs:
+      subscription:
+        description: 'Subscription'
+        type: choice
+        required: true
+        options:
+          - 's940'
+          - 's941'
+        default: 's941'
+
+      terraformapply:
+        description: 'Terraform apply'
+        type: boolean
+        required: true
+        default: false
+
+    secrets:
+      AZURE_CLIENT_ID:
+        description: The client ID of the Azure AD service principal to use for authenticating to Azure.
+        required: true
+
+      AZURE_SUBSCRIPTION_ID:
+        description: The ID of the Azure subscription to create the resources in.
+        required: true
+
+      AZURE_TENANT_ID:
+        description: The ID of the Azure tenant to create the resources in.
+        required: true
+
+jobs:
+  dynamic-dropdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # - name: Install jq
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install jq
+
+      - name: Retrieve dynamic options
+        id: get_dynamic_options
+        run: |
+          IFS=',' read -ra INPUT_OPTIONS <<< "${{ github.event.inputs.list_1 }}"
+          DYNAMIC_OPTIONS=""
+          for option in "${INPUT_OPTIONS[@]}"; do
+            OPTION_VALUES=$(jq ".$option | join(\",\")" dynamic_enviroments.json --raw-output)
+            if [ -n "$DYNAMIC_OPTIONS" ] && [ -n "$OPTION_VALUES" ]; then
+              DYNAMIC_OPTIONS+=","
+            fi
+            DYNAMIC_OPTIONS+="$OPTION_VALUES"
+          done
+          echo "DYNAMIC_OPTIONS=$DYNAMIC_OPTIONS" >> $GITHUB_ENV
+
+      - name: Use dynamic options
+        run: |
+          echo "Selected options from List 1: ${{ github.event.inputs.list_1 }}"
+          echo "Selected options from List 2: $DYNAMIC_OPTIONS"
+          # Continue with your workflow steps using the dynamic options
+    
