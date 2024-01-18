@@ -1,6 +1,5 @@
 name: Check Terraform infrastructure
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       subscription:
@@ -8,10 +7,9 @@ on:
         type: choice
         required: true
         options:
-          - 's940'
           - 's941'
         default: 's941'
-
+      
       terraformapply:
         description: 'Terraform apply'
         type: boolean
@@ -32,42 +30,64 @@ on:
         required: true
 
 jobs:
-  dynamic-dropdown:
-    strategy:
-      matrix:
-        platform: [
-          {subscription: "s940", env: "prod" },
-          {subscription: "s940", env: "c2" },
-          {subscription: "s941", env: "dev" },
-          {subscription: "s941", env: "playground" },
-        ]
-
+  StorageAccounts:
+    name: StorageAccounts
     runs-on: ubuntu-latest
+    environment: ${{ inputs.subscription }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      enviroment: dev
+      terraform_version: ~1.3.0
+      ARM_USE_OIDC: true
+      ARM_USE_AZUREAD: true
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      resource_group_name: ${{ inputs.subscription }}-tfstate
+      storage_account_name: ${{ inputs.subscription }}radixinfra
+      # path: storageaccounts
+      # key: terraform.tfstate
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      # - name: Install jq
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install jq
+      - name: 'Az login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Retrieve dynamic options
-        id: get_dynamic_options
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        uses: haythem/public-ip@v1.3
+
+      - name: Add GitHub IP to StorageAccount
         run: |
-          echo "${{ matrix.platform.subscription }} / ${{ matrix.platform.env }}"
-          IFS=',' read -ra INPUT_OPTIONS <<< "${{ inputs.subscription }}"
-          DYNAMIC_OPTIONS=""
-          for option in "${INPUT_OPTIONS[@]}"; do
-            OPTION_VALUES=$(jq ".$option | join(\",\")" dynamic_enviroments.json --raw-output)
-            if [ -n "$DYNAMIC_OPTIONS" ] && [ -n "$OPTION_VALUES" ]; then
-              DYNAMIC_OPTIONS+=","
-            fi
-            DYNAMIC_OPTIONS+="$OPTION_VALUES"
-          done
-          echo "DYNAMIC_OPTIONS=$DYNAMIC_OPTIONS" >> $GITHUB_ENV
-      - name: Use dynamic options
+          az storage account network-rule add \
+            --resource-group "${{ env.resource_group_name }}" \
+            --account-name "${{ env.storage_account_name }}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        run: sleep 30s
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.terraform_version }}
+
+      - name: Check terrorm in {{ env.enviroment }}
+        working-directory: terraform/subscriptions/${{ inputs.subscription }}
+        run: ./summary-{{ env.enviroment }}.sh
+      
+      - name: Revoke GitHub IP on StorageAccount
         run: |
-          echo "Selected options from List 1: ${{ inputs.subscription }}"
-          echo "Selected options from List 2: $DYNAMIC_OPTIONS"
-          # Continue with your workflow steps using the dynamic options
+          az storage account network-rule remove \
+            --resource-group "${{ env.resource_group_name }}" \
+            --account-name "${{ env.storage_account_name }}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
