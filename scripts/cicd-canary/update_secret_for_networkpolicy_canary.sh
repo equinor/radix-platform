@@ -78,7 +78,7 @@ printf "Done.\n"
 #######################################################################################
 ### Verify cluster access
 ###
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$CLUSTER_NAME"
 verify_cluster_access
 
 function getApiTokenResource() {

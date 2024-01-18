@@ -197,7 +197,7 @@ fi
 
 # Exit if cluster does not exist
 printf "Connecting kubectl..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$DEST_CLUSTER" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
     exit 1
@@ -216,12 +216,12 @@ verify_cluster_access
 echo ""
 printf "Enabling monitoring addon in the destination cluster...\n"
 WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
-omsagent=$(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled)
+omsagent=$(az aks show --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled)
 if [[ "${omsagent}" == "false" || -z "${omsagent}" ]]; then
     az aks enable-addons \
         --addons monitoring \
         --name "${DEST_CLUSTER}" \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
         --workspace-resource-id "${WORKSPACE_ID}" \
         --no-wait || {
         echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2
@@ -290,7 +290,7 @@ fi
 
 echo ""
 printf "Point to destination cluster... "
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
 echo ""
@@ -358,7 +358,7 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
 
     printf "Tag cluster %s to autostartupschedule\n" "${DEST_CLUSTER}"
     az resource tag \
-        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER}" \
+        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_MIGRATE}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER}" \
         --tags autostartupschedule=true \
         --is-incremental
 fi

@@ -423,9 +423,9 @@ function gh_federated_credentials() {
     fi
 
     echo 'Updating GitHub secrets...'
-    gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" ${env_arg}
-    gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" ${env_arg}
-    gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}
+    echo "gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" ${env_arg}"
+    echo "gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" ${env_arg}"
+    echo "gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}"
 }
 
 function create_federated_credentials() {

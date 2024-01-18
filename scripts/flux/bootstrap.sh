@@ -208,7 +208,7 @@ fi
 
 # Exit if cluster does not exist
 printf "Connecting kubectl..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 0
@@ -291,7 +291,7 @@ echo "Creating \"radix-flux-config\"..."
 # list of public ips assigned to the cluster
 printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
 ASSIGNED_IPS="$(az network public-ip list \
-    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].ipAddress" \
+    --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_MIGRATE}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].ipAddress" \
     --output json)"
 
 if [[ "$ASSIGNED_IPS" == "[]" ]]; then

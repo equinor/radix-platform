@@ -356,7 +356,7 @@ function showProgress() {
 
 # Exit if cluster does not exist
 echo "Connecting kubectl to velero-destination..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$DEST_CLUSTER" || {
   # Send message to stderr
   echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
   exit 0

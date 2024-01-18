@@ -595,7 +595,7 @@ cat <<EOF >$DEFENDER_CONFIG
 EOF
 
 AKS_BASE_OPTIONS=(
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE"
     --name "$CLUSTER_NAME"
     --no-ssh-key
     --kubernetes-version "$KUBERNETES_VERSION"
@@ -666,7 +666,7 @@ rm -f $DEFENDER_CONFIG
 ### Assign Contributor on scope of nodepool RG for AKS managed identity
 ###
 
-node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}
+node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_MIGRATE}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}
 managed_identity_id=$(az identity show \
     --id "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS}" \
     --query principalId \
@@ -692,7 +692,7 @@ printf "Done.\n"
 
 printf "Tagging cluster %s with tag migrationStrategy=%s...\n" "${CLUSTER_NAME}" "${MIGRATION_STRATEGY}"
 az resource tag \
-    --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
+    --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_MIGRATE}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
     --tags migrationStrategy="${MIGRATION_STRATEGY}" \
     --is-incremental &>/dev/null
 printf "Done.\n"
@@ -700,7 +700,7 @@ printf "Done.\n"
 if [ "$RADIX_ZONE" = "dev" ]; then
     printf "Tagging cluster %s with tag autostartupschedule...\n" "${CLUSTER_NAME}"
     az resource tag \
-        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
+        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_MIGRATE}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
         --tags autostartupschedule=false \
         --is-incremental &>/dev/null
     printf "Done.\n"
@@ -710,14 +710,14 @@ fi
 ### Get api server whitelist
 ###
 
-(USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
+#(USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
 
 #######################################################################################
 ### Update local kube config
 ###
 
 printf "Updating local kube config with access to cluster \"%s\"... " "$CLUSTER_NAME"
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$CLUSTER_NAME" >/dev/null
 
 [[ "$(kubectl config current-context)" != "$CLUSTER_NAME" ]] && exit 1
 
@@ -757,7 +757,7 @@ aksbyocni:
   enabled: true
 
 azure:
-  resourceGroup: ${AZ_RESOURCE_GROUP_CLUSTERS}
+  resourceGroup: ${AZ_RESOURCE_GROUP_MIGRATE}
 
 k8sClientRateLimit:
   qps: 20
@@ -807,7 +807,7 @@ echo "Taint the 'systempool'"
 az aks nodepool update \
     --cluster-name "$CLUSTER_NAME" \
     --name systempool \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --node-taints CriticalAddonsOnly=true:NoSchedule \
     --labels nodepool-type=system nodepoolos=linux app=system-apps >/dev/null
 printf "Done.\n"
@@ -830,7 +830,7 @@ AKS_PIPELINE_OPTIONS=(
     --node-taints "nodepooltasks=jobs:NoSchedule"
     --node-vm-size "$PIPELINE_VM_SIZE"
     --nodepool-name pipelinepool
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE"
     --vnet-subnet-id "$SUBNET_ID"
 )
 echo "Create pipeline nodepool"
@@ -843,7 +843,7 @@ az aks nodepool add "${AKS_PIPELINE_OPTIONS[@]}"
 AKS_USER_OPTIONS=(
     --cluster-name "$CLUSTER_NAME"
     --nodepool-name userpool
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE"
     --enable-cluster-autoscaler
     --kubernetes-version "$KUBERNETES_VERSION"
     --max-count "$MAX_COUNT"
@@ -865,7 +865,7 @@ az aks nodepool add "${AKS_USER_OPTIONS[@]}"
 printf "Adding GPU node pools to the cluster... "
 
 az aks nodepool add \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc6sv3 \
     --enable-cluster-autoscaler \
@@ -885,7 +885,7 @@ az aks nodepool add \
     --only-show-errors
 
 az aks nodepool add \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc12sv3 \
     --enable-cluster-autoscaler \
@@ -905,7 +905,7 @@ az aks nodepool add \
     --only-show-errors
 
 az aks nodepool add \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --cluster-name "$CLUSTER_NAME" \
     --name nc24sv3 \
     --enable-cluster-autoscaler \

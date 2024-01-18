@@ -117,7 +117,7 @@ printf "Done.\n"
 
 # Exit if cluster does not exist
 printf "Connecting kubectl..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 0        

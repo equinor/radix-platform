@@ -97,7 +97,7 @@ if [[ ! ${NSG_ID} ]]; then
     printf "Creating azure NSG %s..." "${NSG_NAME}"
     NSG_ID=$(az network nsg create \
         --name "${NSG_NAME}" \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
         --location "${AZ_RADIX_ZONE_LOCATION}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --query id \
@@ -141,7 +141,7 @@ fi
 
 if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     NSG_FLOW_LOGS="$(az network nsg show \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --name "${NSG_NAME}" | jq -r .flowLogs)"
 
@@ -153,7 +153,7 @@ if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
         printf "Creating azure Flow-log %s... " "${NSG_NAME}-rule"
         az network watcher flow-log create \
             --name "${NSG_NAME}-flow-log" \
-            --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+            --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
             --nsg "${NSG_NAME}" \
             --location "${AZ_RADIX_ZONE_LOCATION}" \
             --storage-account "${FLOW_LOGS_STORAGEACCOUNT_ID}" \
@@ -170,16 +170,16 @@ fi
 ###
 
 VNET_EXISTS=$(az network vnet list \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --query "[?name=='${VNET_NAME}'].id" \
     --output tsv \
     --only-show-errors)
-
+exit 0
 if [[ ! ${VNET_EXISTS} ]]; then
     printf "Creating azure VNET %s... " "${VNET_NAME}"
     az network vnet create \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
         --name "${VNET_NAME}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --address-prefix "${VNET_ADDRESS_PREFIX}" \
@@ -193,7 +193,7 @@ if [[ ! ${VNET_EXISTS} ]]; then
 else
     printf "Updating azure subnet %s... " "${SUBNET_NAME}"
     az network vnet subnet update \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
         --name "${SUBNET_NAME}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --vnet-name "${VNET_NAME}" \
@@ -206,12 +206,12 @@ fi
 #######################################################################################
 ### Create network security group rule, update subnet.
 ###
-
+exit 0
 if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
     IPPRE_INGRESS_ID="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${AZ_IPPRE_INBOUND_NAME}"
     USED_INGRESS_IP=$(az network public-ip list \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --query "[?publicIPPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup=='mc_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].{name:name, id:id, ipAddress:ipAddress}")
+        --query "[?publicIPPrefix.id=='${IPPRE_INGRESS_ID}' && ipConfiguration.resourceGroup=='mc_${AZ_RESOURCE_GROUP_MIGRATE}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].{name:name, id:id, ipAddress:ipAddress}")
     SELECTED_INGRESS_IP="$(echo "${USED_INGRESS_IP}" | jq '.[0]')"
     SELECTED_INGRESS_IP_ID=$(echo "${SELECTED_INGRESS_IP}" | jq -r '.id')
     SELECTED_INGRESS_IP_RAW_ADDRESS="$(az network public-ip show \
@@ -253,7 +253,7 @@ printf "Creating azure NSG rule %s-rule... " "${NSG_NAME}"
 az network nsg rule create \
     --nsg-name "${NSG_NAME}" \
     --name "${NSG_NAME}-rule" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --destination-address-prefixes "${SELECTED_INGRESS_IP_RAW_ADDRESS}" \
     --destination-port-ranges 80 443 \
@@ -270,7 +270,7 @@ printf "Done.\n"
 printf "Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
 az network vnet subnet update \
     --vnet-name "${VNET_NAME}" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
     --name "${SUBNET_NAME}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --network-security-group "${NSG_NAME}" \

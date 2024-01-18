@@ -85,7 +85,7 @@ printf "Done.\n"
 
 # Exit if cluster does not exist
 printf "Connecting kubectl..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
+get_credentials "$AZ_RESOURCE_GROUP_MIGRATE" "$CLUSTER_NAME" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
     exit 1
@@ -100,7 +100,7 @@ verify_cluster_access
 
 ### MAIN
 
-cluster_oidc_issuer_url=$(az aks show --resource-group=$AZ_RESOURCE_GROUP_CLUSTERS --name=$CLUSTER_NAME  --query=oidcIssuerProfile.issuerUrl --output tsv) || exit
+cluster_oidc_issuer_url=$(az aks show --resource-group=$AZ_RESOURCE_GROUP_MIGRATE --name=$CLUSTER_NAME  --query=oidcIssuerProfile.issuerUrl --output tsv) || exit
 
 printf "Getting resource to be used to get access token for requests to Radix API..."
 resource=$(echo "${OAUTH2_PROXY_SCOPE}" | awk '{print $4}' | sed 's/\/.*//')
