@@ -88,7 +88,7 @@ jobs:
 
       - name: Check terrorm in ${{ env.ENVIROMENT }}
         working-directory: terraform/subscriptions/scripts
-        run: ./terraform.sh
+        run: ENVIROMENT=${{ matrix.ENVIROMENT}} ./terraform.sh
       
       - name: Revoke GitHub IP on StorageAccount
         run: |
