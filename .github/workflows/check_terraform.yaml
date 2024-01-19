@@ -37,8 +37,11 @@ jobs:
     name: Check infrastructure consistency
     runs-on: ubuntu-latest
     environment: s941
+    strategy:
+      matrix:
+        ENVIROMENT: [dev, playground]
     env:
-      ENVIROMENT: dev #variable passed to scipt
+      # ENVIROMENT: dev #variable passed to scipt
       SUBSCRIPTION: s941 #variable passed to scipt
       terraform_version: ~1.3.0
       ARM_USE_OIDC: true
@@ -71,8 +74,8 @@ jobs:
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add \
-            --resource-group "s941-tfstate" \
-            --account-name "s941radixinfra" \
+            --resource-group "${{ env.SUBSCRIPTION}}-tfstate" \
+            --account-name "${{ env.SUBSCRIPTION}}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
       - name: Lets sleep for 30 seconds for FW rule to complete
