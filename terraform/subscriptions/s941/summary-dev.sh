@@ -6,9 +6,10 @@ normal=$(tput sgr0)
 
 # Set the directory you want to search
 directory="./dev"
-
+echo $(ls -l)
 for dir in "$directory"/*; do
-    echo $("terraform -chdir="$dir" init")
+    echo $(ls -l)
+    echo $("terraform -chdir=$dir init")
     if [ ! -d "$dir" ]; then continue; fi
 
     printf "%s► Execute %s%s\n" "${grn}" "$dir" "${normal}"
