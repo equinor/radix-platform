@@ -60,7 +60,7 @@ jobs:
       - name: Get GitHub Public IP
         id: github_public_ip
         uses: haythem/public-ip@v1.3
-
+    
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add \
@@ -76,9 +76,9 @@ jobs:
         with:
           terraform_version: ${{ env.terraform_version }}
 
-      - name: Check terrorm in ${{ matrix.enviroment }}
-        working-directory: terraform/subscriptions/${{ env.subscription }}
-        run: ./summary-${{ matrix.enviroment }}.sh   
+      - name: Check terrorm in ${{ env.subscription }}
+        working-directory: terraform/subscriptions/s941
+        run: ./summary-dev.sh
       
       - name: Revoke GitHub IP on StorageAccount
         run: |
