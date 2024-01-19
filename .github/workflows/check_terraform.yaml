@@ -17,6 +17,7 @@ on:
         required: true
         default: false
 
+
     # secrets:
     #   AZURE_CLIENT_ID:
     #     description: The client ID of the Azure AD service principal to use for authenticating to Azure.
@@ -29,34 +30,27 @@ on:
     #   AZURE_TENANT_ID:
     #     description: The ID of the Azure tenant to create the resources in.
     #     required: true
+  
 
 jobs:
-  Terraform:
-    name: Check infrastructure consistency
+  terrform-dev:
+    name: Check infrastructure consistency in s941
     runs-on: ubuntu-latest
     environment: s941
-
+    env:
+      subscription: s941
+      terraform_version: ~1.3.0
+    strategy:
+      matrix:
+        enviroment: [dev, playground]
     permissions:
       id-token: write
       contents: read
-
-    env:
-      enviroment: dev
-      terraform_version: ~1.3.0
-      ARM_USE_OIDC: true
-      ARM_USE_AZUREAD: true
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      resource_group_name: s941-tfstate
-      storage_account_name: ${{ inputs.subscription }}radixinfra
-      # path: storageaccounts
-      # key: terraform.tfstate
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3 #Clone Repo
+      - name: Checkout and clone repo
+        uses: actions/checkout@v3
 
-      - name: 'Az login'
+      - name: 'Az CLI login'
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -70,8 +64,8 @@ jobs:
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add \
-            --resource-group "s941-tfstate" \
-            --account-name "s941radixinfra" \
+            --resource-group "${{ env.subscription }}-tfstate" \
+            --account-name "${{ env.subscription }}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
       - name: Lets sleep for 30 seconds for FW rule to complete
@@ -82,9 +76,9 @@ jobs:
         with:
           terraform_version: ${{ env.terraform_version }}
 
-      - name: Check terrorm in {{ env.enviroment }}
-        working-directory: terraform/subscriptions/s941
-        run: ./summary-dev.sh
+      - name: Check terrorm in ${{ matrix.enviroment }}
+        working-directory: terraform/subscriptions/${{ env.subscription }}
+        run: ./summary-${{ matrix.enviroment }}.sh   
       
       - name: Revoke GitHub IP on StorageAccount
         run: |
