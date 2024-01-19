@@ -5,7 +5,7 @@ yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
 # Set the directory you want to search
-directory="./playground"
+directory="../../../terraform/subscriptions/s941/dev"
 
 for dir in "$directory"/*; do
     if [ ! -d "$dir" ]; then continue; fi

@@ -4,10 +4,5 @@ variable "resource_groups" {
     location = optional(string, "northeurope")
   }))
   default = {
-    backups            = {},
-    common             = {},
-    cost-allocation    = {},
-    Logs-Dev           = {},
-    vulnerability-scan = {}
   }
 }

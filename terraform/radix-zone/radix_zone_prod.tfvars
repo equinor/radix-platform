@@ -418,7 +418,7 @@ virtual_networks = {
 ### Service principal
 ###
 
-APP_GITHUB_ACTION_CLUSTER_NAME     = "OP-Terraform-Github Action"
+APP_GITHUB_ACTION_CLUSTER_NAME = "OP-Terraform-Github Action"
 
 #######################################################################################
 ### Github

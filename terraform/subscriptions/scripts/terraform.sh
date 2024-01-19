@@ -4,8 +4,22 @@ grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
+if [[ -z "$ENVIROMENT" ]]; then
+    echo "ERROR: Please provide ENVIROMENT" >&2
+    exit 1
+fi
+
+if [[ -z "$SUBSCRIPTION" ]]; then
+    echo "ERROR: Please provide SUBSCRIPTION" >&2
+    exit 1
+fi
+
+
+
 # Set the directory you want to search
-directory="./playground"
+# directory="../${SUBSCRIPTION}/${ENVIROMENT}"
+# directory="../s940/dev/"
+directory="../${SUBSCRIPTION}/${ENVIROMENT}"
 
 for dir in "$directory"/*; do
     if [ ! -d "$dir" ]; then continue; fi
