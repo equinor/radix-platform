@@ -19,7 +19,7 @@ fi
 # Set the directory you want to search
 # directory="../${SUBSCRIPTION}/${ENVIROMENT}"
 # directory="../s940/dev/"
-directory="../${SUBSCRIPTION}/${ENVIROMENT}/"
+directory="../${SUBSCRIPTION}/${ENVIROMENT}"
 
 for dir in "$directory"/*; do
     if [ ! -d "$dir" ]; then continue; fi
