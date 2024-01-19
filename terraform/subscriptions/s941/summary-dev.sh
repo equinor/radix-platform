@@ -8,7 +8,7 @@ normal=$(tput sgr0)
 directory="./dev"
 
 for dir in "$directory"/*; do
-    echo $(pwd)
+    echo $("terraform -chdir="$dir" init")
     if [ ! -d "$dir" ]; then continue; fi
 
     printf "%s► Execute %s%s\n" "${grn}" "$dir" "${normal}"
