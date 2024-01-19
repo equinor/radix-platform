@@ -84,7 +84,7 @@ jobs:
 
       - name: Check terrorm in {{ env.enviroment }}
         working-directory: terraform/subscriptions/s941
-        run: ./summary-{{ env.enviroment }}.sh
+        run: ./summary-dev.sh
       
       - name: Revoke GitHub IP on StorageAccount
         run: |
