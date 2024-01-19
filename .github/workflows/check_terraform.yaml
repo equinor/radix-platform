@@ -31,10 +31,10 @@ on:
     #     required: true
 
 jobs:
-  StorageAccounts:
-    name: StorageAccounts
+  Terraform:
+    name: Check infrastructure consistency
     runs-on: ubuntu-latest
-    environment: ${{ inputs.subscription }}
+    environment: s941
 
     permissions:
       id-token: write
@@ -54,7 +54,7 @@ jobs:
       # key: terraform.tfstate
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3 #Clone Repo
 
       - name: 'Az login'
         uses: azure/login@v1
