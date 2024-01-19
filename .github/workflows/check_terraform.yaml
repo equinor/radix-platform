@@ -17,18 +17,18 @@ on:
         required: true
         default: false
 
-    secrets:
-      AZURE_CLIENT_ID:
-        description: The client ID of the Azure AD service principal to use for authenticating to Azure.
-        required: true
+    # secrets:
+    #   AZURE_CLIENT_ID:
+    #     description: The client ID of the Azure AD service principal to use for authenticating to Azure.
+    #     required: true
 
-      AZURE_SUBSCRIPTION_ID:
-        description: The ID of the Azure subscription to create the resources in.
-        required: true
+    #   AZURE_SUBSCRIPTION_ID:
+    #     description: The ID of the Azure subscription to create the resources in.
+    #     required: true
 
-      AZURE_TENANT_ID:
-        description: The ID of the Azure tenant to create the resources in.
-        required: true
+    #   AZURE_TENANT_ID:
+    #     description: The ID of the Azure tenant to create the resources in.
+    #     required: true
 
 jobs:
   StorageAccounts:
