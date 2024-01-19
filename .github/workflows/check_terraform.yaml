@@ -48,7 +48,7 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      resource_group_name: ${{ inputs.subscription }}-tfstate
+      resource_group_name: s941-tfstate
       storage_account_name: ${{ inputs.subscription }}radixinfra
       # path: storageaccounts
       # key: terraform.tfstate
@@ -70,8 +70,8 @@ jobs:
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add \
-            --resource-group "${{ env.resource_group_name }}" \
-            --account-name "${{ env.storage_account_name }}" \
+            --resource-group "s941-tfstate" \
+            --account-name "s941radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
       - name: Lets sleep for 30 seconds for FW rule to complete
@@ -89,6 +89,6 @@ jobs:
       - name: Revoke GitHub IP on StorageAccount
         run: |
           az storage account network-rule remove \
-            --resource-group "${{ env.resource_group_name }}" \
-            --account-name "${{ env.storage_account_name }}" \
+            --resource-group "s941-tfstate" \
+            --account-name "s941radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
