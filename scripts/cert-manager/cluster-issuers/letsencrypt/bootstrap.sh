@@ -5,7 +5,7 @@
 ### PURPOSE
 ### 
 
-# Bootstrap cert-manager in a radix cluster, v1.1
+# Bootstrap secrets required by Flux to install cluster issuer for Lets Encrypt ACME dns01
 
 
 #######################################################################################
@@ -14,7 +14,6 @@
 
 # - AKS cluster is available
 # - User has role cluster-admin
-# - Helm RBAC is configured in cluster
 
 
 #######################################################################################
@@ -26,8 +25,8 @@
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - STAGING             : Use cert issuer staging api? true/false. Default is false.
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+# - STAGING             : Use Lets Encrypt staging api? true/false. Default is false.
 
 
 #######################################################################################
@@ -35,25 +34,17 @@
 ### 
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
+# RADIX_ZONE_ENV=../../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
 # STAGING
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" STAGING=true ./bootstrap.sh
-
-
-#######################################################################################
-### DOCS
-###
-
-# - https://cert-manager.io/docs/installation/helm/
-
+# RADIX_ZONE_ENV=../../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" STAGING=true ./bootstrap.sh
 
 #######################################################################################
 ### START
 ### 
 
 echo ""
-echo "Start bootstrap of cert-manager... "
+echo "Start bootstrap of Lets Encrypt secrets for Flux... "
 
 
 #######################################################################################
@@ -62,10 +53,7 @@ echo "Start bootstrap of cert-manager... "
 
 echo ""
 printf "Check for necessary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
-hash helm 2> /dev/null  || { echo -e "\nERROR: helm not found in PATH. Exiting..." >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 
@@ -92,14 +80,20 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$RADIX_WILDCARD_CERTIFICATE_ISSUER" ]]; then
-    echo "ERROR: Please provide RADIX_WILDCARD_CERTIFICATE_ISSUER" >&2
+if [[ -z "$LETS_ENCRYPT_ACME_ACCOUNT_EMAIL" ]]; then
+    echo "ERROR: Please provide LETS_ENCRYPT_ACME_ACCOUNT_EMAIL" >&2
     exit 1
 fi
 
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+# Optional inputs
+
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
 
 # Optional inputs
 
@@ -115,13 +109,10 @@ fi
 
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ $STAGING == false ]]; then
-    CERT_ISSUER="letsencrypt-prod"
     ACME_URL="https://acme-v02.api.letsencrypt.org/directory"
 else
-    CERT_ISSUER="letsencrypt-staging"
     ACME_URL="https://acme-staging-v02.api.letsencrypt.org/directory"
 fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -138,23 +129,22 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap of cert-manager will use the following configuration:"
+echo -e "Bootstrap of Lets Encrypt secret for Flux will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  CLUSTER_NAME                      : $CLUSTER_NAME"
-echo -e "   -  AZ_RESOURCE_DNS                   : $AZ_RESOURCE_DNS"
-echo -e "   -  RADIX_ZONE                        : $RADIX_ZONE"
+echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CERT_ISSUER                       : $CERT_ISSUER"
-echo -e "   -  RADIX_WILDCARD_CERTIFICATE_ISSUER : $RADIX_WILDCARD_CERTIFICATE_ISSUER"
+echo -e "   -  ACME_URL                         : $ACME_URL"
+echo -e "   -  LETS_ENCRYPT_ACME_ACCOUNT_EMAIL  : $LETS_ENCRYPT_ACME_ACCOUNT_EMAIL"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                   : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                           : $(az account show --query user.name -o tsv)"
+echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
 echo -e ""
 
 echo ""
@@ -190,54 +180,24 @@ printf "...Done.\n"
 verify_cluster_access
 
 #######################################################################################
-### Install cert-manager
+### Bootstrap Lets Encrypt secret for Flux
 ###
 
-printf "\nCreating cert-manager namespace and secret for flux-chart...\n"
-
-# Create the namespace for cert-manager
-kubectl create namespace cert-manager \
-2>&1 >/dev/null
+printf "\nCreating secret for Flux...\n"
 
 # Create secret for flux
 
-DNS_SP="$(az keyvault secret show \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name $APP_REGISTRATION_CERT_MANAGER \
-    | jq '.value | fromjson')"
-
-# Set variables used in the manifest templates
-DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
-DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
-DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
-DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
-
-cat <<EOF | kubectl apply -f -
+cat <<EOF | kubectl apply -f - || exit
 apiVersion: v1
 kind: Secret
 metadata:
-  name: cert-manager-certificate-values
+  name: letsencrypt-clusterissuer-flux-values
   namespace: flux-system
 type: Opaque
 stringData:
-  CERT_ISSUER: ${CERT_ISSUER}
-  RADIX_WILDCARD_CERTIFICATE_ISSUER: ${RADIX_WILDCARD_CERTIFICATE_ISSUER}
-  AZ_RESOURCE_DNS: ${AZ_RESOURCE_DNS}
-  ACME_URL: ${ACME_URL}
-  DNS_SP_ID: ${DNS_SP_ID}
-  AZ_SUBSCRIPTION_ID: ${AZ_SUBSCRIPTION_ID}
-  DNS_SP_TENANT_ID: ${DNS_SP_TENANT_ID}
-  AZ_RESOURCE_GROUP_COMMON: ${AZ_RESOURCE_GROUP_COMMON}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: azure-dns-secret
-  namespace: cert-manager
-type: Opaque
-data:
-  client-secret: ${DNS_SP_PASSWORD_base64} # base64 encode of Azure AD password
+  accountEmail: ${LETS_ENCRYPT_ACME_ACCOUNT_EMAIL}
+  acmeServer: ${ACME_URL}
 EOF
 
 echo ""
-printf "Bootstrapping of Cert-Manager done!\n"
+printf "Bootstrapping of Lets Encrypt secrets for Flux done!\n"

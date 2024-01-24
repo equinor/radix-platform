@@ -171,7 +171,7 @@ cat <<EOF | kubectl apply -f - || exit
 apiVersion: v1
 kind: Secret
 metadata:
-  name: digicert-clusterissuer-external-account-flux-values
+  name: digicert-clusterissuer-flux-values
   namespace: flux-system
 type: Opaque
 stringData:
