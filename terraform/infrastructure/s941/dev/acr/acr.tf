@@ -26,7 +26,7 @@ resource "azurerm_container_registry" "app" {
     zone_redundancy_enabled = false
   }
 }
-
+# Link ACR To `vnet-hub`
 resource "azurerm_private_endpoint" "acr_app" {
   for_each = var.K8S_ENVIROMENTS
 
@@ -41,33 +41,8 @@ resource "azurerm_private_endpoint" "acr_app" {
     is_manual_connection           = false
     subresource_names              = ["registry"]
   }
-}
 
-
-locals {
-  acrDnsRecords = flatten([
-    for key, value in var.K8S_ENVIROMENTS :
-    [
-      for ip in azurerm_private_endpoint.acr_app[key].custom_dns_configs :
-      {
-        ips : ip.ip_addresses,
-        fqdn : ip.fqdn,
-        subdomain : replace(ip.fqdn, ".azurecr.io", ""),
-        env : key
-      }
-    ]
-  ])
-}
-
-resource "azurerm_private_dns_a_record" "dns_record" {
-  # Adds a unique key to each value to use it in for_each
-  for_each = { for value in local.acrDnsRecords : join("-", [value.env, value.subdomain]) => value }
-
-  name                = each.value.subdomain
-  zone_name           = azurerm_private_dns_zone.zone[each.value.env].name
-  resource_group_name = join("", ["cluster-vnet-hub-", each.value.env])
-  ttl                 = 300
-  records             = each.value.ips
-
-  depends_on = [azurerm_private_endpoint.acr_app]
+  lifecycle {
+    ignore_changes = ["private_dns_zone_group"]
+  }
 }
