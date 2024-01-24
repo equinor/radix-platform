@@ -1,6 +1,6 @@
 variable "resource_groups" {
   type    = list(string)
-  default = ["development"]
+  default = ["common-development"]
 }
 
 variable "storageaccounts" {

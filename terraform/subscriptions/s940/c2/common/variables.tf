@@ -1,4 +1,4 @@
 variable "resource_groups" {
   type    = list(string)
-  default = ["c2"]
+  default = ["common-c2"]
 }
