@@ -19,29 +19,37 @@ variable "storageaccounts" {
     change_feed_enabled      = optional(bool, false)
     versioning_enabled       = optional(bool, false)
     roleassignment           = optional(map(object({ backup = optional(bool, false) })))
-    #roleassignment          = optional(map(object({ roleassignment = { "Storage Account Backup Contributor" = { backup = optional(bool, true) }} })))
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
     firewall                 = optional(bool, true)
   }))
   default = {
-    diagnostics = {
-      name = "diagnostics"
+    log = {
+      name = "log"
       # roleassignment = {
       #   "Storage Account Backup Contributor" = {
       #     backup = true
       #   }
       # }
+    },
+    velero = {
+      name = "velero"
+      account_replication_type = "GRS"
+      roleassignment = {
+        "Storage Account Backup Contributor" = {
+          backup = true
+        }
+      }
     }
-    # terraform = {
-    #   name                     = "terraform"
-    #   account_replication_type = "RAGRS"
-    #   private_endpoint         = true
-    #   roleassignment = {
-    #     "Storage Account Backup Contributor" = {
-    #       backup = true
-    #     }
-    #   }
-    # }
   }
 }
+
+#Template
+# template = {
+#     name = "log"
+#     roleassignment = {
+#       "Storage Account Backup Contributor" = {
+#         backup = true
+#       }
+#     }
+#     }

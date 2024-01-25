@@ -4,6 +4,12 @@ locals {
     virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
   }
 
+  flattened_roleassignment = {
+    for key, value in var.storageaccounts : key => {
+      backup = false
+    }
+  }
+
   ## Backend Config
   backend = {
     resource_group_name  = "s941-tfstate"

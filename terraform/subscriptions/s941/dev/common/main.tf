@@ -24,10 +24,11 @@ module "backupvault" {
 #   local_authentication_disabled = false
 # }
 
+
 module "storageaccount" {
   source                   = "../../../modules/storageaccount"
   for_each                 = var.storageaccounts
-  name                     = "${local.external_outputs.global.data.subscription_shortname}${each.key}${local.outputs.enviroment_S}"
+  name                     = "radix${each.key}${local.outputs.enviroment}"
   tier                     = each.value.account_tier
   account_replication_type = each.value.account_replication_type
   resource_group_name      = each.value.resource_group_name
@@ -36,7 +37,8 @@ module "storageaccount" {
   kind                     = each.value.kind
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
-  roleassignment           = each.value.roleassignment
+  # roleassignment           = each.value.roleassignment
+  roleassignment          =  local.flattened_roleassignment
   principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
