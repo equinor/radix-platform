@@ -1,3 +1,12 @@
+
+module "resourcegroups" {
+  for_each = toset(var.resource_groups)
+  source   = "../../../modules/resourcegroups"
+  name     = each.value
+  location = local.outputs.location
+}
+
+
 module "nsg" {
   source                     = "../../../modules/networksecuritygroup"
   for_each                   = local.flattened_clusters

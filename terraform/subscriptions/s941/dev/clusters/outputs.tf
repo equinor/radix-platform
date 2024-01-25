@@ -1,3 +1,3 @@
 output "data" {
-  value = local.output
+  value = local.outputs
 }

@@ -1,7 +1,7 @@
 locals {
   outputs = {
-    enviroment      = "prod"
-    resource_group  = "clusters"
+    enviroment      = "extmon"
+    resource_group  = "clusters-extmon"
     location        = "northeurope"
     backup_location = "westeurope"
   }
