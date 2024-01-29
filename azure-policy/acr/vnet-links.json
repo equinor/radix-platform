@@ -1,18 +1,5 @@
 {
-  "parameters": {
-    "effect": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Effect",
-        "description": "Enable or disable the execution of the policy"
-      },
-      "allowedValues": [
-        "DeployIfNotExists",
-        "Disabled"
-      ],
-      "defaultValue": "DeployIfNotExists"
-    }
-  },
+  "mode": "Indexed",
   "policyRule": {
     "if": {
       "allOf": [
@@ -22,15 +9,70 @@
         }
       ]
     },
-
     "then": {
-      "effect": "[parameters('effect')]",
+      "effect": "deployIfNotExists",
       "details": {
-        "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-        "roleDefinitionIds": [
-          "/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7"
-        ]
-        ""
+        "type": "Microsoft.Network/privateDnsZones/privateLinks",
+        "existenceCondition": {
+          "allOf": [
+            {
+              "field": "Microsoft.Network/privateDnsZones/privateLinks/virtualNetworks[*]",
+              "equals": "[parameters('virtualNetworkId')]"
+            }
+          ]
+        },
+        "deployment": {
+          "properties": {
+            "mode": "incremental",
+            "template": {
+              "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "resources": [
+                {
+                  "type": "Microsoft.Network/privateDnsZones/privateLinks",
+                  "name": "[concat(parameters('privateDnsZoneName'), '/', parameters('virtualNetworkName'))]",
+                  "apiVersion": "2020-05-01",
+                  "properties": {
+                    "virtualNetwork": {
+                      "id": "[parameters('virtualNetworkId')]"
+                    }
+                  }
+                }
+              ]
+            },
+            "parameters": {
+              "privateDnsZoneName": {
+                "type": "string"
+              },
+              "virtualNetworkName": {
+                "type": "string"
+              },
+              "virtualNetworkId": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "parameters": {
+    "virtualNetworkId": {
+      "type": "string",
+      "metadata": {
+        "description": "The ID of the virtual network to create the private link for."
+      }
+    },
+    "privateDnsZoneName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the private DNS zone to create the private link in."
+      }
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the virtual network to create the private link for."
       }
     }
   }
