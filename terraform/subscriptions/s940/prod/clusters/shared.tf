@@ -1,5 +1,5 @@
 locals {
-  output = {
+  outputs = {
     enviroment      = "prod"
     resource_group  = "clusters"
     location        = "northeurope"
