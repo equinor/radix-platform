@@ -5,3 +5,4 @@ locals {
     enviroment     = "platform"
   }
 }
+

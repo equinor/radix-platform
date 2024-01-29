@@ -15,14 +15,14 @@ module "backupvault" {
   depends_on            = [module.resourcegroups]
 }
 
-# module "loganalytics" {
-#   source                        = "../../../modules/log-analytics"
-#   workspace_name                = "${local.external_outputs.global.data.subscription_shortname}-diagnostics-${local.outputs.enviroment_L}"
-#   resource_group_name           = "${local.external_outputs.global.data.subscription_shortname}-${local.outputs.enviroment_L}"
-#   location                      = local.outputs.location
-#   retention_in_days             = 30
-#   local_authentication_disabled = false
-# }
+module "loganalytics" {
+  source                        = "../../../modules/log-analytics"
+  workspace_name                = "radix-logs-${local.outputs.enviroment}"
+  resource_group_name           = "common-${local.outputs.enviroment}"
+  location                      = local.outputs.location
+  retention_in_days             = 30
+  local_authentication_disabled = false
+}
 
 
 module "storageaccount" {
@@ -37,8 +37,7 @@ module "storageaccount" {
   kind                     = each.value.kind
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
-  # roleassignment           = each.value.roleassignment
-  roleassignment          =  local.flattened_roleassignment
+  backup                   = each.value.backup
   principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id

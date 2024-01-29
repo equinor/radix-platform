@@ -74,21 +74,21 @@ variable "principal_id" {
   type        = string
 }
 
-variable "roleassignment" {
-  description = "Other role assignments to be added to this key vault"
-  type = map(object({
-    backup = bool
-  }))
-  default = {}
-}
+# variable "roleassignment" {
+#   description = "Other role assignments to be added to this key vault"
+#   type = map(object({
+#     backup = bool
+#   }))
+#   default = {}
+# }
 
-variable "backupinstanceblobstorage" {
-  description = "Other role assignments to be added to this key vault"
-  type = map(object({
-    backup = bool
-  }))
-  default = {}
-}
+# variable "backupinstanceblobstorage" {
+#   description = "Other role assignments to be added to this key vault"
+#   type = map(object({
+#     backup = bool
+#   }))
+#   default = {}
+# }
 
 variable "vault_id" {
   description = "The ID of the Backup Vault"
@@ -120,4 +120,9 @@ variable "firewall" {
   type        = bool
   default     = true
 
+}
+
+variable "backup" {
+  description = "Enable backup"
+  type        = bool
 }

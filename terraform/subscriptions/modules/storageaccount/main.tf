@@ -49,22 +49,21 @@ resource "azurerm_storage_account" "storageaccount" {
 # ###
 
 resource "azurerm_role_assignment" "roleassignment" {
-  for_each = {
-    for key in compact([for key, value in var.roleassignment : value.backup && var.kind == "StorageV2" ? key : ""]) : key =>
-    var.roleassignment[key]
-  }
+  for_each = var.backup && var.kind == "StorageV2" ? { "${var.name}" : true } : {}
+
   scope                = azurerm_storage_account.storageaccount.id
-  role_definition_name = each.key
+  role_definition_name = "Storage Account Backup Contributor"
   principal_id         = var.principal_id
   depends_on           = [azurerm_storage_account.storageaccount]
 }
+
 
 ######################################################################################
 ## Blob Protection
 ##
 
 resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceblobstorage" {
-  for_each           = { for key in compact([for key, value in var.roleassignment : value.backup && var.kind == "StorageV2" ? key : ""]) : key => var.roleassignment[key] }
+  for_each           = var.backup && var.kind == "StorageV2" ? { "${var.name}" : true } : {}
   name               = azurerm_storage_account.storageaccount.name
   vault_id           = var.vault_id
   location           = var.location
