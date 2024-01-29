@@ -10,6 +10,7 @@ locals {
     resource_group_name  = "common-extmon"
     storage_account_name = "radixstateextmon"
     container_name       = "infrastructure"
+    subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   }
 }
 ### Remote States
