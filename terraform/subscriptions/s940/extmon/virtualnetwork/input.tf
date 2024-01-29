@@ -6,7 +6,7 @@ locals {
   }
 
   ## Backend Config
-    backend = {
+  backend = {
     resource_group_name  = "common-extmon"
     storage_account_name = "radixstateextmon"
     container_name       = "infrastructure"
@@ -34,5 +34,5 @@ data "terraform_remote_state" "global" {
     resource_group_name  = "s940-tfstate"
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
-    key = "prod/globals/terraform.tfstate" }
+  key = "prod/globals/terraform.tfstate" }
 }

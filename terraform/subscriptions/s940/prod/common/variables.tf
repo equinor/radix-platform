@@ -21,15 +21,15 @@ variable "storageaccounts" {
   }))
   default = {
     log = {
-      name = "log"
+      name                     = "log"
       account_replication_type = "ZRS"
-      backup = true
+      backup                   = true
 
     },
     velero = {
-      name = "velero"
+      name                     = "velero"
       account_replication_type = "GRS"
-      backup = true
+      backup                   = true
     }
   }
 }
