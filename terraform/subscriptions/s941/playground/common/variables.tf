@@ -14,14 +14,17 @@ variable "storageaccounts" {
     kind                     = optional(string, "StorageV2")
     change_feed_enabled      = optional(bool, false)
     versioning_enabled       = optional(bool, false)
-    roleassignment           = optional(map(object({ backup = optional(bool, false) })))
+    backup                   = optional(bool, false)
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
     firewall                 = optional(bool, true)
   }))
   default = {
-    radixlog = {
-      name = "radixlog"
+    log = {
+      name = "log"
+    },
+    velero = {
+      name = "velero"
     }
   }
 }

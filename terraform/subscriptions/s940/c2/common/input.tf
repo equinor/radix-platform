@@ -1,7 +1,7 @@
 locals {
   external_outputs = {
-    global = data.terraform_remote_state.global.outputs
-    # virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
+    global         = data.terraform_remote_state.global.outputs
+    virtualnetwork = data.terraform_remote_state.virtualnetwork.outputs
   }
 
   backend = {
@@ -16,4 +16,11 @@ data "terraform_remote_state" "global" {
   config = merge(
     local.backend,
   { key = "prod/globals/terraform.tfstate" })
+}
+
+data "terraform_remote_state" "virtualnetwork" {
+  backend = "azurerm"
+  config = merge(
+    local.backend,
+  { key = "c2/virtualnetwork/terraform.tfstate" })
 }
