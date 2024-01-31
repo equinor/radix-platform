@@ -1,30 +1,14 @@
 {
-  "name": "1ef5dbf9-dbc7-43fc-8847-e887f76e67a0",
-  "type": "Microsoft.Authorization/policyDefinitions",
-  "properties": {
-    "displayName": "Create Private DNS Zone Virtual Network Link to Virtual Networks if not available",
-    "description": "Create Private DNS Zone Virtual Network Link to Virtual Networks if not available",
-    "metadata": {
-      "category": "Network",
-      "version": "1.0.0"
-    },
     "mode": "All",
     "parameters": {
       "virtualNetworkResourceId": {
         "defaultValue": [],
         "metadata": {
           "description": "Resource Ids of a vNet to link. The format must be: '/subscriptions/{subscription id}/resourceGroups/{resourceGroup name}/providers/Microsoft.Network/virtualNetworks/{virtual network name}",
-          "displayName": "Vnet Resource IDs"
+          "displayName": "Vnet Resource IDs",
+          "strongType": "Microsoft.Network/virtualNetworks"
         },
-        "type": "array"
-      },
-      "registrationEnabled": {
-        "defaultValue": false,
-        "metadata": {
-          "description": "Enables automatic DNS registration in the zone for the linked vNet.",
-          "displayName": "Enable Registration"
-        },
-        "type": "Boolean"
+        "type": "Array"
       },
       "effect": {
         "type": "String",
@@ -72,9 +56,6 @@
                 },
                 "virtualNetworkResourceId": {
                   "value": "[parameters('virtualNetworkResourceId')]"
-                },
-                "registrationEnabled": {
-                  "value": "[parameters('registrationEnabled')]",
                 }
               },
               "template": {
@@ -86,9 +67,6 @@
                   },
                   "virtualNetworkResourceId": {
                     "type": "array"
-                  },
-                  "registrationEnabled": {
-                    "type": "bool"
                   }
                 },
                 "resources": [
@@ -102,7 +80,7 @@
                       "count": "[length(parameters('virtualNetworkResourceId'))]"
                     },
                     "properties": {
-                      "registrationEnabled": "[parameters('registrationEnabled')]",
+                      "registrationEnabled": false,
                       "virtualNetwork": {
                         "id": "[parameters('virtualNetworkResourceId')[copyIndex()]]"
                       }
@@ -120,5 +98,4 @@
         "effect": "[parameters('effect')]"
       }
     }
-  }
 }

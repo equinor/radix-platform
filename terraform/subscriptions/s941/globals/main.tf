@@ -5,16 +5,25 @@ module "resourcegroups" {
   location = each.value.location
 }
 
+resource "azurerm_policy_definition" "create-private-dns-links" {
+  name         = "Radix-Create-PrivateDNS-private-links"
+  mode         = "All"
+  policy_type  = "Custom"
+  display_name = "Radix-Create-PrivateDNS-private-links"
+  parameters   = jsonencode(jsondecode(file("../../../../azure-policy/create-dns-links.json")).parameters)
+  policy_rule  = jsonencode(jsondecode(file("../../../../azure-policy/create-dns-links.json")).policyRule)
+}
+
 resource "azurerm_policy_definition" "policy" {
   name         = "Radix-Enforce-Diagnostics-AKS-Clusters"
   mode         = "All"
   policy_type  = "Custom"
   display_name = "Radix-Enforce-Diagnostics-AKS-Clusters"
-  parameters = jsonencode(
+  parameters   = jsonencode(
     {
       diagnosticSettingsName = {
         defaultValue = "setByRadixPolicy"
-        metadata = {
+        metadata     = {
           description = "Name of the diagnostic settings."
           displayName = "Setting name"
         }
@@ -32,7 +41,7 @@ resource "azurerm_policy_definition" "policy" {
       }
       workspaceIdFromAssignment = {
         defaultValue = ""
-        metadata = {
+        metadata     = {
           description = "workspaceid From Assignment."
           displayName = "workspaceIdFromAssignment"
         }
@@ -50,7 +59,7 @@ resource "azurerm_policy_definition" "policy" {
         details = {
           deployment = {
             properties = {
-              mode = "incremental"
+              mode       = "incremental"
               parameters = {
                 diagnosticSettingsName = {
                   value = "[parameters('diagnosticSettingsName')]"
@@ -72,7 +81,7 @@ resource "azurerm_policy_definition" "policy" {
                 "$schema"      = "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
                 contentVersion = "1.0.0.0"
                 outputs        = {}
-                parameters = {
+                parameters     = {
                   diagnosticSettingsName = {
                     type = "string"
                   }
