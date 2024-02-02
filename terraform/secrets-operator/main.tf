@@ -4,6 +4,15 @@ resource "azurerm_user_assigned_identity" "userassignedidentity" {
   resource_group_name = "common-dev"
 }
 
+resource "azurerm_federated_identity_credential" "github-push-master" {
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = "https://northeurope.oic.prod-aks.azure.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/68e8873d-cb09-42a6-b5a3-196d189353ab/"
+  name                = "operator-weekly-04"
+  parent_id           = azurerm_user_assigned_identity.userassignedidentity.id
+  resource_group_name = azurerm_user_assigned_identity.userassignedidentity.resource_group_name
+  subject             = "system:serviceaccount:external-secrets:workload-identity-sa"
+}
+
 provider "azurerm" {
   subscription_id = "16ede44b-1f74-40a5-b428-46cca9a5741b"
   features {}
