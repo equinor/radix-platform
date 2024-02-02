@@ -4,3 +4,4 @@
 - helm repo add external-secrets https://charts.external-secrets.io
 - helm install external-secrets ...
 - Lag ny Azure managed identity: radix-id-external-secrets-operator-dev
+    - K8S OIDC issuer URL: `az aks show -g clusters-development -n weekly-04 --query oidcIssuerProfile.issuerUrl -otsv`
