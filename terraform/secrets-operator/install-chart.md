@@ -1,11 +1,12 @@
 
 [https://external-secrets.io/v0.9.11/introduction/getting-started/](https://external-secrets.io/v0.9.11/introduction/getting-started/)
-
+https://external-secrets.io/latest/provider/azure-key-vault/
 - helm repo add external-secrets https://charts.external-secrets.io
 - helm install external-secrets ...
 - Lag ny Azure managed identity: radix-id-external-secrets-operator-dev
     - K8S OIDC issuer URL: `az aks show -g clusters-development -n weekly-04 --query oidcIssuerProfile.issuerUrl -otsv`
 
+- managed identiy client id : "b3f4e788-84bd-458e-9f49-d62f1c325a8d"
 
 
 

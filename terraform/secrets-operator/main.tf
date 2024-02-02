@@ -13,3 +13,20 @@ resource "azurerm_federated_identity_credential" "github-push-master" {
   subject             = "system:serviceaccount:external-secrets:workload-identity-sa"
 }
 
+
+data "azurerm_key_vault" "keyvault" {
+  name                = "radix-vault-dev"
+  resource_group_name = "common"
+}
+
+resource "azurerm_key_vault_access_policy" "keyvault-policy" {
+  key_vault_id = data.azurerm_key_vault.keyvault.id
+  object_id    = azurerm_user_assigned_identity.userassignedidentity.principal_id
+  tenant_id    = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+
+  secret_permissions = ["Get", "List"]
+}
+
+output "mi-client-id" {
+  value = azurerm_user_assigned_identity.userassignedidentity.client_id
+}
