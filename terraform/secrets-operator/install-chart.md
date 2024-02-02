@@ -17,14 +17,12 @@
 
 ```terraform
 resource "azurerm_federated_identity_credential" "github-push-master" {
-  for_each = toset(var.github-credentials)
-
   audience            = ["api://AzureADTokenExchange"]
-  issuer              = "https://token.actions.githubusercontent.com"
-  name                = "gh-radix-vulnerability-scanner-workflow-${each.key}"
+  issuer              = "https://northeurope.oic.prod-aks.azure.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/68e8873d-cb09-42a6-b5a3-196d189353ab/"
+  name                = "operator-wi"
   parent_id           = azurerm_user_assigned_identity.github.id
   resource_group_name = azurerm_resource_group.rg.name
-  subject             = "repo:equinor/radix-vulnerability-scanner:ref:refs/heads/${each.key}"
+  subject             = "system:serviceaccount:external-secrets:workload-identity-sa"
 }
 
 ```
