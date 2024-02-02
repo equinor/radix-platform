@@ -11,7 +11,7 @@ resource "azurerm_mssql_server" "sqlserver" {
   name                          = var.server_name
   resource_group_name           = var.rg_name
   tags                          = var.tags
-  version                       = var.version
+  version                       = var.server_version
   public_network_access_enabled = false
 
   azuread_administrator {

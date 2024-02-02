@@ -1,7 +1,8 @@
 variable "administrator_login" {
   default = "radix"
   type    = string
-}variable "administrator_password" {
+}
+variable "administrator_password" {
   type    = string
 }
 variable "admin_adgroup" {
@@ -21,7 +22,7 @@ variable "server_name" {
 variable "rg_name" {
   type = string
 }
-variable "version" {
+variable "server_version" {
   default = "12.0"
   type    = string
 }
