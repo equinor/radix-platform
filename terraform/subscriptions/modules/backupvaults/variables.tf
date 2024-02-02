@@ -5,13 +5,16 @@ variable "name" {
 
 variable "resource_group_name" {
   description = "The name of the Resource Group where the Backup Vault should exist"
+  type        = string
 }
 
 variable "location" {
   description = "The Azure Region where the Backup Vault should exist."
+  type        = string
 }
 
 variable "policyblobstoragename" {
-  description = "he name which should be used for this Backup Policy Blob Storage."
+  description = "The name which should be used for this Backup Policy Blob Storage."
+  type        = string
 
 }

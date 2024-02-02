@@ -74,22 +74,6 @@ variable "principal_id" {
   type        = string
 }
 
-# variable "roleassignment" {
-#   description = "Other role assignments to be added to this key vault"
-#   type = map(object({
-#     backup = bool
-#   }))
-#   default = {}
-# }
-
-# variable "backupinstanceblobstorage" {
-#   description = "Other role assignments to be added to this key vault"
-#   type = map(object({
-#     backup = bool
-#   }))
-#   default = {}
-# }
-
 variable "vault_id" {
   description = "The ID of the Backup Vault"
   type        = string
@@ -101,12 +85,14 @@ variable "policyblobstorage_id" {
 }
 
 variable "subnet_id" {
-  type = string
+  description = "A list of virtual network subnet ids to secure the storage account."
+  type        = string
 
 }
 
 variable "vnethub_resource_group" {
-  type = string
+  description = "Specifies the resource group where the DNS Zone (parent resource) exists"
+  type        = string
 }
 
 variable "priv_endpoint" {

@@ -1,8 +1,20 @@
-module "resourcegroups" {
-  for_each = toset(var.resource_groups)
-  source   = "../../../modules/resourcegroups"
-  name     = each.value
-  location = local.outputs.location
+module "resourcegroups_ver1" {
+  for_each             = var.resource_groups_ver1
+  source               = "../../../modules/resourcegroups_ver1"
+  name                 = each.value.name
+  location             = local.outputs.location
+  roleassignment       = each.value.roleassignment
+  principal_id         = module.mi.data.principal_id
+  role_definition_name = each.value.role_definition_name
+
+}
+
+module "mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "id-radix-infrastructure-${local.outputs.enviroment}"
+  location            = local.outputs.location
+  resource_group_name = "common-${local.outputs.enviroment}"
+
 }
 
 module "backupvault" {
@@ -11,7 +23,7 @@ module "backupvault" {
   resource_group_name   = "common-${local.outputs.enviroment}"
   location              = local.outputs.location
   policyblobstoragename = "Backuppolicy-blob"
-  depends_on            = [module.resourcegroups]
+  depends_on            = [module.resourcegroups_ver1]
 }
 
 module "loganalytics" {
