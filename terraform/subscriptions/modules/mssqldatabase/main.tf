@@ -30,4 +30,22 @@ resource "azurerm_mssql_database" "mssql_database" {
   sku_name       = var.sku_name
   zone_redundant = var.zone_redundant
   tags           = var.tags
+  depends_on = [ azurerm_mssql_server.sqlserver ]
+  long_term_retention_policy {
+    monthly_retention = "PT0S"
+    week_of_year      = 1
+    weekly_retention  = "PT0S"
+    yearly_retention  = "PT0S"
+  }
+  short_term_retention_policy {
+    backup_interval_in_hours = 24
+    retention_days           = 7
+  }
+  threat_detection_policy {
+    disabled_alerts      = []
+    email_account_admins = "Disabled"
+    email_addresses      = []
+    retention_days       = 0
+    state                = "Disabled"
+  }
 }

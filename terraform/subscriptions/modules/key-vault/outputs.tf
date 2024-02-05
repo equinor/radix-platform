@@ -6,6 +6,12 @@ output "data" {
   }
 }
 
+output "kv" {
+  value = module.kv
+  
+}
+
+
 # output "vault_name" {
 #   description = "The name of this Key vault."
 #   value       = azurerm_key_vault.this.name

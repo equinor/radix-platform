@@ -4,5 +4,4 @@ output "data" {
 
 output "vault_id" {
   value = module.keyvault.data.vault_id
-
 }
