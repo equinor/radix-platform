@@ -26,6 +26,10 @@ variable "server_version" {
   default = "12.0"
   type    = string
 }
+variable "public_network_access_enabled" {
+  default = false
+  type = bool
+}
 variable "azuread_authentication_only" {
   default = false
   type    = bool

@@ -12,7 +12,7 @@ resource "azurerm_mssql_server" "sqlserver" {
   resource_group_name           = var.rg_name
   tags                          = var.tags
   version                       = var.server_version
-  public_network_access_enabled = false
+  public_network_access_enabled = var.public_network_access_enabled
 
   azuread_administrator {
     login_username              = data.azuread_group.developers.display_name
