@@ -8,7 +8,7 @@ output "data" {
 
 output "kv" {
   value = module.kv
-  
+
 }
 
 

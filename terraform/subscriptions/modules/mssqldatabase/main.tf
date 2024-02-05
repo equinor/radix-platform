@@ -30,7 +30,7 @@ resource "azurerm_mssql_database" "mssql_database" {
   sku_name       = var.sku_name
   zone_redundant = var.zone_redundant
   tags           = var.tags
-  depends_on = [ azurerm_mssql_server.sqlserver ]
+  depends_on     = [azurerm_mssql_server.sqlserver]
   long_term_retention_policy {
     monthly_retention = "PT0S"
     week_of_year      = 1
