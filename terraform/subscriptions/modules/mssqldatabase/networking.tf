@@ -9,7 +9,7 @@ data "azurerm_subnet" "subnet" {
 resource "azurerm_private_endpoint" "endpoint" {
   name                = "pe-${var.server_name}"
   location            = var.location
-  resource_group_name = var.rg_name #TODO: Burde denne ligge i samme ressursgruppe som mssql server, eller som dns sonen?
+  resource_group_name = var.rg_name #TODO:  Flytt til common-dev-vnet-xxx
   subnet_id           = data.azurerm_subnet.subnet.id
 
   private_service_connection {
