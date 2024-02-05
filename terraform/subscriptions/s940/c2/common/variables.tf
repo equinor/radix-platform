@@ -1,6 +1,25 @@
-variable "resource_groups" {
-  type    = list(string)
-  default = ["common-c2"]
+# variable "resource_groups" {
+#   type    = list(string)
+#   default = ["common-c2"]
+# }
+
+variable "resource_groups_ver1" {
+  description = "Resource groups ver1"
+  type = map(object({
+    name                 = string
+    roleassignment       = optional(bool, false)
+    role_definition_name = optional(string, "")
+    principal_id         = optional(string, "")
+
+  }))
+  default = {
+    common-c2 = {
+      name                 = "common-c2"
+      roleassignment       = true
+      role_definition_name = "Log Analytics Contributor"
+    }
+  }
+
 }
 
 variable "storageaccounts" {
