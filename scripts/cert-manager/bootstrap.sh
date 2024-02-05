@@ -195,6 +195,16 @@ kubectl create namespace cert-manager \
 
 # Create secret for flux
 
+# TODO: Remove boostrap of cert-manager-helm-secret secret
+echo "ingressShim:
+  defaultIssuerName: ${CERT_ISSUER}
+  defaultIssuerKind: ClusterIssuer" > config
+kubectl create secret generic cert-manager-helm-secret --namespace cert-manager \
+    --from-file=./config \
+    --dry-run=client -o yaml |
+    kubectl apply -f -
+rm -f config
+
 DNS_SP="$(az keyvault secret show \
     --vault-name $AZ_RESOURCE_KEYVAULT \
     --name $APP_REGISTRATION_CERT_MANAGER \
