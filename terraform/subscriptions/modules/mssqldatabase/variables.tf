@@ -72,3 +72,10 @@ variable "virtual_network" {
   type = string
   default = "vnet-hub"
 }
+
+variable "admin_federated_credentials" {
+  type = map(object({
+    issuer = string
+    subject = string
+  }))
+}

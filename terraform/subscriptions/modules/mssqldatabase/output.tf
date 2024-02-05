@@ -1,4 +1,4 @@
 output "admin_adgroup" {
   description = "Admin AD Group Display Name"
-  value       = data.azuread_group.developers.display_name
+  value       = data.azuread_group.admin.display_name
 }
