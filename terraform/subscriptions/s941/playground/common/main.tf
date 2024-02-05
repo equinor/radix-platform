@@ -1,10 +1,3 @@
-# module "resourcegroups" {
-#   for_each = toset(var.resource_groups)
-#   source   = "../../../modules/resourcegroups"
-#   name     = each.value
-#   location = local.outputs.location
-# }
-
 module "resourcegroups_ver1" {
   for_each             = var.resource_groups_ver1
   source               = "../../../modules/resourcegroups_ver1"
@@ -13,12 +6,11 @@ module "resourcegroups_ver1" {
   roleassignment       = each.value.roleassignment
   principal_id         = module.mi.data.principal_id
   role_definition_name = each.value.role_definition_name
-
 }
 
 module "mi" {
   source              = "../../../modules/userassignedidentity"
-  name                = "id-radix-infrastructure-${local.outputs.enviroment}"
+  name                = "radix-id-infrastructure-${local.outputs.enviroment}"
   location            = local.outputs.location
   resource_group_name = "common-${local.outputs.enviroment}"
 
@@ -63,3 +55,4 @@ module "storageaccount" {
   priv_endpoint            = each.value.private_endpoint
   firewall                 = each.value.firewall
 }
+

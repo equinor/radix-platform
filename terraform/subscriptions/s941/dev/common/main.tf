@@ -1,10 +1,3 @@
-# module "resourcegroups" {
-#   for_each = toset(var.resource_groups)
-#   source   = "../../../modules/resourcegroups"
-#   name     = each.value
-#   location = local.outputs.location
-# }
-
 module "resourcegroups_ver1" {
   for_each             = var.resource_groups_ver1
   source               = "../../../modules/resourcegroups_ver1"
@@ -13,27 +6,15 @@ module "resourcegroups_ver1" {
   roleassignment       = each.value.roleassignment
   principal_id         = module.mi.data.principal_id
   role_definition_name = each.value.role_definition_name
-  # policyassignment     = each.value.policyassignment
-  # policy_name          = each.value.policy_name
-  # policy_definition_id = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/providers/Microsoft.Authorization/policyDefinitions/Radix-Enforce-Diagnostics-AKS-Clusters"
-
 }
 
 module "mi" {
   source              = "../../../modules/userassignedidentity"
-  name                = "id-radix-infrastructure-${local.outputs.enviroment}"
+  name                = "radix-id-infrastructure-${local.outputs.enviroment}"
   location            = local.outputs.location
   resource_group_name = "common-${local.outputs.enviroment}"
 
 }
-
-# module "policyassignment_resourcegroup" {
-#   source = "../../../modules/policyassignment_resourcegroup"
-#   name = "Radix-Enforce-Diagnostics-AKS-Clusters"
-#   resource_group_id =  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev"
-#   policy_definition_id = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/providers/Microsoft.Authorization/policyDefinitions/Radix-Enforce-Diagnostics-AKS-Clusters"
-#   # identity  = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-radix-infrastructure-dev"]
-# }
 
 module "backupvault" {
   source                = "../../../modules/backupvaults"
@@ -52,7 +33,6 @@ module "loganalytics" {
   retention_in_days             = 30
   local_authentication_disabled = false
 }
-
 
 module "storageaccount" {
   source                   = "../../../modules/storageaccount"

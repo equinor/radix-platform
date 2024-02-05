@@ -12,7 +12,7 @@ module "resourcegroups" {
   location = each.value.location
 }
 
-resource "azurerm_policy_definition" "policy" {
+resource "azurerm_policy_definition" "policy_aks_cluster" {
   name         = "Radix-Enforce-Diagnostics-AKS-Clusters"
   mode         = "All"
   policy_type  = "Custom"
