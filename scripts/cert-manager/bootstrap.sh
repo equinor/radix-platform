@@ -92,11 +92,6 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$RADIX_WILDCARD_CERTIFICATE_ISSUER" ]]; then
-    echo "ERROR: Please provide RADIX_WILDCARD_CERTIFICATE_ISSUER" >&2
-    exit 1
-fi
-
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -149,7 +144,6 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  CERT_ISSUER                       : $CERT_ISSUER"
-echo -e "   -  RADIX_WILDCARD_CERTIFICATE_ISSUER : $RADIX_WILDCARD_CERTIFICATE_ISSUER"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -221,7 +215,6 @@ metadata:
 type: Opaque
 stringData:
   CERT_ISSUER: ${CERT_ISSUER}
-  RADIX_WILDCARD_CERTIFICATE_ISSUER: ${RADIX_WILDCARD_CERTIFICATE_ISSUER}
   AZ_RESOURCE_DNS: ${AZ_RESOURCE_DNS}
   ACME_URL: ${ACME_URL}
   DNS_SP_ID: ${DNS_SP_ID}
