@@ -24,7 +24,7 @@ data "terraform_remote_state" "common" {
   backend = "azurerm"
   config = merge(
     local.backend,
-  { key = "dev/common/terraform.tfstate" })
+  { key = "playground/common/terraform.tfstate" })
 }
 
 data "terraform_remote_state" "global" {

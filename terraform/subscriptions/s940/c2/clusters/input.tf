@@ -13,10 +13,10 @@ locals {
     }
   }
   backend = {
-    resource_group_name  = "s941-tfstate"
-    storage_account_name = "s941radixinfra"
+    resource_group_name  = "s940-tfstate"
+    storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
-    subscription_id      = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+    subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   }
 }
 
@@ -24,13 +24,13 @@ data "terraform_remote_state" "common" {
   backend = "azurerm"
   config = merge(
     local.backend,
-  { key = "dev/common/terraform.tfstate" })
+  { key = "c2/common/terraform.tfstate" })
 }
 
 data "terraform_remote_state" "global" {
   backend = "azurerm"
   config = merge(
     local.backend,
-  { key = "dev/globals/terraform.tfstate" })
+  { key = "prod/globals/terraform.tfstate" })
 }
 
