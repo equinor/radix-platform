@@ -219,6 +219,14 @@ locals {
           "Get",
         ]
         tenant_id = local.external_outputs.global.data.tenant_id
+      },
+      {
+        object_id = "77afc085-6b69-495a-a756-45cefdbfdd80"
+        secret_permissions = [
+          "Get",
+          "List",
+        ]
+        tenant_id = local.external_outputs.global.data.tenant_id
       }
     ]
   }
