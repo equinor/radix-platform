@@ -3,7 +3,7 @@ variable "administrator_login" {
   type    = string
 }
 variable "administrator_password" {
-  type    = string
+  type = string
 }
 variable "admin_adgroup" {
   type = string
@@ -28,14 +28,14 @@ variable "server_version" {
 }
 variable "public_network_access_enabled" {
   default = false
-  type = bool
+  type    = bool
 }
 variable "azuread_authentication_only" {
   default = false
   type    = bool
 }
 variable "env" {
-  type = string
+  type        = string
   description = "dev, playground, c2 or prod"
 }
 
@@ -69,13 +69,13 @@ variable "tags" {
 }
 
 variable "virtual_network" {
-  type = string
+  type    = string
   default = "vnet-hub"
 }
 
 variable "admin_federated_credentials" {
   type = map(object({
-    issuer = string
+    issuer  = string
     subject = string
   }))
 }
