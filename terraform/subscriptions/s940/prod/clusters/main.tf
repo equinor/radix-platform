@@ -6,6 +6,13 @@ module "resourcegroups" {
   location = local.outputs.location
 }
 
+module "radix_id_external_secrets_operator_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-external-secrets-operator-${local.external_outputs.common.data.enviroment}"
+  location            = local.outputs.location
+  resource_group_name = "common-${local.external_outputs.common.data.enviroment}"
+
+}
 module "policyassignment_resourcegroup" {
   for_each             = module.resourcegroups
   source               = "../../../modules/policyassignment_resourcegroup"

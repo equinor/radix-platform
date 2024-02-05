@@ -1,8 +1,13 @@
-output "data" {
-  description = "The ID of this Log Analytics workspace."
-  value = {
-    "workspace_id" = module.la.workspace_id
-  }
+# output "data" {
+#   description = "The ID of this Log Analytics workspace."
+#   value = {
+#     "workspace_id" = module.la.workspace_id
+#   }
+# }
+
+output "workspace_id" {
+  value = azurerm_log_analytics_workspace.this
+  
 }
 
 # output "workspace_customer_id" {
