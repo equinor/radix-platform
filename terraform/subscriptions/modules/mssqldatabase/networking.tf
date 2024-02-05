@@ -9,7 +9,7 @@ data "azurerm_subnet" "subnet" {
 resource "azurerm_private_endpoint" "endpoint" {
   name                = "pe-${var.server_name}"
   location            = var.location
-  resource_group_name = var.rg_name #TODO:  Flytt til common-dev-vnet-xxx
+  resource_group_name = "cluster-vnet-hub-${var.env}"
   subnet_id           = data.azurerm_subnet.subnet.id
 
   private_service_connection {
