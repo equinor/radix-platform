@@ -23,7 +23,7 @@ module "mssql-database" {
   administrator_password        = data.azurerm_key_vault_secret.keyvault_secrets.value
   rg_name                       = module.resourcegroup.data.name
   location                      = local.external_outputs.common.data.location
-  public_network_access_enabled = true
+  public_network_access_enabled = false
   zone_redundant                = false
   tags = {
     displayName = "SqlServer"
@@ -40,10 +40,6 @@ module "mssql-database" {
     github-release = {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
-    }
-    test = {
-      issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:pull_request"
     }
   }
 }
