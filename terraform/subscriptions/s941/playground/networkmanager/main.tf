@@ -12,7 +12,7 @@ module "azurerm_network_manager_connectivity_configuration" {
   enviroment         = local.external_outputs.common.data.enviroment_S
   network_manager_id = local.external_outputs.networkmanager.data.id
   network_group_id   = module.azurerm_network_manager_network_group.data.id
-  vnethub_id         = local.external_outputs.virtualnetwork.data.id
+  vnethub_id         = local.external_outputs.virtualnetwork.data.vnet_hub.id
 }
 
 resource "azurerm_policy_definition" "policy" {
@@ -64,19 +64,19 @@ METADATA
   POLICY_RULE
 }
 
-module "azurerm_subscription_policy_assignment" {
-  source       = "../../../modules/policyassignment"
-  enviroment   = local.external_outputs.common.data.enviroment_S
-  location     = local.external_outputs.common.data.location
-  policy_id    = azurerm_policy_definition.policy.id
-  subscription = data.azurerm_subscription.current.id
-}
+# module "azurerm_subscription_policy_assignment" {
+#   source       = "../../../modules/policyassignment"
+#   enviroment   = local.external_outputs.common.data.enviroment_S
+#   location     = local.external_outputs.common.data.location
+#   policy_id    = azurerm_policy_definition.policy.id
+#   subscription = data.azurerm_subscription.current.id
+# }
 
-module "network_publicipprefix" {
-  for_each            = local.flattened_publicipprefix
-  source              = "../../../modules/network_publicipprefix"
-  publicipprefixname  = "ippre-${each.key}-aks-${local.external_outputs.common.data.enviroment_L}-${local.external_outputs.common.data.location}-001"
-  location            = local.external_outputs.common.data.location
-  resource_group_name = local.external_outputs.common.data.resource_group
-  zones               = each.value.zones
-}
+# module "network_publicipprefix" {
+#   for_each            = local.flattened_publicipprefix
+#   source              = "../../../modules/network_publicipprefix"
+#   publicipprefixname  = "ippre-${each.key}-aks-${local.external_outputs.common.data.enviroment_L}-${local.external_outputs.common.data.location}-001"
+#   location            = local.external_outputs.common.data.location
+#   resource_group_name = local.external_outputs.common.data.resource_group
+#   zones               = each.value.zones
+# }
