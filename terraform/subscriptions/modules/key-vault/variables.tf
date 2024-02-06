@@ -1,3 +1,9 @@
+variable "tenant_id" {
+  description = "Tenant ID"
+  type        = string
+
+}
+
 variable "vault_name" {
   description = "The name of this Key vault."
   type        = string
