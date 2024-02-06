@@ -67,6 +67,10 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+variable "database_tags" {
+  type    = map(string)
+  default = {}
+}
 
 variable "virtual_network" {
   type    = string
