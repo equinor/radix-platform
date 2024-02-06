@@ -9,3 +9,7 @@ output "mi_id" {
 output "workspace_id" {
   value = module.loganalytics.data.workspace_id
 }
+
+output "environment" {
+  value = local.outputs.enviroment
+}
