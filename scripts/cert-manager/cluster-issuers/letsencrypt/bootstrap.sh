@@ -5,7 +5,7 @@
 ### PURPOSE
 ### 
 
-# Bootstrap secrets required by Flux to install cluster issuers for DigiCert ACME http01 and dns01
+# Bootstrap secrets required by Flux to install cluster issuer for Lets Encrypt ACME dns01
 
 
 #######################################################################################
@@ -26,22 +26,25 @@
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
+# - STAGING             : Use Lets Encrypt staging api? true/false. Default is false.
 
 
 #######################################################################################
 ### HOW TO USE
 ### 
 
-# Normal usage
-# RADIX_ZONE_ENV=../../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-49" ./bootstrap.sh
+# NORMAL
+# RADIX_ZONE_ENV=../../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
 
+# STAGING
+# RADIX_ZONE_ENV=../../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" STAGING=true ./bootstrap.sh
 
 #######################################################################################
 ### START
 ### 
 
 echo ""
-echo "Start bootstrap of DigiCert secrets for Flux... "
+echo "Start bootstrap of Lets Encrypt secrets for Flux... "
 
 
 #######################################################################################
@@ -50,9 +53,7 @@ echo "Start bootstrap of DigiCert secrets for Flux... "
 
 echo ""
 printf "Check for necessary executables... "
-hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2;  exit 1; }
 hash kubectl 2> /dev/null  || { echo -e "\nERROR: kubectl not found in PATH. Exiting..." >&2;  exit 1; }
-hash jq 2> /dev/null  || { echo -e "\nERROR: jq not found in PATH. Exiting..." >&2;  exit 1; }
 printf "All is good."
 echo ""
 
@@ -79,6 +80,11 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
+if [[ -z "$LETS_ENCRYPT_ACME_ACCOUNT_EMAIL" ]]; then
+    echo "ERROR: Please provide LETS_ENCRYPT_ACME_ACCOUNT_EMAIL" >&2
+    exit 1
+fi
+
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -87,6 +93,25 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
+fi
+
+# Optional inputs
+
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
+if [[ -z "$STAGING" ]]; then
+    STAGING=false
+fi
+
+# Script vars
+
+WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ $STAGING == false ]]; then
+    ACME_URL="https://acme-v02.api.letsencrypt.org/directory"
+else
+    ACME_URL="https://acme-staging-v02.api.letsencrypt.org/directory"
 fi
 
 #######################################################################################
@@ -104,12 +129,17 @@ printf "Done.\n"
 ###
 
 echo -e ""
-echo -e "Bootstrap of DigiCert secrets for Flux will use the following configuration:"
+echo -e "Bootstrap of Lets Encrypt secret for Flux will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  ACME_URL                         : $ACME_URL"
+echo -e "   -  LETS_ENCRYPT_ACME_ACCOUNT_EMAIL  : $LETS_ENCRYPT_ACME_ACCOUNT_EMAIL"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -150,36 +180,24 @@ printf "...Done.\n"
 verify_cluster_access
 
 #######################################################################################
-### Bootstrap Digicert external account secret for Flux
+### Bootstrap Lets Encrypt secret for Flux
 ###
 
 printf "\nCreating secret for Flux...\n"
 
 # Create secret for flux
-account_values="$(az keyvault secret show \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name $DIGICERT_EXTERNAL_ACCOUNT_KV_SECRET \
-    | jq '.value | fromjson')"
-
-# Set variables used in the manifest template
-kid="$(echo $account_values | jq -r '.accountKeyID')"
-hmac="$(echo $account_values | jq -r '.accountHMACKey')"
-email="$(echo $account_values | jq -r '.accountEmail')"
-server="$(echo $account_values | jq -r '.acmeServer')"
 
 cat <<EOF | kubectl apply -f - || exit
 apiVersion: v1
 kind: Secret
 metadata:
-  name: digicert-clusterissuer-flux-values
+  name: letsencrypt-clusterissuer-flux-values
   namespace: flux-system
 type: Opaque
 stringData:
-  accountKeyID: ${kid}
-  accountHMACKey: ${hmac}
-  accountEmail: ${email}
-  acmeServer: ${server}
+  accountEmail: ${LETS_ENCRYPT_ACME_ACCOUNT_EMAIL}
+  acmeServer: ${ACME_URL}
 EOF
 
 echo ""
-printf "Bootstrapping of DigiCert secrets for Flux done!\n"
+printf "Bootstrapping of Lets Encrypt secrets for Flux done!\n"

@@ -137,18 +137,18 @@ echo -e "Bootstrap of cert-manager will use the following configuration:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
-echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
-echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  CLUSTER_NAME                      : $CLUSTER_NAME"
+echo -e "   -  AZ_RESOURCE_DNS                   : $AZ_RESOURCE_DNS"
+echo -e "   -  RADIX_ZONE                        : $RADIX_ZONE"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CERT_ISSUER                      : $CERT_ISSUER"
+echo -e "   -  CERT_ISSUER                       : $CERT_ISSUER"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)"
-echo -e "   -  AZ_USER                          : $(az account show --query user.name -o tsv)"
+echo -e "   -  AZ_SUBSCRIPTION                   : $(az account show --query name -otsv)"
+echo -e "   -  AZ_USER                           : $(az account show --query user.name -o tsv)"
 echo -e ""
 
 echo ""
@@ -195,6 +195,7 @@ kubectl create namespace cert-manager \
 
 # Create secret for flux
 
+# TODO: Remove boostrap of cert-manager-helm-secret secret
 echo "ingressShim:
   defaultIssuerName: ${CERT_ISSUER}
   defaultIssuerKind: ClusterIssuer" > config
