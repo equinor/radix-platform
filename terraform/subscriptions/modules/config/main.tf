@@ -1,5 +1,5 @@
 variable "configfile" {
-  type = string
+  type    = string
   default = "../config.yaml"
 }
 

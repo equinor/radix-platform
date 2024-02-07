@@ -1,3 +1,7 @@
+module "config" {
+  source = "../../../modules/config"
+}
+
 module "resourcegroups_ver1" {
   for_each             = var.resource_groups_ver1
   source               = "../../../modules/resourcegroups_ver1"
