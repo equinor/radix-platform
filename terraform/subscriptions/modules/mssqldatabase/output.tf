@@ -5,7 +5,7 @@ output "admin_adgroup" {
 
 output "mi-admin" {
   value = {
-    name = azurerm_user_assigned_identity.admin.name
+    name      = azurerm_user_assigned_identity.admin.name
     client_id = azurerm_user_assigned_identity.admin.client_id
   }
 }
