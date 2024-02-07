@@ -21,8 +21,6 @@ variable "resource_groups_ver1" {
       role_definition_name = "Log Analytics Contributor"
       policyassignment     = true
       policy_name          = "Radix-Enforce-Diagnostics-AKS-Clusters"
-
-
     }
   }
 
