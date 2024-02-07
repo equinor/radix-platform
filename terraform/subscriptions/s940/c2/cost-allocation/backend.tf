@@ -12,7 +12,7 @@ terraform {
     resource_group_name  = "s940-tfstate"
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
-    key                  = "prod/vulnerability-scan/terraform.tfstate"
+    key                  = "c2/cost-allocation/terraform.tfstate"
   }
 }
 

@@ -1,11 +1,15 @@
+module "config" {
+  source = "../../../modules/config"
+}
+
 module "resourcegroup" {
-  source = "../../../modules/resourcegroups"
-  name     = "${var.resourse_group_name}-${local.external_outputs.common.data.enviroment}"
-  location = local.external_outputs.common.data.location
+  source   = "../../../modules/resourcegroups"
+  name     = "cost-allocation-${module.config.environment}"
+  location = module.config.location
 }
 data "azurerm_key_vault" "keyvault" {
-  name = "radix-vault-dev"
-  resource_group_name = "common"
+  name                = module.config.key_vault_name
+  resource_group_name = module.config.common_resource_group
 }
 data "azurerm_key_vault_secret" "keyvault_secrets" {
   name         = var.keyvault_dbadmin_secret_name
@@ -15,14 +19,14 @@ data "azurerm_key_vault_secret" "keyvault_secrets" {
 # MS SQL Server
 module "mssql-database" {
   source                        = "../../../modules/mssqldatabase"
-  env                           = local.external_outputs.common.data.enviroment
+  env                           = module.config.environment
   database_name                 = "sqldb-radix-cost-allocation"
-  server_name                   = "sql-radix-cost-allocation-${local.external_outputs.common.data.enviroment}"
+  server_name                   = "sql-radix-cost-allocation-${module.config.environment}"
   admin_adgroup                 = var.admin-adgroup
   administrator_login           = "radix"
   administrator_password        = data.azurerm_key_vault_secret.keyvault_secrets.value
   rg_name                       = module.resourcegroup.data.name
-  location                      = local.external_outputs.common.data.location
+  location                      = module.config.location
   public_network_access_enabled = true
   zone_redundant                = false
   tags = {

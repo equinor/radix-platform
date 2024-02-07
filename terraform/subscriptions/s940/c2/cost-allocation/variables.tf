@@ -1,9 +1,9 @@
 variable "admin-adgroup" {
   type    = string
-  default = "Radix SQL server admin - platform"
+  default = "Radix SQL server admin - c2"
 }
 
 variable "keyvault_dbadmin_secret_name" {
   type    = string
-  default = "radix-vulnerability-scan-db-admin"
+  default = "radix-cost-allocation-db-admin"
 }

@@ -5,5 +5,5 @@ variable "admin-adgroup" {
 
 variable "keyvault_dbadmin_secret_name" {
   type    = string
-  default = "radix-vulnerability-scan-db-admin"
+  default = "radix-cost-allocation-db-admin"
 }
