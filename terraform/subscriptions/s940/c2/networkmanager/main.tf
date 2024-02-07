@@ -12,7 +12,7 @@ module "azurerm_network_manager_connectivity_configuration" {
   enviroment         = local.external_outputs.clusters.data.enviroment
   network_manager_id = local.external_outputs.networkmanager.data.id
   network_group_id   = module.azurerm_network_manager_network_group.data.id
-  vnethub_id         = local.external_outputs.virtualnetwork.data.id
+  vnethub_id         = local.external_outputs.virtualnetwork.data.vnet_hub.id
 }
 
 resource "azurerm_policy_definition" "policy" {

@@ -1,8 +1,8 @@
 locals {
 
   log_analytics_workspace = {
-    name           = "log-key-vault"
-    resource_group = "Logs-Dev"
+    name           = "radix-logs-playground"
+    resource_group = "common-playground"
   }
 
   key_vault = {

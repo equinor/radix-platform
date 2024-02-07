@@ -5,6 +5,14 @@ module "resourcegroups" {
   location = local.outputs.location
 }
 
+module "mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-infrastructure-${local.outputs.enviroment}"
+  location            = local.outputs.location
+  resource_group_name = "common-${local.outputs.enviroment}"
+
+}
+
 module "backupvault" {
   source                = "../../../modules/backupvaults"
   name                  = "Backupvault-${local.outputs.enviroment}"

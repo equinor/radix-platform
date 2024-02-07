@@ -6,6 +6,14 @@ module "resourcegroups" {
   location = local.outputs.location
 }
 
+module "radix_id_external_secrets_operator_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-external-secrets-operator-${local.external_outputs.common.data.enviroment}"
+  location            = local.outputs.location
+  resource_group_name = "common-${local.external_outputs.common.data.enviroment}"
+
+}
+
 module "policyassignment_resourcegroup" {
   for_each             = module.resourcegroups
   source               = "../../../modules/policyassignment_resourcegroup"
@@ -18,7 +26,6 @@ module "policyassignment_resourcegroup" {
 
 }
 
-
 module "nsg" {
   source                     = "../../../modules/networksecuritygroup"
   for_each                   = local.flattened_clusters
@@ -27,3 +34,4 @@ module "nsg" {
   resource_group_name        = each.value.resource_group_name
   destination_address_prefix = each.value.destination_address_prefix
 }
+

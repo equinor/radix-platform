@@ -7,5 +7,5 @@ output "mi_id" {
 }
 
 output "workspace_id" {
-  value = module.loganalytics.data.workspace_id
+  value = module.loganalytics.workspace_id
 }
