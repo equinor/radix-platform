@@ -13,3 +13,30 @@ variable "sqlserver-operators-group" {
     c2       = "Radix SQL server admin - c2",
   }
 }
+
+variable "subscriptions" {
+  type = map(string)
+  default = {
+    s940 = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+    s941 = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+  }
+}
+
+variable "operator-roles" {
+  type = map(object({
+    role = string
+    subscription = string
+  }))
+  default = {
+    s940 =  {role = "Key Vault Secrets Officer", subscription : "s940"}
+  }
+}
+variable "developer-roles" {
+  type = map(object({
+    role = string
+    subscription = string
+  }))
+  default = {
+    s941 = { role = "Key Vault Secrets Officer", subscription : "s941" }
+  }
+}
