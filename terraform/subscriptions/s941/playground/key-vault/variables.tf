@@ -8,7 +8,7 @@ variable "keyvaults" {
     network_acls_default_action = optional(string, "Allow")
   }))
   default = {
-    radix-kv-playground = {
+    radix-keyv-playground = {
       enable_rbac_authorization = true
     }
   }

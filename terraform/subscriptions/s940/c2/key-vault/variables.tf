@@ -11,7 +11,7 @@ variable "keyvaults" {
     radix-vault-c2-prod = {
       resource_group = "common-westeurope"
     }
-    radix-kv-c2 = {
+    radix-keyv-c2 = {
       enable_rbac_authorization = true
     }
   }
