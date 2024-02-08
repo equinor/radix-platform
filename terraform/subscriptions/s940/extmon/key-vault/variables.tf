@@ -11,7 +11,7 @@ variable "keyvaults" {
     kv-radix-monitoring-prod = {
       resource_group = "monitoring"
     }
-    radix-kv-extmon = {
+    radix-keyv-extmon = {
       enable_rbac_authorization = true
     }
   }

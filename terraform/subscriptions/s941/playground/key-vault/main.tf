@@ -4,6 +4,11 @@ module "config" {
   source = "../../../modules/config"
 }
 
+# data "azurerm_user_assigned_identity" "mi_secrets_operator" {
+#   name                = "radix-id-external-secrets-operator-${module.config.environment}"
+#   resource_group_name = module.config.common_resource_group
+# }
+
 module "keyvault" {
   for_each            = var.keyvaults
   source              = "../../../modules/key-vault"

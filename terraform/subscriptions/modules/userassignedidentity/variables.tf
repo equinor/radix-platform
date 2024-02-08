@@ -12,3 +12,11 @@ variable "location" {
   description = "The Azure Region where the User Assigned Identity should exist."
   type        = string
 }
+
+variable "roleassignments" {
+  type = map(object({
+    role     = string
+    scope_id = string
+  }))
+  default = {}
+}

@@ -11,10 +11,10 @@ variable "keyvaults" {
     radix-vault-dev = {
       resource_group = "common"
     }
-    # radix-kv-dev = {
-    #   resource_group            = "common-dev"
-    #   enable_rbac_authorization = true
-    # }
+    radix-keyv-dev = {
+      resource_group            = "common-dev"
+      enable_rbac_authorization = true
+    }
   }
 
 }

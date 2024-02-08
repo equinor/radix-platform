@@ -11,7 +11,7 @@ variable "keyvaults" {
     radix-vault-prod = {
       resource_group = "common"
     }
-    radix-kv-platform = {
+    radix-keyv-platform = {
       enable_rbac_authorization = true
     }
   }
