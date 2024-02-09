@@ -26,7 +26,7 @@ module "mssql-database" {
   administrator_login           = "radix"
   administrator_password        = data.azurerm_key_vault_secret.keyvault_secrets.value
   rg_name                       = module.resourcegroup.data.name
-  vnet_resource_group = module.config.vnet_resource_group
+  vnet_resource_group           = module.config.vnet_resource_group
   location                      = module.config.location
   public_network_access_enabled = false
   zone_redundant                = false

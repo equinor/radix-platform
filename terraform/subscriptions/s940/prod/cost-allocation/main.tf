@@ -27,8 +27,8 @@ module "mssql-database" {
   administrator_password        = data.azurerm_key_vault_secret.keyvault_secrets.value
   rg_name                       = module.resourcegroup.data.name
   location                      = module.config.location
-  vnet_resource_group = module.config.vnet_resource_group
-  sku_name = "S3"
+  vnet_resource_group           = module.config.vnet_resource_group
+  sku_name                      = "S3"
   public_network_access_enabled = false
   zone_redundant                = false
   tags = {
