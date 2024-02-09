@@ -8,6 +8,9 @@ variable "administrator_password" {
 variable "admin_adgroup" {
   type = string
 }
+variable "managed_identity_admin_name" {
+  type = string
+}
 variable "location" {
   default = "northeurope"
   type    = string

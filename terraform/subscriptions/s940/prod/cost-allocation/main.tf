@@ -20,6 +20,7 @@ data "azurerm_key_vault_secret" "keyvault_secrets" {
 module "mssql-database" {
   source                        = "../../../modules/mssqldatabase"
   env                           = module.config.environment
+  managed_identity_admin_name   = "radix-id-cost-allocation-admin-platform"
   database_name                 = "sqldb-radix-cost-allocation"
   server_name                   = "sql-radix-cost-allocation-prod" # ${module.config.environment} # See https://github.com/equinor/radix-platform/issues/1186
   admin_adgroup                 = var.admin-adgroup

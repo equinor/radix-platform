@@ -4,7 +4,7 @@ data "azuread_group" "admin" {
 }
 
 resource "azurerm_user_assigned_identity" "admin" {
-  name                = "mi-${var.server_name}-admin-${var.env}"
+  name                = var.managed_identity_admin_name
   location            = var.location
   resource_group_name = var.rg_name
 }
