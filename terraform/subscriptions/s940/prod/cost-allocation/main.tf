@@ -21,12 +21,14 @@ module "mssql-database" {
   source                        = "../../../modules/mssqldatabase"
   env                           = module.config.environment
   database_name                 = "sqldb-radix-cost-allocation"
-  server_name                   = "sql-radix-cost-allocation-${module.config.environment}"
+  server_name                   = "sql-radix-cost-allocation-prod" # ${module.config.environment} # See https://github.com/equinor/radix-platform/issues/1186
   admin_adgroup                 = var.admin-adgroup
   administrator_login           = "radix"
   administrator_password        = data.azurerm_key_vault_secret.keyvault_secrets.value
   rg_name                       = module.resourcegroup.data.name
   location                      = module.config.location
+  vnet_resource_group = module.config.vnet_resource_group
+  sku_name = "S3"
   public_network_access_enabled = false
   zone_redundant                = false
   tags = {

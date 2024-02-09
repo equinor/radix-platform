@@ -38,7 +38,9 @@ variable "env" {
   type        = string
   description = "dev, playground, c2 or prod"
 }
-
+variable "vnet_resource_group" {
+  type = string
+}
 
 variable "database_name" {
   type = string
