@@ -8,6 +8,9 @@ variable "administrator_password" {
 variable "admin_adgroup" {
   type = string
 }
+variable "managed_identity_admin_name" {
+  type = string
+}
 variable "location" {
   default = "northeurope"
   type    = string
@@ -38,7 +41,9 @@ variable "env" {
   type        = string
   description = "dev, playground, c2 or prod"
 }
-
+variable "vnet_resource_group" {
+  type = string
+}
 
 variable "database_name" {
   type = string
@@ -64,6 +69,10 @@ variable "zone_redundant" {
   default = true
 }
 variable "tags" {
+  type    = map(string)
+  default = {}
+}
+variable "database_tags" {
   type    = map(string)
   default = {}
 }

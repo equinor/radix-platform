@@ -29,7 +29,7 @@ resource "azurerm_mssql_database" "mssql_database" {
   read_scale     = var.read_scale
   sku_name       = var.sku_name
   zone_redundant = var.zone_redundant
-  tags           = var.tags
+  tags           = var.database_tags
   depends_on     = [azurerm_mssql_server.sqlserver]
   long_term_retention_policy {
     monthly_retention = "PT0S"
