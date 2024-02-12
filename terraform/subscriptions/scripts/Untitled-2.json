@@ -1,0 +1,127 @@
+{
+  "mode": "All",
+  "policyRule": {
+    "if": {
+      "field": "type",
+      "equals": "Microsoft.OperationalInsights/workspaces"
+    },
+    "then": {
+      "effect": "deployIfNotExists",
+      "details": {
+        "type": "Microsoft.OperationalInsights/workspaces/dataexports",
+        "roleDefinitionIds": [
+          "/providers/Microsoft.Authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293",
+          "/providers/Microsoft.Authorization/roleDefinitions/17d1049b-9a84-46fb-8f53-869881c3d3ab"
+        ],
+        "existenceCondition": {
+          "allOf": [
+            {
+              "field": "Microsoft.OperationalInsights/workspaces/dataexports/enable",
+              "equals": "true"
+            },
+            {
+              "count": {
+                "field": "Microsoft.OperationalInsights/workspaces/dataExports/tableNames[*]",
+                "where": {
+                  "field": "Microsoft.OperationalInsights/workspaces/dataExports/tableNames[*]",
+                  "equals": "Event"
+                }
+              },
+              "equals": 1
+            },
+            {
+              "field": "Microsoft.OperationalInsights/workspaces/dataExports/destination.resourceId",
+              "matchInsensitively": "[parameters('namespaceId')]"
+            },
+            {
+              "field": "Microsoft.OperationalInsights/workspaces/dataExports/destination.metaData.eventHubName",
+              "matchInsensitively": "[parameters('eventHubName')]"
+            },
+            {
+              "field": "Microsoft.OperationalInsights/workspaces/dataExports/destination.type",
+              "equals": "EventHub"
+            }
+          ]
+        },
+        "deployment": {
+          "properties": {
+            "mode": "incremental",
+            "template": {
+              "$schema": "http://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "parameters": {
+                "resourceName": {
+                  "type": "string"
+                },
+                "location": {
+                  "type": "string"
+                },
+                "namespaceId": {
+                  "type": "string"
+                },
+                "eventHubName": {
+                  "type": "string"
+                }
+              },
+              "variables": {},
+              "resources": [
+                {
+                  "type": "Microsoft.OperationalInsights/workspaces/dataexports",
+                  "apiVersion": "2020-08-01",
+                  "name": "[concat(parameters('resourceName'), '/CDC-DataExport-Event')]",
+                  "location": "[parameters('location')]",
+                  "dependsOn": [],
+                  "properties": {
+                    "destination": {
+                      "resourceId": "[parameters('namespaceId')]",
+                      "metaData": {
+                        "eventHubName": "[parameters('eventHubName')]"
+                      }
+                    },
+                    "tableNames": [
+                      "Event"
+                    ],
+                    "enable": true
+                  }
+                }
+              ],
+              "outputs": {}
+            },
+            "parameters": {
+              "location": {
+                "value": "[field('location')]"
+              },
+              "resourceName": {
+                "value": "[field('name')]"
+              },
+              "namespaceId": {
+                "value": "[parameters('namespaceId')]"
+              },
+              "eventHubName": {
+                "value": "[parameters('eventHubName')]"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "parameters": {
+    "namespaceId": {
+      "type": "String",
+      "metadata": {
+        "displayName": "Namespace",
+        "description": "Resource Id of the CDC Event Hub Namespace to be used for data export from Log Analytics Workspaces."
+      },
+      "defaultValue": ""
+    },
+    "eventHubName": {
+      "type": "String",
+      "metadata": {
+        "displayName": "Eventhub name",
+        "description": "Names of the CDC Event Hub used for Data Export from Log Analytics Workspaces."
+      },
+      "defaultValue": ""
+    }
+  }
+}
