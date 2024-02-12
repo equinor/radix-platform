@@ -221,7 +221,7 @@ echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
 echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e "   -  AZ_RESOURCE_GROUP_COMMON         : $AZ_RESOURCE_GROUP_COMMON"
-echo -e "   -  AZ_RESOURCE_GROUP_CLUSTERS       : $AZ_RESOURCE_GROUP_CLUSTERS"
+echo -e "   -  AZ_RESOURCE_GROUP_MIGRATE       : $AZ_RESOURCE_GROUP_MIGRATE"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
@@ -418,7 +418,7 @@ echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 ###
 
 NSG_ID="$(az network nsg list \
-    --resource-group clusters \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --query "[?name=='${NSG_NAME}'].id" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --output tsv \
@@ -429,7 +429,7 @@ if [[ ! ${NSG_ID} ]]; then
     printf "    Creating azure NSG %s..." "${NSG_NAME}"
     NSG_ID=$(az network nsg create \
         --name "$NSG_NAME" \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
         --location "$AZ_RADIX_ZONE_LOCATION" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --query id \
@@ -466,7 +466,7 @@ else
 fi
 
 if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
-    NSG_FLOW_LOGS="$(az network nsg show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$NSG_NAME" | jq -r .flowLogs)"
+    NSG_FLOW_LOGS="$(az network nsg show --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" --name "$NSG_NAME" | jq -r .flowLogs)"
 
     # Check if NSG has assigned Flow log
     if [[ $NSG_FLOW_LOGS != "null" ]]; then
@@ -476,7 +476,7 @@ if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
         printf "    Creating azure Flow-log %s...\n" "${NSG_NAME}-rule"
         az network watcher flow-log create \
             --name "${NSG_NAME}-flow-log" \
-            --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+            --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
             --nsg "$NSG_NAME" \
             --location "$AZ_RADIX_ZONE_LOCATION" \
             --storage-account "$FLOW_LOGS_STORAGEACCOUNT_ID" \
@@ -490,7 +490,7 @@ fi
 
 # Create VNET and associate NSG
 VNET_EXISTS="$(az network vnet list \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --query "[?name=='${VNET_NAME}'].id" \
     --output tsv \
     --only-show-errors)"
@@ -498,7 +498,7 @@ VNET_EXISTS="$(az network vnet list \
 if [[ ! ${VNET_EXISTS} ]]; then
     printf "    Creating azure VNET %s... " "${VNET_NAME}"
     az network vnet create \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
         --name "$VNET_NAME" \
         --address-prefix "$VNET_ADDRESS_PREFIX" \
         --subnet-name "$SUBNET_NAME" \
@@ -511,13 +511,13 @@ if [[ ! ${VNET_EXISTS} ]]; then
 fi
 
 SUBNET_ID="$(az network vnet subnet list \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --vnet-name "$VNET_NAME" \
     --query "[].id" \
     --output tsv)"
 
 VNET_ID="$(az network vnet show \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+    --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
     --name "$VNET_NAME" \
     --query "id" \
     --output tsv)"
@@ -525,7 +525,7 @@ VNET_ID="$(az network vnet show \
 echo ""
 printf "Checking if %s are associated with %s\n" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
 printf "Waiting for %s to get associated with %s..." "$VNET_NAME" "$AZ_VNET_HUB_NAME"
-while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
+while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
     printf "."
     sleep 5
 done
@@ -934,21 +934,21 @@ if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
     az lock create \
         --lock-type CanNotDelete \
         --name "${CLUSTER_NAME}"-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
         --resource-type Microsoft.ContainerService/managedClusters \
         --resource "$CLUSTER_NAME" &>/dev/null
 
     az lock create \
         --lock-type ReadOnly \
         --name "${CLUSTER_NAME}"-readonly-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
         --resource-type Microsoft.ContainerService/managedClusters \
         --resource "$CLUSTER_NAME" &>/dev/null
 
     az lock create \
         --lock-type CanNotDelete \
         --name "${VNET_NAME}"-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" \
         --resource-type Microsoft.Network/virtualNetworks \
         --resource "$VNET_NAME" &>/dev/null
 fi

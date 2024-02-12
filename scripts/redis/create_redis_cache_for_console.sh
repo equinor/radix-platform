@@ -88,7 +88,7 @@ printf "Done.\n"
 function createRedisCache() {
     # check if redis cache exist, else create new
     REDIS_CACHE_NAME="${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}"
-    REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
+    REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
 
     if [[ $REDIS_CACHE_INSTANCE == "" ]]; then
         echo "Info: Redis Cache \"${REDIS_CACHE_NAME}\" not found."
@@ -111,7 +111,7 @@ function createRedisCache() {
         #Docs https://azure.microsoft.com/en-us/pricing/details/cache/
         az deployment group create \
             --no-wait \
-            --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+            --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --template-file "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/redis/azure_cache_for_redis.json" \
             --name "redis-cache-${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}" \

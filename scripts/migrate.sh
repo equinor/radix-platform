@@ -406,6 +406,10 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
+echo "Hit space: Creating Redis Caches for Console.."
+read -r -s -d ' '
+
+
 if [[ $create_redis_cache == true ]]; then
     printf "Creating Redis Caches for Console...\n"
     (
@@ -435,6 +439,8 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
             esac
         done
     fi
+echo "Hit space: Creating destination cluster..."
+read -r -s -d ' '
 
     echo ""
     echo "Creating destination cluster..."
@@ -446,6 +452,10 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
 }
 printf "Done creating cluster.\n"
 install_base_components=true
+
+echo "Hit space: Install base components..."
+read -r -s -d ' '
+
 
 if [[ $USER_PROMPT == true ]]; then
     echo ""
@@ -741,7 +751,7 @@ fi
 
 # Wait for redis caches to be created.
 printf "\nWaiting for redis caches to be created..."
-while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$DEST_CLUSTER"-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
+while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" --name "$DEST_CLUSTER"-qa --query provisioningState -otsv 2>&1) != "Succeeded" && $(az redis show --resource-group "$AZ_RESOURCE_GROUP_MIGRATE" --name "$DEST_CLUSTER"-prod --query provisioningState -otsv 2>&1) != "Succeeded" ]]; do
     printf "."
     sleep 5
 done

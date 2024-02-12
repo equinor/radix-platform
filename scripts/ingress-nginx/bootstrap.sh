@@ -318,7 +318,7 @@ printf "Creating azure NSG rule %s-rule... " "${NSG_NAME}"
 az network nsg rule create \
     --nsg-name "${NSG_NAME}" \
     --name "${NSG_NAME}-rule" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --destination-address-prefixes "${SELECTED_INGRESS_IP_RAW_ADDRESS}" \
     --destination-port-ranges 80 443 \
@@ -336,7 +336,7 @@ printf "Done.\n"
 printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
 az network vnet subnet update \
     --vnet-name "${VNET_NAME}" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --resource-group "${AZ_RESOURCE_GROUP_MIGRATE}" \
     --name "${SUBNET_NAME}" \
     --subscription "${AZ_SUBSCRIPTION_ID}" \
     --network-security-group "${NSG_NAME}" \
