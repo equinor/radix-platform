@@ -20,7 +20,7 @@ resource "local_file" "templates" {
 data "azurerm_kubernetes_cluster" "this" {
   for_each = toset(module.config.cluster_names)
 
-  resource_group_name = "clusters-development" # module.config.cluster_resource_group TODO: FIXME PLEASE!
+  resource_group_name = module.config.cluster_resource_group
   name = each.value
 }
 
