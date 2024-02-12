@@ -16,6 +16,7 @@
 # - PRIVATE_ENDPOINT_NAME           : Name of the Private Endpoint to be created. i.e. pe-team-resourcetype-environment or pe-radix-privatelinkservice-prod
 # - TARGET_RESOURCE_RESOURCE_ID     : The resource ID of the resource to connect to. i.e. /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/myResourceGroup/providers/Microsoft.Storage/storageAccounts/myStorageAccount
 # - TARGET_SUBRESOURCE              : The subresource of the target resource. i.e. file https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
+#                                                                                    or https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
@@ -108,7 +109,7 @@ fi
 ### Define associative array to map PE subresource and DNS Zone. Append additional entries to this map from
 ### https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
 ### when required
-###
+### https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
 
 declare -A DNS_ZONE_MAP=(
     ["vault"]="privatelink.vaultcore.azure.net"
@@ -120,6 +121,8 @@ declare -A DNS_ZONE_MAP=(
     ["registry"]="privatelink.azurecr.io"
     ["coordinator"]="privatelink.postgres.cosmos.azure.com"
     ["configurationStores"]="privatelink.azconfig.io"
+    ["Sql"]="privatelink.documents.azure.com"
+    ["azuremonitor"]="privatelink.monitor.azure.com"
 )
 
 dns_zone=${DNS_ZONE_MAP[$TARGET_SUBRESOURCE]} 2>/dev/null # can't figure out how to properly suppress this error message
