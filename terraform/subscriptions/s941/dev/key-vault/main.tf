@@ -16,5 +16,6 @@ module "keyvault" {
   enable_rbac_authorization   = each.value.enable_rbac_authorization
   purge_protection_enabled    = each.value.purge_protection_enabled
   network_acls_default_action = each.value.network_acls_default_action
+  vnet_resource_group = module.config.vnet_resource_group
 
 }
