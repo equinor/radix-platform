@@ -25,7 +25,7 @@ normal=$(tput sgr0)
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env KEY_VAULT="radix-keyv-dev" ./rotate-secrets.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./rotate-secrets.sh
 
 #######################################################################################
 ### START
@@ -33,7 +33,7 @@ normal=$(tput sgr0)
 
 
 echo ""
-echo "Start bootstrap of radix-vulnerability-scanner and radix-vulnerability-scanner-api... "
+echo "Start checking secrets in keyvault... "
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -75,11 +75,6 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$KEY_VAULT" ]]; then
-    echo "ERROR: Please provide $KEY_VAULT" >&2
-    exit 1
-fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -91,6 +86,11 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+KEY_VAULT="radix-keyv-${RADIX_ZONE}"
+if [[ "${RADIX_ZONE}" == "prod" ]]; then
+  KEY_VAULT="radix-keyv-platform"
+fi;
+
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
@@ -132,7 +132,7 @@ myip=$(curl http://ifconfig.me/ip 2> /dev/null) ||
 printf "Done.\n"
 
 printf "Adding %s to %s firewall... " $myip $KEY_VAULT
-az keyvault network-rule add --name radix-keyv-dev --ip-address  "$myip" --only-show-errors > /dev/null
+az keyvault network-rule add --name "${KEY_VAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
 printf "Done.\n"
 
 printf "%s► Running scripts... %s%s\n" "${grn}" "$script" "${normal}"
@@ -154,5 +154,5 @@ done
 
 printf "\n%s► Cleaning up... %s\n" "${grn}" "${normal}"
 printf "Removing %s to %s firewall... " $myip $KEY_VAULT
-az keyvault network-rule add --name radix-keyv-dev --ip-address  "$myip" --only-show-errors > /dev/null
+az keyvault network-rule add --name "${KEY_VAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
 printf "Done.\n"
