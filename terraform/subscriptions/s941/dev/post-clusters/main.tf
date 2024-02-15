@@ -4,16 +4,16 @@ module "config" {
 }
 
 resource "local_file" "templates" {
-    for_each = toset([
-        for file in fileset(path.module, "templates/**"): # The subfolder in current dir
-            file if length(regexall(".*app-template.*", file)) == 0 # Ignore paths with "app-template"
-    ])
+  for_each = toset([
+    for file in fileset(path.module, "templates/**") :      # The subfolder in current dir
+    file if length(regexall(".*app-template.*", file)) == 0 # Ignore paths with "app-template"
+  ])
 
-    content = templatefile(each.key, {
-        identity_id = data.azurerm_user_assigned_identity.this.client_id
-    })
-    
-    filename = replace("${path.module}/${each.key}", "templates", "rendered")
+  content = templatefile(each.key, {
+    identity_id = data.azurerm_user_assigned_identity.this.client_id
+  })
+
+  filename = replace("${path.module}/${each.key}", "templates", "rendered")
 }
 
 
@@ -21,13 +21,13 @@ data "azurerm_kubernetes_cluster" "this" {
   for_each = toset(module.config.cluster_names)
 
   resource_group_name = module.config.cluster_resource_group
-  name = each.value
+  name                = each.value
 }
 
 
 data "azurerm_user_assigned_identity" "this" {
   resource_group_name = module.config.common_resource_group
-  name ="radix-id-external-secrets-operator-${module.config.environment}"
+  name                = "radix-id-external-secrets-operator-${module.config.environment}"
 }
 resource "azurerm_federated_identity_credential" "eso" {
   for_each = toset(module.config.cluster_names)

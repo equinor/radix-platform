@@ -24,16 +24,16 @@ variable "subscriptions" {
 
 variable "operator-roles" {
   type = map(object({
-    role = string
+    role         = string
     subscription = string
   }))
   default = {
-    s940 =  {role = "Key Vault Secrets Officer", subscription : "s940"}
+    s940 = { role = "Key Vault Secrets Officer", subscription : "s940" }
   }
 }
 variable "developer-roles" {
   type = map(object({
-    role = string
+    role         = string
     subscription = string
   }))
   default = {
