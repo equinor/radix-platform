@@ -16,8 +16,10 @@ normal=$(tput sgr0)
 
 # Required:
 # - RADIX_ZONE_ENV               : Path to *.env file
+# - CLUSTER_NAME                 : Ex: "test-2", "weekly-93"
 
 # Optional:
+# - UPDATE_SECRETS               : Rotate expired secrets. Defaults to false.
 # - USER_PROMPT                  : Is human interaction required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -25,7 +27,7 @@ normal=$(tput sgr0)
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./rotate-secrets.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-07 UPDATE_SECRETS=false ./rotate-secrets.sh
 
 #######################################################################################
 ### START
@@ -49,14 +51,18 @@ hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
     exit 1
 }
-printf "All is good."
-echo ""
+printf "Done.\n"
 
 #######################################################################################
 ### Set default values for optional input
 ###
 
+KEY_VAULT="radix-keyv-${RADIX_ZONE}"
+if [[ "${RADIX_ZONE}" == "prod" ]]; then
+  KEY_VAULT="radix-keyv-platform"
+fi;
 USER_PROMPT=${USER_PROMPT:=true}
+UPDATE_SECRETS=${UPDATE_SECRETS:=true}
 
 #######################################################################################
 ### Read inputs and configs
@@ -75,6 +81,18 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
+    exit 1
+fi
+
+case UPDATE_SECRETS in
+    true|false) ;;
+    *)
+        echo 'ERROR: UPDATE_SECRETS must be true or false' >&2
+        exit 1
+        ;;
+esac
 
 #######################################################################################
 ### Prepare az session
@@ -86,11 +104,6 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-KEY_VAULT="radix-keyv-${RADIX_ZONE}"
-if [[ "${RADIX_ZONE}" == "prod" ]]; then
-  KEY_VAULT="radix-keyv-platform"
-fi;
-
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
@@ -100,7 +113,13 @@ echo -e "Bootstrap Radix Vulnerability Scanner and API with the following config
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_KEYVAULT             : $KEY_VAULT"
+echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
+echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
+echo -e "   -  KEY_VAULT                        : $KEY_VAULT"
+echo -e ""
+echo -e "   > WHAT:"
+echo -e "   -------------------------------------------------------------------"
+echo -e "   -  UPDATE_SECRETS                   :  $UPDATE_SECRETS"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -143,7 +162,7 @@ do
 
   printf "%s► Execute %s%s\n" "${grn}" "$script" "${normal}"
 
-  (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} KEY_VAULT=${KEY_VAULT} USER_PROMPT=${USER_PROMPT} source $script)
+  (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} UPDATE_SECRETS=${UPDATE_SECRETS} KEY_VAULT=${KEY_VAULT} USER_PROMPT=${USER_PROMPT} source $script)
   status=$?
   if [ $status -ne 0 ]; then
     printf "%s💥 Exited with code: %d %s\n" ${red} $status ${normal}
