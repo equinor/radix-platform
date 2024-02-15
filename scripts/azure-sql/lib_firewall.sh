@@ -5,7 +5,7 @@ add_local_computer_sql_firewall_rule() {
     resourceGroup=$2
     ruleName=$3
 
-    myip=$(curl http://ifconfig.me/ip) || 
+    myip=$(curl http://ifconfig.me/ip --silent) ||
     { echo "ERROR: Failed to get IP address." >&2; return 1; }
 
     az sql server firewall-rule create \
