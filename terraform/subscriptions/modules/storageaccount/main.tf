@@ -88,11 +88,11 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
 }
 
 resource "azurerm_storage_account_network_rules" "this" {
-  for_each                   = var.firewall ? { "${var.name}" : true } : {}
+  # for_each                   = var.firewall ? { "${var.name}" : true } : {}
   storage_account_id         = azurerm_storage_account.storageaccount.id
   default_action             = "Deny"
-  ip_rules                   = ["143.97.110.1"]
-  virtual_network_subnet_ids = [var.subnet_id]
+  ip_rules                   = []
+  # virtual_network_subnet_ids = [var.subnet_id]
 
 }
 
