@@ -29,7 +29,8 @@ keyvault_secret_save() {
   local secretName=$2
   local value=$3
 
-  local $expiry=$(date -d "+365 days")
-  az keyvault secret set --vault-name $keyvault --name $secretName --value $password --expires $expiry --output none --only-show-errors ||
+  local expiry=$(date -d "+365 days")
+  local notBefore=$(date -d "-5 minutes")
+  az keyvault secret set --vault-name $keyvault --name $secretName --value $password --not-before $notBefore --expires $expiry --output none --only-show-errors ||
       { echo "ERROR: Could not get secret '$secretName' in '${keyvault}'." >&2; return 1; }
 }
