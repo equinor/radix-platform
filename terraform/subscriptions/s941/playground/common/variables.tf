@@ -31,12 +31,12 @@ variable "storageaccounts" {
     account_tier             = optional(string, "Standard")
     account_replication_type = optional(string, "LRS")
     kind                     = optional(string, "StorageV2")
+    velero_service_principal = optional(string, "radix-velero-dev")
     change_feed_enabled      = optional(bool, false)
     versioning_enabled       = optional(bool, false)
     backup                   = optional(bool, false)
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
-    firewall                 = optional(bool, true)
   }))
   default = {
     log = {
