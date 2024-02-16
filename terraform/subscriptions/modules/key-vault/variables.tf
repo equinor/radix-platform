@@ -100,3 +100,11 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "virtual_network" {
+  type    = string
+  default = "vnet-hub"
+}
+variable "vnet_resource_group" {
+  type = string
+}
