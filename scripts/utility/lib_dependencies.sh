@@ -55,7 +55,7 @@ function has_env_name() {
 function user_prompt_continue() {
   if [[ $USER_PROMPT == true ]]; then
       while true; do
-          read -p "Is this correct? (Y/n) " yn
+          read -p "Is this correct? (y/n) " yn
           case $yn in
               [Yy]* ) break;;
               [Nn]* ) echo ""; echo "Quitting."; return 1;;
