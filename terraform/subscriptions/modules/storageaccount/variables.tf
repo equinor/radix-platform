@@ -95,13 +95,6 @@ variable "subnet_id" {
 
 }
 
-variable "firewall" {
-  description = "Enable FW rules on StorageAccount?"
-  type        = bool
-  default     = true
-
-}
-
 variable "backup" {
   description = "Enable backup"
   type        = bool

@@ -55,7 +55,6 @@ module "storageaccount" {
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
   subnet_id                = local.external_outputs.virtualnetwork.data.vnet_subnet.id
-  firewall                 = each.value.firewall
   velero_service_principal = each.value.velero_service_principal
   vnet_resource_group      = module.config.vnet_resource_group
 }
