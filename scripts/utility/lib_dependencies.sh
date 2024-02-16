@@ -51,3 +51,18 @@ function has_env_name() {
 
   return 0
 }
+
+function user_prompt_continue() {
+  if [[ $USER_PROMPT == true ]]; then
+      while true; do
+          read -p "Is this correct? (Y/n) " yn
+          case $yn in
+              [Yy]* ) break;;
+              [Nn]* ) echo ""; echo "Quitting."; return 1;;
+              * ) echo "Please answer yes or no.";;
+          esac
+      done
+  fi
+
+  return 0
+}
