@@ -188,37 +188,30 @@ function cleanup() {
   rm -f "$CREDENTIALS_GENERATED_PATH"
 }
 
-function generateCredentialsFile() {
-  local SP_JSON="$(az keyvault secret show \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name $APP_REGISTRATION_VELERO |
-    jq '.value | fromjson')"
+# function generateCredentialsFile() {
+#   local SP_JSON="$(az keyvault secret show \
+#     --vault-name $AZ_RESOURCE_KEYVAULT \
+#     --name $APP_REGISTRATION_VELERO |
+#     jq '.value | fromjson')"
 
-  # Set variables used in the manifest templates
-  local AZURE_SUBSCRIPTION_ID="$AZ_SUBSCRIPTION_ID"
-  local AZURE_CLIENT_ID="$(echo $SP_JSON | jq -r '.id')"
-  local AZURE_TENANT_ID="$(echo $SP_JSON | jq -r '.tenantId')"
-  local AZURE_CLIENT_SECRET="$(echo $SP_JSON | jq -r '.password')"
+#   # Set variables used in the manifest templates
+#   local AZURE_SUBSCRIPTION_ID="$AZ_SUBSCRIPTION_ID"
+#   local AZURE_CLIENT_ID="$(echo $SP_JSON | jq -r '.id')"
+#   local AZURE_TENANT_ID="$(echo $SP_JSON | jq -r '.tenantId')"
+#   local AZURE_CLIENT_SECRET="$(echo $SP_JSON | jq -r '.password')"
 
-  # Use the credentials template as a heredoc, then run the heredoc to generate the credentials file
-  CREDENTIALS_GENERATED_PATH="$(mktemp)"
-  local tmp_heredoc="$(mktemp)"
-  (
-    echo "#!/bin/sh"
-    echo "cat <<EOF >>${CREDENTIALS_GENERATED_PATH}"
-    cat ${CREDENTIALS_TEMPLATE_PATH}
-    echo ""
-    echo "EOF"
-  ) >${tmp_heredoc} && chmod +x ${tmp_heredoc}
-  source "$tmp_heredoc"
-
-  # Debug
-  # echo -e "\nCREDENTIALS_GENERATED_PATH=$CREDENTIALS_GENERATED_PATH"
-  # echo -e "tmp_heredoc=$tmp_heredoc"
-
-  # Remove even if script crashed
-  #trap "rm -f $CREDENTIALS_GENERATED_PATH" 0 2 3 15
-}
+#   # Use the credentials template as a heredoc, then run the heredoc to generate the credentials file
+#   CREDENTIALS_GENERATED_PATH="$(mktemp)"
+#   local tmp_heredoc="$(mktemp)"
+#   (
+#     echo "#!/bin/sh"
+#     echo "cat <<EOF >>${CREDENTIALS_GENERATED_PATH}"
+#     cat ${CREDENTIALS_TEMPLATE_PATH}
+#     echo ""
+#     echo "EOF"
+#   ) >${tmp_heredoc} && chmod +x ${tmp_heredoc}
+#   source "$tmp_heredoc"
+# }
 
 # Run cleanup even if script crashed
 trap cleanup 0 2 3 15
@@ -231,14 +224,14 @@ case "$(kubectl get ns $VELERO_NAMESPACE 2>&1)" in
 esac
 printf "...Done"
 
-printf "\nWorking on credentials..."
-generateCredentialsFile
-kubectl create secret generic cloud-credentials \
-  --namespace "$VELERO_NAMESPACE" \
-  --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
-  --dry-run=client -o yaml |
-  kubectl apply -f - \
-    2>&1 >/dev/null
+# printf "\nWorking on credentials..."
+# generateCredentialsFile
+# kubectl create secret generic cloud-credentials \
+#   --namespace "$VELERO_NAMESPACE" \
+#   --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
+#   --dry-run=client -o yaml |
+#   kubectl apply -f - \
+#     2>&1 >/dev/null
 printf "...Done"
 
 MYIP=$(curl http://ifconfig.me/ip) ||
