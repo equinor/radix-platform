@@ -95,17 +95,6 @@ variable "subnet_id" {
 
 }
 
-variable "vnethub_resource_group" {
-  description = "Specifies the resource group where the DNS Zone (parent resource) exists"
-  type        = string
-}
-
-variable "priv_endpoint" {
-  description = "Create private endpoint?"
-  type        = bool
-  default     = false
-}
-
 variable "firewall" {
   description = "Enable FW rules on StorageAccount?"
   type        = bool
@@ -116,4 +105,13 @@ variable "firewall" {
 variable "backup" {
   description = "Enable backup"
   type        = bool
+}
+
+variable "virtual_network" {
+  type    = string
+  default = "vnet-hub"
+}
+
+variable "vnet_resource_group" {
+  type = string
 }

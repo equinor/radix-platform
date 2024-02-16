@@ -93,19 +93,19 @@ resource "azurerm_storage_account_network_rules" "this" {
   default_action             = "Deny"
   ip_rules                   = ["143.97.110.1"]
   virtual_network_subnet_ids = [var.subnet_id]
-  # bypass                     = ["Metrics"]
+
 }
 
-######################################################################################
-## Private Link
-##
-
+data "azurerm_subnet" "subnet" {
+  name                 = "private-links"
+  virtual_network_name = var.virtual_network
+  resource_group_name  = var.vnet_resource_group
+}
 resource "azurerm_private_endpoint" "this" {
-  for_each            = var.priv_endpoint ? { "${var.name}" : true } : {} # { for key in compact([for key, value in var.priv_endpoint : value.private_endpoint ? key : ""]) : key =>  var.priv_endpoint[key] }
-  name                = azurerm_storage_account.storageaccount.name
-  resource_group_name = azurerm_storage_account.storageaccount.resource_group_name
-  location            = azurerm_storage_account.storageaccount.location
-  subnet_id           = var.subnet_id
+  name                = "pe-${var.name}"
+  location            = var.location
+  resource_group_name = var.vnet_resource_group
+  subnet_id           = data.azurerm_subnet.subnet.id
   depends_on          = [azurerm_storage_account.storageaccount]
 
   private_service_connection {
@@ -115,18 +115,10 @@ resource "azurerm_private_endpoint" "this" {
     subresource_names              = ["blob"]
   }
 }
-
-
-######################################################################################
-## Private DNS
-##
 resource "azurerm_private_dns_a_record" "this" {
-  for_each            = var.priv_endpoint ? { "${var.name}" : true } : {}
   name                = azurerm_storage_account.storageaccount.name
   zone_name           = "privatelink.blob.core.windows.net"
-  resource_group_name = var.vnethub_resource_group
-  ttl                 = 10
-  records             = [azurerm_private_endpoint.this[each.key].private_service_connection.0.private_ip_address]
-  depends_on          = [azurerm_private_endpoint.this]
+  resource_group_name = var.vnet_resource_group
+  ttl                 = 60
+  records             = [azurerm_private_endpoint.this.private_service_connection.0.private_ip_address]
 }
-
