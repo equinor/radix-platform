@@ -57,6 +57,21 @@ resource "azurerm_role_assignment" "roleassignment" {
   depends_on           = [azurerm_storage_account.storageaccount]
 }
 
+# #######################################################################################
+# ### Role assignment for Velero Service Principal to be used to the Storage account
+# ###
+
+data "azuread_service_principal" "velero" { # wip To be changed to workload identity in the future
+  display_name = var.velero_service_principal
+}
+
+resource "azurerm_role_assignment" "storage_blob_data_conntributor" {
+  for_each             = can(regex("radixvelero.*", var.name)) ? { "${var.name}" : true } : {}
+  scope                = azurerm_storage_account.storageaccount.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = data.azuread_service_principal.velero.id
+  depends_on           = [azurerm_storage_account.storageaccount]
+}
 
 ######################################################################################
 ## Blob Protection

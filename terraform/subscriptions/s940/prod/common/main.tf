@@ -1,3 +1,7 @@
+module "config" {
+  source = "../../../modules/config"
+}
+
 module "resourcegroups_ver1" {
   for_each             = var.resource_groups_ver1
   source               = "../../../modules/resourcegroups_ver1"
@@ -54,5 +58,6 @@ module "storageaccount" {
   vnethub_resource_group   = local.external_outputs.virtualnetwork.data.vnet_hub.resource_group_name
   priv_endpoint            = each.value.private_endpoint
   firewall                 = each.value.firewall
+  velero_service_principal = each.value.velero_service_principal
 }
 

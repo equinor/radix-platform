@@ -74,6 +74,11 @@ variable "principal_id" {
   type        = string
 }
 
+variable "velero_service_principal" {
+  description = "The Name of the Principal (User, Group or Service Principal) to assign the Role Definition to"
+  type        = string
+}
+
 variable "vault_id" {
   description = "The ID of the Backup Vault"
   type        = string

@@ -52,4 +52,5 @@ module "storageaccount" {
   vnethub_resource_group   = local.external_outputs.virtualnetwork.data.vnet_hub.resource_group_name
   priv_endpoint            = each.value.private_endpoint
   firewall                 = each.value.firewall
+  velero_service_principal = each.value.velero_service_principal
 }
