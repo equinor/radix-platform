@@ -111,7 +111,7 @@ do
 
   printf "%s► Execute %s%s\n" "${grn}" "$script" "${normal}"
 
-  (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} UPDATE_SECRETS=${UPDATE_SECRETS} KEY_VAULT=${KEY_VAULT} USER_PROMPT=${USER_PROMPT} source $script)
+  (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} UPDATE_SECRETS=${UPDATE_SECRETS} KEY_VAULT=${KEY_VAULT} USER_PROMPT=false source $script)
   status=$?
   if [ $status -ne 0 ]; then
     printf "%s💥 Exited with code: %d %s\n" ${red} $status ${normal}
