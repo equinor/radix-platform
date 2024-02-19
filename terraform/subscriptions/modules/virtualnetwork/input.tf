@@ -16,6 +16,7 @@ locals {
     "privatelink.mysql.database.azure.com",
     "privatelink.mariadb.database.azure.com",
     "privatelink.vaultcore.azure.net",
-    "private.radix.equinor.com"
+    "private.radix.equinor.com",
+    "privatelink.monitor.azure.com"
   ]
 }

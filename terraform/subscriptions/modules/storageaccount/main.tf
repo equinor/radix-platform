@@ -57,6 +57,21 @@ resource "azurerm_role_assignment" "roleassignment" {
   depends_on           = [azurerm_storage_account.storageaccount]
 }
 
+# #######################################################################################
+# ### Role assignment for Velero Service Principal to be used to the Storage account
+# ###
+
+data "azuread_service_principal" "velero" { # wip To be changed to workload identity in the future
+  display_name = var.velero_service_principal
+}
+
+resource "azurerm_role_assignment" "storage_blob_data_conntributor" {
+  for_each             = can(regex("radixvelero.*", var.name)) ? { "${var.name}" : true } : {}
+  scope                = azurerm_storage_account.storageaccount.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = data.azuread_service_principal.velero.id
+  depends_on           = [azurerm_storage_account.storageaccount]
+}
 
 ######################################################################################
 ## Blob Protection
@@ -73,24 +88,24 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
 }
 
 resource "azurerm_storage_account_network_rules" "this" {
-  for_each                   = var.firewall ? { "${var.name}" : true } : {}
+  # for_each                   = var.firewall ? { "${var.name}" : true } : {}
   storage_account_id         = azurerm_storage_account.storageaccount.id
   default_action             = "Deny"
-  ip_rules                   = ["143.97.110.1"]
-  virtual_network_subnet_ids = [var.subnet_id]
-  # bypass                     = ["Metrics"]
+  ip_rules                   = []
+  # virtual_network_subnet_ids = [var.subnet_id]
+
 }
 
-######################################################################################
-## Private Link
-##
-
+data "azurerm_subnet" "subnet" {
+  name                 = "private-links"
+  virtual_network_name = var.virtual_network
+  resource_group_name  = var.vnet_resource_group
+}
 resource "azurerm_private_endpoint" "this" {
-  for_each            = var.priv_endpoint ? { "${var.name}" : true } : {} # { for key in compact([for key, value in var.priv_endpoint : value.private_endpoint ? key : ""]) : key =>  var.priv_endpoint[key] }
-  name                = azurerm_storage_account.storageaccount.name
-  resource_group_name = azurerm_storage_account.storageaccount.resource_group_name
-  location            = azurerm_storage_account.storageaccount.location
-  subnet_id           = var.subnet_id
+  name                = "pe-${var.name}"
+  location            = var.location
+  resource_group_name = var.vnet_resource_group
+  subnet_id           = data.azurerm_subnet.subnet.id
   depends_on          = [azurerm_storage_account.storageaccount]
 
   private_service_connection {
@@ -100,18 +115,10 @@ resource "azurerm_private_endpoint" "this" {
     subresource_names              = ["blob"]
   }
 }
-
-
-######################################################################################
-## Private DNS
-##
 resource "azurerm_private_dns_a_record" "this" {
-  for_each            = var.priv_endpoint ? { "${var.name}" : true } : {}
   name                = azurerm_storage_account.storageaccount.name
   zone_name           = "privatelink.blob.core.windows.net"
-  resource_group_name = var.vnethub_resource_group
-  ttl                 = 10
-  records             = [azurerm_private_endpoint.this[each.key].private_service_connection.0.private_ip_address]
-  depends_on          = [azurerm_private_endpoint.this]
+  resource_group_name = var.vnet_resource_group
+  ttl                 = 60
+  records             = [azurerm_private_endpoint.this.private_service_connection.0.private_ip_address]
 }
-

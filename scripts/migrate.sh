@@ -445,6 +445,9 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 }
 printf "Done creating cluster.\n"
+
+
+
 install_base_components=true
 
 if [[ $USER_PROMPT == true ]]; then
