@@ -9,6 +9,23 @@ function get_credentials() {
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --name "$CLUSTER" \
+        --format exec \
+        --only-show-errors ||
+        { return; }
+
+    if [[ -n $CI ]]; then
+        kubelogin convert-kubeconfig -l azurecli
+    fi
+    # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
+}
+function get_credentials_silent() {
+    local AZ_RESOURCE_GROUP_CLUSTERS="$1"
+    local CLUSTER="$2"
+
+    az aks get-credentials \
+        --overwrite-existing \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$CLUSTER" \
         --format exec ||
         { return; }
 
@@ -32,7 +49,7 @@ function setup_cluster_access() {
   local AZ_RESOURCE_GROUP_CLUSTERS="$1"
   local CLUSTER_NAME="$2"
 
-  get_credentials "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}"
+  get_credentials_silent "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}"
   kubectl_context="$(kubectl config current-context)"
   if [ "${kubectl_context}" = "${CLUSTER_NAME}" ]; then
       return 0

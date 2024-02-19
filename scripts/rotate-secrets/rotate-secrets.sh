@@ -27,83 +27,40 @@ normal=$(tput sgr0)
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-07 UPDATE_SECRETS=false ./rotate-secrets.sh
-
-#######################################################################################
-### START
-###
-
-
-echo ""
-echo "Start checking secrets in keyvault... "
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-07 UPDATE_SECRETS=true ./rotate-secrets.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
 ###
 
-echo ""
-printf "Check for neccesary executables... "
-hash az 2>/dev/null || {
-    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting..." >&2
-    exit 1
-}
-hash jq 2>/dev/null || {
-    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
-    exit 1
-}
+printf "Loading dependencies... "
+source "${RADIX_ZONE_ENV:-'!!!! No RADIX_ZONE_ENV Provided !!!!'}"
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/azure-sql/lib_firewall.sh"
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/rotate-secrets/lib_keyvault.sh"
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/azure-sql/lib_security.sh"
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_dependencies.sh"
 printf "Done.\n"
+
+assert_cli_tools || exit 1
+has_env_name "CLUSTER_NAME" || exit 1
+prepare_azure_session || exit 1
+setup_cluster_access  "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" ||
+  { echo "ERROR: Unable to connect to cluster" >&2; exit 1; }
+
 
 #######################################################################################
 ### Set default values for optional input
 ###
 
+USER_PROMPT=${USER_PROMPT:=true}
+UPDATE_SECRETS=${UPDATE_SECRETS:=true}
 KEY_VAULT="radix-keyv-${RADIX_ZONE}"
 if [[ "${RADIX_ZONE}" == "prod" ]]; then
   KEY_VAULT="radix-keyv-platform"
 fi;
-USER_PROMPT=${USER_PROMPT:=true}
-UPDATE_SECRETS=${UPDATE_SECRETS:=true}
 
-#######################################################################################
-### Read inputs and configs
-###
 
-# Required inputs
-
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
-fi
-
-if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "ERROR: Please provide CLUSTER_NAME" >&2
-    exit 1
-fi
-
-case UPDATE_SECRETS in
-    true|false) ;;
-    *)
-        echo 'ERROR: UPDATE_SECRETS must be true or false' >&2
-        exit 1
-        ;;
-esac
-
-#######################################################################################
-### Prepare az session
-###
-
-printf "Logging you in to Azure if not already logged in... "
-az account show >/dev/null || az login >/dev/null
-az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
-printf "Done.\n"
-
-script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #######################################################################################
 ### Ask user to verify inputs and az login
 ###
@@ -129,16 +86,7 @@ echo -e ""
 
 echo ""
 
-if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        read -p "Is this correct? (Y/n) " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) echo ""; echo "Quitting."; exit 1;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
-fi
+user_prompt_continue || exit 1
 
 #######################################################################################
 ### Start
@@ -154,6 +102,7 @@ printf "Adding %s to %s firewall... " $myip $KEY_VAULT
 az keyvault network-rule add --name "${KEY_VAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
 printf "Done.\n"
 
+keyvault_list_secrets "${KEY_VAULT}" "31"
 printf "%s► Running scripts... %s%s\n" "${grn}" "$script" "${normal}"
 
 scripts=`ls ./services/*.sh`
@@ -170,6 +119,8 @@ do
     printf "%s► %s Completed %s\n" ${grn} ${script} ${normal}
   fi;
 done
+
+keyvault_list_secrets "${KEY_VAULT}" "31"
 
 printf "\n%s► Cleaning up... %s\n" "${grn}" "${normal}"
 printf "Removing %s to %s firewall... " $myip $KEY_VAULT
