@@ -20,6 +20,7 @@ normal=$(tput sgr0)
 
 # Optional:
 # - UPDATE_SECRETS               : Rotate expired secrets. Defaults to false.
+# - FORCE_UPDATE                 : Force Rotate expired secrets. Defaults to false.
 # - USER_PROMPT                  : Is human interaction required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -54,7 +55,8 @@ setup_cluster_access  "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" ||
 ###
 
 USER_PROMPT=${USER_PROMPT:=true}
-UPDATE_SECRETS=${UPDATE_SECRETS:=true}
+UPDATE_SECRETS=${UPDATE_SECRETS:=false}
+FORCE_UPDATE=${FORCE_UPDATE:=false}
 KEY_VAULT="radix-keyv-${RADIX_ZONE}"
 if [[ "${RADIX_ZONE}" == "prod" ]]; then
   KEY_VAULT="radix-keyv-platform"
@@ -77,6 +79,7 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  UPDATE_SECRETS                   :  $UPDATE_SECRETS"
+echo -e "   -  FORCE_UPDATE                     :  $FORCE_UPDATE"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -111,7 +114,7 @@ do
 
   printf "%s► Execute %s%s\n" "${grn}" "$script" "${normal}"
 
-  (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} CLUSTER_NAME=${CLUSTER_NAME} UPDATE_SECRETS=${UPDATE_SECRETS} KEY_VAULT=${KEY_VAULT} USER_PROMPT=false source $script)
+  (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" FORCE_UPDATE="${FORCE_UPDATE}" CLUSTER_NAME="${CLUSTER_NAME}" UPDATE_SECRETS="${UPDATE_SECRETS}" KEY_VAULT="${KEY_VAULT}" USER_PROMPT="false" source $script)
   status=$?
   if [ $status -ne 0 ]; then
     printf "%s💥 Exited with code: %d %s\n" ${red} $status ${normal}
