@@ -58,5 +58,5 @@ keyvault_list_secrets() {
     fi;
 
     printf "${fmt}" "${NAME}" $color "${days}" $normal
-  done < <(az keyvault secret list --vault-name radix-keyv-dev | jq ".[] | [.name, .attributes.expires] | @tsv" -r)
+  done < <(az keyvault secret list --vault-name "${keyvault}" | jq ".[] | [.name, .attributes.expires] | @tsv" -r)
 }
