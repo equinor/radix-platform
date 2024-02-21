@@ -33,6 +33,9 @@ output "key_vault_name" {
 output "log_analytics_name" {
   value = "radix-logs-${local.config.environment}"
 }
+output "log_storageaccount_name" {
+  value = "radixlog${local.config.environment}"
+}
 output "backend" {
   value = local.config.backend
 }

@@ -88,3 +88,9 @@ variable "admin_federated_credentials" {
     subject = string
   }))
 }
+variable "audit_storageaccount_name" {
+  type = string
+}
+variable "common_resource_group" {
+  type = string
+}

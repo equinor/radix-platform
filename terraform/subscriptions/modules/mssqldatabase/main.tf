@@ -49,3 +49,14 @@ resource "azurerm_mssql_database" "mssql_database" {
     state                = "Disabled"
   }
 }
+
+data "azurerm_storage_account" "this" {
+  name                     = var.audit_storageaccount_name
+  resource_group_name      = var.common_resource_group
+}
+resource "azurerm_mssql_server_extended_auditing_policy" "this" {
+  server_id                               = azurerm_mssql_server.sqlserver.id
+  storage_endpoint                        = data.azurerm_storage_account.this.primary_blob_endpoint
+  retention_in_days                       = 7
+  log_monitoring_enabled = false
+}
