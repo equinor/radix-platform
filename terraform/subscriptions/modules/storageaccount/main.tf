@@ -124,6 +124,7 @@ resource "azurerm_private_dns_a_record" "this" {
 }
 
 resource "azurerm_storage_management_policy" "this" {
+  for_each           = var.lifecyclepolicy ? { "${var.name}" : true } : {}
   storage_account_id = azurerm_storage_account.storageaccount.id
   rule {
     name    = "lifecycle-blockblob"
