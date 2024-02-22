@@ -202,7 +202,7 @@ generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_COST_ALLOCATION_DB_
 
 # Create/update SQL user and roles
 COLLECTOR_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_WRITER | jq -r .value)
-ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_SQL_ADMIN | jq -r .value) 
+ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_SQL_ADMIN | jq -r .value)
 
 if [[ -z $ADMIN_SQL_PASSWORD ]]; then
     printf "ERROR: SQL admin password not set"
@@ -221,8 +221,6 @@ add_local_computer_sql_firewall_rule \
 echo "Creating/updating SQL user for Radix Cost Allocation"
 create_or_update_sql_user \
     $COST_ALLOCATION_SQL_SERVER_FQDN \
-    $COST_ALLOCATION_SQL_ADMIN_LOGIN \
-    $ADMIN_SQL_PASSWORD \
     $COST_ALLOCATION_SQL_DATABASE_NAME \
     $COST_ALLOCATION_SQL_COLLECTOR_USER \
     $COLLECTOR_SQL_PASSWORD \
@@ -241,7 +239,7 @@ echo "Install Radix Cost Allocation resources for flux"
 SQL_DB_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_WRITER | jq -r .value) ||
     { echo "ERROR: Could not get secret '${KV_SECRET_COST_ALLOCATION_DB_WRITER}' in '${AZ_RESOURCE_KEYVAULT}'." >&2; exit; }
 
-echo "db:                                                                                                                           
+echo "db:
   server: ${COST_ALLOCATION_SQL_SERVER_FQDN}
   database: ${COST_ALLOCATION_SQL_DATABASE_NAME}
   user: ${COST_ALLOCATION_SQL_COLLECTOR_USER}
@@ -249,14 +247,14 @@ echo "db:
 
 kubectl create ns radix-cost-allocation --dry-run=client --save-config -o yaml |
     kubectl apply -f -
-    
+
 kubectl create secret generic cost-db-secret --namespace radix-cost-allocation \
     --from-file=./radix-cost-allocation-values.yaml \
     --dry-run=client -o yaml |
     kubectl apply -f -
 
 flux reconcile helmrelease --namespace radix-cost-allocation radix-cost-allocation
-kubectl rollout restart deployment radix-cost-allocation --namespace radix-cost-allocation 
+kubectl rollout restart deployment radix-cost-allocation --namespace radix-cost-allocation
 
 rm -f radix-cost-allocation-values.yaml
 

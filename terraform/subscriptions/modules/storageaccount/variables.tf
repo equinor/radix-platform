@@ -108,3 +108,8 @@ variable "virtual_network" {
 variable "vnet_resource_group" {
   type = string
 }
+variable "lifecyclepolicy" {
+  type    = bool
+  default = false
+
+}

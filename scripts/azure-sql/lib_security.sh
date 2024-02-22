@@ -71,21 +71,14 @@ generate_password_and_store() {
 
 create_or_update_sql_user() {
     local serverName=$1
-    local connectLoginName=$2 # A SQL login with permissions to manager logins and users
-    local connectPassword=$3 # Password for $connectLoginName
-    local databaseName=$4 # Database name where user should be created
-    local userName=$5 # Database user name to map to login
-    local password=$6 # Password to set for $loginName
-    local roles=$7 # Comma separated list of database role names to add the user to
+    local databaseName=$2 # Database name where user should be created
+    local userName=$3 # Database user name to map to login
+    local password=$4 # Password to set for $loginName
+    local roles=$5 # Comma separated list of database role names to add the user to
     local script_dir_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
     if [[ -z $serverName ]]; then
         echo "ERROR: serverName not set" >&2
-        return 1
-    fi
-
-    if [[ -z $connectLoginName ]]; then
-        echo "ERROR: connectLoginName not set" >&2
         return 1
     fi
 
@@ -105,10 +98,9 @@ create_or_update_sql_user() {
     fi
 
     userName=$userName password=$password roles=$roles sqlcmd -b \
+        --authentication-method ActiveDirectoryDefault \
         -S $serverName \
         -d $databaseName \
-        -U $connectLoginName \
-        -P $connectPassword \
         -i "${script_dir_path}/create_or_update_user.sql" \
         || { echo "ERROR: Could not update SQL user." >&2; return 1; }
 }

@@ -68,7 +68,7 @@ data "azuread_service_principal" "velero" { # wip To be changed to workload iden
 resource "azurerm_role_assignment" "storage_blob_data_conntributor" {
   for_each             = can(regex("radixvelero.*", var.name)) ? { "${var.name}" : true } : {}
   scope                = azurerm_storage_account.storageaccount.id
-  role_definition_name = "Storage Blob Data Contributor"
+  role_definition_name = "Storage Account Contributor"
   principal_id         = data.azuread_service_principal.velero.id
   depends_on           = [azurerm_storage_account.storageaccount]
 }
@@ -89,9 +89,9 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
 
 resource "azurerm_storage_account_network_rules" "this" {
   # for_each                   = var.firewall ? { "${var.name}" : true } : {}
-  storage_account_id         = azurerm_storage_account.storageaccount.id
-  default_action             = "Deny"
-  ip_rules                   = []
+  storage_account_id = azurerm_storage_account.storageaccount.id
+  default_action     = "Deny"
+  ip_rules           = []
   # virtual_network_subnet_ids = [var.subnet_id]
 
 }
@@ -122,3 +122,30 @@ resource "azurerm_private_dns_a_record" "this" {
   ttl                 = 60
   records             = [azurerm_private_endpoint.this.private_service_connection.0.private_ip_address]
 }
+
+resource "azurerm_storage_management_policy" "this" {
+  for_each           = var.lifecyclepolicy ? { "${var.name}" : true } : {}
+  storage_account_id = azurerm_storage_account.storageaccount.id
+  rule {
+    name    = "lifecycle-blockblob"
+    enabled = true
+
+    filters {
+      blob_types = ["blockBlob"]
+    }
+
+    actions {
+      version {
+        delete_after_days_since_creation = 60
+      }
+      base_blob {
+        delete_after_days_since_modification_greater_than       = 90
+        tier_to_cool_after_days_since_modification_greater_than = 30
+      }
+    }
+  }
+  depends_on = [azurerm_storage_account.storageaccount]
+}
+
+
+

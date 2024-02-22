@@ -4,7 +4,24 @@ function get_credentials() {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
-  
+
+    az aks get-credentials \
+        --overwrite-existing \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$CLUSTER" \
+        --format exec \
+        --only-show-errors ||
+        { return; }
+
+    if [[ -n $CI ]]; then
+        kubelogin convert-kubeconfig -l azurecli
+    fi
+    # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
+}
+function get_credentials_silent() {
+    local AZ_RESOURCE_GROUP_CLUSTERS="$1"
+    local CLUSTER="$2"
+
     az aks get-credentials \
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -28,6 +45,27 @@ function verify_cluster_access() {
     printf " OK\n"
 }
 
+function setup_cluster_access() {
+  local AZ_RESOURCE_GROUP_CLUSTERS="$1"
+  local CLUSTER_NAME="$2"
+
+  get_credentials_silent "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}"
+  kubectl_context="$(kubectl config current-context)"
+  if [ "${kubectl_context}" = "${CLUSTER_NAME}" ]; then
+      return 0
+  else
+      echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}"
+      exit 1
+  fi
+
+  kubectl cluster-info > /dev/null || {
+      echo "ERROR: Could not access cluster. Quitting..."
+      exit 1
+  }
+
+  exit 0;
+}
+
 function get_cluster_outbound_ip() {
     local migration_strategy=$1
     local cluster_name=$2
@@ -39,7 +77,7 @@ function get_cluster_outbound_ip() {
     if [[ "${migration_strategy}" == "at" ]]; then
         ip_address=$(get_test_cluster_outbound_ip $cluster_name $az_subscription_id)
         if [[ -z "${ip_address}" ]]; then
-          printf "ERROR: Could not get outbound IP address for test cluster $cluster_name.\n" >&2 
+          printf "ERROR: Could not get outbound IP address for test cluster $cluster_name.\n" >&2
           return 1
         fi
         ip_prefix="$ip_address/32"
@@ -75,7 +113,7 @@ function get_test_cluster_outbound_ip() {
     frontend_ip_configurations_file="/tmp/$(uuidgen)"
     cat $outbound_rules_file | jq -r .[0].frontendIPConfigurations > $frontend_ip_configurations_file
     if [[ $(jq length $frontend_ip_configurations_file) != "1" ]]; then
-        printf "ERROR: Expected exactly 1 frontendIPConfiguration associated with outbound rule in LB for $dest_cluster, but found $(jq length $frontend_ip_configurations_file)" >&2 
+        printf "ERROR: Expected exactly 1 frontendIPConfiguration associated with outbound rule in LB for $dest_cluster, but found $(jq length $frontend_ip_configurations_file)" >&2
         rm $json_output_file $outbound_rules_file $frontend_ip_configurations_file
         return 1
     fi

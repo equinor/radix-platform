@@ -168,7 +168,7 @@ echo "Generate password for API SQL user and store in KV"
 generate_password_and_store $AZ_RESOURCE_KEYVAULT $KV_SECRET_COST_ALLOCATION_DB_API $REGENERATE_SQL_PASSWORD || exit
 
 API_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_DB_API | jq -r .value)
-ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_SQL_ADMIN | jq -r .value) 
+ADMIN_SQL_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name $KV_SECRET_COST_ALLOCATION_SQL_ADMIN | jq -r .value)
 
 if [[ -z $ADMIN_SQL_PASSWORD ]]; then
     printf "ERROR: SQL admin password not set" >&2
@@ -187,8 +187,6 @@ add_local_computer_sql_firewall_rule \
 echo "Creating/updating SQL user for Radix Cost Allocation API"
 create_or_update_sql_user \
     $COST_ALLOCATION_SQL_SERVER_FQDN \
-    $COST_ALLOCATION_SQL_ADMIN_LOGIN \
-    $ADMIN_SQL_PASSWORD \
     $COST_ALLOCATION_SQL_DATABASE_NAME \
     $COST_ALLOCATION_SQL_API_USER \
     $API_SQL_PASSWORD \

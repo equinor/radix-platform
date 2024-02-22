@@ -38,6 +38,7 @@ variable "storageaccounts" {
     backup                   = optional(bool, false)
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
+    lifecyclepolicy          = optional(bool, false)
   }))
   default = {
     log = {
@@ -50,6 +51,7 @@ variable "storageaccounts" {
       name                     = "velero"
       account_replication_type = "GRS"
       backup                   = true
+      lifecyclepolicy          = true
     }
   }
 }
