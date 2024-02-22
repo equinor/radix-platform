@@ -11,6 +11,9 @@ variable "admin_adgroup" {
 variable "managed_identity_admin_name" {
   type = string
 }
+variable "managed_identity_server_name" {
+  type = string
+}
 variable "location" {
   default = "northeurope"
   type    = string
@@ -42,6 +45,9 @@ variable "env" {
   description = "dev, playground, c2 or prod"
 }
 variable "vnet_resource_group" {
+  type = string
+}
+variable "common_resource_group" {
   type = string
 }
 
@@ -87,4 +93,7 @@ variable "admin_federated_credentials" {
     issuer  = string
     subject = string
   }))
+}
+variable "audit_storageaccount_name" {
+  type = string
 }
