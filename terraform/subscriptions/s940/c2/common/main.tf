@@ -57,5 +57,6 @@ module "storageaccount" {
   subnet_id                = local.external_outputs.virtualnetwork.data.vnet_subnet.id
   velero_service_principal = each.value.velero_service_principal
   vnet_resource_group      = module.config.vnet_resource_group
+  lifecyclepolicy          = each.value.lifecyclepolicy
 }
 

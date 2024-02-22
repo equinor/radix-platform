@@ -46,7 +46,7 @@ module "storageaccount" {
   account_replication_type = each.value.account_replication_type
   resource_group_name      = each.value.resource_group_name
   location                 = each.value.location
-  environment              = module.config.environment_L
+  environment              = module.config.environment
   kind                     = each.value.kind
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
@@ -57,5 +57,6 @@ module "storageaccount" {
   subnet_id                = local.external_outputs.virtualnetwork.data.vnet_subnet.id
   velero_service_principal = each.value.velero_service_principal
   vnet_resource_group      = module.config.vnet_resource_group
+  lifecyclepolicy          = each.value.lifecyclepolicy
 }
 
