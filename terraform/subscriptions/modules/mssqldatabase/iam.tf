@@ -3,10 +3,27 @@ data "azuread_group" "admin" {
   security_enabled = true
 }
 
+resource "azurerm_user_assigned_identity" "server" {
+  name                = var.managed_identity_server_name
+  location            = var.location
+  resource_group_name = var.rg_name
+}
 resource "azurerm_user_assigned_identity" "admin" {
   name                = var.managed_identity_admin_name
   location            = var.location
   resource_group_name = var.rg_name
+}
+
+resource "azurerm_role_assignment" "security" {
+  principal_id = azurerm_user_assigned_identity.admin.principal_id
+  scope        = azurerm_mssql_server.sqlserver.id
+  role_definition_name = "SQL Security Manager"
+}
+
+resource "azurerm_role_assignment" "auditlog" {
+  principal_id = azurerm_user_assigned_identity.server.principal_id
+  scope        = data.azurerm_storage_account.this.id
+  role_definition_name = "Storage Blob Data Contributor"
 }
 
 resource "azuread_group_member" "admin" {

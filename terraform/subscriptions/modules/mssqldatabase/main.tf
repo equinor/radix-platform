@@ -17,7 +17,13 @@ resource "azurerm_mssql_server" "sqlserver" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.server.id]
+  }
+  primary_user_assigned_identity_id            = azurerm_user_assigned_identity.server.id
+
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
@@ -48,4 +54,22 @@ resource "azurerm_mssql_database" "mssql_database" {
     retention_days       = 0
     state                = "Disabled"
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+data "azurerm_storage_account" "this" {
+  name                     = var.audit_storageaccount_name
+  resource_group_name      = var.common_resource_group
+}
+resource "azurerm_mssql_server_extended_auditing_policy" "this" {
+  server_id                               = azurerm_mssql_server.sqlserver.id
+  storage_endpoint                        = data.azurerm_storage_account.this.primary_blob_endpoint
+  retention_in_days                       = 7
+  log_monitoring_enabled = false
+
+  // Creating the policy will fail if the role assignment is not made yet
+  depends_on = [azurerm_role_assignment.auditlog]
 }
