@@ -303,7 +303,7 @@ data:
   values: |
     configuration:
       backupStorageLocation:
-      - name: azure
+      - name: default
         provider: azure
         default: true
         bucket: "$CLUSTER_NAME"

@@ -427,8 +427,8 @@ start_radix_operator() {
   printf " Done.\n"
 }
 
-wait_for_velero "BackupStorageLocation azure"
-kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+wait_for_velero "BackupStorageLocation default"
+kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
 printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
@@ -571,7 +571,7 @@ PATCH_JSON="$(
 END
 )"
 # Set velero in read/write mode
-kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 #######################################################################################
 ### Done!
