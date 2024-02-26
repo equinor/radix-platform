@@ -69,4 +69,7 @@ resource "azurerm_mssql_server_extended_auditing_policy" "this" {
   storage_endpoint                        = data.azurerm_storage_account.this.primary_blob_endpoint
   retention_in_days                       = 7
   log_monitoring_enabled = false
+
+  // Creating the policy will fail if the role assignment is not made yet
+  depends_on = [azurerm_role_assignment.auditlog]
 }
