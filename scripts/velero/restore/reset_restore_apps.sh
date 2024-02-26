@@ -130,7 +130,7 @@ PATCH_JSON="$(
 END
 )"
 # Set velero in read/write mode
-kubectl patch BackupStorageLocation azure --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
 echo "All done & gone!"
