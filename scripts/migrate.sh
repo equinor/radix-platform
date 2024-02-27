@@ -110,6 +110,11 @@ hash uuidgen 2>/dev/null || {
     exit 1
 }
 
+hash terraform 2>/dev/null || {
+    echo -e "\nERROR: terraform not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 printf "Done.\n"
 
 #######################################################################################

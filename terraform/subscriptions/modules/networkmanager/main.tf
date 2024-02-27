@@ -9,5 +9,3 @@ resource "azurerm_network_manager" "networkmanager" {
     subscription_ids = [var.subscription]
   }
 }
-
-

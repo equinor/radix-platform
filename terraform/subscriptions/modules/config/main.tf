@@ -43,8 +43,3 @@ output "backend" {
 output "policy_aks_diagnostics_cluster" {
   value = "Radix-Enforce-Diagnostics-AKS-Clusters"
 }
-
-output "cluster_names" {
-  value = local.config.clusters
-}
-
