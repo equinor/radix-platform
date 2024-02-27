@@ -1,4 +1,3 @@
-
 module "config" {
   source = "../../../modules/config"
 }
@@ -26,13 +25,11 @@ resource "local_file" "templates" {
   filename = replace("${path.module}/${each.key}", "templates", "rendered")
 }
 
-
 data "azurerm_kubernetes_cluster" "this" {
   for_each            = local.clusters
   resource_group_name = module.config.cluster_resource_group
   name                = each.key
 }
-
 
 data "azurerm_user_assigned_identity" "this" {
   resource_group_name = module.config.common_resource_group
