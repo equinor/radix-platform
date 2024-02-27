@@ -15,14 +15,14 @@ resource "azurerm_user_assigned_identity" "admin" {
 }
 
 resource "azurerm_role_assignment" "security" {
-  principal_id = azurerm_user_assigned_identity.admin.principal_id
-  scope        = azurerm_mssql_server.sqlserver.id
+  principal_id         = azurerm_user_assigned_identity.admin.principal_id
+  scope                = azurerm_mssql_server.sqlserver.id
   role_definition_name = "SQL Security Manager"
 }
 
 resource "azurerm_role_assignment" "auditlog" {
-  principal_id = azurerm_user_assigned_identity.server.principal_id
-  scope        = data.azurerm_storage_account.this.id
+  principal_id         = azurerm_user_assigned_identity.server.principal_id
+  scope                = data.azurerm_storage_account.this.id
   role_definition_name = "Storage Blob Data Contributor"
 }
 
