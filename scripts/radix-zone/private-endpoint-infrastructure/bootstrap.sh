@@ -59,14 +59,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_service_principal.sh"
-if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
-else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
-fi
 
 #######################################################################################
 ### Prepare az session
@@ -117,34 +109,6 @@ fi
 
 
 #######################################################################################
-### SUPPORT FUNCS - TODO move this to scripts/service-principle-and-aad-apps/lob_service_principle.sh?
-###
-
-function assignRoleForResourceToUser() {
-    local ROLE
-    local ROLE_SCOPE
-    local USER_ID
-    local CURRENT_ROLES
-
-    ROLE="${1}"
-    ROLE_SCOPE="${2}"
-    USER_ID="$(az ad sp list --display-name "${3}" --query [].appId --output tsv)"
-
-    # Delete any existing roles before creating new roles
-    CURRENT_ROLES=$(az role assignment list --assignee "${USER_ID}" --scope "${ROLE_SCOPE}")
-    if [[ -n "$CURRENT_ROLES" ]]; then
-        az role assignment delete \
-            --assignee "${USER_ID}" \
-            --scope "${ROLE_SCOPE}" 2>&1 >/dev/null
-
-        az role assignment create \
-            --assignee "${USER_ID}" \
-            --role "${ROLE}" \
-            --scope "${ROLE_SCOPE}" 2>&1 >/dev/null   
-    fi 
-}
-
-#######################################################################################
 ### Resource group
 ###
 
@@ -155,22 +119,6 @@ echo "Azure resource group: Creating ${AZ_RESOURCE_GROUP_VNET_HUB}..."
 az group create \
     --location "${AZ_RADIX_ZONE_LOCATION}" \
     --name "${AZ_RESOURCE_GROUP_VNET_HUB}"
-echo "...Done."
-
-#######################################################################################
-### Service principle assignment
-###
-
-echo ""
-
-echo "Azure service principle: Create ${AZ_SYSTEM_USER_VNET_HUB}..."
-# Create service principle
-create_service_principal_and_store_credentials "${AZ_SYSTEM_USER_VNET_HUB}" "Service principal managing hub vnet and private endpoints"
-ROLE_SCOPE="$(az group show --name "${AZ_RESOURCE_GROUP_VNET_HUB}" --query "id" --output tsv)"
-
-sleep 5 # Have to wait for required SP change cascades async in Azure
-echo "Azure VNET HUB: Assign role Contributor for scope ${ROLE_SCOPE} to SP ${AZ_SYSTEM_USER_VNET_HUB}..."
-assignRoleForResourceToUser "Contributor" "${ROLE_SCOPE}" "${AZ_SYSTEM_USER_VNET_HUB}"
 echo "...Done."
 
 #######################################################################################
