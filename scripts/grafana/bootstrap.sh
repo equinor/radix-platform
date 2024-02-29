@@ -193,57 +193,57 @@ fi
 ### Create secret required by Grafana
 ###
 
-echo "Install secret grafana-secret in cluster"
+# echo "Install secret grafana-secret in cluster"
 
-GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
-GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
-GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name grafana-database-password | jq -r .value)"
+# GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
+# GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
+# GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name grafana-database-password | jq -r .value)"
 
-# Transform clustername to lowercase
-CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
+# # Transform clustername to lowercase
+# CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
-# Check for custom-domain / Active cluster
+# # Check for custom-domain / Active cluster
 
-HOST_NAME=$(kubectl get ingress --namespace monitor grafana.custom-domain -o json | jq --raw-output .spec.rules[0].host)
+# HOST_NAME=$(kubectl get ingress --namespace monitor grafana.custom-domain -o json | jq --raw-output .spec.rules[0].host)
 
-if [[ -z $HOST_NAME ]]; then
-    GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
-    echo "GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL"
-else
-    GF_SERVER_ROOT_URL="https://$HOST_NAME"
-    echo "GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL"
-fi
+# if [[ -z $HOST_NAME ]]; then
+#     GF_SERVER_ROOT_URL="https://grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS"
+#     echo "GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL"
+# else
+#     GF_SERVER_ROOT_URL="https://$HOST_NAME"
+#     echo "GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL"
+# fi
 
-echo "ingress:
-  enabled: true
-  hosts:
-  - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
-  tls:
-  - secretName: radix-wildcard-tls-cert
-    hosts:
-    - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
-env:
-  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" >config
+# echo "ingress:
+#   enabled: true
+#   hosts:
+#   - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
+#   tls:
+#   - secretName: radix-wildcard-tls-cert
+#     hosts:
+#     - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
+# env:
+#   GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" >config
 
-kubectl create secret generic grafana-helm-secret \
-    --namespace monitor \
-    --from-file=./config \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
+# kubectl create secret generic grafana-helm-secret \
+#     --namespace monitor \
+#     --from-file=./config \
+#     --dry-run=client -o yaml |
+#     kubectl apply -f -
 
-rm -f config
+# rm -f config
 
-kubectl create secret generic grafana-secrets \
-    --namespace monitor \
-    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
-    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
-    --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
-    --dry-run=client \
-    -o yaml |
-    kubectl apply -f -
+# kubectl create secret generic grafana-secrets \
+#     --namespace monitor \
+#     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
+#     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
+#     --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
+#     --dry-run=client \
+#     -o yaml |
+#     kubectl apply -f -
 
-flux reconcile helmrelease --namespace monitor grafana
-kubectl rollout restart deployment --namespace monitor grafana
+# flux reconcile helmrelease --namespace monitor grafana
+# kubectl rollout restart deployment --namespace monitor grafana
 
 # #######################################################################################
 # ### Install Grafana
