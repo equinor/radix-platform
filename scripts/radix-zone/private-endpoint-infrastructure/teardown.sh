@@ -62,15 +62,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-# Load dependencies
-LIB_SERVICE_PRINCIPAL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../service-principals-and-aad-apps/lib_service_principal.sh"
-if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-   echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-   exit 1
-else
-   source "$LIB_SERVICE_PRINCIPAL_PATH"
-fi
-
 
 #######################################################################################
 ### Prepare az session
@@ -119,23 +110,6 @@ if [[ $USER_PROMPT == true ]]; then
     done
     echo ""
 fi
-
-#######################################################################################
-### Delete service principle
-###
-
-echo "Deleting service principle: ${AZ_SYSTEM_USER_VNET_HUB}..."
-delete_service_principal_and_stored_credentials "${AZ_SYSTEM_USER_VNET_HUB}"
-echo "...Done."
-
-
-#######################################################################################
-### Delete peering from clusters vnet
-###
-
-echo "Deleting peering from clusters vnet to hub vnet: ${AZ_SYSTEM_USER_VNET_HUB}..."
-
-echo "...Done."
 
 
 #######################################################################################
