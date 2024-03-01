@@ -188,78 +188,78 @@ fi
 
 # To generate a new file: `htpasswd -c ./auth prometheus`
 # This file MUST be named `auth` when creating the secret!
-echo ""
-echo "Create secret..."
-htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name prometheus-token | jq -r .value)"
+# echo ""
+# echo "Create secret..."
+# htpasswd -cb auth prometheus "$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name prometheus-token | jq -r .value)"
 
-kubectl create secret generic prometheus-htpasswd \
-  --namespace monitor \
-  --from-file auth --dry-run=client -o yaml |
-  kubectl apply -f -
+# kubectl create secret generic prometheus-htpasswd \
+#   --namespace monitor \
+#   --from-file auth --dry-run=client -o yaml |
+#   kubectl apply -f -
 
-rm -f auth
+# rm -f auth
 
-CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
+# CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"
 
-# Create a custom ingress for prometheus that adds HTTP Basic Auth
-echo ""
-echo "Creating \"prometheus-basic-auth\" ingress..."
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/auth-secret: prometheus-htpasswd
-    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - ok"
-  labels:
-    app: prometheus
-  name: prometheus-basic-auth
-  namespace: monitor
-spec:
-  rules:
-  - host: prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
-    http:
-      paths:
-      - backend:
-          service:
-            name: prometheus-operator-prometheus
-            port:
-              number: 9090
-        path: /
-        pathType: Prefix
-  tls:
-  - hosts:
-    - prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
-    secretName: radix-wildcard-tls-cert
-EOF
+# # Create a custom ingress for prometheus that adds HTTP Basic Auth
+# echo ""
+# echo "Creating \"prometheus-basic-auth\" ingress..."
+# cat <<EOF | kubectl apply -f -
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   annotations:
+#     nginx.ingress.kubernetes.io/auth-type: basic
+#     nginx.ingress.kubernetes.io/auth-secret: prometheus-htpasswd
+#     nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - ok"
+#   labels:
+#     app: prometheus
+#   name: prometheus-basic-auth
+#   namespace: monitor
+# spec:
+#   rules:
+#   - host: prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
+#     http:
+#       paths:
+#       - backend:
+#           service:
+#             name: prometheus-operator-prometheus
+#             port:
+#               number: 9090
+#         path: /
+#         pathType: Prefix
+#   tls:
+#   - hosts:
+#     - prometheus.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
+#     secretName: radix-wildcard-tls-cert
+# EOF
 
-# Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in flux chart)
-echo "Creating \"prometheus-oauth2-auth\" ingress..."
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-  labels:
-    app: prometheus
-  name: prometheus-oauth2-auth
-  namespace: monitor
-spec:
-  rules:
-  - host: prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
-    http:
-      paths:
-      - backend:
-          service:
-            name: prometheus-operator-prometheus
-            port:
-              number: 4180
-        path: /
-        pathType: Prefix
-  tls:
-  - hosts:
-    - prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
-    secretName: radix-wildcard-tls-cert
-EOF
+# # Install Prometheus Ingress that maps to the OAuth2 Proxy sidecar (specified in flux chart)
+# echo "Creating \"prometheus-oauth2-auth\" ingress..."
+# cat <<EOF | kubectl apply -f -
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   annotations:
+#     nginx.ingress.kubernetes.io/enable-cors: "true"
+#   labels:
+#     app: prometheus
+#   name: prometheus-oauth2-auth
+#   namespace: monitor
+# spec:
+#   rules:
+#   - host: prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
+#     http:
+#       paths:
+#       - backend:
+#           service:
+#             name: prometheus-operator-prometheus
+#             port:
+#               number: 4180
+#         path: /
+#         pathType: Prefix
+#   tls:
+#   - hosts:
+#     - prometheus-oauth2.${CLUSTER_NAME_LOWER}.$AZ_RESOURCE_DNS
+#     secretName: radix-wildcard-tls-cert
+# EOF
