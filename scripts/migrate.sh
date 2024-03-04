@@ -582,7 +582,7 @@ apiVersion: velero.io/v1
 kind: Backup
 metadata:
   labels:
-    velero.io/storage-location: azure
+    velero.io/storage-location: default
   name: $BACKUP_NAME
   namespace: velero
 spec:
@@ -605,7 +605,7 @@ spec:
       operator: NotIn
       values:
       - prometheus-operator
-  storageLocation: azure
+  storageLocation: default
   ttl: 168h0m0s
   volumeSnapshotLocations:
   - azure
