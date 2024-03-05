@@ -574,7 +574,7 @@ printf "Done.\n"
 echo ""
 
 printf "Making sure Velero backupstoragelocation are set for $SOURCE_CLUSTER... "
-kubectl patch backupstoragelocation azure --namespace velero --type merge --patch '{"spec": {"objectStorage": {"bucket": "'${SOURCE_CLUSTER}'"}}}'
+kubectl patch backupstoragelocation default --namespace velero --type merge --patch '{"spec": {"objectStorage": {"bucket": "'${SOURCE_CLUSTER}'"}}}'
 
 printf "Making backup of source cluster... "
 cat <<EOF | kubectl apply --filename -
