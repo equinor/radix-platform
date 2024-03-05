@@ -962,7 +962,6 @@ fi
 ### Do some terraform post tasks
 ###
 echo "Do some terraform post tasks"
-pwd
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
 printf "Done."
