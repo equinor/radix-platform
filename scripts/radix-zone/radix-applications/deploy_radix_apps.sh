@@ -682,10 +682,10 @@ fi
 # Public Web Site
 
 echo ""
-echo "Deploy radix-platform..."
+echo "Deploy radix-public-site..."
 
 create_and_register_deploy_key_and_store_credentials \
-    "radix-platform" \
+    "radix-public-site" \
     "radix-public-site" \
     "equinor" \
     "${GITHUB_PAT}" \
@@ -696,15 +696,15 @@ create_and_register_deploy_key_and_store_credentials \
     "${DEPLOY_KEY_NAME}" \
     "2b0781a7db131784551ea1ea4b9619c9"
 
-create_github_webhook_in_repository "radix-platform" "${GITHUB_PAT}"
+create_github_webhook_in_repository "radix-public-site" "${GITHUB_PAT}"
 
-create_radix_application "radix-platform"
+create_radix_application "radix-public-site"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
-    wait_for_app_namespace "radix-platform"
+    wait_for_app_namespace "radix-public-site"
 
-    create_build_deploy_job "radix-platform" "main"
+    create_build_deploy_job "radix-public-site" "main"
 fi
 
 # Radix Vulnerability Scanner API
