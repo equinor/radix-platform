@@ -185,9 +185,9 @@ verify_cluster_access
 ### Create namespace
 ###
 
-if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then
-    kubectl create namespace monitor --dry-run=client -o yaml | sed '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
-fi
+# if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then
+#     kubectl create namespace monitor --dry-run=client -o yaml | sed '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
+# fi
 
 #######################################################################################
 ### Create secret required by Grafana

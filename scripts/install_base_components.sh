@@ -228,6 +228,14 @@ if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
 fi
 
 #######################################################################################
+### Create monitor namespace
+###
+
+if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then
+  kubectl create namespace monitor --dry-run=client -o yaml | sed '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
+fi
+
+#######################################################################################
 ### Add priority classes
 ###
 
