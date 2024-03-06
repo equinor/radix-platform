@@ -179,11 +179,11 @@ if ! [[ -x "$INSTALL_BASE_COMPONENTS_SCRIPT" ]]; then
     echo "ERROR: The install base components script is not found or it is not executable in path $INSTALL_BASE_COMPONENTS_SCRIPT" >&2
 fi
 
-PROMETHEUS_CONFIGURATION_SCRIPT="$WORKDIR_PATH/prometheus-operator/configure.sh"
-if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
-fi
+# PROMETHEUS_CONFIGURATION_SCRIPT="$WORKDIR_PATH/prometheus-operator/configure.sh"
+# if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
+#     # Print to stderror
+#     echo "ERROR: The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
+# fi
 
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
@@ -515,10 +515,10 @@ while [[ "$(kubectl get deploy prometheus-operator-operator --namespace monitor 
 done
 printf " Done.\n"
 
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${DEST_CLUSTER}" source "${PROMETHEUS_CONFIGURATION_SCRIPT}")
-wait
+# echo ""
+# printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
+# (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${DEST_CLUSTER}" source "${PROMETHEUS_CONFIGURATION_SCRIPT}")
+# wait
 
 # Wait for operator to be deployed from flux
 echo ""
