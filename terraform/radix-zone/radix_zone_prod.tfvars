@@ -300,9 +300,9 @@ sql_database = {
       "displayName" = "Database"
     }
   }
-  "sql-radix-vulnerability-scan-c2-prod" = {
+  "sql-radix-vulnerability-scan-c2" = {
     name   = "radix-vulnerability-scan"
-    server = "sql-radix-vulnerability-scan-c2-prod"
+    server = "sql-radix-vulnerability-scan-c2"
   }
   "sql-radix-vulnerability-scan-prod" = {
     name     = "radix-vulnerability-scan"
