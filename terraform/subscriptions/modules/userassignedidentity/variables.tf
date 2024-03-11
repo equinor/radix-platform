@@ -20,3 +20,12 @@ variable "roleassignments" {
   }))
   default = {}
 }
+
+variable "federated_credentials" {
+  type = map(object({
+    name    = string
+    issuer  = string
+    subject = string
+  }))
+  default = {}
+}
