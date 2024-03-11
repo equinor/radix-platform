@@ -39,6 +39,9 @@ output "log_storageaccount_name" {
 output "backend" {
   value = local.config.backend
 }
+output "subscription" {
+  value = local.config.backend.subscription_id
+}
 
 output "policy_aks_diagnostics_cluster" {
   value = "Radix-Enforce-Diagnostics-AKS-Clusters"
