@@ -35,7 +35,7 @@
 # RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GITHUB_PAT="" ./deploy_radix_apps.sh
 
 # Skip creation of radixJobs and specify deploy key name:
-# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" GITHUB_PAT="" CREATE_BUILD_DEPLOY_JOBS="false" DEPLOY_KEY_NAME="dev" ./deploy_radix_apps.sh
+# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-11" GITHUB_PAT="" CREATE_BUILD_DEPLOY_JOBS="false" DEPLOY_KEY_NAME="dev" ./deploy_radix_apps.sh
 
 #######################################################################################
 ### Support funcs
@@ -52,8 +52,8 @@ function assert_dep() {
 }
 
 # Function to ensure same functionality on linux and mac
-function date () 
-{ 
+function date ()
+{
     if type -p gdate > /dev/null; then
         gdate "$@";
     else
@@ -100,6 +100,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     local machine_user      # Input 8, optional
     local deploy_key_name   # Input 9, optional
     local configuration_item # Input 10, optional
+    localt radix_config_full_name
     local template_path
     local check_key
     local private_key
@@ -271,9 +272,9 @@ function create_github_webhook_in_repository() {
         --header "Authorization: token ${github_pat}" \
         --data "{\"name\":\"web\",\"active\":true,\"events\":[\"push\"],\"config\":{\"url\":\"https://webhook.${AZ_RESOURCE_DNS}/events/github\",\"secret\":\"${shared_secret}\",\"content_type\":\"json\",\"insecure_ssl\":\"0\"}}" \
         "https://api.github.com/repos/${repo_organization}/${repo_name}/hooks"
-    
+
     rm -f "${secret_file}"
-    
+
     printf " Done.\n"
 }
 
@@ -286,6 +287,7 @@ function create_radix_application() {
     local deploy_key
 
     app_name="${1}"
+    configFileName = "${2}"
 
     [ -z "$app_name" ] && { printf "Missing app_name."; return; }
 
@@ -326,6 +328,7 @@ function create_radix_application() {
             MACHINE_USER=$(cat ${secret_file} | jq -r .machineUser) \
             SHARED_SECRET=$(cat ${secret_file} | jq -r .sharedSecret) \
             CONFIGURATION_ITEM=$(cat ${secret_file} | jq -r .configurationItem) \
+            RADIX_CONFIG_FULL_NAME=${configFileName} \
             envsubst < "${script_dir_path}/templates/radix-app-template-rr.yaml" > "${script_dir_path}/${app_name}-rr.yaml"
 
         kubectl apply -f "${script_dir_path}/${app_name}-rr.yaml"
@@ -520,7 +523,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-github-webhook" "${GITHUB_PAT}"
 
-create_radix_application "radix-github-webhook"
+create_radix_application "radix-github-webhook" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -550,7 +553,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-api" "${GITHUB_PAT}"
 
-create_radix_application "radix-api"
+create_radix_application "radix-api" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -580,7 +583,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-cost-allocation-api" "${GITHUB_PAT}"
 
-create_radix_application "radix-cost-allocation-api"
+create_radix_application "radix-cost-allocation-api" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -610,7 +613,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-canary-golang" "${GITHUB_PAT}"
 
-create_radix_application "radix-canary-golang"
+create_radix_application "radix-canary-golang" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -640,7 +643,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-networkpolicy-canary" "${GITHUB_PAT}"
 
-create_radix_application "radix-networkpolicy-canary"
+create_radix_application "radix-networkpolicy-canary" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -668,7 +671,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-web-console" "${GITHUB_PAT}"
 
-create_radix_application "radix-web-console"
+create_radix_application "radix-web-console" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -698,7 +701,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-public-site" "${GITHUB_PAT}"
 
-create_radix_application "radix-public-site"
+create_radix_application "radix-public-site" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -726,7 +729,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-vulnerability-scanner-api" "${GITHUB_PAT}"
 
-create_radix_application "radix-vulnerability-scanner-api"
+create_radix_application "radix-vulnerability-scanner-api" "${VULNERABILITY_SCAN_API_CONFIG}"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -756,7 +759,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-servicenow-proxy" "${GITHUB_PAT}"
 
-create_radix_application "radix-servicenow-proxy"
+create_radix_application "radix-servicenow-proxy" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -786,7 +789,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-log-api" "${GITHUB_PAT}"
 
-create_radix_application "radix-log-api"
+create_radix_application "radix-log-api" "radixconfig.yaml"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration

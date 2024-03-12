@@ -12,4 +12,5 @@ spec:
   machineUser: ${MACHINE_USER}
   sharedSecret: ${SHARED_SECRET}
   configurationItem: ${CONFIGURATION_ITEM}
+  radixConfigFullName: ${RADIX_CONFIG_FULL_NAME}
 
