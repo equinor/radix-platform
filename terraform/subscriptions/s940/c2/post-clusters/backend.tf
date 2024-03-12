@@ -25,3 +25,13 @@ provider "azurerm" {
   features {
   }
 }
+
+module "config" {
+  source = "../../../modules/config"
+}
+
+module "clusters" {
+  source              = "../../../modules/active-clusters"
+  resource_group_name = "clusters-westeurope" #TODO with code below after cluster in new RG
+  subscription        = module.config.subscription
+}
