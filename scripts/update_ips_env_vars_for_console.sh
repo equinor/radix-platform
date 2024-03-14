@@ -146,7 +146,7 @@ function updateIpsEnvVars() {
     done
     printf " Done.\n"
     
-    updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${IP_LIST}"
+    updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${ip_list}"
 
     echo "Web component env variable updated with Public IP Prefix IPs."
 }
