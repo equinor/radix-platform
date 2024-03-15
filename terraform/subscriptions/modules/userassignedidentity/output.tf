@@ -9,5 +9,5 @@ output "client-id" {
 }
 output "name" {
   description = "Name of the new user assigned identity"
-  value = azurerm_user_assigned_identity.userassignedidentity.name
+  value       = azurerm_user_assigned_identity.userassignedidentity.name
 }

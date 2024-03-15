@@ -388,7 +388,7 @@ if [[ ${BACKUP_NAME} == "migration-"* ]]; then
     # Exit if source cluster does not exist
     echo ""
     echo "Verifying source cluster existence..."
-    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" || {
+    get_credentials "clusters-westeurope" "$SOURCE_CLUSTER" || {
         echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
         exit 1
     }
@@ -561,7 +561,7 @@ done
 
 echo ""
 printf "Point to source cluster... "
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
+get_credentials "clusters-westeurope" "$SOURCE_CLUSTER" >/dev/null
 
 #######################################################################################
 ### Verify cluster access
