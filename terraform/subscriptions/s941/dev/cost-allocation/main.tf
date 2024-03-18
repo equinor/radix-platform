@@ -51,10 +51,6 @@ module "mssql-database" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
     }
-    test = {
-      issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:pull_request"
-    }
   }
 }
 
@@ -75,10 +71,10 @@ module "github-workload-id" {
     },
   }
   federated_credentials = {
-    github-main = {
+    github-release = {
       name    = "gh-radix-cost-allocation-acr-main-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/master"
+      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
     }
   }
 }
