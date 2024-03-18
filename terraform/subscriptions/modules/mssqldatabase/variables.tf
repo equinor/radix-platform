@@ -1,9 +1,10 @@
 variable "administrator_login" {
-  default = "radix"
+  default = ""
   type    = string
 }
 variable "administrator_password" {
   type = string
+  default = ""
 }
 variable "admin_adgroup" {
   type = string
