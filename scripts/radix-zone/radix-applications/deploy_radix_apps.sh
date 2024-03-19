@@ -100,7 +100,7 @@ function create_and_register_deploy_key_and_store_credentials() {
     local machine_user      # Input 8, optional
     local deploy_key_name   # Input 9, optional
     local configuration_item # Input 10, optional
-    localt radix_config_full_name
+    local radix_config_full_name
     local template_path
     local check_key
     local private_key
