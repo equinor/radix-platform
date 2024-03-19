@@ -1,0 +1,31 @@
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  labels:
+    velero.io/storage-location: default
+  name: migration-20240318150000
+  namespace: velero
+spec:
+  excludedNamespaces:
+  - velero
+  - kube-system
+  excludedResources:
+  - pv
+  - pvc
+  hooks:
+    resources: null
+  includeClusterResources: true
+  includedNamespaces:
+  - '*'
+  includedResources:
+  - '*'
+  labelSelector:
+    matchExpressions:
+    - key: release
+      operator: NotIn
+      values:
+      - prometheus-operator
+  storageLocation: default
+  ttl: 168h0m0s
+  volumeSnapshotLocations:
+  - azure

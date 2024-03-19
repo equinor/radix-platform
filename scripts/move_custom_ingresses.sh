@@ -237,7 +237,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
         az aks disable-addons \
             --addons monitoring \
             --name "${SOURCE_CLUSTER}" \
-            --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+            --resource-group "clusters-westeurope" \
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --no-wait || {
             echo -e "\nERROR: Failed to disable monitoring addon. Exiting... " >&2
@@ -248,7 +248,7 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
 
     echo ""
     printf "Point to source cluster...\n"
-    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
+    get_credentials "clusters-westeurope" "$SOURCE_CLUSTER" >/dev/null
     [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}" ]] && exit 1
     printf "Done.\n"
 

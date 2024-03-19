@@ -347,15 +347,31 @@ printf "Done.\n"
 kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -
 
-kubectl create secret generic ingress-nginx-raw-ip \
-    --namespace ingress-nginx \
-    --from-literal=rawIp="$SELECTED_INGRESS_IP_RAW_ADDRESS" \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
+# kubectl create secret generic ingress-nginx-raw-ip \
+#     --namespace ingress-nginx \
+#     --from-literal=rawIp="$SELECTED_INGRESS_IP_RAW_ADDRESS" \
+#     --dry-run=client -o yaml |
+#     kubectl apply -f -
 
+# echo "controller:
+#   service:
+#     loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
+
+# kubectl create secret generic ingress-nginx-ip \
+#     --namespace ingress-nginx \
+#     --from-file=./config \
+#     --dry-run=client -o yaml |
+#     kubectl apply -f -
+
+# rm config
+
+## New Annotation on nginx service
+SELECTED_INGRESS_NAME="$(echo "$SELECTED_INGRESS_IP" | jq -r '.name')"
 echo "controller:
   service:
-    loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: $AZ_RESOURCE_GROUP_COMMON
+      service.beta.kubernetes.io/azure-pip-name: $SELECTED_INGRESS_NAME" > config
 
 kubectl create secret generic ingress-nginx-ip \
     --namespace ingress-nginx \
@@ -364,6 +380,7 @@ kubectl create secret generic ingress-nginx-ip \
     kubectl apply -f -
 
 rm config
+
 
 echo "Create custom-backend-errors..."
 printf "%s► Execute %s%s\n" "${grn}" "${CUSTOM_ERROR_PAGE_PATH}" "${normal}"
