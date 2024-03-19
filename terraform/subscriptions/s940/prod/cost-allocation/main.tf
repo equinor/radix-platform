@@ -33,7 +33,7 @@ module "mssql-database" {
   vnet_resource_group           = module.config.vnet_resource_group
   common_resource_group         = module.config.common_resource_group
   location                      = module.config.location
-  public_network_access_enabled = false
+  public_network_access_enabled = true
   sku_name                      = "S3"
   zone_redundant                = false
   tags = {
