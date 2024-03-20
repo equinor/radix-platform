@@ -7,14 +7,6 @@ module "resourcegroup" {
   name     = "cost-allocation-${module.config.environment}"
   location = module.config.location
 }
-data "azurerm_key_vault" "keyvault" {
-  name                = module.config.key_vault_name
-  resource_group_name = module.config.common_resource_group
-}
-data "azurerm_key_vault_secret" "keyvault_secrets" {
-  name         = var.keyvault_dbadmin_secret_name
-  key_vault_id = data.azurerm_key_vault.keyvault.id # local.external_outputs.keyvault.vault_id
-}
 
 # MS SQL Server
 module "mssql-database" {
@@ -26,9 +18,8 @@ module "mssql-database" {
   managed_identity_server_name  = "radix-id-cost-allocation-server-${module.config.environment}"
   audit_storageaccount_name     = module.config.log_storageaccount_name
   admin_adgroup                 = var.admin-adgroup
-  azuread_authentication_only   = false
+  azuread_authentication_only   = true
   administrator_login           = "radix"
-  administrator_password        = data.azurerm_key_vault_secret.keyvault_secrets.value
   rg_name                       = module.resourcegroup.data.name
   vnet_resource_group           = module.config.vnet_resource_group
   common_resource_group         = module.config.common_resource_group
@@ -71,10 +62,10 @@ module "github-workload-id" {
     },
   }
   federated_credentials = {
-    github-release = {
+    github-main = {
       name    = "gh-radix-cost-allocation-acr-main-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
+      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/master"
     }
   }
 }
