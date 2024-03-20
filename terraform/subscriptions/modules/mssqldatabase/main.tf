@@ -25,6 +25,8 @@ resource "azurerm_mssql_server" "sqlserver" {
   lifecycle {
     prevent_destroy = true
   }
+
+  depends_on = [azurerm_role_assignment.auditlog]
 }
 
 resource "azurerm_mssql_database" "mssql_database" {

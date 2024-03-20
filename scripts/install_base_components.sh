@@ -333,24 +333,6 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cicd-canary/bootst
 wait
 
 #######################################################################################
-### Install Radix cost exporter
-###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cost-allocation/bootstrap.sh" "${normal}"
-(./cost-allocation/bootstrap.sh)
-wait
-
-#######################################################################################
-### Install Radix vulnerability scanner
-###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/vulnerability-scanner/bootstrap.sh" "${normal}"
-(./vulnerability-scanner/bootstrap.sh)
-wait
-
-#######################################################################################
 ### Install prerequisites for Velero
 ###
 

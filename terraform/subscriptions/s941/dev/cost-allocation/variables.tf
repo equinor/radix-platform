@@ -3,7 +3,7 @@ variable "admin-adgroup" {
   default = "Radix SQL server admin - dev"
 }
 
-variable "keyvault_dbadmin_secret_name" {
+variable "acr_name" {
   type    = string
-  default = "radix-cost-allocation-db-admin"
+  default = "radixdev"
 }

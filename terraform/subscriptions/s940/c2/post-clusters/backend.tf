@@ -32,6 +32,6 @@ module "config" {
 
 module "clusters" {
   source              = "../../../modules/active-clusters"
-  resource_group_name = "clusters-westeurope" #TODO with code below after cluster in new RG
+  resource_group_name = module.config.cluster_resource_group
   subscription        = module.config.subscription
 }

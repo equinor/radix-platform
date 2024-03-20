@@ -583,7 +583,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-cost-allocation-api" "${GITHUB_PAT}"
 
-create_radix_application "radix-cost-allocation-api" "radixconfig.yaml"
+create_radix_application "radix-cost-allocation-api" "${COST_ALLOCATION_API_CONFIG}"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
@@ -872,22 +872,6 @@ echo ""
 echo "Update Radix API env vars"
 (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_env_vars_for_radix_api.sh")
 wait
-
-### Set Radix Cost Allocation API secrets
-echo ""
-echo "For the cost allocation api to work we need to apply secrets"
-wait_for_app_namespace_component_secret "radix-cost-allocation-api-qa" "server"
-wait_for_app_namespace_component_secret "radix-cost-allocation-api-prod" "server"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_cost_allocation_api.sh")
-wait # wait for subshell to finish
-
-### Set Radix Vulnerability Scanner API secrets
-echo ""
-echo "For the vulnerability scanner api to work we need to apply secrets"
-wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-qa" "server"
-wait_for_app_namespace_component_secret "radix-vulnerability-scanner-api-prod" "server"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" "${script_dir_path}/../../update_secret_for_vulnerability_scanner_api.sh")
-wait # wait for subshell to finish
 
 ### Set Radix ServiceNow Proxy secrets
 echo ""
