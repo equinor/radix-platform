@@ -2,14 +2,14 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Bootstrap radix zone infrastructure for monitoring, resource gorups, keyvault etc
 
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -20,14 +20,14 @@
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # ./bootstrap.sh env
 
 
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start bootstrap of Monitoring infrastructure.. "
@@ -164,8 +164,6 @@ function create_keyvault(){
 
 create_resource_groups
 create_keyvault
-create_monitoring_service_principal "$APP_REGISTRATION_MONITORING" "Grafana Azure integration"
-create_monitoring_ar_secret "$APP_REGISTRATION_MONITORING" "radix-grafana-azure" "Grafana Azure secret"
 create_monitoring_service_principal "$APP_REGISTRATION_GRAFANA" "Grafana Oauth, main app for user authentication to Grafana"
 create_monitoring_ar_secret "$APP_REGISTRATION_GRAFANA" "$APP_REGISTRATION_GRAFANA" "Grafana OAuth secret"
 create_grafana_mysql
