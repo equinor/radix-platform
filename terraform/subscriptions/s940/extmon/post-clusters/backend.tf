@@ -10,7 +10,7 @@ terraform {
   }
 
   backend "azurerm" {
-    tenant_id       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+    tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
     subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
     #client_id            = "043e5510-738f-4c30-8b9d-ee32578c7fe8"
     resource_group_name  = "s940-tfstate"
@@ -24,4 +24,9 @@ provider "azurerm" {
   subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   features {
   }
+}
+module "clusters" {
+  source              = "../../../modules/active-clusters"
+  resource_group_name = module.config.cluster_resource_group
+  subscription        = module.config.subscription
 }

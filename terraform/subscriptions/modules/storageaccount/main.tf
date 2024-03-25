@@ -9,6 +9,9 @@ resource "azurerm_storage_account" "storageaccount" {
   account_kind             = var.kind
   account_replication_type = var.account_replication_type
   account_tier             = var.tier
+  allow_nested_items_to_be_public = false
+  default_to_oauth_authentication = true
+
   dynamic "blob_properties" {
     for_each = var.kind == "BlobStorage" || var.kind == "Storage" ? [1] : []
     content {
