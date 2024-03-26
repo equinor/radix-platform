@@ -213,7 +213,7 @@ verify_cluster_access
 ### Move custom ingresses
 ###
 if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground"]]; then
-    echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | | jq '.' > dataCollectionSettings.json
+    echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
 else
     echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
 fi
