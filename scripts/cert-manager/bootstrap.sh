@@ -26,7 +26,6 @@
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 # Optional:
-# - STAGING             : Use cert issuer staging api? true/false. Default is false.
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
 
@@ -36,10 +35,6 @@
 
 # NORMAL
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./bootstrap.sh
-
-# STAGING
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" STAGING=true ./bootstrap.sh
-
 
 #######################################################################################
 ### DOCS
@@ -102,22 +97,6 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
-if [[ -z "$STAGING" ]]; then
-    STAGING=false
-fi
-
-# Script vars
-
-WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [[ $STAGING == false ]]; then
-    CERT_ISSUER="letsencrypt-prod"
-    ACME_URL="https://acme-v02.api.letsencrypt.org/directory"
-else
-    CERT_ISSUER="letsencrypt-staging"
-    ACME_URL="https://acme-staging-v02.api.letsencrypt.org/directory"
-fi
-
-
 #######################################################################################
 ### Prepare az session
 ###
@@ -140,10 +119,6 @@ echo -e "   ------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                      : $CLUSTER_NAME"
 echo -e "   -  AZ_RESOURCE_DNS                   : $AZ_RESOURCE_DNS"
 echo -e "   -  RADIX_ZONE                        : $RADIX_ZONE"
-echo -e ""
-echo -e "   > WHAT:"
-echo -e "   -------------------------------------------------------------------"
-echo -e "   -  CERT_ISSUER                       : $CERT_ISSUER"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -195,27 +170,6 @@ kubectl create namespace cert-manager \
 
 # Create secret for flux
 
-# TODO: Remove boostrap of cert-manager-helm-secret secret
-echo "ingressShim:
-  defaultIssuerName: ${CERT_ISSUER}
-  defaultIssuerKind: ClusterIssuer" > config
-kubectl create secret generic cert-manager-helm-secret --namespace cert-manager \
-    --from-file=./config \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
-rm -f config
-
-DNS_SP="$(az keyvault secret show \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
-    --name $APP_REGISTRATION_CERT_MANAGER \
-    | jq '.value | fromjson')"
-
-# Set variables used in the manifest templates
-DNS_SP_ID="$(echo $DNS_SP | jq -r '.id')"
-DNS_SP_TENANT_ID="$(echo $DNS_SP | jq -r '.tenantId')"
-DNS_SP_PASSWORD="$(echo $DNS_SP | jq -r '.password')"
-DNS_SP_PASSWORD_base64="$(echo $DNS_SP_PASSWORD | base64 -)"
-
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
@@ -224,22 +178,9 @@ metadata:
   namespace: flux-system
 type: Opaque
 stringData:
-  CERT_ISSUER: ${CERT_ISSUER}
   AZ_RESOURCE_DNS: ${AZ_RESOURCE_DNS}
-  ACME_URL: ${ACME_URL}
-  DNS_SP_ID: ${DNS_SP_ID}
   AZ_SUBSCRIPTION_ID: ${AZ_SUBSCRIPTION_ID}
-  DNS_SP_TENANT_ID: ${DNS_SP_TENANT_ID}
   AZ_RESOURCE_GROUP_COMMON: ${AZ_RESOURCE_GROUP_COMMON}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: azure-dns-secret
-  namespace: cert-manager
-type: Opaque
-data:
-  client-secret: ${DNS_SP_PASSWORD_base64} # base64 encode of Azure AD password
 EOF
 
 echo ""
