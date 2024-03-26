@@ -35,7 +35,6 @@ module "loganalytics" {
   local_authentication_disabled = false
 }
 
-
 module "storageaccount" {
   source                   = "../../../modules/storageaccount"
   for_each                 = var.storageaccounts
