@@ -212,6 +212,11 @@ verify_cluster_access
 #######################################################################################
 ### Move custom ingresses
 ###
+if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground"]]; then
+    echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+else
+    echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+fi
 
 echo ""
 printf "Enabling monitoring addon in the destination cluster...\n"
@@ -223,12 +228,14 @@ if [[ "${omsagent}" == "false" || -z "${omsagent}" ]]; then
         --name "${DEST_CLUSTER}" \
         --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
         --workspace-resource-id "${WORKSPACE_ID}" \
+        --data-collection-settings dataCollectionSettings.json
         --no-wait || {
         echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2
         exit 1
     }
 fi
 printf "Done.\n"
+rm dataCollectionSettings.json
 
 if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""

@@ -308,7 +308,7 @@ data:
         default: true
         bucket: "$CLUSTER_NAME"
         config:
-          resourceGroup: "common-${RADIX_ZONE_MIGRATE}"
+          resourceGroup: "common-${RADIX_ZONE}"
           storageAccount: "$AZ_VELERO_STORAGE_ACCOUNT_ID"
       volumeSnapshotLocation:
         - name: azure
