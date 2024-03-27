@@ -26,6 +26,7 @@ module "mssql-database" {
   location                      = module.config.location
   public_network_access_enabled = true
   zone_redundant                = false
+  subscription                  = module.config.subscription
   tags = {
     displayName = "SqlServer"
   }
