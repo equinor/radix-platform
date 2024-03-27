@@ -1,9 +1,14 @@
+variable "subscription" {
+  description = "The subscription ID"
+  type        = string
+}
+
 variable "administrator_login" {
   default = ""
   type    = string
 }
 variable "administrator_password" {
-  type = string
+  type    = string
   default = ""
 }
 variable "admin_adgroup" {

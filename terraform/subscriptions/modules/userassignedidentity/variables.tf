@@ -31,6 +31,6 @@ variable "federated_credentials" {
 }
 
 variable "tags" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }

@@ -67,10 +67,11 @@ data "azurerm_storage_account" "this" {
   resource_group_name = var.common_resource_group
 }
 resource "azurerm_mssql_server_extended_auditing_policy" "this" {
-  server_id              = azurerm_mssql_server.sqlserver.id
-  storage_endpoint       = data.azurerm_storage_account.this.primary_blob_endpoint
-  retention_in_days      = 7
-  log_monitoring_enabled = false
+  server_id                       = azurerm_mssql_server.sqlserver.id
+  storage_endpoint                = data.azurerm_storage_account.this.primary_blob_endpoint
+  retention_in_days               = 7
+  log_monitoring_enabled          = false
+  storage_account_subscription_id = var.subscription
 
   // Creating the policy will fail if the role assignment is not made yet
   depends_on = [azurerm_role_assignment.auditlog]

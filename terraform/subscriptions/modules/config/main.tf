@@ -48,6 +48,6 @@ output "policy_aks_diagnostics_cluster" {
 }
 
 output "grafana_ar_reader_display_name" {
-  value = "radix-ar-grafana-logreader-extmon"
+  value       = "radix-ar-grafana-logreader-extmon"
   description = "App Registration created in tenant/entra/grafana.tf. Used by grafana to query Log Analytics Workspaces"
 }
