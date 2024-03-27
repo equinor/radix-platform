@@ -26,6 +26,7 @@ module "mssql-database" {
   location                      = module.config.location
   public_network_access_enabled = true
   zone_redundant                = false
+  subscription                  = module.config.subscription
   tags = {
     displayName = "SqlServer"
   }
@@ -90,7 +91,7 @@ output "mi-client-id" {
 output "github-buildpush-workflow" {
   value = {
     client-id = module.github-workload-id.client-id
-    name = module.github-workload-id.name
+    name      = module.github-workload-id.name
   }
 }
 output "mi-writer" {

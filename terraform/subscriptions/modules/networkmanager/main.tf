@@ -6,6 +6,6 @@ resource "azurerm_network_manager" "networkmanager" {
   description         = "${var.subscription_shortname}-Azure Network Mananger - ${var.location}"
 
   scope {
-    subscription_ids = [var.subscription]
+    subscription_ids = ["/subscriptions/${var.subscription}"]
   }
 }
