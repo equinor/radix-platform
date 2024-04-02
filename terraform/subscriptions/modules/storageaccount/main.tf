@@ -44,6 +44,7 @@ resource "azurerm_storage_account" "storageaccount" {
 
   tags = {
     environment = var.environment
+    IaC         = "terraform"
   }
 }
 

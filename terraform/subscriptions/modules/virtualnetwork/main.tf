@@ -3,6 +3,9 @@ resource "azurerm_virtual_network" "vnet-hub" {
   resource_group_name = "cluster-vnet-hub-${var.enviroment}"
   address_space       = ["10.0.0.0/16"]
   location            = var.location
+  tags = {
+    IaC = "terraform"
+  }
 }
 
 resource "azurerm_subnet" "this" {
@@ -17,4 +20,7 @@ resource "azurerm_private_dns_zone" "this" {
   for_each            = toset(local.AZ_PRIVATE_DNS_ZONES)
   name                = each.key
   resource_group_name = "cluster-vnet-hub-${var.enviroment}"
+  tags = {
+    IaC = "terraform"
+  }
 }
