@@ -4,7 +4,7 @@ module "config" {
 
 module "resourcegroups" {
   source   = "../../../modules/resourcegroups"
-  name     = "cluster-vnet-hub-${module.config.environment}"
+  name     = module.config.vnet_resource_group
   location = module.config.location
 }
 
