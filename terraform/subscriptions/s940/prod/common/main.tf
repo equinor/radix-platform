@@ -45,7 +45,7 @@ data "azurerm_virtual_network" "this" {
 
 data "azurerm_subnet" "this" {
   name                 = "private-links"
-  resource_group_name  = "cluster-vnet-hub-prod"
+  resource_group_name  = module.config.vnet_resource_group
   virtual_network_name = data.azurerm_virtual_network.this.name
 }
 
