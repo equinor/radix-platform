@@ -19,7 +19,7 @@ resource "azurerm_subnet" "this" {
 resource "azurerm_private_dns_zone" "this" {
   for_each            = toset(local.AZ_PRIVATE_DNS_ZONES)
   name                = each.key
-  resource_group_name = "cluster-vnet-hub-${var.enviroment}"
+  resource_group_name = module.config.vnet_resource_group
   tags = {
     IaC = "terraform"
   }
