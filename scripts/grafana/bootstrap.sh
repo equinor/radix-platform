@@ -233,14 +233,14 @@ kubectl create secret generic grafana-helm-secret \
 
 rm -f config
 
-kubectl create secret generic grafana-secrets \
-    --namespace monitor \
-    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
-    --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
-    --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
-    --dry-run=client \
-    -o yaml |
-    kubectl apply -f -
+# kubectl create secret generic grafana-secrets \
+#     --namespace monitor \
+#     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_ID=$GF_CLIENT_ID \
+#     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$GF_CLIENT_SECRET \
+#     --from-literal=GF_DATABASE_PASSWORD=$GF_DB_PWD \
+#     --dry-run=client \
+#     -o yaml |
+#     kubectl apply -f -
 
 flux reconcile helmrelease --namespace monitor grafana
 kubectl rollout restart deployment --namespace monitor grafana
