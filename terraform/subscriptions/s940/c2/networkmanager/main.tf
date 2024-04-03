@@ -1,25 +1,40 @@
+module "config" {
+  source = "../../../modules/config"
+}
 
-data "azurerm_subscription" "current" {}
+
+data "azurerm_virtual_network" "this" {
+  name                = "vnet-hub"
+  resource_group_name = module.config.vnet_resource_group
+}
+
+module "azurerm_network_manager" {
+  source                 = "../../../modules/networkmanager"
+  subscription_shortname = local.external_outputs.global.data.subscription_shortname
+  location               = module.config.location
+  resource_group         = module.config.cluster_resource_group
+  subscription           = module.config.subscription
+}
 
 module "azurerm_network_manager_network_group" {
   source             = "../../../modules/networkmanager_networkgroup"
-  enviroment         = local.external_outputs.clusters.data.enviroment
-  network_manager_id = local.external_outputs.networkmanager.data.id
+  enviroment         = module.config.environment
+  network_manager_id = module.azurerm_network_manager.data.id
 }
 
 module "azurerm_network_manager_connectivity_configuration" {
   source             = "../../../modules/networkmanager_connectivity"
-  enviroment         = local.external_outputs.clusters.data.enviroment
-  network_manager_id = local.external_outputs.networkmanager.data.id
+  enviroment         = module.config.environment
+  network_manager_id = module.azurerm_network_manager.data.id
   network_group_id   = module.azurerm_network_manager_network_group.data.id
-  vnethub_id         = local.external_outputs.virtualnetwork.data.vnet_hub.id
+  vnethub_id         = data.azurerm_virtual_network.this.id
 }
 
 resource "azurerm_policy_definition" "policy" {
-  name         = "Kubernetes-vnets-in-${local.external_outputs.clusters.data.enviroment}"
+  name         = "Kubernetes-vnets-in-${module.config.environment}"
   policy_type  = "Custom"
   mode         = "Microsoft.Network.Data"
-  display_name = "Kubernetes vnets in ${local.external_outputs.clusters.data.enviroment}"
+  display_name = "Kubernetes vnets in ${module.config.environment}"
 
   metadata = <<METADATA
     {
@@ -40,15 +55,11 @@ METADATA
           "allOf": [
             {
               "value": "[resourceGroup().Name]",
-              "contains": "${local.external_outputs.clusters.data.resource_group}"
+              "contains": "${module.config.cluster_resource_group}"
             },
             {
               "field": "location",
-              "contains": "${local.external_outputs.clusters.data.location}"
-            },
-            {
-              "field": "Name",
-              "contains": "${local.external_outputs.clusters.data.enviroment}"
+              "contains": "${module.config.location}"
             }
           ]
         }
@@ -57,7 +68,7 @@ METADATA
     "then": {
       "effect": "addToNetworkGroup",
       "details": {
-        "networkGroupId": "/subscriptions/${local.external_outputs.global.data.subscription_id}/resourceGroups/clusters/providers/Microsoft.Network/networkManagers/${local.external_outputs.global.data.subscription_shortname}-ANVM/networkGroups/${local.external_outputs.clusters.data.enviroment}"
+        "networkGroupId": "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.cluster_resource_group}/providers/Microsoft.Network/networkManagers/S940-ANVM/networkGroups/${module.config.environment}"
       }
     }
   }
@@ -66,9 +77,9 @@ METADATA
 
 module "azurerm_subscription_policy_assignment" {
   source       = "../../../modules/policyassignment"
-  enviroment   = local.external_outputs.clusters.data.enviroment
-  location     = local.external_outputs.common.data.location
+  enviroment   = module.config.environment
+  location     = module.config.location
   policy_id    = azurerm_policy_definition.policy.id
-  subscription = data.azurerm_subscription.current.id
+  subscription = module.config.subscription
 }
 

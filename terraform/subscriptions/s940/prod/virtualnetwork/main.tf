@@ -18,3 +18,7 @@ module "azurerm_virtual_network" {
 output "vnet_hub_id" {
   value = module.azurerm_virtual_network.data.vnet_hub.id
 }
+
+output "vnet_subnet_id" {
+  value = module.azurerm_virtual_network.data.vnet_subnet.id
+}

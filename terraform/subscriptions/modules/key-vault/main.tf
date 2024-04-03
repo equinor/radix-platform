@@ -3,12 +3,14 @@ resource "azurerm_key_vault" "this" {
   location            = var.location
   resource_group_name = var.resource_group_name
   # enabled_for_disk_encryption = true
-  tenant_id                  = var.tenant_id
-  soft_delete_retention_days = 90
-  purge_protection_enabled   = var.purge_protection_enabled
-  enable_rbac_authorization  = var.enable_rbac_authorization
-
+  tenant_id                     = var.tenant_id
+  soft_delete_retention_days    = 90
+  purge_protection_enabled      = var.purge_protection_enabled
+  enable_rbac_authorization     = var.enable_rbac_authorization
   public_network_access_enabled = true
+  tags = {
+    IaC = "terraform"
+  }
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"

@@ -1,14 +1,24 @@
+module "config" {
+  source = "../../../modules/config"
+}
+
 module "resourcegroups" {
-  for_each = toset(var.resource_groups)
   source   = "../../../modules/resourcegroups"
-  name     = "${each.value}-${local.external_outputs.common.data.enviroment}"
-  location = local.external_outputs.common.data.location
+  name     = module.config.vnet_resource_group
+  location = module.config.location
 }
 
 module "azurerm_virtual_network" {
   source     = "../../../modules/virtualnetwork"
-  location   = local.external_outputs.common.data.location
-  enviroment = local.external_outputs.common.data.enviroment
+  location   = module.config.location
+  enviroment = module.config.environment
   depends_on = [module.resourcegroups]
 }
 
+output "vnet_hub_id" {
+  value = module.azurerm_virtual_network.data.vnet_hub.id
+}
+
+output "vnet_subnet_id" {
+  value = module.azurerm_virtual_network.data.vnet_subnet.id
+}

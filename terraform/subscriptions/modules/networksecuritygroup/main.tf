@@ -2,6 +2,9 @@ resource "azurerm_network_security_group" "networksecuritygroup" {
   name                = var.networksecuritygroupname
   location            = var.location
   resource_group_name = var.resource_group_name
+  tags = {
+    IaC = "terraform"
+  }
 
   security_rule = [
     {

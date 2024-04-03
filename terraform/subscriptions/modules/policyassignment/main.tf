@@ -9,5 +9,4 @@ resource "azurerm_subscription_policy_assignment" "assignment" {
     identity_ids = []
     type         = "SystemAssigned"
   }
-
 }
