@@ -5,7 +5,7 @@ module "config" {
 
 data "azurerm_virtual_network" "this" {
   name                = "vnet-hub"
-  resource_group_name = "cluster-vnet-hub-${module.config.environment}"
+  resource_group_name = module.config.vnet_resource_group
 }
 
 module "azurerm_network_manager" {
