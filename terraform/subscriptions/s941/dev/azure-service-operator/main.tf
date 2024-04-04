@@ -17,13 +17,12 @@ resource "azurerm_role_definition" "aso_role" {
 
   permissions {
     actions = [
-      "Microsoft.Network/privateEndpoints/*",
-      # "Microsoft.Network/networkInterfaces", # Maybe this is required?
-      # "Microsoft.Network/virtualNetworks", # Maybe we need access to create private NICs?
-      # "Microsoft.Network/virtualNetworks/subnets",
-    ]
-    not_actions = [
-      "Microsoft.Network/dnszones/*" # Private endpoints granted this access as well automatically... lets remove it
+      "Microsoft.Network/privateEndpoints/read",
+      "Microsoft.Network/privateEndpoints/write",
+      "Microsoft.Network/privateEndpoints/delete",
+
+      "Microsoft.Network/virtualNetworks/subnets/read",
+      "Microsoft.Network/virtualNetworks/subnets/join/action"
     ]
   }
 }
