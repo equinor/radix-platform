@@ -11,3 +11,6 @@ output "name" {
   description = "Name of the new user assigned identity"
   value       = azurerm_user_assigned_identity.userassignedidentity.name
 }
+output "principal_id" {
+  value = azurerm_user_assigned_identity.userassignedidentity.principal_id
+}
