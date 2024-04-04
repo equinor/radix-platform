@@ -9,7 +9,7 @@ resource "azurerm_federated_identity_credential" "azure-service-operator-fedcred
   audience            = ["api://AzureADTokenExchange"]
   name                = "k8s-azure-service-operator-${each.key}-${module.config.environment}"
   issuer              = each.value
-  subject             = "system:serviceaccount:azureserviceoperator-system:default"
+  subject             = "system:serviceaccount:azure-service-operator-system:azureserviceoperator-default"
   parent_id           = data.azurerm_user_assigned_identity.azure-service-operator.id
   resource_group_name = data.azurerm_user_assigned_identity.azure-service-operator.resource_group_name
 }
