@@ -1,4 +1,4 @@
-Get-Content ./secret.env | ForEach-Object {
+Get-Content ./keyvaultsecret.env | ForEach-Object {
   $name, $value = $_.split('=')
 }
 
