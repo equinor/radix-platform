@@ -264,11 +264,11 @@ wait
 #######################################################################################
 ### Install Digicert issuer values for Flux
 ###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/cluster-issuers/digicert/bootstrap.sh" "${normal}"
-(USER_PROMPT="$USER_PROMPT" ./cert-manager/cluster-issuers/digicert/bootstrap.sh)
-wait
+# Replaced by external secret operator
+# echo ""
+# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/cluster-issuers/digicert/bootstrap.sh" "${normal}"
+# (USER_PROMPT="$USER_PROMPT" ./cert-manager/cluster-issuers/digicert/bootstrap.sh)
+# wait
 
 #######################################################################################
 ### Install Lets Encrypt issuer values for Flux

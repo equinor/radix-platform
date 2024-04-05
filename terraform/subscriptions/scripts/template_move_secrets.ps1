@@ -1,14 +1,22 @@
-$sourceVault="<source vault>"
-$destinationVault="<destination vault>"
- 
-$secrets=(az keyvault secret list --vault-name $sourceVault --query "[].{id:id,name:name}") | ConvertFrom-Json | ForEach-Object { 
-  $secretName = $_.name
-  $secretExists=(az keyvault secret list --vault-name $destinationVault --query "[?name=='$name']" -o tsv)  
-  if($secretExists -eq $null) {
-    write-host "Copy Secret across $secretName"
-    $secretValue=(az keyvault secret show --vault-name $sourceVault -n $secretName --query "value" -o tsv)
-    az keyvault secret set --vault-name $destinationVault -n $secretName --value "$secretValue"
-  } else {
-    write-host "$secretName already exists in $destinationVault"
-  } 
-} 
+Get-Content ./keyvaultsecret.env | ForEach-Object {
+  $name, $value = $_.split('=')
+}
+
+$secretNamenew=$secretName.ToLower()
+$secretExists=(az keyvault secret list --vault-name $destinationVault --query "[?name=='$secretNamenew']" -o tsv) 
+if($null -eq $secretExists) {
+  write-host "Copy Secret across $secretName"
+  az keyvault secret show --vault-name $sourceVault -n $secretName --query "value" -o tsv > secret.txt
+  $contenttype=(az keyvault secret show --vault-name $sourceVault -n $secretName --query contentType)
+  if ($null -eq $contenttype) {
+    az keyvault secret set --vault-name $destinationVault --name $secretNamenew --tags migratedfrom=$sourceVault --file secret.txt
+  }
+  else {
+    az keyvault secret set --vault-name $destinationVault --name $secretNamenew --description $contenttype --tags migratedfrom=$sourceVault --file secret.txt
+  }
+  az keyvault secret delete --vault-name $sourceVault -n $secretName
+  rm secret.txt
+}
+else {
+  write-host "$secretNamenew already exists in $destinationVault"
+}

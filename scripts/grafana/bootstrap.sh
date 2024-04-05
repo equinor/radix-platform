@@ -195,9 +195,9 @@ fi
 
 echo "Install secret grafana-secret in cluster"
 
-GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
-GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
-GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name grafana-database-password | jq -r .value)"
+# GF_CLIENT_ID="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .id)"
+# GF_CLIENT_SECRET="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $APP_REGISTRATION_GRAFANA | jq -r .value | jq -r .password)"
+# GF_DB_PWD="$(az keyvault secret show --vault-name $AZ_RESOURCE_MON_KEYVAULT --name grafana-database-password | jq -r .value)"
 
 # # Transform clustername to lowercase
 CLUSTER_NAME_LOWER="$(echo "$CLUSTER_NAME" | awk '{print tolower($0)}')"

@@ -3,12 +3,12 @@
 Scripts for managing secrets required by Flux to install Digicert cluster issuers.
 
 ## Bootstrap
+Replaced by external secret operator  
+~~Run script [`./bootstrap.sh`](./bootstrap.sh), see script header for more how.~~
 
-Run script [`./bootstrap.sh`](./bootstrap.sh), see script header for more how.  
-
-Bootstrap will
-1. Read Digicert external account info from keyvault.
-1. Create a Kubernetes secret with this info used by Flux to install ACME cluster issuers for Digicert
+~~Bootstrap will~~
+~~1. Read Digicert external account info from keyvault.~~
+~~1. Create a Kubernetes secret with this info used by Flux to install ACME cluster issuers for Digicert~~
 
 ## Update external account values
 
