@@ -60,15 +60,15 @@ module "github-workload-id" {
   location            = module.resourcegroup.data.location
   roleassignments = {
     contributor = {
-      role     = "Contributor" # Needed to open firewall
+      role = "Contributor" # Needed to open firewall
       scope_id = data.azurerm_container_registry.acr.id
     },
   }
   federated_credentials = {
-    github-main = {
+    github-release = {
       name    = "gh-radix-cost-allocation-acr-main-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/master"
+      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
     }
   }
 }
