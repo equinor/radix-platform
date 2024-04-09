@@ -69,7 +69,7 @@ jobs:
 
       - name: Get GitHub Public IP
         id: github_public_ip
-        uses: haythem/public-ip@v1.3
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
 
       - name: Add GitHub IP to StorageAccount
         run: |
