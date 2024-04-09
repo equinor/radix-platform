@@ -7,3 +7,8 @@ variable "location" {
   description = "The location/region where the virtual network is created"
   type        = string
 }
+
+variable "vnet_resource_group" {
+  description = "VNET resource group"
+  type        = string
+}

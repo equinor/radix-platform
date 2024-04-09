@@ -228,7 +228,7 @@ if [[ "${omsagent}" == "false" || -z "${omsagent}" ]]; then
         --name "${DEST_CLUSTER}" \
         --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
         --workspace-resource-id "${WORKSPACE_ID}" \
-        --data-collection-settings dataCollectionSettings.json
+        --data-collection-settings dataCollectionSettings.json \
         --no-wait || {
         echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2
         exit 1

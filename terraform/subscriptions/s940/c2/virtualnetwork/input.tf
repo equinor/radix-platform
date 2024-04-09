@@ -1,8 +1,8 @@
 locals {
   external_outputs = {
-    global   = data.terraform_remote_state.global.outputs
-    common   = data.terraform_remote_state.common.outputs
-    clusters = data.terraform_remote_state.clusters.outputs
+    global = data.terraform_remote_state.global.outputs
+    common = data.terraform_remote_state.common.outputs
+    # clusters = data.terraform_remote_state.clusters.outputs
   }
 
   ## Backend Config
@@ -22,12 +22,12 @@ data "terraform_remote_state" "common" {
   { key = "c2/common/terraform.tfstate" })
 }
 
-data "terraform_remote_state" "clusters" {
-  backend = "azurerm"
-  config = merge(
-    local.backend,
-  { key = "c2/clusters/terraform.tfstate" })
-}
+# data "terraform_remote_state" "clusters" {
+#   backend = "azurerm"
+#   config = merge(
+#     local.backend,
+#   { key = "c2/clusters/terraform.tfstate" })
+# }
 
 data "terraform_remote_state" "global" {
   backend = "azurerm"

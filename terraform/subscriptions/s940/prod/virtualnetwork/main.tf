@@ -4,16 +4,43 @@ module "config" {
 
 module "resourcegroups" {
   source   = "../../../modules/resourcegroups"
-  name     = "cluster-vnet-hub-prod"
+  name     = module.config.vnet_resource_group
   location = module.config.location
 }
 
 module "azurerm_virtual_network" {
-  source     = "../../../modules/virtualnetwork"
-  location   = module.config.location
-  enviroment = "prod"
-  depends_on = [module.resourcegroups]
+  source              = "../../../modules/virtualnetwork"
+  location            = module.config.location
+  enviroment          = "prod" #TODO
+  vnet_resource_group = module.resourcegroups.data.name
+  depends_on          = [module.resourcegroups]
 }
+
+module "azurerm_public_ip_prefix_ingress" {
+  source              = "../../../modules/network_publicipprefix"
+  location            = module.config.location
+  resource_group_name = var.resource_groups_common_temporary                               #TODO
+  publicipprefixname  = "ippre-ingress-radix-aks-production-${module.config.location}-001" #TODO
+  pipprefix           = "ingress-radix-aks"
+  pippostfix          = module.config.location
+  enviroment          = "production"
+  prefix_length       = 29
+  publicipcounter     = 4
+  zones               = ["1", "2", "3"]
+}
+
+module "azurerm_public_ip_prefix_egress" {
+  source              = "../../../modules/network_publicipprefix"
+  location            = module.config.location
+  resource_group_name = var.resource_groups_common_temporary                       #TODO
+  publicipprefixname  = "ippre-radix-aks-production-${module.config.location}-001" #TODO
+  pipprefix           = "radix-aks"
+  pippostfix          = module.config.location
+  enviroment          = "production"
+  prefix_length       = 29
+  publicipcounter     = 8
+}
+
 
 output "vnet_hub_id" {
   value = module.azurerm_virtual_network.data.vnet_hub.id
