@@ -932,6 +932,20 @@ az aks nodepool add \
 printf "Done."
 
 #######################################################################################
+### Diagnostic settings
+###
+
+printf "Adding Diagnostic settings to the cluster.. "
+
+STORAGEACCOUNT_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw log_storageaccount_id)
+az monitor diagnostic-settings create --name Radix-Diagnostics \
+    --resource "/subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_CLUSTERS/providers/Microsoft.ContainerService/managedClusters/$CLUSTER_NAME" \
+    --logs '[{"category": "kube-audit","enabled": true},{"category": "kube-apiserver","enabled": true}]' \
+    --storage-account "$STORAGEACCOUNT_ID" \
+    --output none \
+    --only-show-errors
+
+#######################################################################################
 ### Lock cluster and network resources
 ###
 

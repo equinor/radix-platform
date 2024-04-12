@@ -58,7 +58,7 @@ module "github-workload-id" {
   location            = module.resourcegroup.data.location
   roleassignments = {
     contributor = {
-      role = "Contributor" # Needed to open firewall
+      role     = "Contributor" # Needed to open firewall
       scope_id = data.azurerm_container_registry.acr.id
     },
   }

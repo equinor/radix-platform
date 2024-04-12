@@ -56,3 +56,15 @@ module "storageaccount" {
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
 }
+
+output "mi_id" {
+  value = module.mi.data.id
+}
+
+output "workspace_id" {
+  value = module.loganalytics.workspace_id
+}
+
+output "log_storageaccount_id" {
+  value = module.storageaccount["log"].data.id
+}
