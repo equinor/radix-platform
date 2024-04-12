@@ -22,7 +22,13 @@ resource "azurerm_role_definition" "aso_role" {
       "Microsoft.Network/privateEndpoints/delete",
 
       "Microsoft.Network/virtualNetworks/subnets/read",
-      "Microsoft.Network/virtualNetworks/subnets/join/action"
+      "Microsoft.Network/virtualNetworks/subnets/join/action",
+
+      // Persmissions to create Private DNS Zone entry:
+      "Microsoft.Network/privateDnsZones/join/action",
+      "Microsoft.Network/privateEndpoints/privateDnsZoneGroups/write",
+      "Microsoft.Network/privateEndpoints/privateDnsZoneGroups/read",
+      "Microsoft.Network/privateEndpoints/privateDnsZoneGroups/delete",
     ]
   }
 }
