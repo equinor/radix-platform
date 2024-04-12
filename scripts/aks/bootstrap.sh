@@ -452,24 +452,6 @@ FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
     --output tsv)
 FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
 
-if [ ! "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
-    printf "Flow logs storage account does not exists.\n"
-
-    printf "    Creating storage account %s" "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
-    az storage account create \
-        --name "$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS" \
-        --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --subscription "$AZ_SUBSCRIPTION_ID" \
-        --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
-        --sku "${AZ_STORAGEACCOUNT_SKU}" \
-        --kind "${AZ_STORAGEACCOUNT_KIND}" \
-        --access-tier "${AZ_STORAGEACCOUNT_TIER}"
-    printf "Done.\n"
-else
-    printf "    Storage account exists.\n"
-fi
-
 if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
     NSG_FLOW_LOGS="$(az network nsg show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$NSG_NAME" | jq -r .flowLogs)"
 
