@@ -230,13 +230,6 @@ function create_resource_groups() {
         --name "${AZ_RESOURCE_GROUP_MONITORING}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --output none
-    
-    az group create \
-        --location "${AZ_RADIX_ZONE_LOCATION}" \
-        --name "${AZ_RESOURCE_GROUP_LOGS}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --output none
-    printf "...Done\n"
 }
 
 #######################################################################################
@@ -530,137 +523,6 @@ function create_managed_identities_and_role_assignments() {
         "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ContainerRegistry/registries/${AZ_RESOURCE_CONTAINER_REGISTRY}"
 }
 
-#######################################################################################
-### Log analytics workspace
-###
-function create_log_analytics_workspace() {
-    printf "Creating log-analytics workspace..."
-    az monitor log-analytics workspace create \
-        --workspace-name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" \
-        --resource-group "${AZ_RESOURCE_GROUP_LOGS}" \
-        --location "${AZ_RADIX_ZONE_LOCATION}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --output none \
-        --only-show-errors
-    printf "...Done\n"
-}
-
-function set_permissions_on_log_analytics_workspace() {
-    local scope
-    scope="$(az monitor log-analytics workspace show --name ${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE} --resource-group ${AZ_RESOURCE_GROUP_LOGS} --query "id" --output tsv)"
-
-    # Available roles
-    # https://github.com/Azure/acr/blob/master/docs/roles-and-permissions.md
-    # Note that to be able to use "az acr build" you have to have the role "Contributor".
-
-    local id
-    printf "Working on log analytics workspace \"%s\": " "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}"
-
-    printf "Setting permissions for \"%s\"..." "${APP_REGISTRATION_LOG_API}" # radix-cr-reader-dev
-    id="$(az ad sp list --display-name ${APP_REGISTRATION_LOG_API} --query [].appId --output tsv)"
-
-    # Delete any existing roles
-    az role assignment delete \
-        --assignee "${id}" \
-        --scope "${scope}" \
-        --output none
-
-    # Configure new roles
-    az role assignment create \
-        --assignee "${id}" \
-        --role "Log Analytics Reader" \
-        --scope "${scope}" \
-        --output none
-    printf "%s" "$scope"
-    printf "%s" "$id"
-    printf "...Done\n"
-}
-
-#######################################################################################
-### Create storage account for SQL logs
-###
-
-function create_sql_logs_storageaccount() {
-    SQL_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
-        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-        --subscription "$AZ_SUBSCRIPTION_ID" \
-        --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS'].name" \
-        --output tsv)
-
-    if [ ! "$SQL_LOGS_STORAGEACCOUNT_EXIST" ]; then
-        printf "%s does not exists.\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
-
-        printf "    Creating storage account %s..." "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
-        az storage account create \
-            --name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
-            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-            --location "$AZ_RADIX_ZONE_LOCATION" \
-            --subscription "$AZ_SUBSCRIPTION_ID" \
-            --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
-            --sku "${AZ_STORAGEACCOUNT_SKU}" \
-            --kind "${AZ_STORAGEACCOUNT_KIND}" \
-            --access-tier "${AZ_STORAGEACCOUNT_TIER}" \
-            --only-show-errors
-        printf "Done.\n"
-    else
-        printf "    Storage account exists...skipping\n"
-    fi
-
-    LIFECYCLE=7
-    RULE_NAME=sql-rule
-
-    MANAGEMENT_POLICY_EXIST=$(az storage account management-policy show \
-        --account-name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
-        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-        --query "policy.rules | [?name=='$RULE_NAME']".name \
-        --subscription "$AZ_SUBSCRIPTION_ID" \
-        --output tsv)
-
-    POLICY_JSON="$(
-        cat <<END
-{
-  "rules": [
-      {
-          "enabled": "true",
-          "name": "$RULE_NAME",
-          "type": "Lifecycle",
-          "definition": {
-              "actions": {
-                  "version": {
-                      "delete": {
-                          "daysAfterCreationGreaterThan": "$LIFECYCLE"
-                      }
-                  },
-              },
-              "filters": {
-                  "blobTypes": [
-                      "blockBlob"
-                  ],
-              }
-          }
-      }
-  ]
-}
-END
-    )"
-
-    if [ ! "$MANAGEMENT_POLICY_EXIST" ]; then
-        printf "Storage account %s is missing policy\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
-
-        if az storage account management-policy create \
-            --account-name "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS" \
-            --policy "$(echo "$POLICY_JSON")" \
-            --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-            --subscription "$AZ_SUBSCRIPTION_ID" \
-            --only-show-errors; then
-            printf "Successfully created policy for %s\n" "$AZ_RESOURCE_STORAGEACCOUNT_SQL_LOGS"
-        fi
-    else
-        printf "    Storage account has policy...skipping\n"
-    fi
-
-    printf "Done.\n"
-}
 
 # function update_acr_whitelist() {
 #     #######################################################################################
@@ -696,10 +558,7 @@ update_app_registration
 create_managed_identities_and_role_assignments
 set_permissions_on_acr
 create_acr_tasks
-# create_dns_role_definition_for_cert_manager
-create_log_analytics_workspace
-set_permissions_on_log_analytics_workspace
-# create_sql_logs_storageaccount
+
 
 #######################################################################################
 ### END
