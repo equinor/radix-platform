@@ -78,7 +78,6 @@ Handled by script, see file header in [install_base_components.sh](./install_bas
 This script requires secret files to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
 
 * `slack-token`
-* `prometheus-token` # htpasswd file used to authenticate towards Prometheus
 * `grafana-database-password` # grafana database password
 * `external-dns-azure-secret` # external-dns credentials file
 
