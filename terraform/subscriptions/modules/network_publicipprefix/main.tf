@@ -16,7 +16,7 @@ resource "azurerm_public_ip_prefix" "publicipprefix" {
 
 resource "azurerm_public_ip" "this" {
   count                   = var.publicipcounter
-  name                    = "pip-${var.pipprefix}-${var.enviroment}-${var.pippostfix}-00${count.index + 1}"
+  name                    = "pip-${var.pipprefix}-${var.enviroment}-${var.pippostfix}-${format("%03d", count.index + 1)}"
   public_ip_prefix_id     = resource.azurerm_public_ip_prefix.publicipprefix.id
   resource_group_name     = var.resource_group_name
   location                = var.location
@@ -27,5 +27,16 @@ resource "azurerm_public_ip" "this" {
   tags = {
     IaC = "terraform"
   }
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "azurerm_management_lock" "publicipprefix" {
+  name       = "${var.publicipprefixname}-delete-lock"
+  scope      = azurerm_public_ip_prefix.publicipprefix.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
+  depends_on = [azurerm_public_ip_prefix.publicipprefix]
 }
 

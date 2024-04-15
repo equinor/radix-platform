@@ -41,6 +41,45 @@ module "azurerm_public_ip_prefix_egress" {
   publicipcounter     = 8
 }
 
+##################################################################################################
+### This block are reserved to new network when Cluster are migrated to platform resources group
+###
+
+module "azurerm_virtual_network_platform" {
+  source              = "../../../modules/virtualnetwork"
+  location            = module.config.location
+  enviroment          = module.config.environment
+  vnet_resource_group = "cluster-vnet-hub-platform"
+  depends_on          = [module.resourcegroups]
+}
+
+module "azurerm_public_ip_prefix_ingress_platform" {
+  source              = "../../../modules/network_publicipprefix"
+  location            = module.config.location
+  resource_group_name = module.config.common_resource_group
+  publicipprefixname  = "ippre-ingress-radix-aks-platform-${module.config.location}-001" #TODO
+  pipprefix           = "ingress-radix-aks"
+  pippostfix          = module.config.location
+  enviroment          = "platform"
+  prefix_length       = 29
+  publicipcounter     = 8
+  zones               = ["1", "2", "3"]
+}
+
+module "azurerm_public_ip_prefix_egress_platform" {
+  source              = "../../../modules/network_publicipprefix"
+  location            = module.config.location
+  resource_group_name = module.config.common_resource_group
+  publicipprefixname  = "ippre-radix-aks-platform-${module.config.location}-001" #TODO
+  pipprefix           = "radix-aks"
+  pippostfix          = module.config.location
+  enviroment          = "platform"
+  prefix_length       = 28
+  publicipcounter     = 16
+}
+
+##################################################################################################
+
 
 output "vnet_hub_id" {
   value = module.azurerm_virtual_network.data.vnet_hub.id

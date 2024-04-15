@@ -35,6 +35,17 @@ module "loganalytics" {
   local_authentication_disabled = false
 }
 
+data "azurerm_virtual_network" "this" {
+  name                = "vnet-hub"
+  resource_group_name = module.config.vnet_resource_group
+}
+
+data "azurerm_subnet" "this" {
+  name                 = "private-links"
+  resource_group_name  = module.config.vnet_resource_group
+  virtual_network_name = data.azurerm_virtual_network.this.name
+}
+
 module "storageaccount" {
   source                   = "../../../modules/storageaccount"
   for_each                 = var.storageaccounts
@@ -51,7 +62,7 @@ module "storageaccount" {
   principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
-  subnet_id                = local.external_outputs.virtualnetwork.data.vnet_subnet.id
+  subnet_id                = data.azurerm_subnet.this.id
   velero_service_principal = each.value.velero_service_principal
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
