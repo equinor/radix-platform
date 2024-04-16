@@ -135,19 +135,21 @@ function updateIpsEnvVars() {
         echo -e "\nERROR: Found no IPs assigned to the cluster." >&2
         return
     fi
-
-    # Loop through list of IPs and create a comma separated string.
-    for ippre in $(echo "${ip_prefixes}" | jq -c '.[]'); do
-        if [[ -z $ip_list ]]; then
-            ip_list=$(echo "${ippre}" | jq -r '.')
+    if [[ $RADIX_ZONE == "prod" ]]; then
+        if [[ $ippre_name = "ippre-radix-aks-production-northeurope-001" ]]; then
+            ip_list1=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
+            ip_list2=$(az network public-ip prefix show --name "ippre-radix-aks-platform-northeurope-001" --resource-group "common-platform" | jq -r .ipPrefix)
+            ip_list="${ip_list1},${ip_list2}"
         else
-            ip_list="${ip_list},$(echo "${ippre}" | jq -r '.')"
+            ip_list1=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
+            ip_list2=$(az network public-ip prefix show --name "ippre-ingress-radix-aks-platform-northeurope-001" --resource-group "common-platform" | jq -r .ipPrefix)
+            ip_list="${ip_list1},${ip_list2}"
         fi
-    done
-    printf " Done.\n"
-    
+    else
+        ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
+    fi
+    printf "Done.\n"
     updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${ip_list}"
-
     echo "Web component env variable updated with Public IP Prefix IPs."
 }
 
