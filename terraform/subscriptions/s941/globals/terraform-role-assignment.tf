@@ -15,8 +15,8 @@ resource "azurerm_role_definition" "terraform-state-contributor" {
 }
 
 data "azurerm_storage_account" "infra" {
-  name                = "${module.config.environment}radixinfra"
-  resource_group_name = "${module.config.environment}-tfstate"
+  name                = module.config.backend.storage_account_name
+  resource_group_name = module.config.backend.resource_group_name
 }
 
 data "azuread_group" "radix-platform-developers" {
