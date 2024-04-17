@@ -6,16 +6,6 @@ locals {
     client_id              = "f1e6bc52-9aa4-4ca7-a9ac-b7a19d8f0f86"
     subscription_shortname = "s941"
     aad_radix_group        = "radix"
-    gh_repos               = local.gh_repos
-    gh_repo_branch_combinations = { for item in flatten([
-      for repo, branches in local.gh_repos : [
-        for branch in branches : {
-          name   = "${repo}-${branch}"
-          repo   = repo
-          branch = branch
-        }
-      ]
-    ]) : item.name => item }
     # resourcegroups = module.resourcegroups
   }
 }
