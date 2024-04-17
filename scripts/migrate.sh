@@ -59,7 +59,7 @@ hash jq 2>/dev/null || {
 }
 
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.46.0"
+MIN_AZ_CLI="2.57.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
     printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
     exit 1
@@ -294,6 +294,20 @@ if [[ "$?" != "0" ]]; then
     echo -e "ERROR: Logged in user is not Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
     exit 1
 fi
+printf "Done.\n"
+
+#######################################################################################
+### Add IP rule to Keyvault
+###
+
+printf "initializing...\n"
+printf "Getting public ip... "
+myip=$(curl http://ifconfig.me/ip 2> /dev/null) ||
+{ echo "ERROR: Failed to get IP address." >&2; exit 1; }
+printf "Done.\n"
+
+printf "Adding %s to %s firewall... " $myip $AZ_RESOURCE_KEYVAULT
+az keyvault network-rule add --name "${AZ_RESOURCE_KEYVAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
 printf "Done.\n"
 
 #######################################################################################
@@ -765,6 +779,14 @@ if [[ $update_redis_cache == true ]]; then
     )
     printf "Done...\n"
 fi
+
+#######################################################################################
+### Remove IP rule from Keyvault
+###
+
+printf "Remove %s to %s firewall... " $myip $AZ_RESOURCE_KEYVAULT
+az keyvault network-rule remove --name "${AZ_RESOURCE_KEYVAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
+printf "Done.\n"
 
 # Move custom ingresses
 # if [[ $MIGRATION_STRATEGY == "aa" ]]; then
