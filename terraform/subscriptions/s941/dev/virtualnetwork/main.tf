@@ -47,3 +47,7 @@ output "vnet_hub_id" {
 output "vnet_subnet_id" {
   value = module.azurerm_virtual_network.data.vnet_subnet.id
 }
+
+output "private_dns_zones" {
+  value = module.azurerm_virtual_network.data.private_dns_zone
+}

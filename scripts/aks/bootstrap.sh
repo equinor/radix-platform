@@ -493,6 +493,7 @@ if [[ ! ${VNET_EXISTS} ]]; then
         --location "$AZ_RADIX_ZONE_LOCATION" \
         --nsg "$NSG_NAME" \
         --output none \
+        --tags IaC=script \
         --only-show-errors
     printf "Done.\n"
 fi
@@ -511,11 +512,10 @@ VNET_ID="$(az network vnet show \
 
 echo ""
 printf "Checking if %s are associated with %s\n" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
-printf "Waiting for %s to get associated with %s..." "$VNET_NAME" "$AZ_VNET_HUB_NAME"
-while [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; do
-    printf "."
-    sleep 5
-done
+if [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; then
+  printf "Not associated, execute Terraform"
+  terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply -target module.vnet_peering
+fi
 printf " Done.\n"
 
 function linkPrivateDnsZoneToVNET() {
@@ -546,6 +546,7 @@ function linkPrivateDnsZoneToVNET() {
             --name "$VNET_DNS_LINK" \
             --zone-name "$dns_zone" \
             --virtual-network "$VNET_ID" \
+            --tags IaC=script \
             --registration-enabled False 2>&1
     fi
 }
