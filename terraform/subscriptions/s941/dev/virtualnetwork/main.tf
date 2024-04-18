@@ -13,6 +13,7 @@ module "azurerm_virtual_network" {
   location            = module.config.location
   enviroment          = module.config.environment
   vnet_resource_group = module.resourcegroups.data.name
+  private_dns_zones   = tolist(module.config.private_dns_zones_names)
   depends_on          = [module.resourcegroups]
 }
 
@@ -46,4 +47,8 @@ output "vnet_hub_id" {
 
 output "vnet_subnet_id" {
   value = module.azurerm_virtual_network.data.vnet_subnet.id
+}
+
+output "private_dns_zones" {
+  value = module.azurerm_virtual_network.data.private_dns_zone
 }
