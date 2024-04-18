@@ -17,7 +17,6 @@ module "mi" {
   name                = "radix-id-infrastructure-${module.config.environment}"
   location            = module.config.location
   resource_group_name = "common-${module.config.environment}"
-
 }
 
 module "backupvault" {

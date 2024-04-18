@@ -5,8 +5,5 @@ locals {
     client_id              = "043e5510-738f-4c30-8b9d-ee32578c7fe8"
     subscription_shortname = "s940"
     aad_radix_group        = "radix"
-    github_repos = {
-      "radix_canary" : ["release", "master"]
-    }
   }
 }
