@@ -12,3 +12,8 @@ variable "vnet_resource_group" {
   description = "VNET resource group"
   type        = string
 }
+
+variable "private_dns_zones" {
+  description = "Private DNS zones"
+  type        = list(string)
+}
