@@ -14,7 +14,7 @@ locals {
 
 data "terraform_remote_state" "virtualnetwork" {
   backend = "azurerm"
-  config  = merge(
+  config = merge(
     local.backend,
-    { key = "playground/virtualnetwork/terraform.tfstate" })
+  { key = "playground/virtualnetwork/terraform.tfstate" })
 }

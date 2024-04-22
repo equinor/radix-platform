@@ -516,47 +516,6 @@ if [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLU
   printf "Not associated, execute Terraform"
   terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply -target module.vnet_peering
 fi
-printf " Done.\n"
-
-function linkPrivateDnsZoneToVNET() {
-    local dns_zone
-    local PRIVATE_DNS_ZONE_EXIST
-    local DNS_ZONE_LINK_EXIST
-
-    dns_zone=${1}
-    PRIVATE_DNS_ZONE_EXIST="$(az network private-dns zone show \
-        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-        --name "$dns_zone" \
-        --query "id" \
-        --output tsv 2>&1)"
-    DNS_ZONE_LINK_EXIST="$(az network private-dns link vnet show \
-        --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-        --name "$VNET_DNS_LINK" \
-        --zone-name "$dns_zone" \
-        --query "type" \
-        --output tsv 2>&1)"
-
-    if [[ $PRIVATE_DNS_ZONE_EXIST == *"ARMResourceNotFoundFix"* ]]; then
-        echo "ERROR: Private DNS Zone ${dns_zone} not found." >&2
-    elif [[ $DNS_ZONE_LINK_EXIST != "Microsoft.Network/privateDnsZones/virtualNetworkLinks" ]]; then
-        echo "Linking private DNS Zone:  ${dns_zone} to K8S VNET ${VNET_ID}"
-        # throws error if run twice
-        az network private-dns link vnet create \
-            --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-            --name "$VNET_DNS_LINK" \
-            --zone-name "$dns_zone" \
-            --virtual-network "$VNET_ID" \
-            --tags IaC=script \
-            --registration-enabled False 2>&1
-    fi
-}
-
-# linking private dns zones to vnet
-echo "Linking private DNS Zones to vnet $VNET_NAME... "
-for dns_zone in "${AZ_PRIVATE_DNS_ZONES[@]}"; do
-    linkPrivateDnsZoneToVNET "$dns_zone" &
-done
-wait
 
 echo "Bootstrap of advanced network done."
 

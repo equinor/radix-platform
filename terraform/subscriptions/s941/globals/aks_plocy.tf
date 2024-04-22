@@ -3,7 +3,7 @@ resource "azurerm_policy_definition" "policy_aks_cluster" {
   mode         = "All"
   policy_type  = "Custom"
   display_name = "Radix-Enforce-Diagnostics-AKS-Clusters"
-  parameters   = jsonencode(
+  parameters = jsonencode(
     {
       diagnosticSettingsName = {
         defaultValue = "setByRadixPolicy"
@@ -64,7 +64,7 @@ resource "azurerm_policy_definition" "policy_aks_cluster" {
               template = {
                 "$schema"      = "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
                 contentVersion = "1.0.0.0"
-                outputs = {}
+                outputs        = {}
                 parameters = {
                   diagnosticSettingsName = {
                     type = "string"
