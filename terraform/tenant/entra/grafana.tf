@@ -3,7 +3,8 @@ resource "azuread_application" "grafana-logreader" {
   description  = "Used to read data from Log Analytics Workspace"
   display_name = "radix-ar-grafana-logreader-extmon"
 
-  owners = data.azuread_group.radix-platform-operators.members
+  service_management_reference = var.service-manager-ref
+  owners                       = data.azuread_group.radix.members
 }
 resource "azuread_service_principal" "grafana-logreader" {
   client_id                    = azuread_application.grafana-logreader.client_id
