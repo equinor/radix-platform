@@ -2,36 +2,25 @@ module "config" {
   source = "../../../modules/config"
 }
 
-module "resourcegroups_ver1" {
-  for_each             = var.resource_groups_ver1
-  source               = "../../../modules/resourcegroups_ver1"
-  name                 = each.value.name
-  location             = module.config.location
-  roleassignment       = each.value.roleassignment
-  principal_id         = module.mi.data.principal_id
-  role_definition_name = each.value.role_definition_name
-}
-
-module "mi" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-infrastructure-${module.config.environment}"
-  location            = module.config.location
-  resource_group_name = "common-${module.config.environment}"
+module "resourcegroups" {
+  source   = "../../../modules/resourcegroups"
+  name     = module.config.common_resource_group
+  location = module.config.location
 }
 
 module "backupvault" {
   source                = "../../../modules/backupvaults"
   name                  = "Backupvault-${module.config.environment}"
-  resource_group_name   = "common-${module.config.environment}"
+  resource_group_name   = module.config.common_resource_group
   location              = module.config.location
   policyblobstoragename = "Backuppolicy-blob"
-  depends_on            = [module.resourcegroups_ver1]
+  depends_on            = [module.resourcegroups]
 }
 
 module "loganalytics" {
   source                        = "../../../modules/log-analytics"
   workspace_name                = "radix-logs-${module.config.environment}"
-  resource_group_name           = "common-${module.config.environment}"
+  resource_group_name           = module.config.common_resource_group
   location                      = module.config.location
   retention_in_days             = 30
   local_authentication_disabled = false
@@ -68,10 +57,6 @@ module "storageaccount" {
   velero_service_principal = each.value.velero_service_principal
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
-}
-
-output "mi_id" {
-  value = module.mi.data.id
 }
 
 output "workspace_id" {

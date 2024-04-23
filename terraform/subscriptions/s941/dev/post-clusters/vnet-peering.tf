@@ -34,15 +34,6 @@ module "vnet_peering" {
   vnet_hub_name               = data.azurerm_virtual_network.hub.name
 }
 
-# module "private_dns_zone_virtual_network_peering" {
-#   source                     = "../../../modules/privatednszone_peering"
-#   for_each                   = { for key in local.vnet_dns : "${key.vnet}-${key.private_dns_zone}" => key }
-#   clustername                = each.value.vnet
-#   cluster_vnet_resourcegroup = data.azurerm_virtual_network.hub.resource_group_name
-#   vnet_cluster_hub_id        = data.azurerm_virtual_network.vnets[each.value.cluster].id
-#   private_dns_zone           = each.value.private_dns_zone
-# }
-
 module "private_dns_zone_virtual_network_peering" {
   source                     = "../../../modules/privatednszone_peering"
   for_each                   = { for key in local.vnet_dns : "${replace(key.vnet, "vnet-", "")}-${key.private_dns_zone}" => key }

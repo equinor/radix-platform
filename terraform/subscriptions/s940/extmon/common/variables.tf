@@ -1,8 +1,3 @@
-variable "resource_groups" {
-  type    = list(string)
-  default = ["common-extmon"]
-}
-
 variable "storageaccounts" {
   description = "Max 15 characters lowercase in the storageaccount name"
   type = map(object({

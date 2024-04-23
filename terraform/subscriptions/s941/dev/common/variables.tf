@@ -1,35 +1,3 @@
-# variable "resource_groups" {
-#   type    = list(string)
-#   default = ["common-dev"]
-# }
-
-variable "resource_groups_ver1" {
-  description = "Resource groups ver1"
-  type = map(object({
-    name                 = string
-    roleassignment       = optional(bool, false)
-    role_definition_name = optional(string, "")
-    principal_id         = optional(string, "")
-    policyassignment     = optional(bool, false)
-    policy_name          = optional(string, "")
-
-  }))
-  default = {
-    common-dev = {
-      name                 = "common-dev"
-      roleassignment       = true
-      role_definition_name = "Log Analytics Contributor"
-      policyassignment     = true
-      policy_name          = "Radix-Enforce-Diagnostics-AKS-Clusters"
-    }
-  }
-
-}
-
-
-# roleassignment = {"Storage Account Backup Contributor" = { backup = false }}
-#roleassignment = { "Storage Account Backup Contributor" = { backup = true }}
-
 
 variable "storageaccounts" {
   description = "Max 15 characters lowercase in the storageaccount name"
@@ -59,12 +27,4 @@ variable "storageaccounts" {
   }
 }
 
-#Template
-# template = {
-#     name = "log"
-#     roleassignment = {
-#       "Storage Account Backup Contributor" = {
-#         backup = true
-#       }
-#     }
-#     }
+

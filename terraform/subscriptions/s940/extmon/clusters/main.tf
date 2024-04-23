@@ -21,10 +21,10 @@ data "azurerm_log_analytics_workspace" "workspace" {
   resource_group_name = module.config.common_resource_group
 }
 
-data "azurerm_user_assigned_identity" "infrastructure_id" {
-  name                = "radix-id-infrastructure-${module.config.environment}"
-  resource_group_name = module.config.common_resource_group
-}
+# data "azurerm_user_assigned_identity" "infrastructure_id" {
+#   name                = "radix-id-infrastructure-${module.config.environment}"
+#   resource_group_name = module.config.common_resource_group
+# }
 
 data "azurerm_policy_definition" "policy_aks_cluster" {
   display_name = module.config.policy_aks_diagnostics_cluster

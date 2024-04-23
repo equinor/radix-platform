@@ -22,7 +22,7 @@ data "azurerm_virtual_network" "this" {
 
 module "azurerm_network_manager" {
   source                 = "../../../modules/networkmanager"
-  subscription_shortname = local.external_outputs.global.data.subscription_shortname
+  subscription_shortname = "s940"
   location               = module.config.location
   resource_group         = "clusters"
   subscription           = module.config.subscription
