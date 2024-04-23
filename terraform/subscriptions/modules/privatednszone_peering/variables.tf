@@ -1,4 +1,4 @@
-variable "clustername" {
+variable "clustervnet" {
   description = "Name of the Cluster."
   type        = string
 }

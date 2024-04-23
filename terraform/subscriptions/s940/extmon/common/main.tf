@@ -3,24 +3,16 @@ module "config" {
 }
 
 module "resourcegroups" {
-  for_each = toset(var.resource_groups)
   source   = "../../../modules/resourcegroups"
-  name     = each.value
+  name     = module.config.common_resource_group
   location = module.config.location
 }
 
-module "mi" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-infrastructure-${module.config.environment}"
-  location            = module.config.location
-  resource_group_name = "common-${module.config.environment}"
-
-}
 
 module "backupvault" {
   source                = "../../../modules/backupvaults"
   name                  = "Backupvault-${module.config.environment}"
-  resource_group_name   = "common-${module.config.environment}"
+  resource_group_name   = module.config.common_resource_group
   location              = module.config.location
   policyblobstoragename = "Backuppolicy-blob"
   depends_on            = [module.resourcegroups]
@@ -29,7 +21,7 @@ module "backupvault" {
 module "loganalytics" {
   source                        = "../../../modules/log-analytics"
   workspace_name                = "radix-logs-${module.config.environment}"
-  resource_group_name           = "common-${module.config.environment}"
+  resource_group_name           = module.config.common_resource_group
   location                      = module.config.location
   retention_in_days             = 30
   local_authentication_disabled = false
@@ -66,10 +58,6 @@ module "storageaccount" {
   velero_service_principal = each.value.velero_service_principal
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
-}
-
-output "mi_id" {
-  value = module.mi.data.id
 }
 
 output "workspace_id" {

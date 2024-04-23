@@ -42,6 +42,6 @@ module "mi" {
 
 resource "azurerm_role_assignment" "this" {
   scope              = data.azurerm_resource_group.group.id
-  role_definition_id = azurerm_role_definition.aso_role.role_definition_id
+  role_definition_id = azurerm_role_definition.aso_role.role_definition_resource_id
   principal_id       = module.mi.principal_id
 }

@@ -1,4 +1,3 @@
-
 variable "hub_to_cluster_peering_name" {
   description = "Name of the Peering name."
   type        = string
@@ -9,7 +8,7 @@ variable "cluster_to_hub_peering_name" {
   type        = string
 }
 
-variable "cluster_resource_group" {
+variable "cluster_vnet_resource_group" {
   description = "Cluster resource group"
   type        = string
 }

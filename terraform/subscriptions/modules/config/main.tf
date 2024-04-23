@@ -54,23 +54,27 @@ output "grafana_ar_reader_display_name" {
 
 output "private_dns_zones_names" {
   value = [
-    "privatelink.database.windows.net",
+    "private.radix.equinor.com",
+    "privatelink.azconfig.io",
+    "privatelink.azurecr.io",
     "privatelink.blob.core.windows.net",
-    "privatelink.table.core.windows.net",
-    "privatelink.queue.core.windows.net",
-    "privatelink.file.core.windows.net",
-    "privatelink.web.core.windows.net",
+    "privatelink.cassandra.cosmos.azure.com",
+    "privatelink.database.windows.net",
     "privatelink.dfs.core.windows.net",
     "privatelink.documents.azure.com",
-    "privatelink.mongo.cosmos.azure.com",
-    "privatelink.cassandra.cosmos.azure.com",
+    "privatelink.file.core.windows.net",
     "privatelink.gremlin.cosmos.azure.com",
-    "privatelink.table.cosmos.azure.com",
-    "privatelink.postgres.database.azure.com",
-    "privatelink.mysql.database.azure.com",
     "privatelink.mariadb.database.azure.com",
+    #"privatelink.monitor.azure.com", Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
+    "privatelink.mongo.cosmos.azure.com",
+    "privatelink.mysql.database.azure.com",
+    "privatelink.postgres.cosmos.azure.com",
+    "privatelink.postgres.database.azure.com",
+    "privatelink.queue.core.windows.net",
+    "privatelink.radix.equinor.com",
+    "privatelink.table.core.windows.net",
+    "privatelink.table.cosmos.azure.com",
     "privatelink.vaultcore.azure.net",
-    "private.radix.equinor.com",
-    "privatelink.monitor.azure.com"
+    "privatelink.web.core.windows.net"
   ]
 }
