@@ -40,3 +40,9 @@ variable "developer-roles" {
     s941 = { role = "Key Vault Secrets Officer", subscription : "s941" }
   }
 }
+
+variable "service-manager-ref" {
+  type        = string
+  default     = "110327"
+  description = "Service Manager Reference, required on all App Registrations"
+}
