@@ -7,15 +7,11 @@ data "azurerm_log_analytics_workspace" "this" {
   resource_group_name = "Logs-Dev"
 }
 
-data "azurerm_resource_group" "resourcegroup" {
-  name     = module.config.common_resource_group
-}
-
 module "log-api-mi" {
   source              = "../../../modules/userassignedidentity"
-  name                = module.config.radix_log_api_mi
-  resource_group_name = data.azurerm_resource_group.resourcegroup.name
-  location            = data.azurerm_resource_group.resourcegroup.location
+  name                = module.config.radix_log_api_mi_name
+  resource_group_name = module.config.common_resource_group
+  location            = module.config.location
   roleassignments = {
     role = {
       role     = "Log Analytics Reader"

@@ -1,6 +1,6 @@
 data "azurerm_user_assigned_identity" "log-api-mi" {
-  resource_group_name = module.config.radix_log_api_mi.resourcegroup
-  name                = module.config.radix_log_api_mi.name
+  resource_group_name = module.config.common_resource_group
+  name                = module.config.radix_log_api_mi_name
 }
 
 resource "azurerm_federated_identity_credential" "log-api-mi-prod" {
