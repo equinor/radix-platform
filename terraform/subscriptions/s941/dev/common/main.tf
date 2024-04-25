@@ -43,8 +43,8 @@ module "storageaccount" {
   name                     = "radix${each.key}${module.config.environment}"
   tier                     = each.value.account_tier
   account_replication_type = each.value.account_replication_type
-  resource_group_name      = each.value.resource_group_name
-  location                 = each.value.location
+  resource_group_name      = module.config.common_resource_group
+  location                 = module.config.location
   environment              = module.config.environment
   kind                     = each.value.kind
   change_feed_enabled      = each.value.change_feed_enabled
@@ -54,7 +54,7 @@ module "storageaccount" {
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
   subnet_id                = data.azurerm_subnet.this.id
-  velero_service_principal = each.value.velero_service_principal
+  velero_service_principal = "radix-velero-${module.config.environment}"
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
 }
