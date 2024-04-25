@@ -19,7 +19,7 @@ resource "azurerm_federated_identity_credential" "log-api-mi-qa" {
   audience            = ["api://AzureADTokenExchange"]
   name                = "k8s-radix-log-api-qa-${each.key}-${module.config.environment}"
   issuer              = each.value
-  subject             = "system:serviceaccount:radix-log-api-api-qa:server-sa"
+  subject             = "system:serviceaccount:radix-log-api-qa:server-sa"
   parent_id           = data.azurerm_user_assigned_identity.log-api-mi.id
   resource_group_name = data.azurerm_user_assigned_identity.log-api-mi.resource_group_name
 }
