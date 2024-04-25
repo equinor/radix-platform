@@ -78,3 +78,10 @@ output "private_dns_zones_names" {
     "privatelink.web.core.windows.net"
   ]
 }
+
+output "radix_log_api_mi" {
+  value = {
+    name = "radix-id-log-api-${local.config.environment}"
+    resourcegroup = "log-api-${local.config.environment}"
+  }
+}
