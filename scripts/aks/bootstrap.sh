@@ -784,6 +784,31 @@ echo "Create pipeline nodepool"
 az aks nodepool add "${AKS_PIPELINE_OPTIONS[@]}"
 
 #######################################################################################
+### Add tainted Arm64 nodepool
+###
+if [ "$RADIX_ENVIRONMENT" = "dev" ]; then
+    AKS_ARM64_OPTIONS=(
+        --cluster-name "$CLUSTER_NAME"
+        --nodepool-name armpool
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+        --enable-cluster-autoscaler
+        --kubernetes-version "$KUBERNETES_VERSION"
+        --labels "arch=arm64"
+        --max-count "$ARM_MAX_COUNT"
+        --max-pods "$POD_PER_NODE"
+        --min-count "$ARM_MIN_COUNT"
+        --mode User
+        --node-count "$ARM_MIN_COUNT"
+        --node-osdisk-size "$NODE_DISK_SIZE"
+        --node-taints "arch=arm64:NoSchedule"
+        --node-vm-size "$ARM_VM_SIZE"
+        --vnet-subnet-id "$SUBNET_ID"
+    )
+    echo "Create Arm64 nodepool"
+    az aks nodepool add "${AKS_ARM64_OPTIONS[@]}"
+fi
+
+#######################################################################################
 ### Add untainted User nodepool
 ###
 
