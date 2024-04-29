@@ -789,7 +789,7 @@ create_and_register_deploy_key_and_store_credentials \
 
 create_github_webhook_in_repository "radix-log-api" "${GITHUB_PAT}"
 
-create_radix_application "radix-log-api" "radixconfig.yaml"
+create_radix_application "radix-log-api" "${RADIX_LOG_API_CONFIG}"
 
 if [ "${CREATE_BUILD_DEPLOY_JOBS}" == true ]; then
     # Wait a few seconds until radix-operator can process the RadixRegistration
