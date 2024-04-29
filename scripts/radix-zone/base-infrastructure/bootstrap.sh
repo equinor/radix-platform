@@ -166,7 +166,6 @@ echo -e "   -  APP_REGISTRATION_WEB_CONSOLE                : $APP_REGISTRATION_W
 echo -e "   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
 echo -e "   -  APP_REGISTRATION_VELERO                     : $APP_REGISTRATION_VELERO"
 echo -e "   -  APP_REGISTRATION_SERVICENOW_SERVER          : $APP_REGISTRATION_SERVICENOW_SERVER"
-echo -e "   -  APP_REGISTRATION_LOG_API                    : $APP_REGISTRATION_LOG_API"
 echo -e ""
 echo -e "   -  MI_AKS                                      : $MI_AKS"
 echo -e "   -  MI_AKSKUBELET                               : $MI_AKSKUBELET"
@@ -477,7 +476,6 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Used by web console for login and other AD information"
-    create_service_principal_and_store_credentials "$APP_REGISTRATION_LOG_API" "Service principal that provides read-only access to radix-container-logs Log Analytics workspace"
 }
 
 function create_servicenow_proxy_server_app_registration() {
