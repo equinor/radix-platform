@@ -3,7 +3,7 @@ module "config" {
 }
 
 data "azurerm_log_analytics_workspace" "this" {
-  name = "radix-container-logs-playground"
+  name                = "radix-container-logs-playground"
   resource_group_name = "Logs-Dev"
 }
 

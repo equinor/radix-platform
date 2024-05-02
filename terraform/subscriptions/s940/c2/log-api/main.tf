@@ -3,7 +3,7 @@ module "config" {
 }
 
 data "azurerm_log_analytics_workspace" "this" {
-  name = "radix-container-logs-c2-prod"
+  name                = "radix-container-logs-c2-prod"
   resource_group_name = "logs-westeurope"
 }
 
