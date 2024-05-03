@@ -21,11 +21,10 @@ data "azurerm_log_analytics_workspace" "workspace" {
   resource_group_name = module.config.common_resource_group
 }
 
-# data "azurerm_user_assigned_identity" "infrastructure_id" {
-#   name                = "radix-id-infrastructure-${module.config.environment}"
-#   resource_group_name = module.config.common_resource_group
-# }
-
+data "azurerm_storage_account" "velero" {
+  name                = "radixvelero${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
+}
 data "azurerm_policy_definition" "policy_aks_cluster" {
   display_name = module.config.policy_aks_diagnostics_cluster
 }
@@ -43,6 +42,18 @@ module "radix_id_external_secrets_operator_mi" {
   }
 }
 
+module "radix_id_velero_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-velero-${module.config.environment}"
+  location            = module.config.location
+  resource_group_name = "common-${module.config.environment}"
+  roleassignments = {
+    sac_user = {
+      role     = "Storage Account Contributor"
+      scope_id = data.azurerm_storage_account.velero.id
+    }
+  }
+}
 
 module "nsg" {
   source                     = "../../../modules/networksecuritygroup"

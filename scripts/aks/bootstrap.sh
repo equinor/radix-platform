@@ -786,7 +786,7 @@ az aks nodepool add "${AKS_PIPELINE_OPTIONS[@]}"
 #######################################################################################
 ### Add tainted Arm64 nodepool
 ###
-if [ "$RADIX_ENVIRONMENT" = "dev" ]; then
+if [ "$RADIX_ENVIRONMENT" = "dev" ] || ["$RADIX_ENVIRONMENT" = "playground"]; then
     AKS_ARM64_OPTIONS=(
         --cluster-name "$CLUSTER_NAME"
         --nodepool-name armpool

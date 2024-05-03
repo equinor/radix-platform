@@ -5,9 +5,9 @@ data "azuread_application" "grafana-logreader" {
 resource "azuread_application_federated_identity_credential" "grafana-logreader" {
   for_each = module.clusters.oidc_issuer_url
 
-  audiences      = ["api://AzureADTokenExchange"]
-  display_name   = "k8s-radix-grafana-logreader-${each.key}"
-  issuer         = each.value
-  subject        = "system:serviceaccount:monitor:grafana"
-  application_id = data.azuread_application.grafana-logreader.id
+  audiences             = ["api://AzureADTokenExchange"]
+  display_name          = "k8s-radix-grafana-logreader-${each.key}"
+  issuer                = each.value
+  subject               = "system:serviceaccount:monitor:grafana"
+  application_object_id = data.azuread_application.grafana-logreader.id
 }

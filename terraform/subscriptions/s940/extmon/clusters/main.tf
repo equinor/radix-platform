@@ -21,13 +21,9 @@ data "azurerm_log_analytics_workspace" "workspace" {
   resource_group_name = module.config.common_resource_group
 }
 
-# data "azurerm_user_assigned_identity" "infrastructure_id" {
-#   name                = "radix-id-infrastructure-${module.config.environment}"
-#   resource_group_name = module.config.common_resource_group
-# }
-
-data "azurerm_policy_definition" "policy_aks_cluster" {
-  display_name = module.config.policy_aks_diagnostics_cluster
+data "azurerm_storage_account" "velero" {
+  name                = "radixvelero${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
 }
 
 module "radix_id_external_secrets_operator_mi" {
@@ -43,22 +39,15 @@ module "radix_id_external_secrets_operator_mi" {
   }
 }
 
-# module "policyassignment_resourcegroup" {
-#   for_each             = module.resourcegroups
-#   source               = "../../../modules/policyassignment_resourcegroup"
-#   policy_name          = "Radix-Enforce-Diagnostics-AKS-Clusters"
-#   location             = each.value["data"].location
-#   resource_group_id    = each.value["data"].id
-#   policy_definition_id = data.azurerm_policy_definition.policy_aks_cluster.id
-#   identity_ids         = data.azurerm_user_assigned_identity.infrastructure_id.id
-#   workspaceId          = data.azurerm_log_analytics_workspace.workspace.id
-# }
-
-# module "nsg" {
-#   source                     = "../../../modules/networksecuritygroup"
-#   for_each                   = local.flattened_clusters
-#   networksecuritygroupname   = "nsg-${each.key}"
-#   location                   = each.value.location
-#   resource_group_name        = each.value.resource_group_name
-#   destination_address_prefix = each.value.destination_address_prefix
-# }
+module "radix_id_velero_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-velero-${module.config.environment}"
+  location            = module.config.location
+  resource_group_name = "common-${module.config.environment}"
+  roleassignments = {
+    sac_user = {
+      role     = "Storage Account Contributor"
+      scope_id = data.azurerm_storage_account.velero.id
+    }
+  }
+}
