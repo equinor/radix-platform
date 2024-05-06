@@ -46,7 +46,7 @@ module "radix_id_velero_mi" {
   resource_group_name = "common-${module.config.environment}"
   roleassignments = {
     sac_user = {
-      role     = "Storage Account Contributor"
+      role     = "Storage Blob Data Contributor"
       scope_id = data.azurerm_storage_account.velero.id
     }
   }

@@ -188,30 +188,6 @@ function cleanup() {
   rm -f "$CREDENTIALS_GENERATED_PATH"
 }
 
-# function generateCredentialsFile() {
-#   local SP_JSON="$(az keyvault secret show \
-#     --vault-name $AZ_RESOURCE_KEYVAULT \
-#     --name $APP_REGISTRATION_VELERO |
-#     jq '.value | fromjson')"
-
-#   # Set variables used in the manifest templates
-#   local AZURE_SUBSCRIPTION_ID="$AZ_SUBSCRIPTION_ID"
-#   local AZURE_CLIENT_ID="$(echo $SP_JSON | jq -r '.id')"
-#   local AZURE_TENANT_ID="$(echo $SP_JSON | jq -r '.tenantId')"
-#   local AZURE_CLIENT_SECRET="$(echo $SP_JSON | jq -r '.password')"
-
-#   # Use the credentials template as a heredoc, then run the heredoc to generate the credentials file
-#   CREDENTIALS_GENERATED_PATH="$(mktemp)"
-#   local tmp_heredoc="$(mktemp)"
-#   (
-#     echo "#!/bin/sh"
-#     echo "cat <<EOF >>${CREDENTIALS_GENERATED_PATH}"
-#     cat ${CREDENTIALS_TEMPLATE_PATH}
-#     echo ""
-#     echo "EOF"
-#   ) >${tmp_heredoc} && chmod +x ${tmp_heredoc}
-#   source "$tmp_heredoc"
-# }
 
 # Run cleanup even if script crashed
 trap cleanup 0 2 3 15
@@ -224,15 +200,6 @@ case "$(kubectl get ns $VELERO_NAMESPACE 2>&1)" in
 esac
 printf "...Done"
 
-# printf "\nWorking on credentials..."
-# generateCredentialsFile
-# kubectl create secret generic cloud-credentials \
-#   --namespace "$VELERO_NAMESPACE" \
-#   --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
-#   --dry-run=client -o yaml |
-#   kubectl apply -f - \
-#     2>&1 >/dev/null
-printf "...Done"
 
 MYIP=$(curl http://ifconfig.me/ip) ||
   {
@@ -268,29 +235,6 @@ az storage account network-rule remove \
   --output none \
   --only-show-errors
 
-# Velero custom RBAC clusterrole
-RBAC_CLUSTERROLE="velero-admin"
-printf "\nCreating $RBAC_CLUSTERROLE clusterrole..\n"
-cat <<EOF | kubectl apply -f -
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: $RBAC_CLUSTERROLE
-  labels:
-    kubernetes.io/bootstrapping: rbac-defaults
-  annotations:
-    rbac.authorization.kubernetes.io/autoupdate: "true"
-rules:
-- apiGroups:
-  - "*"
-  resources:
-  - "*"
-  verbs:
-  - "*"
-- nonResourceURLs: ["*"]
-  verbs: ["*"]
-EOF
-
 # Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
 printf "Working on configmap for flux..."
 cat <<EOF | kubectl apply -f - 2>&1 >/dev/null
@@ -310,6 +254,7 @@ data:
         config:
           resourceGroup: "common-${RADIX_ZONE}"
           storageAccount: "$AZ_VELERO_STORAGE_ACCOUNT_ID"
+          useAAD: "true"
       volumeSnapshotLocation:
         - name: azure
           provider: azure
