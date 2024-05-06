@@ -12,6 +12,8 @@ jobs:
     outputs:
       target_configs: ${{ steps.get-target-configs.outputs.target_configs }}
     runs-on: ubuntu-20.04
+    env:
+      KV_GROUP: common
     steps:
       - uses: actions/checkout@v3
       - name: Get target configs
@@ -45,7 +47,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           kubelogin-version: 'latest'
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
+      - name: Add GitHub IP to KeyVault
+        run: |
+          az keyvault network-rule add --name "$AZ_RESOURCE_KEYVAULT" \
+            --resource-group "${{ env.KV_GROUP}}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        run: sleep 30s
+
       - name: 'Scale to 0'
         run: |
           slack_webhook_url="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name "$KV_SECRET_SLACK_WEBHOOK" | jq -r .value)"
           $GITHUB_WORKSPACE/.github/workflows/scripts/scale-cicd-canary.sh "0" "${slack_webhook_url}" "GitHub Action: Stopping radix-cicd-canary in cluster "
+      - name: Revoke GitHub IP on KeyVault
+        run: |
+          az keyvault network-rule remove --name "$AZ_RESOURCE_KEYVAULT" \
+            --resource-group "${{ env.KV_GROUP}}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
