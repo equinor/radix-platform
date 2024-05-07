@@ -126,7 +126,6 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  VELERO_NAMESPACE                 : $VELERO_NAMESPACE"
-echo -e "   -  APP_REGISTRATION_VELERO          : $APP_REGISTRATION_VELERO"
 echo -e "   -  CREDENTIALS_TEMPLATE_PATH        : $CREDENTIALS_TEMPLATE_PATH"
 echo -e "   -  BACKUP_STORAGE_CONTAINER         : $CLUSTER_NAME"
 echo -e ""
@@ -187,7 +186,6 @@ verify_cluster_access
 function cleanup() {
   rm -f "$CREDENTIALS_GENERATED_PATH"
 }
-
 
 # Run cleanup even if script crashed
 trap cleanup 0 2 3 15

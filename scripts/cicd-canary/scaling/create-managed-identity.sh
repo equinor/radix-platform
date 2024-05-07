@@ -156,7 +156,7 @@ function modify-role-binding {
         }
 }
 
-mi_name=radix-cicd-canary-scaler
+mi_name="radix-cicd-canary-scaler-${RADIX_ZONE}"
 mi-exists ${mi_name} || { 
         create_managed_identity ${mi_name}
         client_id=$(az identity show --name ${mi_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query clientId -o tsv)
