@@ -198,15 +198,6 @@ case "$(kubectl get ns $VELERO_NAMESPACE 2>&1)" in
 esac
 printf "...Done"
 
-# printf "\nWorking on credentials..."
-# generateCredentialsFile
-# kubectl create secret generic cloud-credentials \
-#   --namespace "$VELERO_NAMESPACE" \
-#   --from-file=cloud=$CREDENTIALS_GENERATED_PATH \
-#   --dry-run=client -o yaml |
-#   kubectl apply -f - \
-#     2>&1 >/dev/null
-printf "...Done"
 
 MYIP=$(curl http://ifconfig.me/ip) ||
   {
@@ -261,6 +252,7 @@ data:
         config:
           resourceGroup: "common-${RADIX_ZONE}"
           storageAccount: "$AZ_VELERO_STORAGE_ACCOUNT_ID"
+          useAAD: "true"
       volumeSnapshotLocation:
         - name: azure
           provider: azure

@@ -24,8 +24,8 @@ data "azurerm_virtual_network" "vnets" {
 module "vnet_peering" {
   source                      = "../../../modules/vnet-peering"
   for_each                    = module.clusters.vnets_url
-  hub_to_cluster_peering_name = "ANM_22740FFA83EB4B03043CC7E_vnet-hub_vnet-eu-18_3520520940"
-  cluster_to_hub_peering_name = "ANM_22740FFA83EB4B03043CC7E_vnet-eu-18_vnet-hub_3520520940"
+  hub_to_cluster_peering_name = "hub-to-${each.key}"
+  cluster_to_hub_peering_name = "${each.key}-to-hub"
   cluster_vnet_resource_group = "clusters" #TODO
   vnet_cluster_name           = data.azurerm_virtual_network.vnets[each.key].name
   vnet_cluster_id             = data.azurerm_virtual_network.vnets[each.key].id
