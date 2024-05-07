@@ -111,7 +111,6 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
 echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "   -  APP_REGISTRATION_VELERO          : $APP_REGISTRATION_VELERO"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -152,10 +151,6 @@ echo "Deleting resource group..."
 az group delete --yes --name "$AZ_VELERO_RESOURCE_GROUP" 2>&1 >/dev/null
 echo "Done."
 
-echo ""
-echo "Deleting service principal..."
-delete_ad_app_and_stored_credentials "${APP_REGISTRATION_VELERO}"
-echo "Done."
 
 
 #######################################################################################

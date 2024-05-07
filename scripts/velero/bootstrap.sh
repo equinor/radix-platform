@@ -121,7 +121,6 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AZ_VELERO_RESOURCE_GROUP         : $AZ_VELERO_RESOURCE_GROUP"
 echo -e "   -  AZ_VELERO_STORAGE_ACCOUNT_ID     : $AZ_VELERO_STORAGE_ACCOUNT_ID"
-echo -e "   -  APP_REGISTRATION_VELERO          : $APP_REGISTRATION_VELERO"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -144,64 +143,6 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
-### Resource group and storage container
+### Replaced by Terraform
 ### 
-
-echo ""
-echo "Create resource group..."
-az group create -n "$AZ_VELERO_RESOURCE_GROUP" --location "$AZ_RADIX_ZONE_LOCATION" 2>&1 >/dev/null
-echo "Done."
-
-echo ""
-echo "Create storage account..."
-az storage account create --name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
-    --resource-group "$AZ_VELERO_RESOURCE_GROUP" \
-    --encryption-services blob \
-    --https-only true \
-    --access-tier Hot \
-    --min-tls-version "${AZ_STORAGEACCOUNT_MIN_TLS_VERSION}" \
-    --sku "${AZ_STORAGEACCOUNT_SKU}" \
-    --kind "${AZ_VELERO_STORAGE_ACCOUNT_KIND}" \
-    --access-tier "${AZ_STORAGEACCOUNT_TIER}"
-    2>&1 >/dev/null
-echo "Done."
-
-# The blob has to be unique for each cluster, and so we will create a blob when installing the base components for the cluster.
-# This blob will be shared among all clusters. Not good.
-# We will move the creation of a separate blob per cluster into the "install base components" script.
-# echo ""
-# echo "Create storage container..."
-# az storage container create -n "$AZ_VELERO_STORAGE_BLOB_CONTAINER" \
-#     --public-access off \
-#     --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
-#     2>&1 >/dev/null
-# echo "Done."
-
-
-#######################################################################################
-### Service principal
-###
-
-
-printf "Working on \"${APP_REGISTRATION_VELERO}\": Creating service principal..."
-AZ_VELERO_SERVICE_PRINCIPAL_SCOPE="$(az group show --name ${AZ_VELERO_RESOURCE_GROUP} | jq -r '.id')"
-AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD="$(az ad sp create-for-rbac --name "$APP_REGISTRATION_VELERO" --scope="${AZ_VELERO_SERVICE_PRINCIPAL_SCOPE}" --role "Contributor" --query 'password' -o tsv)"
-AZ_VELERO_SERVICE_PRINCIPAL_ID="$(az ad sp list --display-name "$APP_REGISTRATION_VELERO" --query '[0].appId' -o tsv)"
-AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION="Used by Velero to access Azure resources"
-
-printf "Update credentials in keyvault..."
-update_service_principal_credentials_in_az_keyvault "${APP_REGISTRATION_VELERO}" "${AZ_VELERO_SERVICE_PRINCIPAL_ID}" "${AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD}" "${AZ_VELERO_SERVICE_PRINCIPAL_DESCRIPTION}"
-printf "Done.\n"
-
-# Clean up
-unset AZ_VELERO_SERVICE_PRINCIPAL_PASSWORD # Clear credentials from memory
-
-echo ""
-echo "WARNING!"
-echo "You _must_ manually set team members as owners for the service principal \"$APP_REGISTRATION_VELERO\","
-echo "as this is not possible to do by script (yet)."
-echo ""
-
-echo ""
-echo "Bootstrap of Velero is done!"
 
