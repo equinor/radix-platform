@@ -54,7 +54,6 @@ module "storageaccount" {
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
   subnet_id                = data.azurerm_subnet.this.id
-  velero_service_principal = "radix-velero-${module.config.environment}"
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
 }

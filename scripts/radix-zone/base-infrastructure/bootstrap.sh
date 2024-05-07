@@ -164,7 +164,6 @@ echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CON
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 echo -e "   -  APP_REGISTRATION_WEB_CONSOLE                : $APP_REGISTRATION_WEB_CONSOLE"
 echo -e "   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
-echo -e "   -  APP_REGISTRATION_VELERO                     : $APP_REGISTRATION_VELERO"
 echo -e "   -  APP_REGISTRATION_SERVICENOW_SERVER          : $APP_REGISTRATION_SERVICENOW_SERVER"
 echo -e ""
 echo -e "   -  MI_AKS                                      : $MI_AKS"
@@ -474,7 +473,6 @@ function create_base_system_users_and_store_credentials() {
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Service principal that provide read-only access to container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
-    create_service_principal_and_store_credentials "$APP_REGISTRATION_VELERO" "Used by Velero to access Azure resources"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Used by web console for login and other AD information"
 }
 
