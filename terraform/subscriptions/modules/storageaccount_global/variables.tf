@@ -13,12 +13,8 @@ variable "location" {
   type        = string
 }
 
-variable "environment" {
-  description = "A mapping of tags to assign to the resource."
-}
-
-variable "tier" {
-  description = "Defines the Tier to use for this storage account. Valid options are Standard and Premium"
+variable "kind" {
+  description = "Defines the Kind of account"
   type        = string
 }
 
@@ -27,9 +23,14 @@ variable "account_replication_type" {
   type        = string
 }
 
-variable "kind" {
-  description = "Defines the Kind of account"
+variable "tier" {
+  description = "Defines the Tier to use for this storage account. Valid options are Standard and Premium"
   type        = string
+}
+
+variable "shared_access_key_enabled" {
+  type    = bool
+  default = false
 }
 
 variable "change_feed_enabled" {
@@ -68,6 +69,14 @@ variable "backup_center" {
   default     = false
 }
 
+variable "environment" {
+  description = "A mapping of tags to assign to the resource."
+}
+
+variable "backup" {
+  description = "Enable backup"
+  type        = bool
+}
 
 variable "principal_id" {
   description = "The ID of the Principal (User, Group or Service Principal) to assign the Role Definition to"
@@ -85,34 +94,4 @@ variable "policyblobstorage_id" {
   description = "The ID of the Backup Policy."
   type        = string
   default     = ""
-}
-
-variable "subnet_id" {
-  description = "A list of virtual network subnet ids to secure the storage account."
-  type        = string
-
-}
-
-variable "backup" {
-  description = "Enable backup"
-  type        = bool
-}
-
-variable "virtual_network" {
-  type    = string
-  default = "vnet-hub"
-}
-
-variable "vnet_resource_group" {
-  type = string
-}
-variable "lifecyclepolicy" {
-  type    = bool
-  default = false
-
-}
-
-variable "shared_access_key_enabled" {
-  type    = bool
-  default = false
 }

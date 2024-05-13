@@ -1,4 +1,5 @@
 environment: "playground"
+subscription_shortname: "s941"
 location: "northeurope"
 backend:
   resource_group_name:   "s941-tfstate"

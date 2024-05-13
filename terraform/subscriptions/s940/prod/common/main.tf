@@ -8,13 +8,9 @@ module "resourcegroups" {
   location = module.config.location
 }
 
-module "backupvault" {
-  source                = "../../../modules/backupvaults"
-  name                  = "Backupvault-${module.config.environment}"
-  resource_group_name   = module.config.common_resource_group
-  location              = module.config.location
-  policyblobstoragename = "Backuppolicy-blob"
-  depends_on            = [module.resourcegroups]
+data "azurerm_data_protection_backup_vault" "this" {
+  name                = "Backupvault-${module.config.subscription_shortname}"
+  resource_group_name = "common"
 }
 
 module "loganalytics" {
@@ -24,7 +20,9 @@ module "loganalytics" {
   location                      = module.config.location
   retention_in_days             = 30
   local_authentication_disabled = false
+  #TODO: No setting for 100 GB/day Commitment Tier. Done manually
 }
+
 
 data "azurerm_virtual_network" "this" {
   name                = "vnet-hub"
@@ -43,16 +41,16 @@ module "storageaccount" {
   name                     = "radix${each.key}${module.config.environment}"
   tier                     = each.value.account_tier
   account_replication_type = each.value.account_replication_type
-  resource_group_name      = each.value.resource_group_name
-  location                 = each.value.location
+  resource_group_name      = module.config.common_resource_group
+  location                 = module.config.location
   environment              = module.config.environment
   kind                     = each.value.kind
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
   backup                   = each.value.backup
-  principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
-  vault_id                 = module.backupvault.data.backupvault.id
-  policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
+  principal_id             = data.azurerm_data_protection_backup_vault.this.identity[0].principal_id
+  vault_id                 = data.azurerm_data_protection_backup_vault.this.id
+  policyblobstorage_id     = "${data.azurerm_data_protection_backup_vault.this.id}/backupPolicies/Backuppolicy-blob"
   subnet_id                = data.azurerm_subnet.this.id
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy

@@ -1,4 +1,5 @@
 environment: "c2"
+subscription_shortname: "s940"
 location: "westeurope"
 backend:
   resource_group_name:   "s940-tfstate"

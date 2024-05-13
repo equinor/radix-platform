@@ -1,4 +1,5 @@
 environment: "platform"
+subscription_shortname: "s940"
 location: "northeurope"
 backend:
   resource_group_name:    "s940-tfstate"

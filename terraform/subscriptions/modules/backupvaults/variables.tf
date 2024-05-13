@@ -18,3 +18,4 @@ variable "policyblobstoragename" {
   type        = string
 
 }
+
