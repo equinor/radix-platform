@@ -13,12 +13,8 @@ variable "location" {
   type        = string
 }
 
-variable "environment" {
-  description = "A mapping of tags to assign to the resource."
-}
-
-variable "tier" {
-  description = "Defines the Tier to use for this storage account. Valid options are Standard and Premium"
+variable "kind" {
+  description = "Defines the Kind of account"
   type        = string
 }
 
@@ -27,9 +23,14 @@ variable "account_replication_type" {
   type        = string
 }
 
-variable "kind" {
-  description = "Defines the Kind of account"
+variable "tier" {
+  description = "Defines the Tier to use for this storage account. Valid options are Standard and Premium"
   type        = string
+}
+
+variable "shared_access_key_enabled" {
+  type    = bool
+  default = false
 }
 
 variable "change_feed_enabled" {
@@ -68,26 +69,8 @@ variable "backup_center" {
   default     = false
 }
 
-
-variable "principal_id" {
-  description = "The ID of the Principal (User, Group or Service Principal) to assign the Role Definition to"
-  type        = string
-}
-
-variable "vault_id" {
-  description = "The ID of the Backup Vault"
-  type        = string
-}
-
-variable "policyblobstorage_id" {
-  description = "The ID of the Backup Policy."
-  type        = string
-}
-
-variable "subnet_id" {
-  description = "A list of virtual network subnet ids to secure the storage account."
-  type        = string
-
+variable "environment" {
+  description = "A mapping of tags to assign to the resource."
 }
 
 variable "backup" {
@@ -95,21 +78,20 @@ variable "backup" {
   type        = bool
 }
 
-variable "virtual_network" {
-  type    = string
-  default = "vnet-hub"
+variable "principal_id" {
+  description = "The ID of the Principal (User, Group or Service Principal) to assign the Role Definition to"
+  type        = string
+  default     = ""
 }
 
-variable "vnet_resource_group" {
-  type = string
-}
-variable "lifecyclepolicy" {
-  type    = bool
-  default = false
-
+variable "vault_id" {
+  description = "The ID of the Backup Vault"
+  type        = string
+  default     = ""
 }
 
-variable "shared_access_key_enabled" {
-  type    = bool
-  default = false
+variable "policyblobstorage_id" {
+  description = "The ID of the Backup Policy."
+  type        = string
+  default     = ""
 }

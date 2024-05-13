@@ -1,3 +1,15 @@
+locals {
+  ## Backend Config
+  backend = {
+    resource_group_name  = "s940-tfstate"
+    storage_account_name = "s940radixinfra"
+    container_name       = "infrastructure"
+    subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+  }
+  globalenviroment = data.terraform_remote_state.global.outputs.environment
+}
+
+
 terraform {
   required_providers {
     azurerm = {
@@ -14,10 +26,19 @@ terraform {
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
     key                  = "prod/common/terraform.tfstate"
+
   }
 }
 
 provider "azurerm" {
-  subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+  subscription_id     = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+  storage_use_azuread = true
   features {}
+}
+
+data "terraform_remote_state" "global" {
+  backend = "azurerm"
+  config = merge(
+    local.backend,
+  { key = "prod/globals/terraform.tfstate" })
 }

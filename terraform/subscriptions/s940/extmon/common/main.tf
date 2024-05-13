@@ -8,16 +8,6 @@ module "resourcegroups" {
   location = module.config.location
 }
 
-
-module "backupvault" {
-  source                = "../../../modules/backupvaults"
-  name                  = "Backupvault-${module.config.environment}"
-  resource_group_name   = module.config.common_resource_group
-  location              = module.config.location
-  policyblobstoragename = "Backuppolicy-blob"
-  depends_on            = [module.resourcegroups]
-}
-
 module "loganalytics" {
   source                        = "../../../modules/log-analytics"
   workspace_name                = "radix-logs-${module.config.environment}"
@@ -51,9 +41,6 @@ module "storageaccount" {
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
   backup                   = each.value.backup
-  principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
-  vault_id                 = module.backupvault.data.backupvault.id
-  policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
   subnet_id                = data.azurerm_subnet.this.id
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy

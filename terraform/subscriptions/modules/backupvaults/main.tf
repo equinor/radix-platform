@@ -11,7 +11,12 @@ resource "azurerm_data_protection_backup_vault" "backupvault" {
 
   identity {
     type = "SystemAssigned"
+
   }
+  tags = {
+    IaC = "terraform"
+  }
+
 }
 
 #######################################################################################

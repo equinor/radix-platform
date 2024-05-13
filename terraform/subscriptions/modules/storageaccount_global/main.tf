@@ -44,16 +44,10 @@ resource "azurerm_storage_account" "storageaccount" {
       }
     }
   }
-
   tags = {
-    environment = var.environment
-    IaC         = "terraform"
+    IaC = "terraform"
   }
 }
-
-# #######################################################################################
-# ### Role assignment from Backup Vault to Storage Account
-# ###
 
 resource "azurerm_role_assignment" "roleassignment" {
   for_each = var.backup && var.kind == "StorageV2" ? { "${var.name}" : true } : {}
@@ -79,64 +73,8 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
 }
 
 resource "azurerm_storage_account_network_rules" "this" {
-  # for_each                   = var.firewall ? { "${var.name}" : true } : {}
   storage_account_id = azurerm_storage_account.storageaccount.id
   default_action     = "Deny"
   ip_rules           = []
-  # virtual_network_subnet_ids = [var.subnet_id]
 
 }
-
-data "azurerm_subnet" "subnet" {
-  name                 = "private-links"
-  virtual_network_name = var.virtual_network
-  resource_group_name  = var.vnet_resource_group
-}
-resource "azurerm_private_endpoint" "this" {
-  name                = "pe-${var.name}"
-  location            = var.location
-  resource_group_name = var.vnet_resource_group
-  subnet_id           = data.azurerm_subnet.subnet.id
-  depends_on          = [azurerm_storage_account.storageaccount]
-
-  private_service_connection {
-    name                           = "Private_Service_Connection"
-    private_connection_resource_id = azurerm_storage_account.storageaccount.id
-    is_manual_connection           = false
-    subresource_names              = ["blob"]
-  }
-}
-resource "azurerm_private_dns_a_record" "this" {
-  name                = azurerm_storage_account.storageaccount.name
-  zone_name           = "privatelink.blob.core.windows.net"
-  resource_group_name = var.vnet_resource_group
-  ttl                 = 60
-  records             = [azurerm_private_endpoint.this.private_service_connection.0.private_ip_address]
-}
-
-resource "azurerm_storage_management_policy" "this" {
-  for_each           = var.lifecyclepolicy ? { "${var.name}" : true } : {}
-  storage_account_id = azurerm_storage_account.storageaccount.id
-  rule {
-    name    = "lifecycle-blockblob"
-    enabled = true
-
-    filters {
-      blob_types = ["blockBlob"]
-    }
-
-    actions {
-      version {
-        delete_after_days_since_creation = 60
-      }
-      base_blob {
-        delete_after_days_since_modification_greater_than       = 90
-        tier_to_cool_after_days_since_modification_greater_than = 30
-      }
-    }
-  }
-  depends_on = [azurerm_storage_account.storageaccount]
-}
-
-
-

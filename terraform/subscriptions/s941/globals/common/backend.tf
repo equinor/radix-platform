@@ -8,16 +8,16 @@ terraform {
 
   backend "azurerm" {
     tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-    subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
-    resource_group_name  = "s940-tfstate"
-    storage_account_name = "s940radixinfra"
+    subscription_id      = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+    resource_group_name  = "s941-tfstate"
+    storage_account_name = "s941radixinfra"
     container_name       = "infrastructure"
-    key                  = "prod/globals/terraform.tfstate"
+    key                  = "dev/globals/terraform.tfstate"
   }
 }
 
 provider "azurerm" {
-  subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+  subscription_id = "16ede44b-1f74-40a5-b428-46cca9a5741b"
   features {}
 }
 
@@ -26,6 +26,5 @@ provider "azuread" {
 }
 
 module "config" {
-  source     = "../../modules/config"
-  configfile = "config.yaml"
+  source = "../../../modules/config"
 }
