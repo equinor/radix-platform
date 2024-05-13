@@ -199,6 +199,20 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
+### Add IP rule to Keyvault
+###
+
+printf "initializing...\n"
+printf "Getting public ip... "
+myip=$(curl http://ifconfig.me/ip 2> /dev/null) ||
+{ echo "ERROR: Failed to get IP address." >&2; exit 1; }
+printf "Done.\n"
+
+printf "Adding %s to %s firewall... " $myip $AZ_RESOURCE_KEYVAULT
+az keyvault network-rule add --name "${AZ_RESOURCE_KEYVAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
+printf "Done.\n"
+
+#######################################################################################
 ### Connect kubectl
 ###
 
@@ -382,6 +396,14 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/flux/bootstrap.sh"
     OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
     ./flux/bootstrap.sh)
 wait
+
+#######################################################################################
+### Remove IP rule from Keyvault
+###
+
+printf "Remove %s to %s firewall... " $myip $AZ_RESOURCE_KEYVAULT
+az keyvault network-rule remove --name "${AZ_RESOURCE_KEYVAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
+printf "Done.\n"
 
 #######################################################################################
 ### END
