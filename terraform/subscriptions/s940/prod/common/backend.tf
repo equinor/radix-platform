@@ -6,7 +6,6 @@ locals {
     container_name       = "infrastructure"
     subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   }
-  globalenviroment = data.terraform_remote_state.global.outputs.environment
 }
 
 
@@ -34,11 +33,4 @@ provider "azurerm" {
   subscription_id     = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   storage_use_azuread = true
   features {}
-}
-
-data "terraform_remote_state" "global" {
-  backend = "azurerm"
-  config = merge(
-    local.backend,
-  { key = "prod/globals/terraform.tfstate" })
 }

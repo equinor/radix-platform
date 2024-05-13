@@ -72,16 +72,19 @@ variable "backup_center" {
 variable "principal_id" {
   description = "The ID of the Principal (User, Group or Service Principal) to assign the Role Definition to"
   type        = string
+  default     = ""
 }
 
 variable "vault_id" {
   description = "The ID of the Backup Vault"
   type        = string
+  default     = ""
 }
 
 variable "policyblobstorage_id" {
   description = "The ID of the Backup Policy."
   type        = string
+  default     = ""
 }
 
 variable "subnet_id" {

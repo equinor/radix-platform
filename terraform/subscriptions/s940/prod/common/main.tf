@@ -9,9 +9,8 @@ module "resourcegroups" {
 }
 
 data "azurerm_data_protection_backup_vault" "this" {
-  name                = "Backupvault-${local.globalenviroment}"
+  name                = "Backupvault-${module.config.subscription_shortname}"
   resource_group_name = "common"
-
 }
 
 module "loganalytics" {
@@ -49,15 +48,12 @@ module "storageaccount" {
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
   backup                   = each.value.backup
-  # principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
-  # vault_id                 = module.backupvault.data.backupvault.id
-  # policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
-  principal_id         = data.azurerm_data_protection_backup_vault.this.identity[0].principal_id
-  vault_id             = data.azurerm_data_protection_backup_vault.this.id
-  policyblobstorage_id = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.DataProtection/backupVaults/Backupvault-s940/backupPolicies/Backuppolicy-blob"
-  subnet_id            = data.azurerm_subnet.this.id
-  vnet_resource_group  = module.config.vnet_resource_group
-  lifecyclepolicy      = each.value.lifecyclepolicy
+  principal_id             = data.azurerm_data_protection_backup_vault.this.identity[0].principal_id
+  vault_id                 = data.azurerm_data_protection_backup_vault.this.id
+  policyblobstorage_id     = "${data.azurerm_data_protection_backup_vault.this.id}/backupPolicies/Backuppolicy-blob"
+  subnet_id                = data.azurerm_subnet.this.id
+  vnet_resource_group      = module.config.vnet_resource_group
+  lifecyclepolicy          = each.value.lifecyclepolicy
 }
 
 output "workspace_id" {

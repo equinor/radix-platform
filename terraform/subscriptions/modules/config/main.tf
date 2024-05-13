@@ -43,6 +43,10 @@ output "subscription" {
   value = local.config.backend.subscription_id
 }
 
+output "subscription_shortname" {
+  value = local.config.subscription_shortname
+}
+
 output "policy_aks_diagnostics_cluster" {
   value = "Radix-Enforce-Diagnostics-AKS-Clusters"
 }
