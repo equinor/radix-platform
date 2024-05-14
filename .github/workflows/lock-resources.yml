@@ -28,6 +28,7 @@ jobs:
         id: github_public_ip
         run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
       - name: Add GitHub IP to KeyVault in Prod
+         id: update_prod_firewall
         run: |
           az keyvault network-rule add --name "radix-vault-prod" \
             --resource-group "common" \
