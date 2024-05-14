@@ -31,7 +31,7 @@ jobs:
         run: |
           while read line; do
             echo "$line" >> $GITHUB_ENV
-          done < ./scripts/radix-zone/${{ env.PROD_ENV }}
+          done < ./scripts/radix-zone/radix_zone_prod.env
 
       - name: Print environment variable
         run: echo $AZ_RESOURCE_KEYVAULT
