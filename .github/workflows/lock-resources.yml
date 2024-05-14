@@ -34,6 +34,7 @@ jobs:
             --resource-group "common" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Add GitHub IP to KeyVault in C2
+         id: update_c2_firewall
         run: |
           az keyvault network-rule add --name "radix-vault-c2-prod" \
             --resource-group "common-westeurope" \
