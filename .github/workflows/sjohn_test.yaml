@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           sparse-checkout: 'scripts/radix-zone'
-          # sparse-checkout-cone-mode: false
+          sparse-checkout-cone-mode: true
           # token: ${{ github.token}}
       # - name: 'Az CLI login'
       #   uses: azure/login@v1
