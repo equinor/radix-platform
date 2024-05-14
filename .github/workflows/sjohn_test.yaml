@@ -23,11 +23,19 @@ jobs:
       #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
       #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
       #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: "ENV PROD"
-        run: cat ./scripts/radix-zone/${{ env.PROD_ENV }} >> $GITHUB_ENV_PROD
+      # - name: "ENV PROD"
+      #   run: cat ./scripts/radix-zone/${{ env.PROD_ENV }} >> $GITHUB_ENV_PROD
+      - name: Import environment variables from a file
+        id: import-env
+        shell: bash
+        run: |
+          while read line; do
+            echo "$line" >> $GITHUB_ENV
+          done < ./scripts/radix-zone/${{ env.PROD_ENV }}
 
       - name: Print environment variable
         run: echo $AZ_RESOURCE_KEYVAULT
+
       # - name: Test1
       #   working-directory: .
       #   run: pwd
