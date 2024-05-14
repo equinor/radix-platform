@@ -11,9 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # sparse-checkout: './scripts/radix-zone'
+          sparse-checkout: 'scripts'
           # sparse-checkout-cone-mode: false
-          token: ${{ github.token}}
+          # token: ${{ github.token}}
       # - name: 'Az CLI login'
       #   uses: azure/login@v1
       #   with:
