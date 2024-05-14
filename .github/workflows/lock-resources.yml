@@ -42,6 +42,7 @@ jobs:
       - name: lock-resources-c2
         run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_c2.env .github/workflows/scripts/check_resource_lock.sh
       - name: Revoke GitHub IP on KeyVault in Prod
+         if: ${{ steps.update_prod_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
           az keyvault network-rule remove --name "radix-vault-prod" \
             --resource-group "common" \
