@@ -32,16 +32,16 @@ jobs:
       #   working-directory: .
       #   run: ls -la ./scripts
       #   shell: bash
-      - name: Import environment variables from a file
-        id: import-env
-        shell: bash
-        run: |
-          while read line; do
-            echo "$line" >> $GITHUB_ENV
-          done < ./scripts/radix-zone/radix_zone_prod.env
+      # - name: Import environment variables from a file
+      #   id: import-env
+      #   shell: bash
+      #   run: |
+      #     while read line; do
+      #       echo "$line" >> $GITHUB_ENV
+      #     done < ./scripts/radix-zone/radix_zone_prod.env
 
-      - name: Print environment variable
-        run: echo $AZ_RESOURCE_KEYVAULT
+      # - name: Print environment variable
+      #   run: echo $AZ_RESOURCE_KEYVAULT
 
       # - name: Test1
       #   working-directory: .
