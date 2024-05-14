@@ -1,6 +1,7 @@
 name: sjohn-test
 on:
   workflow_dispatch:
+  pull_request:
 permissions:
   id-token: write
   contents: read
@@ -12,7 +13,7 @@ jobs:
         with:
           sparse-checkout: './scripts/radix-zone'
           sparse-checkout-cone-mode: false
-          token: ${{ secrets.PAT_REPO_TOKEN }}
+          token: ${{ github.token}}
       - name: 'Az CLI login'
         uses: azure/login@v1
         with:
