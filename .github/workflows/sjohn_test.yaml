@@ -25,6 +25,13 @@ jobs:
       #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       # - name: "ENV PROD"
       #   run: cat ./scripts/radix-zone/${{ env.PROD_ENV }} >> $GITHUB_ENV_PROD
+      - name: cat
+        working-directory: .
+        run: cat ./scripts/radix-zone/radix_zone_prod.env
+        shell: bash
+      #   working-directory: .
+      #   run: ls -la ./scripts
+      #   shell: bash
       - name: Import environment variables from a file
         id: import-env
         shell: bash
