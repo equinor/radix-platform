@@ -17,6 +17,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           sparse-checkout: | 
+            scripts/aks
             scripts/radix-zone
             .github
       - name: 'Az CLI login'
