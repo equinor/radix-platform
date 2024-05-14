@@ -3,24 +3,55 @@ on:
   schedule:
     - cron: '0 18 * * *'
   workflow_dispatch:
-
 permissions:
   id-token: write
   contents: read
-
 jobs:
   lock-clusters-prod:
     runs-on: ubuntu-latest
     environment: lock-operations-prod
+    env:
+      PROD_ENV: "radix_zone_prod.env"
+      C2_ENV: "radix_zone_c2.env"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: 'scripts/radix-zone'
+      
       - name: 'Az CLI login'
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
+      - name: Add GitHub IP to KeyVault in Prod
+        id: update_prod_firewall
+        run: |
+          az keyvault network-rule add --name "radix-vault-prod" \
+            --resource-group "common" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Add GitHub IP to KeyVault in C2
+        id: update_c2_firewall
+        run: |
+          az keyvault network-rule add --name "radix-vault-c2-prod" \
+            --resource-group "common-westeurope" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: lock-resources-prod
         run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_prod.env .github/workflows/scripts/check_resource_lock.sh
       - name: lock-resources-c2
         run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_c2.env .github/workflows/scripts/check_resource_lock.sh
+      - name: Revoke GitHub IP on KeyVault in Prod
+        if: ${{ steps.update_prod_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        run: |
+          az keyvault network-rule remove --name "radix-vault-prod" \
+            --resource-group "common" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Revoke GitHub IP on KeyVault in C2
+        if: ${{ steps.update_c2_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        run: |
+          az keyvault network-rule remove --name "radix-vault-c2-prod" \
+            --resource-group "common-westeurope" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
