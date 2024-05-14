@@ -16,8 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: 'scripts/radix-zone'
-      
+          sparse-checkout: | 
+            'scripts/radix-zone'
+            '.github'
       - name: 'Az CLI login'
         uses: azure/login@v1
         with:
