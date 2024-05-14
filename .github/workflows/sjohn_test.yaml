@@ -26,9 +26,9 @@ jobs:
         shell: bash
       - name: Test2
         working-directory: .
-        run: ls /
+        run: ls * -l
         shell: bash
       - name: Test3
         working-directory: .
-        run: ls -la .scripts
+        run: ls -la ./scripts
         shell: bash
