@@ -27,8 +27,10 @@ jobs:
       #   run: cat ./scripts/radix-zone/${{ env.PROD_ENV }} >> $GITHUB_ENV_PROD
       - name: cat
         working-directory: .
-        run: cat ./scripts/radix-zone/radix_zone_prod.env
+        run: source ./scripts/radix-zone/radix_zone_prod.env
         shell: bash
+      - name: Print environment variable
+        run: echo $AZ_RESOURCE_KEYVAULT
       #   working-directory: .
       #   run: ls -la ./scripts
       #   shell: bash
