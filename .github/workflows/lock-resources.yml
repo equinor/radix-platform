@@ -28,13 +28,13 @@ jobs:
         id: github_public_ip
         run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
       - name: Add GitHub IP to KeyVault in Prod
-         id: update_prod_firewall
+        id: update_prod_firewall
         run: |
           az keyvault network-rule add --name "radix-vault-prod" \
             --resource-group "common" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Add GitHub IP to KeyVault in C2
-         id: update_c2_firewall
+        id: update_c2_firewall
         run: |
           az keyvault network-rule add --name "radix-vault-c2-prod" \
             --resource-group "common-westeurope" \
@@ -44,13 +44,13 @@ jobs:
       - name: lock-resources-c2
         run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_c2.env .github/workflows/scripts/check_resource_lock.sh
       - name: Revoke GitHub IP on KeyVault in Prod
-         if: ${{ steps.update_prod_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        if: ${{ steps.update_prod_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
           az keyvault network-rule remove --name "radix-vault-prod" \
             --resource-group "common" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Revoke GitHub IP on KeyVault in C2
-         if: ${{ steps.update_c2_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        if: ${{ steps.update_c2_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
           az keyvault network-rule remove --name "radix-vault-c2-prod" \
             --resource-group "common-westeurope" \
