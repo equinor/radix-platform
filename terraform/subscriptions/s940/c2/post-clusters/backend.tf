@@ -35,3 +35,11 @@ module "clusters" {
   resource_group_name = module.config.cluster_resource_group
   subscription        = module.config.subscription
 }
+
+data "azuread_service_principal" "this" {
+  display_name = "ar-radix-resource-lock-operator-prod"
+}
+
+data "azurerm_role_definition" "this" {
+  name = "Omnia Authorization Locks Operator"
+}
