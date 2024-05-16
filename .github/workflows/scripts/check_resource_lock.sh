@@ -76,18 +76,18 @@ while read -r CLUSTER; do
         LOCKS=$(az lock list --resource "$ID")
         if [[ $LOCKS == "[]" ]]; then
             createLock "${NAME}-CanNotDelete-Lock" "CanNotDelete" "${ID}"
-            createLock "${NAME}-ReadOnly-Lock" "ReadOnly" "${ID}"
+            # createLock "${NAME}-ReadOnly-Lock" "ReadOnly" "${ID}"
         else
             HASDELETELOCK=false
             HASREADONLYLOCK=false
             while read -r lock; do
                 LOCKTYPE=$(jq -n "${lock}" | jq -r .level)
                 if [[ $LOCKTYPE == "CanNotDelete" ]]; then HASDELETELOCK=true; fi
-                if [[ $LOCKTYPE == "ReadOnly" ]]; then HASREADONLYLOCK=true; fi
+                # if [[ $LOCKTYPE == "ReadOnly" ]]; then HASREADONLYLOCK=true; fi
             done <<<"$(az lock list --resource "$ID" | jq -c '.[]')"
 
             if [[ $HASDELETELOCK == false ]]; then createLock "${NAME}-CanNotDelete-Lock" "CanNotDelete" "${ID}"; fi
-            if [[ $HASREADONLYLOCK == false ]]; then createLock "${NAME}-ReadOnly-Lock" "ReadOnly" "${ID}"; fi
+            # if [[ $HASREADONLYLOCK == false ]]; then createLock "${NAME}-ReadOnly-Lock" "ReadOnly" "${ID}"; fi
         fi
     }
 

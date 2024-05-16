@@ -21,7 +21,8 @@ terraform {
 }
 
 provider "azurerm" {
-  subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+  subscription_id     = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+  storage_use_azuread = true
   features {}
 }
 
@@ -35,3 +36,10 @@ module "clusters" {
   subscription        = module.config.subscription
 }
 
+data "azuread_service_principal" "this" {
+  display_name = "ar-radix-resource-lock-operator-prod"
+}
+
+data "azurerm_role_definition" "this" {
+  name = "Omnia Authorization Locks Operator"
+}
