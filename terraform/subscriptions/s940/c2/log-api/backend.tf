@@ -13,6 +13,7 @@ terraform {
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
     key                  = "c2/log-api/terraform.tfstate"
+    use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }
 

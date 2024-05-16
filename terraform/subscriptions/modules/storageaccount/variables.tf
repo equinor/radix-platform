@@ -109,10 +109,14 @@ variable "vnet_resource_group" {
 variable "lifecyclepolicy" {
   type    = bool
   default = false
-
 }
 
 variable "shared_access_key_enabled" {
   type    = bool
   default = false
+}
+
+variable "ip_rule" {
+  description = "IP rule on StorageAccount"
+  type        = string
 }

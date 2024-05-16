@@ -1,4 +1,5 @@
 environment: "s941"
+subscription_shortname: "s941"
 location: "northeurope"
 backend:
   resource_group_name:   "s941-tfstate"
@@ -6,3 +7,5 @@ backend:
   container_name:        "infrastructure"
   subscription_id:       "16ede44b-1f74-40a5-b428-46cca9a5741b"
   tenant_id:             "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+  ip_key_vault_id:       "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.KeyVault/vaults/radix-keyv-dev"
+

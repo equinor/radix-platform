@@ -108,3 +108,8 @@ variable "virtual_network" {
 variable "vnet_resource_group" {
   type = string
 }
+
+variable "ip_rule" {
+  description = "IP rule on StorageAccount"
+  type        = string
+}

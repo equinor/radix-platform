@@ -13,11 +13,13 @@ terraform {
     storage_account_name = "s941radixinfra"
     container_name       = "infrastructure"
     key                  = "dev/globals/terraform.tfstate"
+    use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }
 
 provider "azurerm" {
-  subscription_id = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+  subscription_id     = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+  storage_use_azuread = true
   features {}
 }
 

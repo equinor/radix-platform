@@ -11,8 +11,12 @@ resource "azurerm_storage_account" "storageaccount" {
   account_tier                    = var.tier
   allow_nested_items_to_be_public = false
   default_to_oauth_authentication = true
-  public_network_access_enabled   = true
   shared_access_key_enabled       = var.shared_access_key_enabled
+  network_rules {
+    default_action = "Deny"
+    ip_rules       = [var.ip_rule]
+  }
+
 
 
   dynamic "blob_properties" {
@@ -70,11 +74,4 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
   storage_account_id = azurerm_storage_account.storageaccount.id
   backup_policy_id   = var.policyblobstorage_id
   depends_on         = [azurerm_role_assignment.roleassignment]
-}
-
-resource "azurerm_storage_account_network_rules" "this" {
-  storage_account_id = azurerm_storage_account.storageaccount.id
-  default_action     = "Deny"
-  ip_rules           = []
-
 }

@@ -1,14 +1,3 @@
-locals {
-  ## Backend Config
-  backend = {
-    resource_group_name  = "s940-tfstate"
-    storage_account_name = "s940radixinfra"
-    container_name       = "infrastructure"
-    subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
-  }
-}
-
-
 terraform {
   required_providers {
     azurerm = {
@@ -18,19 +7,18 @@ terraform {
   }
 
   backend "azurerm" {
-    tenant_id       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-    subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
-    # client_id            = "043e5510-738f-4c30-8b9d-ee32578c7fe8" #s
+    tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+    subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
     resource_group_name  = "s940-tfstate"
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
     key                  = "prod/common/terraform.tfstate"
-
+    use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }
 
 provider "azurerm" {
   subscription_id     = "ded7ca41-37c8-4085-862f-b11d21ab341a"
-  storage_use_azuread = true
+  storage_use_azuread = true # This enables RBAC instead of access keys
   features {}
 }

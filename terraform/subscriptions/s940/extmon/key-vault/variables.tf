@@ -8,9 +8,6 @@ variable "keyvaults" {
     network_acls_default_action = optional(string, "Allow")
   }))
   default = {
-    kv-radix-monitoring-prod = {
-      resource_group = "monitoring"
-    }
     radix-keyv-extmon = {
       enable_rbac_authorization = true
     }
