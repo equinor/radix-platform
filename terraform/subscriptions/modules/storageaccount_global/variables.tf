@@ -95,3 +95,8 @@ variable "policyblobstorage_id" {
   type        = string
   default     = ""
 }
+
+variable "ip_rule" {
+  description = "IP rule on StorageAccount"
+  type        = string
+}

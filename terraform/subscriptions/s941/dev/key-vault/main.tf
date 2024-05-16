@@ -4,6 +4,11 @@ module "config" {
   source = "../../../modules/config"
 }
 
+data "azurerm_key_vault_secret" "this" {
+  name         = "storageaccounts-ip-rule"
+  key_vault_id = module.config.backend.ip_key_vault_id
+}
+
 module "keyvault" {
   for_each            = var.keyvaults
   source              = "../../../modules/key-vault"
@@ -17,5 +22,5 @@ module "keyvault" {
   purge_protection_enabled    = each.value.purge_protection_enabled
   network_acls_default_action = each.value.network_acls_default_action
   vnet_resource_group         = module.config.vnet_resource_group
-
+  ip_rule                     = data.azurerm_key_vault_secret.this.value
 }
