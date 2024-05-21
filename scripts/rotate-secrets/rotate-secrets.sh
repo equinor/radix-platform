@@ -95,16 +95,6 @@ user_prompt_continue || exit 1
 ### Start
 ###
 
-printf "initializing...\n"
-printf "Getting public ip... "
-myip=$(curl http://ifconfig.me/ip 2> /dev/null) ||
-{ echo "ERROR: Failed to get IP address." >&2; exit 1; }
-printf "Done.\n"
-
-printf "Adding %s to %s firewall... " $myip $KEY_VAULT
-az keyvault network-rule add --name "${KEY_VAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
-printf "Done.\n"
-
 keyvault_list_secrets "${KEY_VAULT}" "31"
 printf "%s► Running scripts... %s%s\n" "${grn}" "$script" "${normal}"
 
@@ -126,6 +116,3 @@ done
 keyvault_list_secrets "${KEY_VAULT}" "31"
 
 printf "\n%s► Cleaning up... %s\n" "${grn}" "${normal}"
-printf "Removing %s to %s firewall... " $myip $KEY_VAULT
-az keyvault network-rule add --name "${KEY_VAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
-printf "Done.\n"
