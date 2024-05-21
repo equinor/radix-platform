@@ -291,20 +291,6 @@ fi
 printf "Done.\n"
 
 #######################################################################################
-### Add IP rule to Keyvault
-###
-
-printf "initializing...\n"
-printf "Getting public ip... "
-myip=$(curl http://ifconfig.me/ip 2> /dev/null) ||
-{ echo "ERROR: Failed to get IP address." >&2; exit 1; }
-printf "Done.\n"
-
-printf "Adding %s to %s firewall... " $myip $AZ_RESOURCE_KEYVAULT
-az keyvault network-rule add --name "${AZ_RESOURCE_KEYVAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
-printf "Done.\n"
-
-#######################################################################################
 ### Check the migration strategy
 ###
 
@@ -773,14 +759,6 @@ if [[ $update_redis_cache == true ]]; then
     )
     printf "Done...\n"
 fi
-
-#######################################################################################
-### Remove IP rule from Keyvault
-###
-
-printf "Remove %s to %s firewall... " $myip $AZ_RESOURCE_KEYVAULT
-az keyvault network-rule remove --name "${AZ_RESOURCE_KEYVAULT}" --ip-address  "$myip" --only-show-errors > /dev/null
-printf "Done.\n"
 
 # Move custom ingresses
 # if [[ $MIGRATION_STRATEGY == "aa" ]]; then

@@ -199,25 +199,6 @@ esac
 printf "...Done"
 
 
-MYIP=$(curl http://ifconfig.me/ip) ||
-  {
-    echo "ERROR: Failed to get IP address." >&2
-    return 1
-  }
-
-az storage account network-rule add \
-  --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
-  --ip-address "${MYIP}" \
-  --output none \
-  --only-show-errors
-
-printf "Wait for network-rule to apply..."
-while [[ "$(az storage container list --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" --auth-mode login 2>&1 >/dev/null)" == *"ERROR"* ]]; do
-  printf "."
-  sleep 5
-done
-printf "Done."
-
 # Create the cluster specific blob container
 printf "\nWorking on storage container..."
 az storage container create -n "$CLUSTER_NAME" \
@@ -227,11 +208,6 @@ az storage container create -n "$CLUSTER_NAME" \
   2>&1 >/dev/null
 printf "...Done"
 
-az storage account network-rule remove \
-  --account-name "$AZ_VELERO_STORAGE_ACCOUNT_ID" \
-  --ip-address "${MYIP}" \
-  --output none \
-  --only-show-errors
 
 # Create configMap that will hold the cluster specific values that Flux will later use when it manages the deployment of Velero
 printf "Working on configmap for flux..."
