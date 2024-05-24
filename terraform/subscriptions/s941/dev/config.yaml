@@ -1,6 +1,7 @@
 environment: "dev"
 subscription_shortname: "s941"
 location: "northeurope"
+all_ip_prefix_enviroments: ["development","playground"]
 backend:
   resource_group_name:   "s941-tfstate"
   storage_account_name:  "s941radixinfra"

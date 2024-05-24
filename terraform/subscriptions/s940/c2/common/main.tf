@@ -64,6 +64,16 @@ module "storageaccount" {
   ip_rule                  = data.azurerm_key_vault_secret.this.value
 }
 
+module "acr" {
+  source              = "../../../modules/acr"
+  ip_rule             = data.azurerm_key_vault_secret.this.value
+  location            = module.config.location
+  resource_group_name = "common" #TODO
+  acr                 = module.config.environment
+  vnet_resource_group = module.config.vnet_resource_group
+  subnet_id           = data.azurerm_subnet.this.id
+}
+
 output "workspace_id" {
   value = module.loganalytics.workspace_id
 }

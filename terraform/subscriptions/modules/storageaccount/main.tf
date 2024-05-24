@@ -100,6 +100,9 @@ resource "azurerm_private_endpoint" "this" {
     is_manual_connection           = false
     subresource_names              = ["blob"]
   }
+  tags = {
+    IaC = "terraform"
+  }
 }
 resource "azurerm_private_dns_a_record" "this" {
   name                = azurerm_storage_account.storageaccount.name
