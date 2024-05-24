@@ -38,6 +38,9 @@ resource "azurerm_private_endpoint" "this" {
     is_manual_connection           = false
     subresource_names              = ["vault"]
   }
+  tags = {
+    IaC = "terraform"
+  }
 }
 resource "azurerm_private_dns_a_record" "this" {
   name                = azurerm_key_vault.this.name

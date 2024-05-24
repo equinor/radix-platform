@@ -26,6 +26,11 @@ data "azurerm_storage_account" "velero" {
   resource_group_name = module.config.common_resource_group
 }
 
+# data "azurerm_container_registry" "this" {
+#   name                = "radix${module.config.environment}app"
+#   resource_group_name = "common" #TODO
+# }
+
 module "radix_id_external_secrets_operator_mi" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-external-secrets-operator-${module.config.environment}"
@@ -38,6 +43,23 @@ module "radix_id_external_secrets_operator_mi" {
     }
   }
 }
+
+# module "radix_id_acr_mi" {
+#   source              = "../../../modules/userassignedidentity"
+#   name                = "radix-id-acr-${module.config.environment}"
+#   location            = module.config.location
+#   resource_group_name = "common-${module.config.environment}"
+#   roleassignments = {
+#     pull = {
+#       role     = "AcrPull"
+#       scope_id = data.azurerm_container_registry.this.id
+#     }
+#     push = {
+#       role     = "AcrPush"
+#       scope_id = data.azurerm_container_registry.this.id
+#     }
+#   }
+# }
 
 module "radix_id_velero_mi" {
   source              = "../../../modules/userassignedidentity"

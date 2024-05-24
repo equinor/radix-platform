@@ -28,4 +28,7 @@ resource "azurerm_private_dns_a_record" "dns_record" {
   resource_group_name = var.vnet_resource_group
   ttl                 = 300
   records             = azurerm_private_endpoint.endpoint.custom_dns_configs[0].ip_addresses
+  tags = {
+    IaC = "terraform"
+  }
 }

@@ -52,6 +52,53 @@ module "storageaccount" {
   ip_rule                  = data.azurerm_key_vault_secret.this.value
 }
 
+module "acr" {
+  source              = "../../../modules/acr"
+  ip_rule             = data.azurerm_key_vault_secret.this.value
+  location            = module.config.location
+  resource_group_name = "common" #TODO
+  acr                 = module.config.environment
+  vnet_resource_group = module.config.vnet_resource_group
+  subnet_id           = data.azurerm_subnet.this.id
+}
+
+#######################################################################################
+### Temporary Private endpoint to dev ACR 
+### TODO task
+###
+resource "azurerm_private_endpoint" "env" {
+  name                = "pe-radix-acr-${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
+  location            = module.config.location
+  subnet_id           = data.azurerm_subnet.this.id
+  private_service_connection {
+    name                           = "Private_Service_Connection"
+    private_connection_resource_id = module.config.backend.acr_dev_id #TODO
+    is_manual_connection           = false
+    subresource_names              = ["registry"]
+  }
+  tags = {
+    IaC = "terraform"
+  }
+}
+
+resource "azurerm_private_dns_a_record" "env" {
+  for_each = {
+    for k, v in azurerm_private_endpoint.env.custom_dns_configs : v.fqdn => v
+  }
+  name                = replace(each.key, ".azurecr.io", "")
+  zone_name           = "privatelink.azurecr.io"
+  resource_group_name = module.config.vnet_resource_group
+  ttl                 = 300
+  records             = toset(each.value.ip_addresses)
+  tags = {
+    IaC = "terraform"
+  }
+
+}
+#######################################################################################
+
+
 output "workspace_id" {
   value = module.loganalytics.workspace_id
 }
