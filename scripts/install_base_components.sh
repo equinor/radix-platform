@@ -126,11 +126,11 @@ fi
 # Source util scripts
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
-WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
-if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
-    echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT=$WHITELIST_IP_IN_ACR_SCRIPT is invalid, the file does not exist." >&2
-    exit 1
-fi
+# WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
+# if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
+#     echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT=$WHITELIST_IP_IN_ACR_SCRIPT is invalid, the file does not exist." >&2
+#     exit 1
+# fi
 
 # Optional inputs
 
@@ -357,16 +357,16 @@ wait
 ### Add ACR network rule
 ###
 
-echo "Whitelisting cluster egress IP(s) in ACR network rules"
-echo "Retrieving egress IP range for ${CLUSTER_NAME} cluster..."
-egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
-echo "Retrieved IP range ${egress_ip_range}."
-# Update ACR IP whitelist with cluster egress IP(s)
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=add $WHITELIST_IP_IN_ACR_SCRIPT)
-wait # wait for subshell to finish
-echo ""
+# echo "Whitelisting cluster egress IP(s) in ACR network rules"
+# echo "Retrieving egress IP range for ${CLUSTER_NAME} cluster..."
+# egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
+# echo "Retrieved IP range ${egress_ip_range}."
+# # Update ACR IP whitelist with cluster egress IP(s)
+# echo ""
+# printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=add $WHITELIST_IP_IN_ACR_SCRIPT)
+# wait # wait for subshell to finish
+# echo ""
 
 #######################################################################################
 ### Install Flux
