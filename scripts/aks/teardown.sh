@@ -107,11 +107,11 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/${CLUSTER_TYPE}.env
 # Source util scripts
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
-WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
-if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
-    echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT=$WHITELIST_IP_IN_ACR_SCRIPT is invalid, the file does not exist." >&2
-    exit 1
-fi
+# WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
+# if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
+#     echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT=$WHITELIST_IP_IN_ACR_SCRIPT is invalid, the file does not exist." >&2
+#     exit 1
+# fi
 
 # Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
@@ -320,17 +320,17 @@ echo "Done."
 ### Delete ACR network rule
 ###
 
-if [[ "${migration_strategy}" == "at" ]]; then
-    echo ""
-    echo "Cluster ${CLUSTER_NAME} is a test cluster. Removing egress IP range ${egress_ip_range} from ACR rules..."
-    printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
-    wait # wait for subshell to finish
-    echo ""
-else
-    echo "Cluster ${CLUSTER_NAME} is a non-test cluster. Leaving ACR network rules as they are..."
-fi
-echo "Done."
+# if [[ "${migration_strategy}" == "at" ]]; then
+#     echo ""
+#     echo "Cluster ${CLUSTER_NAME} is a test cluster. Removing egress IP range ${egress_ip_range} from ACR rules..."
+#     printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
+#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
+#     wait # wait for subshell to finish
+#     echo ""
+# else
+#     echo "Cluster ${CLUSTER_NAME} is a non-test cluster. Leaving ACR network rules as they are..."
+# fi
+# echo "Done."
 
 #######################################################################################
 ### Delete Redis Cache
