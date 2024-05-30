@@ -9,6 +9,14 @@ module "resourcegroups" {
   location = module.config.location
 }
 
+data "azurerm_resource_group" "clusters" {
+  name = "clusters-${module.config.environment}"
+}
+
+data "azurerm_resource_group" "common" {
+  name = "common-westeurope" #TODO
+}
+
 data "azurerm_key_vault" "keyvault" {
   name                = module.config.key_vault_name
   resource_group_name = module.config.common_resource_group
@@ -24,10 +32,10 @@ data "azurerm_storage_account" "velero" {
   resource_group_name = module.config.common_resource_group
 }
 
-# data "azurerm_container_registry" "this" {
-#   name                = "radix${module.config.environment}app" #TODO
-#   resource_group_name = "common"                               #TODO
-# }
+data "azurerm_container_registry" "this" {
+  name                = "radix${module.config.environment}prod"
+  resource_group_name = data.azurerm_resource_group.common.name
+}
 
 module "radix_id_external_secrets_operator_mi" {
   source              = "../../../modules/userassignedidentity"
@@ -42,22 +50,48 @@ module "radix_id_external_secrets_operator_mi" {
   }
 }
 
-# module "radix_id_acr_mi" {
-#   source              = "../../../modules/userassignedidentity"
-#   name                = "radix-id-acr-${module.config.environment}"
-#   location            = module.config.location
-#   resource_group_name = "common-${module.config.environment}"
-#   roleassignments = {
-#     pull = {
-#       role     = "AcrPull"
-#       scope_id = data.azurerm_container_registry.this.id
-#     }
-#     push = {
-#       role     = "AcrPush"
-#       scope_id = data.azurerm_container_registry.this.id
-#     }
-#   }
-# }
+module "radix_id_canary_scaler_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-canary-scaler-${module.config.environment}"
+  location            = module.config.location
+  resource_group_name = "common-${module.config.environment}"
+  roleassignments = {
+    command_runner = {
+      role     = "Radix Azure Kubernetes Service Command Runner"
+      scope_id = data.azurerm_resource_group.clusters.id
+    }
+  }
+}
+
+module "radix_id_akskubelet_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-akskubelet-${module.config.environment}"
+  location            = module.config.location
+  resource_group_name = "common-${module.config.environment}"
+  roleassignments = {
+    arcpull = {
+      role     = "AcrPull"
+      scope_id = data.azurerm_container_registry.this.id
+    }
+  }
+}
+
+module "radix_id_aks_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-aks-${module.config.environment}"
+  location            = module.config.location
+  resource_group_name = "common-${module.config.environment}"
+  roleassignments = {
+    mi_operator = {
+      role     = "Managed Identity Operator"
+      scope_id = module.radix_id_akskubelet_mi.data.id
+    }
+    rg_contributor = {
+      role     = "Contributor"
+      scope_id = data.azurerm_resource_group.common.id
+    }
+  }
+}
 
 module "radix_id_velero_mi" {
   source              = "../../../modules/userassignedidentity"

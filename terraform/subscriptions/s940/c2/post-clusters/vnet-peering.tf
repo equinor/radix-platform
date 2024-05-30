@@ -21,18 +21,11 @@ data "azurerm_virtual_network" "vnets" {
   name                = each.key
 }
 
-resource "azurerm_role_assignment" "vnet" {
-  for_each           = module.clusters.vnets_url
-  scope              = data.azurerm_virtual_network.vnets[each.key].id
-  role_definition_id = "/subscriptions/${module.config.subscription}${data.azurerm_role_definition.this.role_definition_id}"
-  principal_id       = data.azuread_service_principal.this.object_id
-}
-
 module "vnet_peering" {
   source                      = "../../../modules/vnet-peering"
   for_each                    = module.clusters.vnets_url
-  hub_to_cluster_peering_name = "vnet-hub-to-c2-11" #TODO
-  cluster_to_hub_peering_name = "c2-11-to-vnet-hub" #TODO
+  hub_to_cluster_peering_name = "hub-to-${each.key}" == "hub-to-vnet-c2-11" ? "vnet-hub-to-c2-11" : "hub-to-${each.key}" #TODO
+  cluster_to_hub_peering_name = "${each.key}-to-hub" == "vnet-c2-11-to-hub" ? "c2-11-to-vnet-hub" : "${each.key}-to-hub" #TODO
   cluster_vnet_resource_group = module.config.cluster_resource_group
   vnet_cluster_name           = data.azurerm_virtual_network.vnets[each.key].name
   vnet_cluster_id             = data.azurerm_virtual_network.vnets[each.key].id

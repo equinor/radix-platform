@@ -219,7 +219,7 @@ echo "Install secret ingress-ip in cluster"
 if [[ "${MIGRATION_STRATEGY}" == "aa" ]]; then
 
     # Path to Public IP Prefix which contains the public inbound IPs
-    IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+    IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
 
     # list of AVAILABLE public ips assigned to the Radix Zone
     echo "Getting list of available public ingress ips in $RADIX_ZONE..."
@@ -276,7 +276,7 @@ else
     # Create public ingress IP
     CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
     IP_EXISTS=$(az network public-ip list \
-        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --resource-group "${AZ_RESOURCE_GROUP_IPPRE}" \
         --subscription "${AZ_SUBSCRIPTION_ID}" \
         --query "[?name=='${CLUSTER_PIP_NAME}'].ipAddress" \
         --output tsv \
@@ -286,7 +286,7 @@ else
         printf "Creating Public Ingress IP... "
         SELECTED_INGRESS_IP_RAW_ADDRESS=$(az network public-ip create \
             --name "${CLUSTER_PIP_NAME}" \
-            --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+            --resource-group "${AZ_RESOURCE_GROUP_IPPRE}" \
             --location "${AZ_RADIX_ZONE_LOCATION}" \
             --subscription "${AZ_SUBSCRIPTION_ID}" \
             --allocation-method Static \
@@ -308,7 +308,7 @@ fi
 ### Add wildcard cluster specific DNS record
 ###
 
-create-a-record "*.${CLUSTER_NAME}" "$SELECTED_INGRESS_IP_RAW_ADDRESS" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
+create-a-record "*.${CLUSTER_NAME}" "$SELECTED_INGRESS_IP_RAW_ADDRESS" "$AZ_RESOURCE_GROUP_IPPRE" "$AZ_RESOURCE_DNS" "60" || {
       echo "ERROR: failed to create A record *.${CLUSTER_NAME}" >&2
   }
 

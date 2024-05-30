@@ -21,13 +21,6 @@ data "azurerm_virtual_network" "vnets" {
   name                = each.key
 }
 
-resource "azurerm_role_assignment" "vnet" {
-  for_each           = module.clusters.vnets_url
-  scope              = data.azurerm_virtual_network.vnets[each.key].id
-  role_definition_id = "/subscriptions/${module.config.subscription}${data.azurerm_role_definition.this.role_definition_id}"
-  principal_id       = data.azuread_service_principal.this.object_id
-}
-
 module "vnet_peering" {
   source                      = "../../../modules/vnet-peering"
   for_each                    = module.clusters.vnets_url
