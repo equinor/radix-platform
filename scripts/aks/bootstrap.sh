@@ -300,7 +300,7 @@ if [[ -z "$CREDENTIALS_FILE" ]]; then
         --output tsv 2>/dev/null)"
     ACR_ID="$(az acr show \
         --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
-        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+        --resource-group "${AZ_RESOURCE_GROUP_ACR}" \
         --query "id" \
         --output tsv)"
 else
@@ -333,8 +333,8 @@ fi
 # if migrating active to active cluster (eg. dev to dev)
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Path to Public IP Prefix which contains the public outbound IPs
-    IPPRE_EGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
-    IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_COMMON/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+    IPPRE_EGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
+    IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
 
     # list of AVAILABLE public EGRESS ips assigned to the Radix Zone
     echo "Getting list of available public egress ips in $RADIX_ZONE..."
@@ -613,25 +613,25 @@ rm -f $DEFENDER_CONFIG
 ### Assign Contributor on scope of nodepool RG for AKS managed identity
 ###
 
-node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}
-managed_identity_id=$(az identity show \
-    --id "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS}" \
-    --query principalId \
-    --output tsv)
+# node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}
+# managed_identity_id=$(az identity show \
+#     --id "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS}" \
+#     --query principalId \
+#     --output tsv)
 
-printf "Assigning Contributor role to %s on scope of resource group %s..." "${MI_AKS}" "${node_pool_resource_group}"
-az role assignment create \
-    --role Contributor \
-    --assignee "$managed_identity_id" \
-    --scope "$(az group show --name "${node_pool_resource_group}" --query id --output tsv)"
-printf "Done.\n"
+# printf "Assigning Contributor role to %s on scope of resource group %s..." "${MI_AKS}" "${node_pool_resource_group}"
+# az role assignment create \
+#     --role Contributor \
+#     --assignee "$managed_identity_id" \
+#     --scope "$(az group show --name "${node_pool_resource_group}" --query id --output tsv)"
+# printf "Done.\n"
 
-printf "Assigning Contributor role to %s on scope of resource group %s... \n" "${MI_AKS}" "${AZ_RESOURCE_GROUP_COMMON}"
-az role assignment create \
-    --role Contributor \
-    --assignee "$managed_identity_id" \
-    --scope "$(az group show --name "${AZ_RESOURCE_GROUP_COMMON}" --query id --output tsv)"
-printf "Done.\n"
+# printf "Assigning Contributor role to %s on scope of resource group %s... \n" "${MI_AKS}" "${AZ_RESOURCE_GROUP_COMMON}"
+# az role assignment create \
+#     --role Contributor \
+#     --assignee "$managed_identity_id" \
+#     --scope "$(az group show --name "${AZ_RESOURCE_GROUP_COMMON}" --query id --output tsv)"
+# printf "Done.\n"
 
 #######################################################################################
 ### Tag cluster

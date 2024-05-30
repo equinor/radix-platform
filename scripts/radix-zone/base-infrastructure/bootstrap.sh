@@ -503,21 +503,21 @@ function update_app_registration() {
 }
 
 # Create managed identities
-function create_managed_identities_and_role_assignments() {
-    # Control plane managed identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-control-plane-mi
-    create_managed_identity "${MI_AKS}"
-    create_role_assignment_for_identity \
-        "${MI_AKS}" \
-        "Managed Identity Operator" \
-        "$(az identity show --name ${MI_AKS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query id --output tsv 2>/dev/null)"
+# function create_managed_identities_and_role_assignments() {
+#     # Control plane managed identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-control-plane-mi
+#     create_managed_identity "${MI_AKS}"
+#     create_role_assignment_for_identity \
+#         "${MI_AKS}" \
+#         "Managed Identity Operator" \
+#         "$(az identity show --name ${MI_AKS} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --subscription ${AZ_SUBSCRIPTION_ID} --query id --output tsv 2>/dev/null)"
 
-    # Kubelet identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-kubelet-mi
-    create_managed_identity "${MI_AKSKUBELET}"
-    create_role_assignment_for_identity \
-        "${MI_AKSKUBELET}" \
-        "AcrPull" \
-        "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ContainerRegistry/registries/${AZ_RESOURCE_CONTAINER_REGISTRY}"
-}
+#     # Kubelet identity: https://docs.microsoft.com/en-us/azure/aks/use-managed-identity#bring-your-own-kubelet-mi
+#     create_managed_identity "${MI_AKSKUBELET}"
+#     create_role_assignment_for_identity \
+#         "${MI_AKSKUBELET}" \
+#         "AcrPull" \
+#         "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ContainerRegistry/registries/${AZ_RESOURCE_CONTAINER_REGISTRY}"
+# }
 
 
 # function update_acr_whitelist() {
@@ -551,7 +551,7 @@ create_acr
 create_base_system_users_and_store_credentials
 create_servicenow_proxy_server_app_registration
 update_app_registration
-create_managed_identities_and_role_assignments
+# create_managed_identities_and_role_assignments
 set_permissions_on_acr
 create_acr_tasks
 
