@@ -784,28 +784,46 @@ echo "Create pipeline nodepool"
 az aks nodepool add "${AKS_PIPELINE_OPTIONS[@]}"
 
 #######################################################################################
-### Add tainted Arm64 nodepool
+### Add Arm64 user and pipeline nodepool
 ###
-if [ "$RADIX_ENVIRONMENT" = "dev" ] || ["$RADIX_ENVIRONMENT" = "playground"]; then
-    AKS_ARM64_OPTIONS=(
+if [ "$RADIX_ENVIRONMENT" = "dev" ]; then
+    AKS_ARM64_USER_OPTIONS=(
         --cluster-name "$CLUSTER_NAME"
-        --nodepool-name armpool
+        --nodepool-name armuserpool
+        --mode User
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-        --enable-cluster-autoscaler
         --kubernetes-version "$KUBERNETES_VERSION"
-        --labels "arch=arm64"
+        --enable-cluster-autoscaler
         --max-count "$ARM_MAX_COUNT"
         --max-pods "$POD_PER_NODE"
         --min-count "$ARM_MIN_COUNT"
-        --mode User
         --node-count "$ARM_MIN_COUNT"
         --node-osdisk-size "$NODE_DISK_SIZE"
-        --node-taints "arch=arm64:NoSchedule"
         --node-vm-size "$ARM_VM_SIZE"
         --vnet-subnet-id "$SUBNET_ID"
     )
     echo "Create Arm64 nodepool"
-    az aks nodepool add "${AKS_ARM64_OPTIONS[@]}"
+    az aks nodepool add "${AKS_ARM64_USER_OPTIONS[@]}"
+
+    AKS_ARM64_PIPELINE_OPTIONS=(
+        --cluster-name "$CLUSTER_NAME"
+        --nodepool-name armpipelpool
+        --mode User
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+        --kubernetes-version "$KUBERNETES_VERSION"
+        --enable-cluster-autoscaler
+        --labels "nodepooltasks=jobs"
+        --node-taints "nodepooltasks=jobs:NoSchedule"
+        --max-count "$ARM_MAX_COUNT"
+        --max-pods "$POD_PER_NODE"
+        --min-count "$ARM_MIN_COUNT"
+        --node-count "$ARM_MIN_COUNT"
+        --node-osdisk-size "$NODE_DISK_SIZE"
+        --node-vm-size "$ARM_VM_SIZE"
+        --vnet-subnet-id "$SUBNET_ID"
+    )
+    echo "Create Arm64 pipelinepool"
+    az aks nodepool add "${AKS_ARM64_PIPELINE_OPTIONS[@]}"
 fi
 
 #######################################################################################
