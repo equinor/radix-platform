@@ -120,3 +120,8 @@ variable "ip_rule" {
   description = "IP rule on StorageAccount"
   type        = string
 }
+
+variable "log_analytics_id" {
+  description = "Log Analytics ID"
+  type        = string
+}

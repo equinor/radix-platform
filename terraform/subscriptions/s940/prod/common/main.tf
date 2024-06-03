@@ -60,6 +60,7 @@ module "storageaccount" {
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
   ip_rule                  = data.azurerm_key_vault_secret.this.value
+  log_analytics_id         = module.loganalytics.workspace_id
 }
 
 module "acr" {
