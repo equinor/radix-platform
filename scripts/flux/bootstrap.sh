@@ -231,34 +231,34 @@ printf "...Done"
 ### CREDENTIALS
 ###
 
-FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
-FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
+FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_COMMON_KEYVAULT")"
+# FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_COMMON_KEYVAULT")"
 
-printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
-if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
-    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
-    printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
-    ssh-keygen -t ed25519 -N "" -C "radix@statoilsrm.onmicrosoft.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
-    az keyvault secret set \
-        --file=./id_ed25519."$RADIX_ENVIRONMENT" \
-        --name="$FLUX_PRIVATE_KEY_NAME" \
-        --vault-name="$AZ_RESOURCE_KEYVAULT" \
-        --expires "${EXPIRY_DATE}" 2>&1 >/dev/null
-    az keyvault secret set \
-        --file=./id_ed25519."$RADIX_ENVIRONMENT".pub \
-        --name="$FLUX_PUBLIC_KEY_NAME" \
-        --vault-name="$AZ_RESOURCE_KEYVAULT" \
-        --expires "${EXPIRY_DATE}" 2>&1 >/dev/null
-    rm id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
-    rm id_ed25519."$RADIX_ENVIRONMENT".pub 2>&1 >/dev/null
-    FLUX_DEPLOY_KEYS_GENERATED=true
-    printf "...Done\n"
-else
-    printf "...Keys found."
-fi
+# printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
+# if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
+#     EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
+#     printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
+#     ssh-keygen -t ed25519 -N "" -C "radix@statoilsrm.onmicrosoft.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
+#     az keyvault secret set \
+#         --file=./id_ed25519."$RADIX_ENVIRONMENT" \
+#         --name="$FLUX_PRIVATE_KEY_NAME" \
+#         --vault-name="$AZ_RESOURCE_KEYVAULT" \
+#         --expires "${EXPIRY_DATE}" 2>&1 >/dev/null
+#     az keyvault secret set \
+#         --file=./id_ed25519."$RADIX_ENVIRONMENT".pub \
+#         --name="$FLUX_PUBLIC_KEY_NAME" \
+#         --vault-name="$AZ_RESOURCE_KEYVAULT" \
+#         --expires "${EXPIRY_DATE}" 2>&1 >/dev/null
+#     rm id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
+#     rm id_ed25519."$RADIX_ENVIRONMENT".pub 2>&1 >/dev/null
+#     FLUX_DEPLOY_KEYS_GENERATED=true
+#     printf "...Done\n"
+# else
+#     printf "...Keys found."
+# fi
 
 az keyvault secret download \
-    --vault-name $AZ_RESOURCE_KEYVAULT \
+    --vault-name "$AZ_COMMON_KEYVAULT" \
     --name "$FLUX_PRIVATE_KEY_NAME" \
     --file "$FLUX_PRIVATE_KEY_NAME" \
     2>&1 >/dev/null
@@ -363,12 +363,12 @@ fi
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
 
-if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
-    FLUX_DEPLOY_KEY_NOTIFICATION="*** IMPORTANT ***\nPlease add a new deploy key in the radix-flux repository (https://github.com/equinor/radix-flux/settings/keys) with the value from $FLUX_PUBLIC_KEY_NAME secret in $AZ_RESOURCE_KEYVAULT Azure keyvault."
-    echo ""
-    echo -e "${__style_yellow}$FLUX_DEPLOY_KEY_NOTIFICATION${__style_end}"
-    echo ""
-fi
+# if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
+#     FLUX_DEPLOY_KEY_NOTIFICATION="*** IMPORTANT ***\nPlease add a new deploy key in the radix-flux repository (https://github.com/equinor/radix-flux/settings/keys) with the value from $FLUX_PUBLIC_KEY_NAME secret in $AZ_RESOURCE_KEYVAULT Azure keyvault."
+#     echo ""
+#     echo -e "${__style_yellow}$FLUX_DEPLOY_KEY_NOTIFICATION${__style_end}"
+#     echo ""
+# fi
 
 #######################################################################################
 ### END
