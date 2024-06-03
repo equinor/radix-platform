@@ -75,3 +75,35 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
   backup_policy_id   = var.policyblobstorage_id
   depends_on         = [azurerm_role_assignment.roleassignment]
 }
+
+######################################################################################
+## Blob Diagnostics
+##
+
+resource "azurerm_monitor_diagnostic_setting" "blob" {
+  name                       = "Radix-diagnostics"
+  target_resource_id         = "${azurerm_storage_account.storageaccount.id}/blobServices/default/"
+  log_analytics_workspace_id = var.log_analytics_id
+
+  enabled_log {
+    category_group = "audit"
+  }
+
+  metric {
+    category = "Capacity"
+    enabled  = false
+    retention_policy {
+      days    = 0
+      enabled = false
+    }
+  }
+
+  metric {
+    category = "Transaction"
+    enabled  = false
+    retention_policy {
+      days    = 0
+      enabled = false
+    }
+  }
+}

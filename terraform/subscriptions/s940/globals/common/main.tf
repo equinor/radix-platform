@@ -32,6 +32,7 @@ module "storageaccount" {
   principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
+  log_analytics_id         = module.config.backend.log_analytics_workspace_id
 }
 
 output "environment" {
