@@ -1,6 +1,6 @@
-# #######################################################################################
-# ### Storage Account
-# ###
+########################################################################################
+#### Storage Account
+####
 
 resource "azurerm_storage_account" "storageaccount" {
   name                            = var.name
@@ -16,8 +16,6 @@ resource "azurerm_storage_account" "storageaccount" {
     default_action = "Deny"
     ip_rules       = [var.ip_rule]
   }
-
-
 
   dynamic "blob_properties" {
     for_each = var.kind == "BlobStorage" || var.kind == "Storage" ? [1] : []
@@ -53,6 +51,41 @@ resource "azurerm_storage_account" "storageaccount" {
   }
 }
 
+resource "azurerm_management_lock" "this" {
+  name       = "${var.name}-delete-lock"
+  scope      = azurerm_storage_account.storageaccount.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
+}
+
+######################################################################################
+## Blob Diagnostics
+##
+
+resource "azurerm_monitor_diagnostic_setting" "blob" {
+  name                       = "Radix-diagnostics"
+  target_resource_id         = "${azurerm_storage_account.storageaccount.id}/blobServices/default/"
+  log_analytics_workspace_id = var.log_analytics_id
+
+  enabled_log {
+    category_group = "audit"
+  }
+
+  metric {
+    category = "Capacity"
+    enabled  = false
+  }
+
+  metric {
+    category = "Transaction"
+    enabled  = false
+  }
+}
+
+########################################################################################
+#### Role assignment from Backup Vault to Storage Account
+####
+
 resource "azurerm_role_assignment" "roleassignment" {
   for_each = var.backup && var.kind == "StorageV2" ? { "${var.name}" : true } : {}
 
@@ -77,33 +110,24 @@ resource "azurerm_data_protection_backup_instance_blob_storage" "backupinstanceb
 }
 
 ######################################################################################
-## Blob Diagnostics
+## Lifecycle Policy
 ##
 
-resource "azurerm_monitor_diagnostic_setting" "blob" {
-  name                       = "Radix-diagnostics"
-  target_resource_id         = "${azurerm_storage_account.storageaccount.id}/blobServices/default/"
-  log_analytics_workspace_id = var.log_analytics_id
-
-  enabled_log {
-    category_group = "audit"
-  }
-
-  metric {
-    category = "Capacity"
-    enabled  = false
-    retention_policy {
-      days    = 0
-      enabled = false
+resource "azurerm_storage_management_policy" "this" {
+  storage_account_id = azurerm_storage_account.storageaccount.id
+  rule {
+    name    = "Lifecycle Storageaccount"
+    enabled = true
+    filters {
+      blob_types = ["blockBlob"]
     }
-  }
-
-  metric {
-    category = "Transaction"
-    enabled  = false
-    retention_policy {
-      days    = 0
-      enabled = false
+    actions {
+      version {
+        delete_after_days_since_creation = 60
+      }
+      base_blob {
+        delete_after_days_since_modification_greater_than = 365
+      }
     }
   }
 }
