@@ -114,6 +114,7 @@ fi
 declare -A DNS_ZONE_MAP=(
     ["vault"]="privatelink.vaultcore.azure.net"
     ["blob"]="privatelink.blob.core.windows.net"
+    ["table"]="privatelink.table.core.windows.net"
     ["postgresqlServer"]="privatelink.postgres.database.azure.com"
     ["mysqlServer"]="privatelink.mysql.database.azure.com"
     ["mariadbServer"]="privatelink.mariadb.database.azure.com"
