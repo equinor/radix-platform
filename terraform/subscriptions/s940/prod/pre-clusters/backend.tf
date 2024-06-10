@@ -11,17 +11,17 @@ terraform {
 
   backend "azurerm" {
     tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-    subscription_id      = "16ede44b-1f74-40a5-b428-46cca9a5741b"
-    resource_group_name  = "s941-tfstate"
-    storage_account_name = "s941radixinfra"
+    subscription_id      = "ded7ca41-37c8-4085-862f-b11d21ab341a"
+    resource_group_name  = "s940-tfstate"
+    storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
-    key                  = "dev/pre-clusters/terraform.tfstate"
+    key                  = "prod/pre-clusters/terraform.tfstate"
     use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }
 
 provider "azurerm" {
-  subscription_id = "16ede44b-1f74-40a5-b428-46cca9a5741b"
+  subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   features {
   }
 }
@@ -29,8 +29,4 @@ provider "azurerm" {
 module "config" {
   source = "../../../modules/config"
 }
-module "clusters" {
-  source              = "../../../modules/active-clusters"
-  resource_group_name = module.config.cluster_resource_group
-  subscription        = module.config.subscription
-}
+

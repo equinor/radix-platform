@@ -4,11 +4,26 @@ variable "cluster_name" {
 }
 
 variable "location" {
-  description = "The Azure Region where the Backup Vault should exist."
+  description = "The Azure Region"
   type        = string
 }
 
 variable "resource_group_name" {
-  description = "The name of the Resource Group where the Backup Vault should exist"
+  description = "The Resource Group"
+  type        = string
+}
+
+variable "storageaccount_id" {
+  description = "The ID of the Storage Account"
+  type        = string
+}
+
+variable "address_space" {
+  description = "Address space"
+  type        = string
+}
+
+variable "enviroment" {
+  description = "Enviroment"
   type        = string
 }

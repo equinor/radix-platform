@@ -79,6 +79,11 @@ hash kubelogin 2>/dev/null || {
     exit 1
 }
 
+hash uuidgen 2>/dev/null || {
+    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 printf "Done.\n"
 
 #######################################################################################
@@ -106,6 +111,7 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/${CLUSTER_TYPE}.env
 
 # Source util scripts
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_clusterlist.sh
 
 # WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
 # if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
@@ -404,39 +410,53 @@ fi
 kubectl config delete-cluster "${CLUSTER_NAME}" &>/dev/null
 echo "Done."
 
-if [[ "${VNET}" ]]; then
-    echo "Deleting vnet... "
-    # az network vnet peering delete \
-    #     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    #     --name "$VNET_PEERING_NAME" \
-    #     --vnet-name "$VNET_NAME" \
-    #     --subscription "$AZ_SUBSCRIPTION_ID" \
-    #     --output none \
-    #     --only-show-errors
+#######################################################################################
+### Store new clusterlist to Keyvault
+###
+SECRET_NAME="radix-clusters"
+update_keyvault="true"
+K8S_CLUSTER_LIST=$(az keyvault secret show \
+    --vault-name "${AZ_COMMON_KEYVAULT}" --name "${SECRET_NAME}" \
+    --query="value" \
+    --output tsv | jq '{clusters:.clusters | sort_by(.name | ascii_downcase)}' 2>/dev/null)
+temp_file_path="/tmp/$(uuidgen)"
+delete-single-ip-from-clusters "${K8S_CLUSTER_LIST}" "${temp_file_path}" "${CLUSTER_NAME}"
+new_master_k8s_api_ip_whitelist_base64=$(cat ${temp_file_path})
+new_master_k8s_api_ip_whitelist=$(echo ${new_master_k8s_api_ip_whitelist_base64} | base64 -d)
+rm ${temp_file_path}
+if [[ ${update_keyvault} == true ]]; then
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
 
-    # az network vnet peering delete \
-    #     --resource-group "$AZ_RESOURCE_GROUP_VNET_HUB" \
-    #     --name "$HUB_PEERING_NAME" \
-    #     --vnet-name "$AZ_VNET_HUB_NAME" \
-    #     --subscription "$AZ_SUBSCRIPTION_ID" \
-    #     --output none \
-    #     --only-show-errors
-
-    az network vnet delete \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$VNET_NAME" \
-        --subscription "$AZ_SUBSCRIPTION_ID" \
-        --output none \
-        --only-show-errors
-    echo "Done."
+    #printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
+    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_COMMON_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
+        printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
+        exit 1
+    fi
+    printf "Done.\n"
 fi
 
-echo "Deleting Network Security Group..."
-az network nsg delete \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$NSG_NAME" \
-    --subscription "$AZ_SUBSCRIPTION_ID"
-echo "Done."
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
+
+
+# if [[ "${VNET}" ]]; then
+#     echo "Deleting vnet... "
+
+#     az network vnet delete \
+#         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#         --name "$VNET_NAME" \
+#         --subscription "$AZ_SUBSCRIPTION_ID" \
+#         --output none \
+#         --only-show-errors
+#     echo "Done."
+# fi
+
+# echo "Deleting Network Security Group..."
+# az network nsg delete \
+#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#     --name "$NSG_NAME" \
+#     --subscription "$AZ_SUBSCRIPTION_ID"
+# echo "Done."
 
 if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
     # IP cannot be deleted while still allocated to loadbalancer.
