@@ -1,4 +1,4 @@
-function listandindex() {
+function whitelistandindex() {
     local ip_whitelist="$1"
     local location
     local ip
@@ -85,7 +85,7 @@ function run-interactive-ip-whitelist-wizard() {
         printf "\n   Please inspect and approve the listed networks before you continue:"
         printf "\n"
 
-        listandindex "${master_ip_whitelist}"
+        whitelistandindex "${master_ip_whitelist}"
         current_ip_whitelist+=("{\"id\":\"99\",\"location\":\"dummy\",\"ip\":\"0.0.0.0/32\"} ] }")
         if [[ $USER_PROMPT == true ]]; then
             while true; do

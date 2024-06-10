@@ -87,6 +87,11 @@ hash terraform 2>/dev/null || {
     exit 1
 }
 
+hash uuidgen 2>/dev/null || {
+    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+    exit 1
+}
+
 printf "Done.\n"
 
 #######################################################################################
@@ -124,7 +129,7 @@ fi
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
-
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_clusterlist.sh
 LIB_DNS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/dns/lib_dns.sh"
 if ! [[ -x "$LIB_DNS_SCRIPT" ]]; then
     # Print to stderror
@@ -419,84 +424,134 @@ fi
 echo "Bootstrap advanced network for aks instance \"${CLUSTER_NAME}\"... "
 
 #######################################################################################
+### Store new clusterlist to Keyvault
+###
+SECRET_NAME="radix-clusters"
+update_keyvault="true"
+K8S_CLUSTER_LIST=$(az keyvault secret show \
+    --vault-name "${AZ_COMMON_KEYVAULT}" --name "${SECRET_NAME}" \
+    --query="value" \
+    --output tsv | jq '{clusters:.clusters | sort_by(.name | ascii_downcase)}' 2>/dev/null)
+temp_file_path="/tmp/$(uuidgen)"
+add-single-ip-to-clusters "${K8S_CLUSTER_LIST}" "${temp_file_path}" "${AKS_VNET_ADDRESS_PREFIX}" "${CLUSTER_NAME}"
+new_master_k8s_api_ip_whitelist_base64=$(cat ${temp_file_path})
+new_master_k8s_api_ip_whitelist=$(echo ${new_master_k8s_api_ip_whitelist_base64} | base64 -d)
+rm ${temp_file_path}
+if [[ ${update_keyvault} == true ]]; then
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
+
+    #printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
+    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_COMMON_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
+        printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
+        exit 1
+    fi
+    printf "Done.\n"
+fi
+
+#Lets run it again interactivly
+
+K8S_CLUSTER_LIST=$(az keyvault secret show \
+    --vault-name "${AZ_COMMON_KEYVAULT}" --name "${SECRET_NAME}" \
+    --query="value" \
+    --output tsv | jq '{clusters:.clusters | sort_by(.name | ascii_downcase)}' 2>/dev/null)
+temp_file_path="/tmp/$(uuidgen)"
+run-interactive-ip-clusters-wizard "${K8S_CLUSTER_LIST}" "${temp_file_path}" "${USER_PROMPT}"
+new_master_k8s_api_ip_whitelist_base64=$(cat ${temp_file_path})
+new_master_k8s_api_ip_whitelist=$(echo ${new_master_k8s_api_ip_whitelist_base64} | base64 -d)
+rm ${temp_file_path}
+if [[ ${update_keyvault} == true ]]; then
+    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
+
+    printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
+    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_COMMON_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
+        printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
+        exit 1
+    fi
+    printf "Done.\n"
+fi
+
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
+
+#######################################################################################
 ### Create NSG and update subnet
 ###
 
-NSG_ID="$(az network nsg list \
-    --resource-group clusters \
-    --query "[?name=='${NSG_NAME}'].id" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --output tsv \
-    --only-show-errors)"
+# NSG_ID="$(az network nsg list \
+#     --resource-group clusters \
+#     --query "[?name=='${NSG_NAME}'].id" \
+#     --subscription "${AZ_SUBSCRIPTION_ID}" \
+#     --output tsv \
+#     --only-show-errors)"
 
-if [[ ! ${NSG_ID} ]]; then
-    # Create network security group
-    printf "    Creating azure NSG %s..." "${NSG_NAME}"
-    NSG_ID=$(az network nsg create \
-        --name "$NSG_NAME" \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --query id \
-        --output tsv \
-        --only-show-errors)
-    printf " Done.\n"
-else
-    echo "    NSG exists."
-fi
+# if [[ ! ${NSG_ID} ]]; then
+#     # Create network security group
+#     printf "    Creating azure NSG %s..." "${NSG_NAME}"
+#     NSG_ID=$(az network nsg create \
+#         --name "$NSG_NAME" \
+#         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#         --location "$AZ_RADIX_ZONE_LOCATION" \
+#         --subscription "${AZ_SUBSCRIPTION_ID}" \
+#         --query id \
+#         --output tsv \
+#         --only-show-errors)
+#     printf " Done.\n"
+# else
+#     echo "    NSG exists."
+# fi
 
-# NSG Flow Logs
-FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
-    --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
-    --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS'].name" \
-    --output tsv)
-FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
+# # NSG Flow Logs
+# FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
+#     --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
+#     --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS'].name" \
+#     --output tsv)
+# FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
 
-if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
-    NSG_FLOW_LOGS="$(az network nsg show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$NSG_NAME" | jq -r .flowLogs)"
+# if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
+#     NSG_FLOW_LOGS="$(az network nsg show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$NSG_NAME" | jq -r .flowLogs)"
 
-    # Check if NSG has assigned Flow log
-    if [[ $NSG_FLOW_LOGS != "null" ]]; then
-        printf "    There is an existing Flow Log on %s\n" "$NSG_NAME"
-    else
-        # Create network watcher flow log and assign to NSG
-        printf "    Creating azure Flow-log %s...\n" "${NSG_NAME}-rule"
-        az network watcher flow-log create \
-            --name "${NSG_NAME}-flow-log" \
-            --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-            --nsg "$NSG_NAME" \
-            --location "$AZ_RADIX_ZONE_LOCATION" \
-            --storage-account "$FLOW_LOGS_STORAGEACCOUNT_ID" \
-            --subscription "$AZ_SUBSCRIPTION_ID" \
-            --retention "90" \
-            --enabled true \
-            --output none
-        printf "    Done.\n"
-    fi
-fi
+#     # Check if NSG has assigned Flow log
+#     if [[ $NSG_FLOW_LOGS != "null" ]]; then
+#         printf "    There is an existing Flow Log on %s\n" "$NSG_NAME"
+#     else
+#         # Create network watcher flow log and assign to NSG
+#         printf "    Creating azure Flow-log %s...\n" "${NSG_NAME}-rule"
+#         az network watcher flow-log create \
+#             --name "${NSG_NAME}-flow-log" \
+#             --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#             --nsg "$NSG_NAME" \
+#             --location "$AZ_RADIX_ZONE_LOCATION" \
+#             --storage-account "$FLOW_LOGS_STORAGEACCOUNT_ID" \
+#             --subscription "$AZ_SUBSCRIPTION_ID" \
+#             --retention "90" \
+#             --enabled true \
+#             --output none
+#         printf "    Done.\n"
+#     fi
+# fi
 
-# Create VNET and associate NSG
-VNET_EXISTS="$(az network vnet list \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --query "[?name=='${VNET_NAME}'].id" \
-    --output tsv \
-    --only-show-errors)"
+# # Create VNET and associate NSG
+# VNET_EXISTS="$(az network vnet list \
+#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#     --query "[?name=='${VNET_NAME}'].id" \
+#     --output tsv \
+#     --only-show-errors)"
 
-if [[ ! ${VNET_EXISTS} ]]; then
-    printf "    Creating azure VNET %s... " "${VNET_NAME}"
-    az network vnet create \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$VNET_NAME" \
-        --address-prefix "$VNET_ADDRESS_PREFIX" \
-        --subnet-name "$SUBNET_NAME" \
-        --subnet-prefix "$VNET_SUBNET_PREFIX" \
-        --location "$AZ_RADIX_ZONE_LOCATION" \
-        --nsg "$NSG_NAME" \
-        --output none \
-        --tags IaC=script \
-        --only-show-errors
-    printf "Done.\n"
-fi
+# if [[ ! ${VNET_EXISTS} ]]; then
+#     printf "    Creating azure VNET %s... " "${VNET_NAME}"
+#     az network vnet create \
+#         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#         --name "$VNET_NAME" \
+#         --address-prefix "$VNET_ADDRESS_PREFIX" \
+#         --subnet-name "$SUBNET_NAME" \
+#         --subnet-prefix "$VNET_SUBNET_PREFIX" \
+#         --location "$AZ_RADIX_ZONE_LOCATION" \
+#         --nsg "$NSG_NAME" \
+#         --output none \
+#         --tags IaC=script \
+#         --only-show-errors
+#     printf "Done.\n"
+# fi
 
 SUBNET_ID="$(az network vnet subnet list \
     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -794,10 +849,10 @@ if [ "$RADIX_ENVIRONMENT" = "dev" ]; then
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
         --kubernetes-version "$KUBERNETES_VERSION"
         --enable-cluster-autoscaler
-        --max-count "$ARM_MAX_COUNT"
-        --max-pods "$POD_PER_NODE"
         --min-count "$ARM_MIN_COUNT"
-        --node-count "$ARM_MIN_COUNT"
+        --max-count "$ARM_MAX_COUNT"
+        --node-count "$ARM_BOOTSTRAP_COUNT"
+        --max-pods "$POD_PER_NODE"
         --node-osdisk-size "$NODE_DISK_SIZE"
         --node-vm-size "$ARM_VM_SIZE"
         --vnet-subnet-id "$SUBNET_ID"
@@ -812,12 +867,12 @@ if [ "$RADIX_ENVIRONMENT" = "dev" ]; then
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
         --kubernetes-version "$KUBERNETES_VERSION"
         --enable-cluster-autoscaler
+        --min-count "$ARM_MIN_COUNT"
+        --max-count "$ARM_MAX_COUNT"
+        --node-count "$ARM_BOOTSTRAP_COUNT"
+        --max-pods "$POD_PER_NODE"
         --labels "nodepooltasks=jobs"
         --node-taints "nodepooltasks=jobs:NoSchedule"
-        --max-count "$ARM_MAX_COUNT"
-        --max-pods "$POD_PER_NODE"
-        --min-count "$ARM_MIN_COUNT"
-        --node-count "$ARM_MIN_COUNT"
         --node-osdisk-size "$NODE_DISK_SIZE"
         --node-vm-size "$ARM_VM_SIZE"
         --vnet-subnet-id "$SUBNET_ID"
