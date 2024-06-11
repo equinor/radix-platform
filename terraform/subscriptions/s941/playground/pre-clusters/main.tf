@@ -24,6 +24,18 @@ module "clusternetwork" {
   enviroment          = module.config.environment
 }
 
-output "vnet_id" {
-  value = module.clusternetwork.vnet_id
+locals {
+  flattened_vnets = {
+    for key, value in module.clusternetwork : key => {
+      cluster     = key
+      vnet_name   = value.vnet.name
+      vnet_id     = value.vnet.id
+      subnet_id   = tolist(value.vnet.subnet)[0].id
+      subnet_name = tolist(value.vnet.subnet)[0].name
+    }
+  }
+}
+
+output "vnets" {
+  value = local.flattened_vnets
 }
