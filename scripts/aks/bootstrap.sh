@@ -554,8 +554,9 @@ terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/p
 #         --only-show-errors
 #     printf "Done.\n"
 # fi
-SUBNET_ID=$(terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq -r '.[] | select(.cluster==env.CLUSTER_NAME).subnet_id')
-VNET_ID=$(terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq -r '.[] | select(.cluster==env.CLUSTER_NAME).vnet_id')
+SUBNET=$(terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq '.[] | select(.cluster==env.CLUSTER_NAME)')
+SUBNET_ID=$($(jq -n "${SUBNET}" | jq -r .subnet_id))
+VNET_ID=$($(jq -n "${SUBNET}" | jq -r .vnet_id))
 # SUBNET_ID="$(az network vnet subnet list \
 #     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
 #     --vnet-name "$VNET_NAME" \
