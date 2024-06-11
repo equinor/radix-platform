@@ -122,3 +122,7 @@ resource "azurerm_private_dns_a_record" "env" {
   }
   depends_on = [azurerm_private_endpoint.env]
 }
+
+output "azurerm_container_registry_id" {
+  value = azurerm_container_registry.env.id
+}

@@ -288,31 +288,33 @@ fi
 #######################################################################################
 ### Set credentials
 ###
-
 printf "Reading credentials... "
-if [[ -z "$CREDENTIALS_FILE" ]]; then
-    # No file found, default to read credentials from keyvault
-    # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)
-    ID_AKS="$(az identity show \
-        --name "$MI_AKS" \
-        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-        --query 'id' \
-        --output tsv 2>/dev/null)"
-    ID_AKSKUBELET="$(az identity show \
-        --name "$MI_AKSKUBELET" \
-        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-        --query 'id' \
-        --output tsv 2>/dev/null)"
-    ACR_ID="$(az acr show \
-        --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
-        --resource-group "${AZ_RESOURCE_GROUP_ACR}" \
-        --query "id" \
-        --output tsv)"
-else
-    # Credentials are provided from input.
-    # Source the file to make the key/value pairs readable as script vars
-    source ./"$CREDENTIALS_FILE"
-fi
+ID_AKS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" output -raw radix_id_aks_mi_id)
+ID_AKSKUBELET=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" output -raw radix_id_akskubelet_mi_id)
+ACR_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw acr_id)
+# if [[ -z "$CREDENTIALS_FILE" ]]; then
+#     # No file found, default to read credentials from keyvault
+#     # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)
+#     ID_AKS="$(az identity show \
+#         --name "$MI_AKS" \
+#         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+#         --query 'id' \
+#         --output tsv 2>/dev/null)"
+#     ID_AKSKUBELET="$(az identity show \
+#         --name "$MI_AKSKUBELET" \
+#         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
+#         --query 'id' \
+#         --output tsv 2>/dev/null)"
+#     ACR_ID="$(az acr show \
+#         --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
+#         --resource-group "${AZ_RESOURCE_GROUP_ACR}" \
+#         --query "id" \
+#         --output tsv)"
+# else
+#     # Credentials are provided from input.
+#     # Source the file to make the key/value pairs readable as script vars
+#     source ./"$CREDENTIALS_FILE"
+# fi
 printf "Done.\n"
 
 #######################################################################################
@@ -552,18 +554,19 @@ terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/p
 #         --only-show-errors
 #     printf "Done.\n"
 # fi
+SUBNET_ID=$(terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq -r '.[] | select(.cluster==env.CLUSTER_NAME).subnet_id')
+VNET_ID=$(terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq -r '.[] | select(.cluster==env.CLUSTER_NAME).vnet_id')
+# SUBNET_ID="$(az network vnet subnet list \
+#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#     --vnet-name "$VNET_NAME" \
+#     --query "[].id" \
+#     --output tsv)"
 
-SUBNET_ID="$(az network vnet subnet list \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --vnet-name "$VNET_NAME" \
-    --query "[].id" \
-    --output tsv)"
-
-VNET_ID="$(az network vnet show \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$VNET_NAME" \
-    --query "id" \
-    --output tsv)"
+# VNET_ID="$(az network vnet show \
+#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+#     --name "$VNET_NAME" \
+#     --query "id" \
+#     --output tsv)"
 
 echo ""
 printf "Checking if %s are associated with %s\n" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
@@ -663,30 +666,6 @@ fi
 az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_NETWORK_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 rm -f $DEFENDER_CONFIG
-
-#######################################################################################
-### Assign Contributor on scope of nodepool RG for AKS managed identity
-###
-
-# node_pool_resource_group=MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}
-# managed_identity_id=$(az identity show \
-#     --id "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MI_AKS}" \
-#     --query principalId \
-#     --output tsv)
-
-# printf "Assigning Contributor role to %s on scope of resource group %s..." "${MI_AKS}" "${node_pool_resource_group}"
-# az role assignment create \
-#     --role Contributor \
-#     --assignee "$managed_identity_id" \
-#     --scope "$(az group show --name "${node_pool_resource_group}" --query id --output tsv)"
-# printf "Done.\n"
-
-# printf "Assigning Contributor role to %s on scope of resource group %s... \n" "${MI_AKS}" "${AZ_RESOURCE_GROUP_COMMON}"
-# az role assignment create \
-#     --role Contributor \
-#     --assignee "$managed_identity_id" \
-#     --scope "$(az group show --name "${AZ_RESOURCE_GROUP_COMMON}" --query id --output tsv)"
-# printf "Done.\n"
 
 #######################################################################################
 ### Tag cluster
