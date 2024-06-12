@@ -90,3 +90,10 @@ output "vnet_hub_id" {
 output "vnet_subnet_id" {
   value = module.azurerm_virtual_network.data.vnet_subnet.id
 }
+
+output "public_ip_prefix_ids" {
+  value = {
+    egress_id  = module.azurerm_public_ip_prefix_egress.data.id
+    ingress_id = module.azurerm_public_ip_prefix_ingress.data.id
+  }
+}
