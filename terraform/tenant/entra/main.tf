@@ -30,3 +30,8 @@ resource "azurerm_role_assignment" "developer-roles" {
   scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
   role_definition_name = each.value.role
 }
+
+resource "azuread_application_registration" "ar-radix-servicenow-proxy-client" {
+  display_name = "ar-radix-servicenow-proxy-client"
+}
+
