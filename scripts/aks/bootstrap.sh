@@ -340,8 +340,11 @@ fi
 # if migrating active to active cluster (eg. dev to dev)
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Path to Public IP Prefix which contains the public outbound IPs
-    IPPRE_EGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
-    IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
+    IPPRE=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/virtualnetwork" output -json public_ip_prefix_ids)
+    IPPRE_EGRESS_ID=$(jq -n "${IPPRE}" | jq -r .egress_id)
+    IPPRE_INGRESS_ID=$(jq -n "${IPPRE}" | jq -r .ingress_id)
+    # IPPRE_EGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
+    # IPPRE_INGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_INBOUND_NAME"
 
     # list of AVAILABLE public EGRESS ips assigned to the Radix Zone
     echo "Getting list of available public egress ips in $RADIX_ZONE..."
@@ -554,9 +557,9 @@ terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/p
 #         --only-show-errors
 #     printf "Done.\n"
 # fi
-SUBNET=$(terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq '.[] | select(.cluster==env.CLUSTER_NAME)')
-SUBNET_ID=$($(jq -n "${SUBNET}" | jq -r .subnet_id))
-VNET_ID=$($(jq -n "${SUBNET}" | jq -r .vnet_id))
+SUBNET=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq '.[] | select(.cluster==env.CLUSTER_NAME)')
+SUBNET_ID=$(jq -n "${SUBNET}" | jq -r .subnet_id)
+VNET_ID=$(jq -n "${SUBNET}" | jq -r .vnet_id)
 # SUBNET_ID="$(az network vnet subnet list \
 #     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
 #     --vnet-name "$VNET_NAME" \
@@ -587,13 +590,13 @@ echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 ###############################################################################
 ### Add Usermode pool - System - Tainted
 ###
-
-WORKSPACE_ID=$(az resource list \
-    --resource-type Microsoft.OperationalInsights/workspaces \
-    --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --query "[].id" \
-    --output tsv)
+WORKSPACE_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw workspace_id)
+# WORKSPACE_ID=$(az resource list \
+#     --resource-type Microsoft.OperationalInsights/workspaces \
+#     --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" \
+#     --subscription "${AZ_SUBSCRIPTION_ID}" \
+#     --query "[].id" \
+#     --output tsv)
 DEFENDER_CONFIG="DEFENDER_CONFIG.json"
 
 cat <<EOF >$DEFENDER_CONFIG

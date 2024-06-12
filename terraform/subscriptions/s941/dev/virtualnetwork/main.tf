@@ -49,6 +49,9 @@ output "vnet_subnet_id" {
   value = module.azurerm_virtual_network.data.vnet_subnet.id
 }
 
-output "private_dns_zones" {
-  value = module.azurerm_virtual_network.data.private_dns_zone
+output "public_ip_prefix_ids" {
+  value = {
+    egress_id  = module.azurerm_public_ip_prefix_egress.data.id
+    ingress_id = module.azurerm_public_ip_prefix_ingress.data.id
+  }
 }
