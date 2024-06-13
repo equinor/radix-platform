@@ -5,11 +5,6 @@
 
 App registration `ar_radix_servicenow_proxy_client` is used by the `radix-servicenow-proxy` application to request an access token valid for bearer authorization with the ServiceNow API.
 
-Each cluster zone+environment has its own secret for this app registration.
-
-1. Refresh app registration secret and store it in keyvault for a specific zone+environment with script [`refresh_app_registration_credentials.sh`](./refresh_app_registration_credentials.sh).
-1. Update the `PROXY_SERVICENOW_CLIENT_SECRET` secret for Radix application `radix-servicenow-proxy` with script [`update_secret_for_radix_servicenow_proxy.sh`](./../update_secret_for_radix_servicenow_proxy.sh). The script updates the secret in qa and prod environments and restarts the deployment.
-
 ## Refresh API key (APIM subscription key)
 
 The API key is a common key for the `radix-servicenow-proxy` application in all Radix clusters. When a new key is required, all clusters must be updated.
