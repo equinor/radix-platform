@@ -237,9 +237,6 @@ echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e "   -  KUBERNETES_VERSION               : $KUBERNETES_VERSION"
-echo -e "   -  NODE_COUNT                       : $NODE_COUNT"
-echo -e "   -  NODE_DISK_SIZE                   : $NODE_DISK_SIZE"
-echo -e "   -  NODE_VM_SIZE                     : $NODE_VM_SIZE"
 echo -e ""
 echo -e "   -  VNET_NAME                        : $VNET_NAME"
 echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
@@ -608,8 +605,8 @@ AKS_BASE_OPTIONS=(
     --name "$CLUSTER_NAME"
     --no-ssh-key
     --kubernetes-version "$KUBERNETES_VERSION"
-    --node-osdisk-size "$NODE_DISK_SIZE"
-    --node-vm-size "$NODE_VM_SIZE"
+    --node-osdisk-size "$SYSTEM_DISK_SIZE"
+    --node-vm-size "$SYSTEM_VM_SIZE"
     --max-pods "$POD_PER_NODE"
     --dns-service-ip "$VNET_DNS_SERVICE_IP"
     --service-cidr "$VNET_SERVICE_CIDR"
@@ -630,7 +627,7 @@ AKS_BASE_OPTIONS=(
     --enable-secret-rotation
     --enable-oidc-issuer
     --enable-cluster-autoscaler
-    --node-count "$SYSTEM_MIN_COUNT"
+    --node-count "$SYSTEM_BOOTSTRAP_COUNT"
     --min-count "$SYSTEM_MIN_COUNT"
     --max-count "$SYSTEM_MAX_COUNT"
 )
@@ -798,28 +795,50 @@ az aks nodepool update \
 printf "Done.\n"
 
 #######################################################################################
+### Add untainted User nodepool
+###
+
+AKS_X86_USER_OPTIONS=(
+    --cluster-name "$CLUSTER_NAME"
+    --nodepool-name "x86userpool"
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --enable-cluster-autoscaler
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --max-count "$X86_USER_MAX_COUNT"
+    --min-count "$X86_USER_MIN_COUNT"
+    --max-pods "$POD_PER_NODE"
+    --mode User
+    --node-count "$X86_BOOTSTRAP_COUNT"
+    --node-osdisk-size "$X86_DISK_SIZE"
+    --node-vm-size "$X86_VM_SIZE"
+    --vnet-subnet-id "$SUBNET_ID"
+)
+echo "Create x86 user nodepool"
+az aks nodepool add "${AKS_X86_USER_OPTIONS[@]}"
+
+#######################################################################################
 ### Add tainted pipelinepool
 ###
 
-AKS_PIPELINE_OPTIONS=(
+AKS_X86_PIPELINE_OPTIONS=(
     --cluster-name "$CLUSTER_NAME"
+    --nodepool-name "x86pipepool"
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
     --enable-cluster-autoscaler
     --kubernetes-version "$KUBERNETES_VERSION"
-    --labels "nodepooltasks=jobs"
-    --max-count "$PIPELINE_MAX_COUNT"
+    --max-count "$X86_PIPE_MAX_COUNT"
+    --min-count "$X86_PIPE_MIN_COUNT"
     --max-pods "$POD_PER_NODE"
-    --min-count "$PIPELINE_MIN_COUNT"
     --mode User
-    --node-count "$PIPELINE_MIN_COUNT"
-    --node-osdisk-size "$PIPELINE_DISK_SIZE"
-    --node-taints "nodepooltasks=jobs:NoSchedule"
-    --node-vm-size "$PIPELINE_VM_SIZE"
-    --nodepool-name pipelinepool
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --node-count "$X86_BOOTSTRAP_COUNT"
+    --node-osdisk-size "$X86_DISK_SIZE"
+    --node-vm-size "$X86_VM_SIZE"
     --vnet-subnet-id "$SUBNET_ID"
+    --node-taints "nodepooltasks=jobs:NoSchedule"
+    --labels "nodepooltasks=jobs"
 )
-echo "Create pipeline nodepool"
-az aks nodepool add "${AKS_PIPELINE_OPTIONS[@]}"
+echo "Create x86 pipeline nodepool"
+az aks nodepool add "${AKS_X86_PIPELINE_OPTIONS[@]}"
 
 #######################################################################################
 ### Add Arm64 user and pipeline nodepool
@@ -827,64 +846,42 @@ az aks nodepool add "${AKS_PIPELINE_OPTIONS[@]}"
 if [ "$RADIX_ENVIRONMENT" = "dev" ]; then
     AKS_ARM64_USER_OPTIONS=(
         --cluster-name "$CLUSTER_NAME"
-        --nodepool-name armuserpool
-        --mode User
+        --nodepool-name "armuserpool"
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-        --kubernetes-version "$KUBERNETES_VERSION"
         --enable-cluster-autoscaler
-        --min-count "$ARM_MIN_COUNT"
-        --max-count "$ARM_MAX_COUNT"
-        --node-count "$ARM_BOOTSTRAP_COUNT"
+        --kubernetes-version "$KUBERNETES_VERSION"
+        --max-count "$ARM_USER_MAX_COUNT"
+        --min-count "$ARM_USER_MIN_COUNT"
         --max-pods "$POD_PER_NODE"
-        --node-osdisk-size "$NODE_DISK_SIZE"
+        --mode User
+        --node-count "$ARM_BOOTSTRAP_COUNT"
+        --node-osdisk-size "$ARM_DISK_SIZE"
         --node-vm-size "$ARM_VM_SIZE"
         --vnet-subnet-id "$SUBNET_ID"
     )
-    echo "Create Arm64 nodepool"
+    echo "Create Arm nodepool"
     az aks nodepool add "${AKS_ARM64_USER_OPTIONS[@]}"
 
     AKS_ARM64_PIPELINE_OPTIONS=(
         --cluster-name "$CLUSTER_NAME"
-        --nodepool-name armpipelpool
-        --mode User
+        --nodepool-name "armpipepool"
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-        --kubernetes-version "$KUBERNETES_VERSION"
         --enable-cluster-autoscaler
-        --min-count "$ARM_MIN_COUNT"
-        --max-count "$ARM_MAX_COUNT"
-        --node-count "$ARM_BOOTSTRAP_COUNT"
+        --kubernetes-version "$KUBERNETES_VERSION"
+        --max-count "$ARM_PIPE_MAX_COUNT"
+        --min-count "$ARM_PIPE_MIN_COUNT"
         --max-pods "$POD_PER_NODE"
-        --labels "nodepooltasks=jobs"
-        --node-taints "nodepooltasks=jobs:NoSchedule"
-        --node-osdisk-size "$NODE_DISK_SIZE"
+        --mode User
+        --node-count "$ARM_BOOTSTRAP_COUNT"
+        --node-osdisk-size "$ARM_VM_SIZE"
         --node-vm-size "$ARM_VM_SIZE"
         --vnet-subnet-id "$SUBNET_ID"
+        --node-taints "nodepooltasks=jobs:NoSchedule"
+        --labels "nodepooltasks=jobs"
     )
     echo "Create Arm64 pipelinepool"
     az aks nodepool add "${AKS_ARM64_PIPELINE_OPTIONS[@]}"
 fi
-
-#######################################################################################
-### Add untainted User nodepool
-###
-
-AKS_USER_OPTIONS=(
-    --cluster-name "$CLUSTER_NAME"
-    --nodepool-name userpool
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --enable-cluster-autoscaler
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --max-count "$MAX_COUNT"
-    --max-pods "$POD_PER_NODE"
-    --min-count "$MIN_COUNT"
-    --mode User
-    --node-count "$NODE_COUNT"
-    --node-osdisk-size "$NODE_DISK_SIZE"
-    --node-vm-size "$NODE_VM_SIZE"
-    --vnet-subnet-id "$SUBNET_ID"
-)
-echo "Create user nodepool"
-az aks nodepool add "${AKS_USER_OPTIONS[@]}"
 
 #######################################################################################
 ### Add GPU node pools
