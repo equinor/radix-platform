@@ -4,6 +4,7 @@
 ## Refresh client secret for app registration ar_radix_servicenow_proxy_client
 
 App registration `ar_radix_servicenow_proxy_client` is used by the `radix-servicenow-proxy` application to request an access token valid for bearer authorization with the ServiceNow API.
+Each cluster+environment has its own Federated Credentials for this app registration.
 
 ## Refresh API key (APIM subscription key)
 
