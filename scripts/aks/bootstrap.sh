@@ -479,95 +479,9 @@ terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/p
 ### Create NSG and update subnet
 ###
 
-# NSG_ID="$(az network nsg list \
-#     --resource-group clusters \
-#     --query "[?name=='${NSG_NAME}'].id" \
-#     --subscription "${AZ_SUBSCRIPTION_ID}" \
-#     --output tsv \
-#     --only-show-errors)"
-
-# if [[ ! ${NSG_ID} ]]; then
-#     # Create network security group
-#     printf "    Creating azure NSG %s..." "${NSG_NAME}"
-#     NSG_ID=$(az network nsg create \
-#         --name "$NSG_NAME" \
-#         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#         --location "$AZ_RADIX_ZONE_LOCATION" \
-#         --subscription "${AZ_SUBSCRIPTION_ID}" \
-#         --query id \
-#         --output tsv \
-#         --only-show-errors)
-#     printf " Done.\n"
-# else
-#     echo "    NSG exists."
-# fi
-
-# # NSG Flow Logs
-# FLOW_LOGS_STORAGEACCOUNT_EXIST=$(az storage account list \
-#     --resource-group "$AZ_RESOURCE_GROUP_LOGS" \
-#     --query "[?name=='$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS'].name" \
-#     --output tsv)
-# FLOW_LOGS_STORAGEACCOUNT_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_LOGS/providers/Microsoft.Storage/storageAccounts/$AZ_RESOURCE_STORAGEACCOUNT_FLOW_LOGS"
-
-# if [ "$FLOW_LOGS_STORAGEACCOUNT_EXIST" ]; then
-#     NSG_FLOW_LOGS="$(az network nsg show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "$NSG_NAME" | jq -r .flowLogs)"
-
-#     # Check if NSG has assigned Flow log
-#     if [[ $NSG_FLOW_LOGS != "null" ]]; then
-#         printf "    There is an existing Flow Log on %s\n" "$NSG_NAME"
-#     else
-#         # Create network watcher flow log and assign to NSG
-#         printf "    Creating azure Flow-log %s...\n" "${NSG_NAME}-rule"
-#         az network watcher flow-log create \
-#             --name "${NSG_NAME}-flow-log" \
-#             --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#             --nsg "$NSG_NAME" \
-#             --location "$AZ_RADIX_ZONE_LOCATION" \
-#             --storage-account "$FLOW_LOGS_STORAGEACCOUNT_ID" \
-#             --subscription "$AZ_SUBSCRIPTION_ID" \
-#             --retention "90" \
-#             --enabled true \
-#             --output none
-#         printf "    Done.\n"
-#     fi
-# fi
-
-# # Create VNET and associate NSG
-# VNET_EXISTS="$(az network vnet list \
-#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#     --query "[?name=='${VNET_NAME}'].id" \
-#     --output tsv \
-#     --only-show-errors)"
-
-# if [[ ! ${VNET_EXISTS} ]]; then
-#     printf "    Creating azure VNET %s... " "${VNET_NAME}"
-#     az network vnet create \
-#         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#         --name "$VNET_NAME" \
-#         --address-prefix "$VNET_ADDRESS_PREFIX" \
-#         --subnet-name "$SUBNET_NAME" \
-#         --subnet-prefix "$VNET_SUBNET_PREFIX" \
-#         --location "$AZ_RADIX_ZONE_LOCATION" \
-#         --nsg "$NSG_NAME" \
-#         --output none \
-#         --tags IaC=script \
-#         --only-show-errors
-#     printf "Done.\n"
-# fi
 SUBNET=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq '.[] | select(.cluster==env.CLUSTER_NAME)')
 SUBNET_ID=$(jq -n "${SUBNET}" | jq -r .subnet_id)
 VNET_ID=$(jq -n "${SUBNET}" | jq -r .vnet_id)
-# SUBNET_ID="$(az network vnet subnet list \
-#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#     --vnet-name "$VNET_NAME" \
-#     --query "[].id" \
-#     --output tsv)"
-
-# VNET_ID="$(az network vnet show \
-#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#     --name "$VNET_NAME" \
-#     --query "id" \
-#     --output tsv)"
 
 echo ""
 printf "Checking if %s are associated with %s\n" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
@@ -588,12 +502,6 @@ echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 ### Add Usermode pool - System - Tainted
 ###
 WORKSPACE_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw workspace_id)
-# WORKSPACE_ID=$(az resource list \
-#     --resource-type Microsoft.OperationalInsights/workspaces \
-#     --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" \
-#     --subscription "${AZ_SUBSCRIPTION_ID}" \
-#     --query "[].id" \
-#     --output tsv)
 DEFENDER_CONFIG="DEFENDER_CONFIG.json"
 
 cat <<EOF >$DEFENDER_CONFIG
@@ -843,45 +751,44 @@ az aks nodepool add "${AKS_X86_PIPELINE_OPTIONS[@]}"
 #######################################################################################
 ### Add Arm64 user and pipeline nodepool
 ###
-if [ "$RADIX_ENVIRONMENT" = "dev" ]; then
-    AKS_ARM64_USER_OPTIONS=(
-        --cluster-name "$CLUSTER_NAME"
-        --nodepool-name "armuserpool"
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-        --enable-cluster-autoscaler
-        --kubernetes-version "$KUBERNETES_VERSION"
-        --max-count "$ARM_USER_MAX_COUNT"
-        --min-count "$ARM_USER_MIN_COUNT"
-        --max-pods "$POD_PER_NODE"
-        --mode User
-        --node-count "$ARM_BOOTSTRAP_COUNT"
-        --node-osdisk-size "$ARM_DISK_SIZE"
-        --node-vm-size "$ARM_VM_SIZE"
-        --vnet-subnet-id "$SUBNET_ID"
-    )
-    echo "Create Arm nodepool"
-    az aks nodepool add "${AKS_ARM64_USER_OPTIONS[@]}"
+AKS_ARM64_USER_OPTIONS=(
+    --cluster-name "$CLUSTER_NAME"
+    --nodepool-name "armuserpool"
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --enable-cluster-autoscaler
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --max-count "$ARM_USER_MAX_COUNT"
+    --min-count "$ARM_USER_MIN_COUNT"
+    --max-pods "$POD_PER_NODE"
+    --mode User
+    --node-count "$ARM_BOOTSTRAP_COUNT"
+    --node-osdisk-size "$ARM_DISK_SIZE"
+    --node-vm-size "$ARM_VM_SIZE"
+    --vnet-subnet-id "$SUBNET_ID"
+)
+echo "Create Arm nodepool"
+az aks nodepool add "${AKS_ARM64_USER_OPTIONS[@]}"
 
-    AKS_ARM64_PIPELINE_OPTIONS=(
-        --cluster-name "$CLUSTER_NAME"
-        --nodepool-name "armpipepool"
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-        --enable-cluster-autoscaler
-        --kubernetes-version "$KUBERNETES_VERSION"
-        --max-count "$ARM_PIPE_MAX_COUNT"
-        --min-count "$ARM_PIPE_MIN_COUNT"
-        --max-pods "$POD_PER_NODE"
-        --mode User
-        --node-count "$ARM_BOOTSTRAP_COUNT"
-        --node-osdisk-size "$ARM_VM_SIZE"
-        --node-vm-size "$ARM_VM_SIZE"
-        --vnet-subnet-id "$SUBNET_ID"
-        --node-taints "nodepooltasks=jobs:NoSchedule"
-        --labels "nodepooltasks=jobs"
-    )
-    echo "Create Arm64 pipelinepool"
-    az aks nodepool add "${AKS_ARM64_PIPELINE_OPTIONS[@]}"
-fi
+AKS_ARM64_PIPELINE_OPTIONS=(
+    --cluster-name "$CLUSTER_NAME"
+    --nodepool-name "armpipepool"
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --enable-cluster-autoscaler
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --max-count "$ARM_PIPE_MAX_COUNT"
+    --min-count "$ARM_PIPE_MIN_COUNT"
+    --max-pods "$POD_PER_NODE"
+    --mode User
+    --node-count "$ARM_BOOTSTRAP_COUNT"
+    --node-osdisk-size "$ARM_DISK_SIZE"
+    --node-vm-size "$ARM_VM_SIZE"
+    --vnet-subnet-id "$SUBNET_ID"
+    --node-taints "nodepooltasks=jobs:NoSchedule"
+    --labels "nodepooltasks=jobs"
+)
+echo "Create Arm64 pipelinepool"
+az aks nodepool add "${AKS_ARM64_PIPELINE_OPTIONS[@]}"
+
 
 #######################################################################################
 ### Add GPU node pools
