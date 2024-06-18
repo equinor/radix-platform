@@ -53,16 +53,16 @@ module "grafana-mi-server" {
   location            = module.config.location
 }
 
-data "azuread_application_published_app_ids" "well_known" {}
-data "azuread_service_principal" "msgraph" {
-  client_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
-}
-
-resource "azuread_app_role_assignment" "user" {
-  app_role_id         = data.azuread_service_principal.msgraph.app_role_ids["User.Read.All"]
-  principal_object_id = module.grafana-mi-server.principal_id
-  resource_object_id  = data.azuread_service_principal.msgraph.object_id
-}
+# data "azuread_application_published_app_ids" "well_known" {}
+# data "azuread_service_principal" "msgraph" {
+#   client_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
+# }
+#
+# resource "azuread_app_role_assignment" "user" {
+#   app_role_id         = data.azuread_service_principal.msgraph.app_role_ids["User.Read.All"]
+#   principal_object_id = module.grafana-mi-server.principal_id
+#   resource_object_id  = data.azuread_service_principal.msgraph.object_id
+# }
 
 
 # module "grafana-mi-admin" {
