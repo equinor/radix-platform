@@ -14,3 +14,6 @@ output "name" {
 output "principal_id" {
   value = azurerm_user_assigned_identity.userassignedidentity.principal_id
 }
+output "id" {
+  value = azurerm_user_assigned_identity.userassignedidentity.id
+}
