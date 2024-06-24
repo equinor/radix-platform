@@ -253,20 +253,9 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     [[ "$(kubectl config current-context)" != "${SOURCE_CLUSTER}" ]] && exit 1
     printf "Done.\n"
 
-    echo ""
-    printf "Delete custom ingresses...\n"
-    while read -r line; do
-        if [[ "$line" ]]; then
-            helm delete "${line}"
-        fi
-    done <<<"$(helm list --short | grep radix-ingress)"
-
     #######################################################################################
     ### Point grafana to cluster specific ingress
     ###
-
-    GRAFANA_ROOT_URL="https://grafana.$SOURCE_CLUSTER.$AZ_RESOURCE_DNS"
-    kubectl set env deployment/grafana --namespace monitor GF_SERVER_ROOT_URL="$GRAFANA_ROOT_URL"
 
     echo ""
     printf "Scale down radix-cicd-canary in %s..." "$SOURCE_CLUSTER"
@@ -299,37 +288,6 @@ printf "Update auth proxy secret and redis cache...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" "${normal}"
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT")
 wait # wait for subshell to finish
-
-# Point granana to cluster type ingress
-echo "Update grafana reply-URL... "
-CLUSTER_NAME_LOWER="$(echo "$DEST_CLUSTER" | awk '{print tolower($0)}')"
-GF_SERVER_ROOT_URL="https://grafana.$AZ_RESOURCE_DNS"
-
-printf "Update grafana-helm-secret... "
-
-echo "ingress:
-  enabled: true
-  hosts:
-  - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
-  tls:
-  - secretName: radix-wildcard-tls-cert
-    hosts:
-    - grafana.$CLUSTER_NAME_LOWER.$AZ_RESOURCE_DNS
-env:
-  GF_SERVER_ROOT_URL: $GF_SERVER_ROOT_URL" >config
-
-kubectl create secret generic grafana-helm-secret \
-    --namespace monitor \
-    --from-file=./config \
-    --dry-run=client -o yaml |
-    kubectl apply -f -
-
-rm -f config
-
-printf "Update grafana deployment... "
-kubectl set env deployment/grafana --namespace monitor GF_SERVER_ROOT_URL="$GF_SERVER_ROOT_URL"
-echo ""
-echo "Grafana reply-URL has been updated."
 
 #######################################################################################
 ### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"
