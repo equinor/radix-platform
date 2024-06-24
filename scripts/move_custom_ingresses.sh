@@ -120,12 +120,6 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 ### Resolve dependencies on other scripts
 ###
 
-BOOTSTRAP_APP_ALIAS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/app_alias/bootstrap.sh"
-if ! [[ -x "$BOOTSTRAP_APP_ALIAS_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The create alias script is not found or it is not executable in path $BOOTSTRAP_APP_ALIAS_SCRIPT" >&2
-fi
-
 UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/update_auth_proxy_secret_for_console.sh"
 if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" ]]; then
     # Print to stderror
@@ -299,13 +293,6 @@ echo ""
 printf "Point to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
-
-echo ""
-printf "Create aliases in destination cluster...\n"
-printf "%s► Execute %s%s\n" "${grn}" "$BOOTSTRAP_APP_ALIAS_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" source "$BOOTSTRAP_APP_ALIAS_SCRIPT")
-wait # wait for subshell to finish
-printf "Done creating aliases.\n"
 
 echo ""
 printf "Update auth proxy secret and redis cache...\n"
