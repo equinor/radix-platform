@@ -53,10 +53,10 @@ The whole process should be handled by the [migrate.sh](./migrate.sh) script. Se
 There are seven steps to setting up a Radix cluster from scratch. These steps can be run individually when modifying an existing cluster, or sequentially when setting up a new cluster:
 
 1. Install infrastructure (described above)
-2. Bootstrap
+2. Bootstrap AKS cluster
 3. Deploy base components
-4. Deploy Radix applications
-5. Create GitHub webhooks
+4. Install Radix components
+5. Deploy Radix applications
 6. Create aliases (`prod` only)
 7. Install network security test
 
@@ -67,23 +67,26 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 
 #### Step 3 Deploy base components
 
-This will deploy third party components (`nginx`, `external-dns` etc).
+This will deploy 3rd party components (`nginx`, `cert-manager`, `flux` etc).
 
-Handled by script, see file header in [install_base_components.sh](./install_base_components.sh) for usage.
+Handled by script, see header in [install_base_components.sh](./install_base_components.sh) for usage.
 
 ##### Dependencies
 
 ###### Secrets
 
-This script requires secret files to be available in the `keyvault` of the corresponding subscription (i.e. `radixprod` or `radixdev`), as follows.
+This script requires secret files to be available in the `keyvault` of the corresponding cluster as follows.
 
 * `slack-token`
 * `grafana-database-password` # grafana database password
-* `external-dns-azure-secret` # external-dns credentials file
 
 **NB: The `keyvault` is created by the "install infrastructure" step**
 
-###### Images
+#### Step 4 Install Radix components
+
+The Radix components will be automatically installed by Flux.
+
+###### Dependencies - Images
 
 The base components include `radix-operator`, and for this component to be successfully deployed, the following images need to be built and pushed to the ACR.
 
@@ -91,32 +94,12 @@ The base components include `radix-operator`, and for this component to be succe
 * `radix-pipeline` (from `master` and `release` branches in `radix-operator` project)
 * `radix-image-builder` (from `master` and `release` branches in `radix-operator` project)
 
-#### Step 4 Deploy Radix applications
 
-This will deploy Radix applications like radix-api, webhook, web-console etc.  
+#### Step 5 Deploy Radix applications
 
-Scripted, see file header in [deploy_radix_apps.sh](./deploy_radix_apps.sh) for usage.
+This step will register and deploy Radix applications. Radix application registration are restored from backup (Velero) or manually registered.
 
-##### Dependencies
-
-###### Secrets
-
-This script requires several secret files that contain `RadixRegistration` object configurations to be available in the `keyvault` of the corresponding subscription (ex: `radix-vault-dev`), as follows.
-
-* `radix-api-radixregistration-values`
-* `radix-cost-allocation-api-radixregistration-values`
-* `radix-canary-radixregistration-values`
-* `radix-github-webhook-radixregistration-values`
-* `radix-public-site-values`
-* `radix-web-console-radixregistration-values`
-* `radix-vulnerability-scanner-api-radixregistration-values`
-* `radix-servicenow-proxy-radixregistration-values`
-
-#### Step 5 Create Github webhooks for Radix apps
-
-This will create webhooks that will connect Radix application github repos with the radix CI/CD.
-
-Handled by script, see file header in [create_web_hooks_radix_apps.sh](./create_web_hooks_radix_apps.sh) for usage.
+(For now deploy keys and webhooks are refreshed manually once every year) (for now!)
 
 ##### Dependencies
 
