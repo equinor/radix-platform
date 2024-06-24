@@ -61,6 +61,20 @@ resource "azurerm_container_registry" "env" {
   }
 }
 
+resource "azurerm_management_lock" "this" {
+  name       = "delete-lock"
+  scope      = azurerm_container_registry.this.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
+}
+
+resource "azurerm_management_lock" "env" {
+  name       = "delete-lock"
+  scope      = azurerm_container_registry.env.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
+}
+
 resource "azurerm_private_endpoint" "this" {
   name                = "pe-radix-acr-app-${var.acr}"
   resource_group_name = var.vnet_resource_group
