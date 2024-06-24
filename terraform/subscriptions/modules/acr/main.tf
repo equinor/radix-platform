@@ -61,6 +61,20 @@ resource "azurerm_container_registry" "env" {
   }
 }
 
+resource "azurerm_management_lock" "this" {
+  name       = "${azurerm_container_registry.this.name}-delete-lock"
+  scope      = azurerm_container_registry.this.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
+}
+
+resource "azurerm_management_lock" "env" {
+  name       = "${azurerm_container_registry.env.name}-delete-lock"
+  scope      = azurerm_container_registry.env.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
+}
+
 resource "azurerm_private_endpoint" "this" {
   name                = "pe-radix-acr-app-${var.acr}"
   resource_group_name = var.vnet_resource_group
@@ -70,7 +84,7 @@ resource "azurerm_private_endpoint" "this" {
     name                           = "Private_Service_Connection"
     private_connection_resource_id = azurerm_container_registry.this.id
     is_manual_connection           = false
-    subresource_names              = ["registry"]
+    subresource_names = ["registry"]
   }
   tags = {
     IaC = "terraform"
@@ -86,7 +100,7 @@ resource "azurerm_private_endpoint" "env" {
     name                           = "Private_Service_Connection"
     private_connection_resource_id = azurerm_container_registry.env.id
     is_manual_connection           = false
-    subresource_names              = ["registry"]
+    subresource_names = ["registry"]
   }
   tags = {
     IaC = "terraform"
@@ -97,11 +111,11 @@ resource "azurerm_private_dns_a_record" "dns_record" {
   for_each = {
     for k, v in azurerm_private_endpoint.this.custom_dns_configs : v.fqdn => v #if length(regexall("\\.", v.fqdn)) >= 3
   }
-  name                = replace(each.key, ".azurecr.io", "")
+  name = replace(each.key, ".azurecr.io", "")
   zone_name           = "privatelink.azurecr.io"
   resource_group_name = var.vnet_resource_group
   ttl                 = 300
-  records             = toset(each.value.ip_addresses)
+  records = toset(each.value.ip_addresses)
   tags = {
     IaC = "terraform"
   }
@@ -112,11 +126,11 @@ resource "azurerm_private_dns_a_record" "env" {
   for_each = {
     for k, v in azurerm_private_endpoint.env.custom_dns_configs : v.fqdn => v
   }
-  name                = replace(each.key, ".azurecr.io", "")
+  name = replace(each.key, ".azurecr.io", "")
   zone_name           = "privatelink.azurecr.io"
   resource_group_name = var.vnet_resource_group
   ttl                 = 300
-  records             = toset(each.value.ip_addresses)
+  records = toset(each.value.ip_addresses)
   tags = {
     IaC = "terraform"
   }
