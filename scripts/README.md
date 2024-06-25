@@ -104,12 +104,3 @@ This step will register and deploy Radix applications. Radix application registr
 ##### Dependencies
 
 The radix component `radix-github-webhook-prod` must be available in the cluster.
-
-#### Step 6 Create/update aliases
-
-**NB: Aliases should only be set for apps running in the `prod` cluster**
-
-It is a way to provide a more user friendly url to a selected set of apps (i.e. Web Console, Public Site, API server, Webhook, Canary).  
-
-Handled by script, see [app_alias/README](./app_alias/README.md)
-

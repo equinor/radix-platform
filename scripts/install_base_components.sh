@@ -288,14 +288,6 @@ kubectl apply --filename manifests/storageclass-retain.yaml
 kubectl apply --filename manifests/storageclass-retain-nocache.yaml
 echo ""
 
-#######################################################################################
-### Install grafana
-###
-
-# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/grafana/bootstrap.sh" "${normal}"
-# (USER_PROMPT="$USER_PROMPT" ./grafana/bootstrap.sh)
-# wait
-
 
 #######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
