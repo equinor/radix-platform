@@ -46,6 +46,7 @@ resource "azurerm_mysql_flexible_database" "grafana" {
   server_name = azurerm_mysql_flexible_server.this.name
 }
 
+# This MI must not be deleted, has been given Directory Reader role by Equnior AAD Team!
 module "grafana-mi-server" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-grafana-server-${module.config.environment}"
@@ -53,31 +54,27 @@ module "grafana-mi-server" {
   location            = module.config.location
 }
 
-# data "azuread_application_published_app_ids" "well_known" {}
-# data "azuread_service_principal" "msgraph" {
-#   client_id = data.azuread_application_published_app_ids.well_known.result.MicrosoftGraph
-# }
-#
-# resource "azuread_app_role_assignment" "user" {
-#   app_role_id         = data.azuread_service_principal.msgraph.app_role_ids["User.Read.All"]
-#   principal_object_id = module.grafana-mi-server.principal_id
-#   resource_object_id  = data.azuread_service_principal.msgraph.object_id
+module "grafana-mi-admin" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-grafana-admin-${module.config.environment}"
+  resource_group_name = "monitoring"
+  location            = module.config.location
+}
+
+data "azuread_group" "mysql-admin" {
+  display_name = var.admin-group-name
+}
+# resource "azuread_group_member" "this" {
+#   group_object_id  = data.azuread_group.mssql-developers.object_id
+#   member_object_id = module.grafana-mi-admin.principal_id
 # }
 
-
-# module "grafana-mi-admin" {
-#   source              = "../../../modules/userassignedidentity"
-#   name                = "radix-id-grafana-admin-${module.config.environment}"
-#   resource_group_name = "monitoring"
-#   location            = module.config.location
-# }
-#
-# output "mi-admin" {
-#   value = {
-#     client-id = module.grafana-mi-admin.client-id,
-#     name      = module.grafana-mi-admin.name
-#   }
-# }
+output "mi-admin" {
+  value = {
+    client-id = module.grafana-mi-admin.client-id,
+    name      = module.grafana-mi-admin.name
+  }
+}
 
 output "mi-server" {
   value = {
