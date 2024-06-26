@@ -18,11 +18,20 @@ data "azurerm_key_vault_secret" "radixadmin" {
   key_vault_id = data.azurerm_key_vault.this.id
 }
 
+# This MI must not be deleted, has been given Directory Reader role by Equnior AAD Team!
+module "grafana-mi-server" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-grafana-server-${module.config.environment}"
+  resource_group_name = "monitoring"
+  location            = module.config.location
+}
+
 resource "azurerm_mysql_flexible_server" "this" {
   location               = module.config.location
   name                   = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}"
   resource_group_name    = "monitoring"
-  zone                   = "2"
+  zone                   = 2
+  backup_retention_days =  7
   sku_name               = "B_Standard_B1ms"
   administrator_login    = "radixadmin"
   administrator_password = data.azurerm_key_vault_secret.radixadmin.value
@@ -46,13 +55,6 @@ resource "azurerm_mysql_flexible_database" "grafana" {
   server_name = azurerm_mysql_flexible_server.this.name
 }
 
-# This MI must not be deleted, has been given Directory Reader role by Equnior AAD Team!
-module "grafana-mi-server" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-grafana-server-${module.config.environment}"
-  resource_group_name = "monitoring"
-  location            = module.config.location
-}
 
 module "grafana-mi-admin" {
   source              = "../../../modules/userassignedidentity"
@@ -61,24 +63,18 @@ module "grafana-mi-admin" {
   location            = module.config.location
 }
 
-data "azuread_group" "mysql-admin" {
-  display_name = var.admin-group-name
-}
-# resource "azuread_group_member" "this" {
-#   group_object_id  = data.azuread_group.mssql-developers.object_id
-#   member_object_id = module.grafana-mi-admin.principal_id
-# }
 
-output "mi-admin" {
-  value = {
-    client-id = module.grafana-mi-admin.client-id,
-    name      = module.grafana-mi-admin.name
-  }
+output "mi-admin-client-id" {
+  value = module.grafana-mi-admin.client-id
+}
+output "mi-admin-name" {
+  value = module.grafana-mi-admin.name
 }
 
-output "mi-server" {
-  value = {
-    client-id = module.grafana-mi-server.client-id,
-    name      = module.grafana-mi-server.name
-  }
+
+output "mi-server-client-id" {
+  value = module.grafana-mi-server.client-id
+}
+output "mi-server-name" {
+  value = module.grafana-mi-server.name
 }
