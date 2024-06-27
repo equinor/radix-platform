@@ -356,30 +356,30 @@ wait # wait for subshell to finish
 ### Delete replyUrls
 ###
 
-echo ""
-echo "Delete replyUrls"
+# echo ""
+# echo "Delete replyUrls"
 
-# Delete replyUrl for Radix web-console
-WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^}" # "Development", "Playground", "Production"
-APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].appId --output tsv --only-show-errors)"
-APP_REGISTRATION_OBJ_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].id --output tsv --only-show-errors)"
-HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
-REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
-WEB_REDIRECT_URI="https://${HOST_NAME_WEB_CONSOLE}/applications"
+# # Delete replyUrl for Radix web-console
+# WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
+# APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^}" # "Development", "Playground", "Production"
+# APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].appId --output tsv --only-show-errors)"
+# APP_REGISTRATION_OBJ_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].id --output tsv --only-show-errors)"
+# HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
+# REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
+# WEB_REDIRECT_URI="https://${HOST_NAME_WEB_CONSOLE}/applications"
 
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
-(APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="$WEB_REDIRECT_URI" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
-wait # wait for subshell to finish
+# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
+# (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="$WEB_REDIRECT_URI" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
+# wait # wait for subshell to finish
 
 # Delete replyUrl for grafana
-APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_GRAFANA}'" --query [].appId --output tsv --only-show-errors)"
-HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
-REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
+# APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_GRAFANA}'" --query [].appId --output tsv --only-show-errors)"
+# HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
+# REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
 
-printf "\n%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
-(APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
-wait # wait for subshell to finish
+# printf "\n%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
+# (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
+# wait # wait for subshell to finish
 
 #######################################################################################
 ### Delete related stuff

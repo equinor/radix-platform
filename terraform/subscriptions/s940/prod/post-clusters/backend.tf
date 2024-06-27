@@ -43,3 +43,8 @@ data "azuread_service_principal" "this" {
 data "azurerm_role_definition" "this" {
   name = "Omnia Authorization Locks Operator"
 }
+
+data "azuread_group" "radix" {
+  display_name     = "Radix"
+  security_enabled = false
+}
