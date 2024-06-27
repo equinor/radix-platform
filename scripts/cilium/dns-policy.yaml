@@ -1,0 +1,64 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: "tofqdn-dns-visibility"
+  namespace: kube-system
+spec:
+  endpointSelector:
+    matchLabels: {}
+#    matchLabels:
+#      any:org: alliance
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": kube-system
+            "k8s:k8s-app": kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: "*"
+#    - toFQDNs:
+#        - matchName: "equinor.com"
+#        - matchName: "sub.cilium.io"
+#        - matchPattern: "*.sub.cilium.io"
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "l7-visibility"
+spec:
+  endpointSelector:
+    matchLabels:
+      "k8s:io.kubernetes.pod.namespace": radix-web-console-qa
+  egress:
+    - toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": default
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "8000"
+              protocol: TCP
+            - port: "8080"
+              protocol: TCP
+            - port: "3000"
+              protocol: TCP
+            - port: "3001"
+              protocol: TCP
+            - port: "3002"
+              protocol: TCP
+            - port: "3003"
+              protocol: TCP
+          rules:
+            http: [{}]
