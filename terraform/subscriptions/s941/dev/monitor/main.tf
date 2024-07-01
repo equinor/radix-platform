@@ -4,7 +4,7 @@ module "config" {
 
 
 data "azuread_group" "mssql-developers" {
-  display_name     = "Radix SQL server admin - dev"
+  display_name     = var.admin-group-name
   security_enabled = true
 }
 
@@ -53,6 +53,15 @@ resource "azurerm_mysql_flexible_database" "grafana" {
   charset     = "latin1"
   collation   = "latin1_swedish_ci"
   server_name = azurerm_mysql_flexible_server.this.name
+}
+
+data "azurerm_client_config" "current" {}
+resource "azurerm_mysql_flexible_server_active_directory_administrator" "this" {
+  identity_id = data.azuread_group.mssql-developers.id
+  login       = "sqladmin"
+  object_id   = data.azurerm_client_config.current.client_id
+  server_id   = azurerm_mysql_flexible_server.this.id
+  tenant_id   = data.azurerm_client_config.current.tenant_id
 }
 
 

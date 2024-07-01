@@ -13,7 +13,7 @@ terraform {
     resource_group_name  = "s941-tfstate"
     storage_account_name = "s941radixinfra"
     container_name       = "infrastructure"
-    key                  = "dev/grafana/terraform.tfstate"
+    key                  = "dev/monitor/terraform.tfstate"
     use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }
