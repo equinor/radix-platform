@@ -5,7 +5,7 @@ data "azurerm_key_vault" "this" {
 }
 
 data "azurerm_key_vault_secret" "grafana-admin-password" {
-  name         = "mysql-grafana-dev-admin-password"
+  name         = "mysql-grafana-${module.config.environment}-admin-password"
   key_vault_id = data.azurerm_key_vault.this.id
 }
 

@@ -1,4 +1,4 @@
 variable "admin-group-name" {
-  type = string
+  type    = string
   default = "Radix SQL server admin - dev"
 }
