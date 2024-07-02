@@ -26,16 +26,23 @@ module "grafana-mi-admin" {
 
 resource "azurerm_mysql_flexible_server" "grafana" {
   location               = module.config.location
-  name                   = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}"
+  name                   = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}-prod"
   resource_group_name    = "monitoring"
   zone                   = 2
-  backup_retention_days  = 7
-  sku_name               = "B_Standard_B1ms"
+  backup_retention_days  = 35
+  sku_name               = "B_Standard_B2ms"
   administrator_login    = "radixadmin"
   administrator_password = data.azurerm_key_vault_secret.grafana-admin-password.value
 
   tags = {
     IaC = "terraform"
+  }
+
+  storage {
+    auto_grow_enabled  = true
+    io_scaling_enabled = false
+    iops               = 360
+    size_gb            = 20
   }
 
   identity {
