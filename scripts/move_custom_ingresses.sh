@@ -116,6 +116,15 @@ fi
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
+
+LIB_DNS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/dns/lib_dns.sh"
+if ! [[ -x "$LIB_DNS_SCRIPT" ]]; then
+    # Print to stderror
+    echo "ERROR: The lib DNS script is not found or it is not executable in path $LIB_DNS_SCRIPT" >&2
+else
+    source $LIB_DNS_SCRIPT
+fi
+
 #######################################################################################
 ### Resolve dependencies on other scripts
 ###
@@ -282,6 +291,34 @@ echo ""
 printf "Point to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+
+
+#######################################################################################
+### Configure DNS Record to point to new cluster
+###
+
+echo ""
+printf "Updating DNS zone for %s... " "${AZ_RESOURCE_GROUP_COMMON}"
+
+# Get cluster IP
+cluster_ip=$(kubectl get secret --namespace "ingress-nginx" "ingress-nginx-raw-ip" -ojson | jq .data.rawIp --raw-output | base64 --decode)
+
+set -f
+a_records=('@' '*' '*.app')
+# Create A records in the dns zone
+# creating the "@"-record, i.e. e.g. dev.radix.equinor.com.
+# creating wildcard record to match all FQDNs in active-cluster ingresses
+# creating wildcard record to match all FQDNs in "app alias" ingresses
+for record in ${a_records[@]}; do
+
+    printf "%s... " $record
+    create-a-record "${record}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
+        echo "ERROR: failed to create A record ${record}.${AZ_RESOURCE_DNS}" >&2
+    }
+done
+set +f
+printf "Done. \n"
+
 
 echo ""
 printf "Update auth proxy secret and redis cache...\n"

@@ -22,7 +22,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=beastmode-11 DEST_CLUSTER=mommas-boy-12 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-26 DEST_CLUSTER=cilium-26 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 # or without log:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-01 DEST_CLUSTER=weekly-02 ./migrate.sh
@@ -534,9 +534,9 @@ done
 
 echo ""
 # Add grafana replyUrl to AAD app
-printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
-(AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="monitor" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
-wait # wait for subshell to finish
+# printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
+# (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="monitor" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+# wait # wait for subshell to finish
 
 # echo ""
 # echo "Updating storageaccount firewall..."
@@ -693,10 +693,10 @@ while [[ "$(kubectl get ingress $AUTH_PROXY_COMPONENT --namespace $WEB_CONSOLE_N
 done
 printf "\nIngress is ready, adding replyUrl for radix web-console...\n"
 
-printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
-(AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^}" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
-wait # wait for subshell to finish
-printf "Done.\n"
+# printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
+# (AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^}" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
+# wait # wait for subshell to finish
+# printf "Done.\n"
 
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
 echo ""

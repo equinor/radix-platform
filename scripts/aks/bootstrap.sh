@@ -243,7 +243,9 @@ echo -e "   -  VNET_ADDRESS_PREFIX              : $VNET_ADDRESS_PREFIX"
 echo -e "   -  VNET_SUBNET_PREFIX               : $VNET_SUBNET_PREFIX"
 echo -e "   -  NSG_NAME                         : $NSG_NAME"
 if [ "${CILIUM}" = true ]; then
-    echo -e "   -  NETWORK_POLICY                   : none"
+    echo -e "   -  NETWORK_POLICY                   : azure"
+    echo -e "   -  NETWORK_PLUGIN                   : overlay"
+    echo -e "   -  network-dataplane                : cilium"
 else
     echo -e "   -  NETWORK_PLUGIN                   : $NETWORK_PLUGIN"
     echo -e "   -  NETWORK_POLICY                   : $NETWORK_POLICY"
@@ -283,9 +285,19 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
+### Prepare Terraform
+###
+
+printf "Initializing Terraform..."
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" init
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/virtualnetwork" init
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" init
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
+#######################################################################################
 ### Set credentials
 ###
-printf "Reading credentials... "
+
 ID_AKS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" output -raw radix_id_aks_mi_id)
 ID_AKSKUBELET=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" output -raw radix_id_akskubelet_mi_id)
 ACR_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw acr_id)
@@ -472,7 +484,6 @@ if [[ ${update_keyvault} == true ]]; then
     printf "Done.\n"
 fi
 
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 
 #######################################################################################
@@ -549,7 +560,9 @@ fi
 
 if [ "$CILIUM" = true ]; then
     AKS_NETWORK_OPTIONS=(
-        --network-plugin "none"
+        --network-plugin "azure"
+        --network-plugin-mode overlay
+        --network-dataplane cilium
     )
 else
     AKS_NETWORK_OPTIONS=(
@@ -635,59 +648,6 @@ function retry() {
         fi
     done
 }
-
-if [ "$CILIUM" = true ]; then
-    CILIUM_VALUES="cilium-values.yaml"
-
-    cat <<EOF >"${WORK_DIR}/${CILIUM_VALUES}"
-nodeinit:
-  enabled: true
-
-aksbyocni:
-  enabled: true
-
-azure:
-  resourceGroup: ${AZ_RESOURCE_GROUP_CLUSTERS}
-
-k8sClientRateLimit:
-  qps: 20
-  burst: 20
-
-prometheus:
-  enabled: true
-
-hubble:
-  enabled: true
-  relay:
-    enabled: true
-  ui:
-    enabled: true
-
-operator:
-  prometheus:
-    enabled: true
-
-ipam:
-  operator:
-    clusterPoolIPv4PodCIDRList: ["10.200.0.0/16"]
-    clusterPoolIPv4MaskSize: 24
-EOF
-
-    printf "Installing Cilium...\n"
-
-    retry "1m" "helm repo add cilium https://helm.cilium.io/"
-
-    retry "2m" "helm upgrade --install cilium cilium/cilium \
-        --version $CILIUM_VERSION \
-        --namespace kube-system \
-        --values ${WORK_DIR}/${CILIUM_VALUES}"
-
-    cilium status --wait
-
-    printf "Done.\n"
-
-    rm -f "${WORK_DIR}/${CILIUM_VALUES}"
-fi
 
 #######################################################################################
 ### Taint the 'systempool'
@@ -903,7 +863,6 @@ fi
 ### Do some terraform post tasks
 ###
 echo "Do some terraform post tasks"
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
 printf "Done."
 #######################################################################################
