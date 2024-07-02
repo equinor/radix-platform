@@ -17,13 +17,6 @@ module "grafana-mi-server" {
   location            = module.config.location
 }
 
-module "grafana-mi-admin" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-grafana-admin-${module.config.environment}"
-  resource_group_name = "monitoring"
-  location            = module.config.location
-}
-
 resource "azurerm_mysql_flexible_server" "grafana" {
   location               = module.config.location
   name                   = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}"
