@@ -33,6 +33,42 @@ data "azurerm_subnet" "this" {
   virtual_network_name = data.azurerm_virtual_network.this.name
 }
 
+data "azurerm_container_registry" "cache" {
+  name                = "radixplatformcache"
+  resource_group_name = "common-platform"
+}
+
+resource "azurerm_private_endpoint" "cache" {
+  name                = "pe-radix-acr-cache-${module.config.environment}"
+  resource_group_name = module.config.vnet_resource_group
+  location            = module.config.location
+  subnet_id           = data.azurerm_subnet.this.id
+  private_service_connection {
+    name                           = "Private_Service_Connection"
+    private_connection_resource_id = data.azurerm_container_registry.cache.id
+    is_manual_connection           = false
+    subresource_names              = ["registry"]
+  }
+  tags = {
+    IaC = "terraform"
+  }
+}
+
+resource "azurerm_private_dns_a_record" "cache" {
+  for_each = {
+    for k, v in azurerm_private_endpoint.cache.custom_dns_configs : v.fqdn => v #if length(regexall("\\.", v.fqdn)) >= 3
+  }
+  name                = replace(each.key, ".azurecr.io", "")
+  zone_name           = "privatelink.azurecr.io"
+  resource_group_name = module.config.vnet_resource_group
+  ttl                 = 300
+  records             = toset(each.value.ip_addresses)
+  tags = {
+    IaC = "terraform"
+  }
+  depends_on = [azurerm_private_endpoint.cache]
+}
+
 module "storageaccount" {
   source                   = "../../../modules/storageaccount"
   for_each                 = var.storageaccounts

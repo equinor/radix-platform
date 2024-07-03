@@ -58,6 +58,7 @@ module "acr" {
   ip_rule             = data.azurerm_key_vault_secret.this.value
   location            = module.config.location
   resource_group_name = "common" #TODO
+  common_res_group    = module.config.common_resource_group
   acr                 = module.config.environment
   vnet_resource_group = module.config.vnet_resource_group
   subnet_id           = data.azurerm_subnet.this.id

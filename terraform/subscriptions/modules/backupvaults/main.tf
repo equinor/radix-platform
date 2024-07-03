@@ -24,9 +24,9 @@ resource "azurerm_data_protection_backup_vault" "backupvault" {
 ###
 
 resource "azurerm_data_protection_backup_policy_blob_storage" "policyblobstorage" {
-  name               = var.policyblobstoragename
-  vault_id           = azurerm_data_protection_backup_vault.backupvault.id
-  retention_duration = "P30D"
+  name                                   = var.policyblobstoragename
+  vault_id                               = azurerm_data_protection_backup_vault.backupvault.id
+  operational_default_retention_duration = "P30D"
 }
 
 #######################################################################################

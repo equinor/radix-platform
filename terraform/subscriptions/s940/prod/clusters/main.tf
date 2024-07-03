@@ -39,6 +39,11 @@ data "azurerm_container_registry" "this" {
   resource_group_name = "common" #TODO
 }
 
+data "azurerm_container_registry" "cache" {
+  name                = "radix${module.config.environment}cache"
+  resource_group_name = module.config.common_resource_group
+}
+
 data "azurerm_policy_definition" "policy_aks_cluster" {
   display_name = module.config.policy_aks_diagnostics_cluster
 }
@@ -79,6 +84,10 @@ module "radix_id_akskubelet_mi" {
     arcpull = {
       role     = "AcrPull"
       scope_id = data.azurerm_container_registry.this.id
+    }
+    arccache = {
+      role     = "AcrPull"
+      scope_id = data.azurerm_container_registry.cache.id
     }
   }
 }
