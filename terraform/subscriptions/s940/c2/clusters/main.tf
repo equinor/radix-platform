@@ -37,6 +37,11 @@ data "azurerm_container_registry" "this" {
   resource_group_name = data.azurerm_resource_group.common.name
 }
 
+data "azurerm_container_registry" "cache" {
+  name                = "radix${module.config.environment}cache"
+  resource_group_name = module.config.common_resource_group
+}
+
 module "radix_id_external_secrets_operator_mi" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-external-secrets-operator-${module.config.environment}"
@@ -72,6 +77,10 @@ module "radix_id_akskubelet_mi" {
     arcpull = {
       role     = "AcrPull"
       scope_id = data.azurerm_container_registry.this.id
+    }
+    arccache = {
+      role     = "AcrPull"
+      scope_id = data.azurerm_container_registry.cache.id
     }
   }
 }
