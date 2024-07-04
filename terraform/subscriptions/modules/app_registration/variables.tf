@@ -31,3 +31,25 @@ variable "implicit_grant" {
   type    = bool
   default = false
 }
+
+variable "required_resource_access" {
+  type = map(object({
+    resource_app_id = string
+    resource_access = map(object({
+      id = string
+      type = string
+    }))
+  }))
+
+  default = {}
+}
+
+
+variable "resource_access" {
+  type = map(object({
+    app_id = string
+    scope_ids = list(string)
+  }))
+
+  default = {}
+}
