@@ -52,6 +52,7 @@ module "webconsole" {
   singlepage_uris = local.singlepage-uris
   owners          = data.azuread_group.radix.members
   implicit_grant  = false
+  assignment_required = true
 
   resource_access = {
     servicenow = {

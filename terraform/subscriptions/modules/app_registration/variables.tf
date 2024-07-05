@@ -53,3 +53,8 @@ variable "resource_access" {
 
   default = {}
 }
+
+variable "assignment_required" {
+  type = bool
+  default = false
+}
