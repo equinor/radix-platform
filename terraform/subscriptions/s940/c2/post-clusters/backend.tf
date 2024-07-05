@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "<=3.100.0"
+      version = ">=3.100.0"
     }
     azapi = {
       source = "Azure/azapi"
@@ -18,6 +18,10 @@ terraform {
     key                  = "c2/post-clusters/terraform.tfstate"
     use_azuread_auth     = true # This enables RBAC instead of access keys
   }
+}
+
+provider "azuread" {
+  tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 }
 
 provider "azurerm" {

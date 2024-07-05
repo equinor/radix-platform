@@ -1,13 +1,11 @@
 locals {
-  environment = "qa"
-
   web-uris = distinct(flatten(
     [for k, v in module.clusters.oidc_issuer_url : [
       "http://localhost:8000/oauth2/callback",
 
-      "https://console.radix.equinor.com/oauth2/callback",
-      "https://console.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://console.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+        "https://console.radix.equinor.com/oauth2/callback",
+        "https://console.${module.config.environment}.radix.equinor.com/oauth2/callback",
+        "https://console.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
 
       "https://auth-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
       "https://auth-radix-web-console-qa.${module.config.environment}.radix.equinor.com/oauth2/callback",
@@ -21,7 +19,7 @@ locals {
 
   singlepage-uris = distinct(flatten(
     [for k, v in module.clusters.oidc_issuer_url : [
-      "http://localhost:8000/applications",
+      "http://localhost:8080/applications",
 
       "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/applications",
       "https://auth-radix-web-console-prod.${module.config.environment}.radix.equinor.com/applications",
@@ -48,12 +46,12 @@ data "azuread_service_principal" "kubernetes" {
 }
 module "webconsole" {
   source          = "../../../modules/app_registration"
-  display_name    = "Omnia Radix Web Console - Development"
-  notes           = "Omnia Radix Web Console - Development"
+  display_name    = "Omnia Radix Web Console - C2 Clusters"
   service_id      = "110327"
   web_uris        = local.web-uris
   singlepage_uris = local.singlepage-uris
   owners          = data.azuread_group.radix.members
+  implicit_grant  = false
 
   resource_access = {
     servicenow = {
@@ -73,6 +71,9 @@ module "webconsole" {
       scope_ids = [
         data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["GroupMember.Read.All"],
         data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["User.Read"],
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["offline_access"],
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["openid"],
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["profile"],
       ]
     }
   }

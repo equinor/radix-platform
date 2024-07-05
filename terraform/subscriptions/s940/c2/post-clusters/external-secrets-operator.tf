@@ -1,15 +1,15 @@
-resource "local_file" "templates" {
-  for_each = toset([
-    for file in fileset(path.module, "templates/**") :      # The subfolder in current dir
-    file if length(regexall(".*app-template.*", file)) == 0 # Ignore paths with "app-template"
-  ])
-
-  content = templatefile(each.key, {
-    identity_id = data.azurerm_user_assigned_identity.this.client_id
-  })
-
-  filename = replace("${path.module}/${each.key}", "templates", "rendered")
-}
+# resource "local_file" "templates" {
+#   for_each = toset([
+#     for file in fileset(path.module, "templates/**") :      # The subfolder in current dir
+#     file if length(regexall(".*app-template.*", file)) == 0 # Ignore paths with "app-template"
+#   ])
+#
+#   content = templatefile(each.key, {
+#     identity_id = data.azurerm_user_assigned_identity.this.client_id
+#   })
+#
+#   filename = replace("${path.module}/${each.key}", "templates", "rendered")
+# }
 
 data "azurerm_user_assigned_identity" "this" {
   resource_group_name = module.config.common_resource_group
