@@ -1,9 +1,30 @@
 locals {
   environment = "prod"
-  web-uris = [
-    for k, v in module.clusters.oidc_issuer_url :
-    "https://auth-radix-web-console-prod.${k}.radix.equinor.com/oauth2/callback"
-  ]
+  web-uris = distinct(flatten(
+    [for k, v in module.clusters.oidc_issuer_url : [
+      "http://localhost:3000/auth-callback",
+
+      "https://console.radix.equinor.com/oauth2/callback",
+      "https://console.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://console.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+
+      "https://auth-radix-web-console-${local.environment}.${k}.radix.equinor.com/oauth2/callback",
+      "https://auth-radix-web-console-${local.environment}.radix.equinor.com/oauth2/callback",
+    ]]
+  ))
+
+  singlepage-uris = distinct(flatten(
+    [for k, v in module.clusters.oidc_issuer_url : [
+      "http://localhost:8080/applications",
+
+      "https://auth-radix-web-console-${local.environment}.${k}.radix.equinor.com/applications",
+      "https://auth-radix-web-console-${local.environment}.radix.equinor.com/applications",
+
+      "https://console.radix.equinor.com/applications",
+      "https://console.${k}.radix.equinor.com/applications",
+    ]]
+  ))
+
   singlepage-uris = [
     for k, v in module.clusters.oidc_issuer_url :
     "https://auth-radix-web-console-prod.${k}.radix.equinor.com/applications"
