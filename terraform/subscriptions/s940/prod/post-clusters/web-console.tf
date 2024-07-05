@@ -39,4 +39,5 @@ module "webconsole" {
   singlepage_uris = local.singlepage-uris
   owners          = data.azuread_group.radix.members
   implicit_grant  = true
+  assignment_required = true
 }
