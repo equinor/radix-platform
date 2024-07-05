@@ -38,6 +38,11 @@ variable "subnet_id" {
   type        = string
 }
 
+variable "dockercredentials_id" {
+  type    = string
+  default = null
+}
+
 variable "cacheregistry" {
   type = map(object({
     namespace = string
