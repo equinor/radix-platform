@@ -167,6 +167,7 @@ resource "azurerm_container_registry_cache_rule" "cache" {
   container_registry_id = azurerm_container_registry.cache.id
   target_repo           = each.value.namespace
   source_repo           = "${each.value.repo}/${each.value.library}"
+  credential_set_id     = each.value.repo == "docker.io" ? var.dockercredentials_id : null
 }
 
 resource "azurerm_private_endpoint" "cache" {
