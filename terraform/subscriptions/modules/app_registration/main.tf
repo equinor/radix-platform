@@ -51,3 +51,9 @@ resource "azuread_application_api_access" "app" {
 
   scope_ids = each.value.scope_ids
 }
+
+resource "azuread_service_principal" "this" {
+  client_id = azuread_application.this.client_id
+  app_role_assignment_required = var.assignment_required
+  owners = var.owners
+}
