@@ -3,24 +3,31 @@ locals {
 
   web-uris = distinct(flatten(
     [for k, v in module.clusters.oidc_issuer_url : [
-      "http://localhost:3000/auth-callback",
+      "http://localhost:8000/oauth2/callback",
 
       "https://console.radix.equinor.com/oauth2/callback",
       "https://console.${module.config.environment}.radix.equinor.com/oauth2/callback",
       "https://console.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
 
-      "https://auth-radix-web-console-${local.environment}.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-${local.environment}.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-${local.environment}.radix.equinor.com/oauth2/callback",
+      "https://auth-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://auth-radix-web-console-qa.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://auth-radix-web-console-qa.radix.equinor.com/oauth2/callback",
+
+      "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://auth-radix-web-console-prod.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://auth-radix-web-console-prod.radix.equinor.com/oauth2/callback",
     ]]
   ))
 
   singlepage-uris = distinct(flatten(
     [for k, v in module.clusters.oidc_issuer_url : [
-      "http://localhost:8080/applications",
+      "http://localhost:8000/applications",
 
-      "https://auth-radix-web-console-${local.environment}.${k}.${module.config.environment}.radix.equinor.com/applications",
-      "https://auth-radix-web-console-${local.environment}.${module.config.environment}.radix.equinor.com/applications",
+      "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/applications",
+      "https://auth-radix-web-console-prod.${module.config.environment}.radix.equinor.com/applications",
+
+      "https://auth-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/applications",
+      "https://auth-radix-web-console-qa.${module.config.environment}.radix.equinor.com/applications",
 
       "https://console.radix.equinor.com/applications",
       "https://console.${k}.${module.config.environment}.radix.equinor.com/applications",
@@ -44,8 +51,8 @@ module "webconsole" {
   display_name    = "Omnia Radix Web Console - Development"
   notes           = "Omnia Radix Web Console - Development"
   service_id      = "110327"
-  web_uris        = concat(local.web_uris, local.web-uris)
-  singlepage_uris = concat(local.singlepage_uris, local.singlepage-uris) # local.singlepage_uris
+  web_uris        = local.web-uris
+  singlepage_uris = local.singlepage-uris
   owners          = data.azuread_group.radix.members
 
   resource_access = {
