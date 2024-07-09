@@ -1,5 +1,5 @@
 module "resourcegroups" {
-  for_each = toset(["backups", "common", "Logs-Dev"])
+  for_each = toset(["backups", "common", "Logs-Dev", "monitoring"])
 
   source   = "../../../modules/resourcegroups"
   name     = each.value

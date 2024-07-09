@@ -110,6 +110,11 @@ variable "cacheregistry" {
       library   = "jetstack/cert-manager-controller"
       repo      = "quay.io"
     }
+    cert-manager-startupapicheck = {
+      namespace = "jetstack/cert-manager-startupapicheck"
+      library   = "jetstack/cert-manager-startupapicheck"
+      repo      = "quay.io"
+    }
     cert-manager-webhook = {
       namespace = "jetstack/cert-manager-webhook"
       library   = "jetstack/cert-manager-webhook"

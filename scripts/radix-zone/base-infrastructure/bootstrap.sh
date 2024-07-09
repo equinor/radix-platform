@@ -211,23 +211,23 @@ function update_app_registrations(){
 
 function create_resource_groups() {
     printf "Creating all resource groups..."
-    az group create \
-        --location "${AZ_RADIX_ZONE_LOCATION}" \
-        --name "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --output none
+    # az group create \
+    #     --location "${AZ_RADIX_ZONE_LOCATION}" \
+    #     --name "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    #     --subscription "${AZ_SUBSCRIPTION_ID}" \
+    #     --output none
     
-    az group create \
-        --location "${AZ_RADIX_ZONE_LOCATION}" \
-        --name "${AZ_RESOURCE_GROUP_COMMON}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --output none
+    # az group create \
+    #     --location "${AZ_RADIX_ZONE_LOCATION}" \
+    #     --name "${AZ_RESOURCE_GROUP_COMMON}" \
+    #     --subscription "${AZ_SUBSCRIPTION_ID}" \
+    #     --output none
     
-    az group create \
-        --location "${AZ_RADIX_ZONE_LOCATION}" \
-        --name "${AZ_RESOURCE_GROUP_MONITORING}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --output none
+    # az group create \
+    #     --location "${AZ_RADIX_ZONE_LOCATION}" \
+    #     --name "${AZ_RESOURCE_GROUP_MONITORING}" \
+    #     --subscription "${AZ_SUBSCRIPTION_ID}" \
+    #     --output none
 }
 
 #######################################################################################

@@ -1,3 +1,11 @@
+module "resourcegroups" {
+  for_each = toset(["common", "monitoring"])
+
+  source   = "../../../modules/resourcegroups"
+  name     = each.value
+  location = module.config.location
+}
+
 data "azurerm_subscription" "main" {
   subscription_id = module.config.subscription
 }
