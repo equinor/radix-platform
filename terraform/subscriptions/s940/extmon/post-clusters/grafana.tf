@@ -15,9 +15,9 @@ resource "azuread_application_federated_identity_credential" "grafana-logreader"
 resource "azuread_application_federated_identity_credential" "grafana-mi-fedcred" {
   for_each = module.clusters.oidc_issuer_url
 
-  audience            = ["api://AzureADTokenExchange"]
-  name                = "k8s-grafana-${each.key}"
-  issuer              = each.value
-  subject             = "system:serviceaccount:monitor:grafana"
+  audience       = ["api://AzureADTokenExchange"]
+  name           = "k8s-grafana-${each.key}"
+  issuer         = each.value
+  subject        = "system:serviceaccount:monitor:grafana"
   application_id = data.azuread_application.grafana-logreader.id
 }

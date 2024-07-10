@@ -53,7 +53,7 @@ resource "azuread_application_api_access" "app" {
 }
 
 resource "azuread_service_principal" "this" {
-  client_id = azuread_application.this.client_id
+  client_id                    = azuread_application.this.client_id
   app_role_assignment_required = var.assignment_required
-  owners = var.owners
+  owners                       = var.owners
 }

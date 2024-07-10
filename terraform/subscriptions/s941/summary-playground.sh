@@ -11,7 +11,7 @@ for dir in "$directory"/*; do
     if [ ! -d "$dir" ]; then continue; fi
 
     printf "%s► Execute %s%s\n" "${grn}" "$dir" "${normal}"
-    terraform -chdir="$dir" init &>/dev/null || echo "Error during terraform init in $dir"
+    terraform -chdir="$dir" init -reconfigure -upgrade &>/dev/null || echo "Error during terraform init in $dir"
     terraform -chdir="$dir" plan -no-color -out=plan.out &>/dev/null || echo "Error during terraform plan in $dir"
 
     if [ ! -f "$dir/plan.out" ]; then

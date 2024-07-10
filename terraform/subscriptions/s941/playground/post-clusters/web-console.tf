@@ -1,7 +1,7 @@
 locals {
   environment = "prod"
-  web-uris =distinct(flatten(
-    [for k, v in module.clusters.oidc_issuer_url :[
+  web-uris = distinct(flatten(
+    [for k, v in module.clusters.oidc_issuer_url : [
       "http://localhost:8000/oauth2/callback",
 
       "https://console.radix.equinor.com/oauth2/callback",
@@ -18,7 +18,7 @@ locals {
     ]]
   ))
   singlepage-uris = distinct(flatten(
-    [for k, v in module.clusters.oidc_issuer_url :[
+    [for k, v in module.clusters.oidc_issuer_url : [
       "http://localhost:8080/applications",
 
       "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/applications",
@@ -45,13 +45,13 @@ data "azuread_service_principal" "kubernetes" {
   client_id = data.azuread_application_published_app_ids.well_known.result["AzureKubernetesServiceAadServer"]
 }
 module "webconsole" {
-  source          = "../../../modules/app_registration"
-  display_name    = "Omnia Radix Web Console - Playground Clusters" #TODO
-  notes           = "Omnia Radix Web Console - Playground Clusters"
-  service_id      = "110327"
-  web_uris        = local.web-uris
-  singlepage_uris = local.singlepage-uris
-  owners          = data.azuread_group.radix.members
+  source              = "../../../modules/app_registration"
+  display_name        = "Omnia Radix Web Console - Playground" #TODO
+  notes               = "Omnia Radix Web Console - Playground"
+  service_id          = "110327"
+  web_uris            = local.web-uris
+  singlepage_uris     = local.singlepage-uris
+  owners              = data.azuread_group.radix.members
   assignment_required = true
 
   resource_access = {

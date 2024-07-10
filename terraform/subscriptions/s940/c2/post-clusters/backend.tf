@@ -21,7 +21,7 @@ terraform {
 }
 
 provider "azuread" {
-  tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+  tenant_id = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 }
 
 provider "azurerm" {
