@@ -36,7 +36,7 @@ variable "required_resource_access" {
   type = map(object({
     resource_app_id = string
     resource_access = map(object({
-      id = string
+      id   = string
       type = string
     }))
   }))
@@ -47,7 +47,7 @@ variable "required_resource_access" {
 
 variable "resource_access" {
   type = map(object({
-    app_id = string
+    app_id    = string
     scope_ids = list(string)
   }))
 
@@ -55,6 +55,6 @@ variable "resource_access" {
 }
 
 variable "assignment_required" {
-  type = bool
+  type    = bool
   default = false
 }

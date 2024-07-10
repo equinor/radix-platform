@@ -32,12 +32,12 @@ locals {
 }
 
 module "webconsole" {
-  source          = "../../../modules/app_registration"
-  display_name    = "Omnia Radix Web Console - Production Clusters" #TODO
-  service_id      = "110327"
-  web_uris        = local.web-uris
-  singlepage_uris = local.singlepage-uris
-  owners          = data.azuread_group.radix.members
-  implicit_grant  = true
+  source              = "../../../modules/app_registration"
+  display_name        = "Omnia Radix Web Console - Platform" #TODO
+  service_id          = "110327"
+  web_uris            = local.web-uris
+  singlepage_uris     = local.singlepage-uris
+  owners              = data.azuread_group.radix.members
+  implicit_grant      = false
   assignment_required = true
 }

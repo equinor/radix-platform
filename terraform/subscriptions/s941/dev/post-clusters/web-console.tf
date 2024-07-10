@@ -47,13 +47,13 @@ data "azuread_service_principal" "kubernetes" {
   client_id = data.azuread_application_published_app_ids.well_known.result["AzureKubernetesServiceAadServer"]
 }
 module "webconsole" {
-  source          = "../../../modules/app_registration"
-  display_name    = "Omnia Radix Web Console - Development"
-  notes           = "Omnia Radix Web Console - Development"
-  service_id      = "110327"
-  web_uris        = local.web-uris
-  singlepage_uris = local.singlepage-uris
-  owners          = data.azuread_group.radix.members
+  source              = "../../../modules/app_registration"
+  display_name        = "Omnia Radix Web Console - Development"
+  notes               = "Omnia Radix Web Console - Development"
+  service_id          = "110327"
+  web_uris            = local.web-uris
+  singlepage_uris     = local.singlepage-uris
+  owners              = data.azuread_group.radix.members
   assignment_required = true
 
   resource_access = {
