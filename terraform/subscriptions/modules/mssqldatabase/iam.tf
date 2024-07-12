@@ -7,11 +7,18 @@ resource "azurerm_user_assigned_identity" "server" {
   name                = var.managed_identity_server_name
   location            = var.location
   resource_group_name = var.rg_name
+  tags = {
+    IaC = "terraform"
+  }
+  
 }
 resource "azurerm_user_assigned_identity" "admin" {
   name                = var.managed_identity_admin_name
   location            = var.location
   resource_group_name = var.rg_name
+  tags = {
+    IaC = "terraform"
+  }
 }
 
 resource "azurerm_role_assignment" "security" {
