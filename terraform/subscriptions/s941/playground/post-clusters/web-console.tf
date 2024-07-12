@@ -36,7 +36,7 @@ locals {
 
 data "azuread_application_published_app_ids" "well_known" {}
 data "azuread_service_principal" "servicenow" {
-  display_name = "ar-radix-servicenow-proxy-server"
+  display_name = "radix-ar-servicenow-proxy-server"
 }
 data "azuread_service_principal" "msgraph" {
   client_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]

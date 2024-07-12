@@ -7,7 +7,7 @@ locals {
 
 module "grafana" {
   source       = "../../../modules/app_registration"
-  display_name = "ar-radix-grafana-development" #TODO
+  display_name = "radix-ar-grafana-${module.config.environment}"
   notes        = "Grafana Oauth, main app for user authentication to Grafana"
   service_id   = "110327"
   web_uris     = concat(["https://grafana.${module.config.environment}.radix.equinor.com/login/generic_oauth"], local.grafana_uris)
