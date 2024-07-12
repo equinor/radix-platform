@@ -4,7 +4,7 @@ variable "oidc_issuer_url" {
 }
 
 data "azuread_application" "this" {
-  display_name = "ar-radix-servicenow-proxy-client"
+  display_name = "radix-ar-servicenow-proxy-client"
 }
 
 locals {
@@ -19,7 +19,7 @@ locals {
   ])
 }
 
-resource "azuread_application_federated_identity_credential" "ar-radix-servicenow-proxy-client" {
+resource "azuread_application_federated_identity_credential" "radix-ar-servicenow-proxy-client" {
   for_each       = { for item in local.oidc_issuers : "${item.cluster}-${item.env}" => item }
   application_id = data.azuread_application.this.id
   display_name   = "k8s-radix-servicenow-proxy-client-${each.value.cluster}-${each.value.env}"

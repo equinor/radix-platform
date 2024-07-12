@@ -10,7 +10,7 @@ resource "azurerm_user_assigned_identity" "server" {
   tags = {
     IaC = "terraform"
   }
-  
+
 }
 resource "azurerm_user_assigned_identity" "admin" {
   name                = var.managed_identity_admin_name
