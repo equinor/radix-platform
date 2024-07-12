@@ -39,6 +39,11 @@ data "azurerm_container_registry" "this" {
   resource_group_name = "common" #TODO
 }
 
+data "azurerm_container_registry" "dev" {
+  name                = "radixdev"
+  resource_group_name = "common" #TODO
+}
+
 data "azurerm_container_registry" "cache" {
   name                = "radix${module.config.environment}cache"
   resource_group_name = module.config.common_resource_group
@@ -96,6 +101,38 @@ module "radix_id_aks_mi" {
     mi_operator = {
       role     = "Managed Identity Operator"
       scope_id = module.radix_id_akskubelet_mi.data.id
+    }
+    rg_contributor = {
+      role     = "Contributor"
+      scope_id = data.azurerm_resource_group.common.id
+    }
+  }
+}
+
+#Legacy AKSkubelet MI
+module "id_radix_akskubelet_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "id-radix-akskubelet-${module.config.environment}-${module.config.location}"
+  location            = module.config.location
+  resource_group_name = "common" #TODO
+  roleassignments = {
+    arcpull = {
+      role     = "AcrPull"
+      scope_id = data.azurerm_container_registry.dev.id #TODO - Linked to radixdev ACR
+    }
+  }
+}
+
+#Legacy AKS MI
+module "id_radix_aks_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "id-radix-aks-${module.config.environment}-${module.config.location}"
+  location            = module.config.location
+  resource_group_name = "common" #TODO
+  roleassignments = {
+    mi_operator = {
+      role     = "Managed Identity Operator"
+      scope_id = module.id_radix_akskubelet_mi.data.id
     }
     rg_contributor = {
       role     = "Contributor"
