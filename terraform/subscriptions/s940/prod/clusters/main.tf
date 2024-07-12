@@ -109,6 +109,38 @@ module "radix_id_aks_mi" {
   }
 }
 
+#Legacy AKSkubelet MI
+module "id_radix_akskubelet_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "id-radix-akskubelet-production-${module.config.location}"
+  location            = module.config.location
+  resource_group_name = "common" #TODO
+  roleassignments = {
+    arcpull = {
+      role     = "AcrPull"
+      scope_id = data.azurerm_container_registry.this.id
+    }
+  }
+}
+
+#Legacy AKS MI
+module "id_radix_aks_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "id-radix-aks-production-${module.config.location}"
+  location            = module.config.location
+  resource_group_name = "common" #TODO
+  roleassignments = {
+    mi_operator = {
+      role     = "Managed Identity Operator"
+      scope_id = module.id_radix_akskubelet_mi.data.id
+    }
+    rg_contributor = {
+      role     = "Contributor"
+      scope_id = data.azurerm_resource_group.common.id
+    }
+  }
+}
+
 module "radix_id_velero_mi" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-velero-${module.config.environment}"
