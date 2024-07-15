@@ -38,13 +38,13 @@ locals {
 
 data "azuread_application_published_app_ids" "well_known" {}
 data "azuread_service_principal" "servicenow" {
-  display_name = "radix-ar-servicenow-proxy-server"
+  display_name = "ar-radix-servicenow-proxy-server"
 }
 data "azuread_service_principal" "msgraph" {
-  client_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
+  application_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
 }
 data "azuread_service_principal" "kubernetes" {
-  client_id = data.azuread_application_published_app_ids.well_known.result["AzureKubernetesServiceAadServer"]
+  application_id = data.azuread_application_published_app_ids.well_known.result["AzureKubernetesServiceAadServer"]
 }
 module "webconsole" {
   source              = "../../../modules/app_registration"
