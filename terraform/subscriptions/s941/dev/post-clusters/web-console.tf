@@ -41,10 +41,10 @@ data "azuread_service_principal" "servicenow" {
   display_name = "ar-radix-servicenow-proxy-server"
 }
 data "azuread_service_principal" "msgraph" {
-  application_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
+  client_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
 }
 data "azuread_service_principal" "kubernetes" {
-  application_id = data.azuread_application_published_app_ids.well_known.result["AzureKubernetesServiceAadServer"]
+  client_id = data.azuread_application_published_app_ids.well_known.result["AzureKubernetesServiceAadServer"]
 }
 module "webconsole" {
   source              = "../../../modules/app_registration"
