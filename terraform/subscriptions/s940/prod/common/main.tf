@@ -83,3 +83,7 @@ output "log_storageaccount_id" {
   value = module.storageaccount["log"].data.id
 }
 
+output "acr_id" {
+  value = module.acr.azurerm_container_registry_id
+}
+
