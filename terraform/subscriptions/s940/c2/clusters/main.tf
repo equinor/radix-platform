@@ -155,3 +155,11 @@ module "nsg" {
   resource_group_name        = each.value.resource_group_name
   destination_address_prefix = each.value.destination_address_prefix
 }
+
+output "radix_id_aks_mi_id" {
+  value = module.radix_id_aks_mi.data.id
+}
+
+output "radix_id_akskubelet_mi_id" {
+  value = module.radix_id_akskubelet_mi.data.id
+}

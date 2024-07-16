@@ -85,6 +85,10 @@ module "radix_id_akskubelet_mi" {
       role     = "AcrPull"
       scope_id = data.azurerm_container_registry.this.id
     }
+    arcpulldev = {
+      role     = "AcrPull"
+      scope_id = data.azurerm_container_registry.dev.id #TODO - Removed in the future
+    }
     arccache = {
       role     = "AcrPull"
       scope_id = data.azurerm_container_registry.cache.id
@@ -122,6 +126,7 @@ module "id_radix_akskubelet_mi" {
     }
   }
 }
+
 
 #Legacy AKS MI
 module "id_radix_aks_mi" {
@@ -161,4 +166,12 @@ module "nsg" {
   location                   = each.value.location
   resource_group_name        = each.value.resource_group_name
   destination_address_prefix = each.value.destination_address_prefix
+}
+
+output "radix_id_aks_mi_id" {
+  value = module.radix_id_aks_mi.data.id
+}
+
+output "radix_id_akskubelet_mi_id" {
+  value = module.radix_id_akskubelet_mi.data.id
 }
