@@ -106,6 +106,11 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-radix-vulnerability-scanner:ref:refs/heads/release"
     },
+    radix-image-builder-release = {
+      name    = "radix-image-builder-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-image-builder:ref:refs/heads/release"
+    },
   }
 }
 
