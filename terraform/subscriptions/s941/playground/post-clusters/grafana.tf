@@ -12,7 +12,6 @@ module "grafana" {
   service_id   = "110327"
   web_uris     = concat(["https://grafana.${module.config.environment}.radix.equinor.com/login/generic_oauth"], local.grafana_uris)
   owners       = data.azuread_group.radix.members
-
 }
 
 data "azurerm_user_assigned_identity" "grafana" {
