@@ -91,8 +91,12 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-cluster-cleanup:ref:refs/heads/master"
     },
+    radix-cicd-canary-master = {
+      name    = "radix-cicd-canary-master"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-cicd-canary:ref:refs/heads/master"
+    },
   }
-
 }
 
 
