@@ -81,7 +81,7 @@ module "radix-id-acr-workflows" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-acr-workflows-${module.config.environment}"
   resource_group_name = module.config.common_resource_group
-  location = module.config.location
+  location            = module.config.location
   roleassignments = {
     contributor = {
       role     = "Contributor" # Needed to open firewall

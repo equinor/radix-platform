@@ -63,8 +63,39 @@ module "acr" {
   vnet_resource_group  = module.config.vnet_resource_group
   subnet_id            = data.azurerm_subnet.this.id
   dockercredentials_id = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
+}
+
+module "radix-id-acr-workflows" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-acr-workflows-${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
+  location            = module.config.location
+  roleassignments = {
+    contributor = {
+      role     = "Contributor" # Needed to open firewall
+      scope_id = module.acr.azurerm_container_registry_id
+    },
+    acrpush = {
+      role     = "AcrPush"
+      scope_id = module.acr.azurerm_container_registry_id
+    }
+  }
+  federated_credentials = {
+    radix-acr-cleanup-master = {
+      name    = "radix-acr-cleanup-master"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-acr-cleanup:ref:refs/heads/master"
+    },
+    radix-cluster-cleanup-master = {
+      name    = "radix-cluster-cleanup-master"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-cluster-cleanup:ref:refs/heads/master"
+    },
+  }
 
 }
+
+
 
 output "workspace_id" {
   value = module.loganalytics.workspace_id
