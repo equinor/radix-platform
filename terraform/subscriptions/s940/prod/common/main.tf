@@ -97,9 +97,19 @@ module "radix-id-acr-workflows" {
       subject = "repo:equinor/radix-acr-cleanup:ref:refs/heads/release"
     }
     radix-cicd-canary-release = {
-      name    = "radix-cicd-canaryp-release"
+      name    = "radix-cicd-canary-release"
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-cicd-canary:ref:refs/heads/release"
+    },
+    radix-radix-vulnerability-scanner-release = {
+      name    = "radix-radix-vulnerability-scanner-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-radix-vulnerability-scanner:ref:refs/heads/release"
+    },
+    radix-image-builder-release = {
+      name    = "radix-image-builder-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-image-builder:ref:refs/heads/release"
     },
   }
 }

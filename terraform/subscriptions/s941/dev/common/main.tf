@@ -96,6 +96,16 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-cicd-canary:ref:refs/heads/master"
     },
+    radix-radix-vulnerability-scanner-main = {
+      name    = "radix-radix-vulnerability-scanner-main"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-radix-vulnerability-scanner:ref:refs/heads/main"
+    },
+    radix-image-builder-master = {
+      name    = "radix-image-builder-master"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-image-builder:ref:refs/heads/master"
+    },
   }
 }
 
