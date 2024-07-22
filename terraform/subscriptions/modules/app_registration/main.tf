@@ -16,13 +16,11 @@ resource "azuread_application" "this" {
 
   web {
     redirect_uris = var.web_uris
-    dynamic "implicit_grant" {
-      for_each = var.implicit_grant ? [1] : []
-      content {
-        access_token_issuance_enabled = true
-        id_token_issuance_enabled     = true
-      }
+    implicit_grant {
+      access_token_issuance_enabled = var.implicit_grant.access_token_issuance_enabled
+      id_token_issuance_enabled     = var.implicit_grant.id_token_issuance_enabled
     }
+
   }
   single_page_application {
     redirect_uris = var.singlepage_uris
@@ -56,4 +54,8 @@ resource "azuread_service_principal" "this" {
   client_id                    = azuread_application.this.client_id
   app_role_assignment_required = var.assignment_required
   owners                       = var.owners
+}
+
+output "azuread_service_principal_id" {
+  value = resource.azuread_service_principal.this.id
 }

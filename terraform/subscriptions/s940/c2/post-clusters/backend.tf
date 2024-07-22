@@ -41,7 +41,7 @@ module "clusters" {
 }
 
 data "azuread_service_principal" "this" {
-  display_name = "radix-ar-resource-lock-operator-prod"
+  display_name = "ar-radix-resource-lock-operator-prod"
 }
 
 data "azurerm_role_definition" "this" {
