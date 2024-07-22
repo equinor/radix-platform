@@ -121,6 +121,11 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-operator:ref:refs/heads/release"
     },
+    radix-velero-plugin-release = {
+      name    = "radix-velero-plugin-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-velero-plugin:ref:refs/heads/release"
+    },
   }
 }
 

@@ -118,6 +118,11 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-operator:ref:refs/heads/master"
     },
+    radix-velero-plugin-master = {
+      name    = "radix-velero-plugin-master"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-velero-plugin:ref:refs/heads/master"
+    },
   }
 }
 
