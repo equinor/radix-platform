@@ -22,3 +22,8 @@ provider "azurerm" {
   storage_use_azuread = true # This enables RBAC instead of access keys
   features {}
 }
+
+data "azuread_group" "radix" {
+  display_name     = "Radix"
+  security_enabled = false
+}
