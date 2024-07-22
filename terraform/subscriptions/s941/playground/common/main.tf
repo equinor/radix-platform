@@ -111,6 +111,11 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-tekton:ref:refs/heads/release"
     },
+    radix-operator-release = {
+      name    = "radix-operator-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-operator:ref:refs/heads/release"
+    },
   }
 }
 
