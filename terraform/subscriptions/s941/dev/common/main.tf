@@ -117,10 +117,11 @@ module "radix-id-acr-workflows" {
 }
 
 module "radix-cr-cicd" {
-  source       = "../../../modules/app_registration"
-  display_name = "radix-cr-cicd-${module.config.environment}"
-  service_id   = "110327"
-  owners       = data.azuread_group.radix.members
+  source          = "../../../modules/app_registration"
+  display_name    = "radix-cr-cicd-${module.config.environment}"
+  service_id      = "110327"
+  owners          = data.azuread_group.radix.members
+  identifier_uris = "https://radix-cr-cicd-${module.config.environment}"
   implicit_grant = {
     access_token_issuance_enabled = false
     id_token_issuance_enabled     = true
@@ -128,10 +129,11 @@ module "radix-cr-cicd" {
 }
 
 module "radix-cr-reader" {
-  source       = "../../../modules/app_registration"
-  display_name = "radix-cr-reader-${module.config.environment}"
-  service_id   = "110327"
-  owners       = data.azuread_group.radix.members
+  source          = "../../../modules/app_registration"
+  display_name    = "radix-cr-reader-${module.config.environment}"
+  service_id      = "110327"
+  owners          = data.azuread_group.radix.members
+  identifier_uris = "https://radix-cr-reader-${module.config.environment}"
   implicit_grant = {
     access_token_issuance_enabled = false
     id_token_issuance_enabled     = true

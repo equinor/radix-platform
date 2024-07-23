@@ -73,6 +73,8 @@ module "acr" {
   vnet_resource_group  = module.config.vnet_resource_group
   subnet_id            = data.azurerm_subnet.this.id
   dockercredentials_id = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
+  radix_cr_cicd        = module.radix-cr-cicd.azuread_service_principal_id
+  radix_cr_reader      = module.radix-cr-reader.azuread_service_principal_id
 }
 
 module "radix-id-acr-workflows" {
@@ -116,6 +118,30 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-tekton:ref:refs/heads/release"
     },
+  }
+}
+
+module "radix-cr-cicd" {
+  source          = "../../../modules/app_registration"
+  display_name    = "radix-cr-cicd-prod" #TODO
+  service_id      = "110327"
+  owners          = data.azuread_group.radix.members
+  identifier_uris = "https://radix-cr-cicd-prod"
+  implicit_grant = {
+    access_token_issuance_enabled = false
+    id_token_issuance_enabled     = true
+  }
+}
+
+module "radix-cr-reader" {
+  source          = "../../../modules/app_registration"
+  display_name    = "radix-cr-reader-prod" #TODO
+  service_id      = "110327"
+  owners          = data.azuread_group.radix.members
+  identifier_uris = "https://radix-cr-reader-prod" #TODO
+  implicit_grant = {
+    access_token_issuance_enabled = false
+    id_token_issuance_enabled     = true
   }
 }
 

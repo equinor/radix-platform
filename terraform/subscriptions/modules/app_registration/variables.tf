@@ -61,16 +61,17 @@ variable "resource_access" {
   default = {}
 }
 
-# variable "implicit_grant" {
-#   type = map(object({
-#     access_token_issuance_enabled    = bool
-#     id_token_issuance_enabled = bool
-#   }))
-
-#   default = {}
-# }
-
 variable "assignment_required" {
+  type    = bool
+  default = false
+}
+
+variable "identifier_uris" {
+  type    = string
+  default = ""
+}
+
+variable "enterprise_app" {
   type    = bool
   default = false
 }
