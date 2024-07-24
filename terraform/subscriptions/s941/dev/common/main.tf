@@ -123,6 +123,16 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-velero-plugin:ref:refs/heads/master"
     },
+    radix-job-scheduler-main = {
+      name    = "radix-job-scheduler-main"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-job-scheduler:ref:refs/heads/main"
+    },
+    radix-cost-allocation-api-master = {
+      name    = "radix-cost-allocation-api-master"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-cost-allocation-api:ref:refs/heads/main"
+    },
   }
 }
 
