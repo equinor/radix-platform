@@ -27,11 +27,6 @@ variable "owners" {
   default = []
 }
 
-# variable "implicit_grant" {
-#   type    = bool
-#   default = false
-# }
-
 variable "implicit_grant" {
   type = map(bool)
   default = {
@@ -61,16 +56,12 @@ variable "resource_access" {
   default = {}
 }
 
-# variable "implicit_grant" {
-#   type = map(object({
-#     access_token_issuance_enabled    = bool
-#     id_token_issuance_enabled = bool
-#   }))
-
-#   default = {}
-# }
-
 variable "assignment_required" {
+  type    = bool
+  default = false
+}
+
+variable "expose_API" {
   type    = bool
   default = false
 }

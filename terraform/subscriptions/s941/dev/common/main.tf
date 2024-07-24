@@ -131,6 +131,7 @@ module "radix-cr-cicd" {
   display_name = "radix-cr-cicd-${module.config.environment}"
   service_id   = "110327"
   owners       = data.azuread_group.radix.members
+  expose_API   = true
   implicit_grant = {
     access_token_issuance_enabled = false
     id_token_issuance_enabled     = true
@@ -142,6 +143,7 @@ module "radix-cr-reader" {
   display_name = "radix-cr-reader-${module.config.environment}"
   service_id   = "110327"
   owners       = data.azuread_group.radix.members
+  expose_API   = true
   implicit_grant = {
     access_token_issuance_enabled = false
     id_token_issuance_enabled     = true
