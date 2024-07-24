@@ -130,6 +130,7 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-velero-plugin:ref:refs/heads/release"
     },
+
   }
 }
 
@@ -154,6 +155,7 @@ module "radix-cr-reader" {
   implicit_grant = {
     access_token_issuance_enabled = false
     id_token_issuance_enabled     = true
+
   }
 }
 
