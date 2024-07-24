@@ -58,7 +58,7 @@ if [[ -z "$AUTH_PROXY_REPLY_PATH" ]]; then
 fi
 
 if [[ -z "$CLUSTER" ]]; then
-    echo "ERROR: Please provide SOURCE_CLUSTER" >&2
+    echo "ERROR: Please provide CLUSTER" >&2
     exit 1
 fi
 
