@@ -4,16 +4,17 @@
 # Configures the auth proxy for the cluster given the context.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh)
 #
 # Example 3: Use the .custom-domain ingress suffix when updating secrets when cluster is the active cluster
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" AUTH_PROXY_REPLY_PATH="/oauth2/callback" AUTH_INGRESS_SUFFIX=".custom-domain" ./update_auth_proxy_secret_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" AUTH_PROXY_REPLY_PATH="/oauth2/callback" AUTH_INGRESS_SUFFIX=".custom-domain" ./update_auth_proxy_secret_for_console.sh
 #
 
 # INPUTS:
+#   CLUSTER          (Mandatory)
 #   RADIX_ZONE_ENV          (Mandatory)
 #   AUTH_PROXY_COMPONENT    (Mandatory)
 #   WEB_COMPONENT           (Mandatory)
@@ -56,6 +57,11 @@ if [[ -z "$AUTH_PROXY_REPLY_PATH" ]]; then
     exit 1
 fi
 
+if [[ -z "$CLUSTER" ]]; then
+    echo "ERROR: Please provide SOURCE_CLUSTER" >&2
+    exit 1
+fi
+
 # Source util scripts
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -67,6 +73,7 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+kubectl config use-context "$CLUSTER"
 printf "Done.\n"
 
 #######################################################################################
@@ -81,7 +88,7 @@ function updateAuthProxySecret() {
     az keyvault secret download \
         -f radix-web-console-client-secret.yaml \
         -n "$VAULT_CLIENT_SECRET_NAME" \
-        --vault-name "$AZ_RESOURCE_KEYVAULT"
+        --vault-name "$AZ_COMMON_KEYVAULT"
 
     WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
     OAUTH2_PROXY_CLIENT_SECRET=$(cat radix-web-console-client-secret.yaml)
