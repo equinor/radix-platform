@@ -27,11 +27,6 @@ variable "owners" {
   default = []
 }
 
-# variable "implicit_grant" {
-#   type    = bool
-#   default = false
-# }
-
 variable "implicit_grant" {
   type = map(bool)
   default = {
@@ -66,12 +61,7 @@ variable "assignment_required" {
   default = false
 }
 
-variable "identifier_uris" {
-  type    = string
-  default = ""
-}
-
-variable "enterprise_app" {
+variable "expose_API" {
   type    = bool
   default = false
 }

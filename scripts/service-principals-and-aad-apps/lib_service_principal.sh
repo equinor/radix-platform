@@ -71,7 +71,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     fi
 
     # Upload to keyvault
-    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --file "${tmp_file_path}" ${expires} 2>&1 >/dev/null
+    az keyvault secret set --vault-name "${AZ_COMMON_KEYVAULT}" --name "${name}" --file "${tmp_file_path}" ${expires} 2>&1 >/dev/null
 
     # Clean up
     rm -rf "$tmp_file_path"
@@ -561,7 +561,7 @@ function delete_service_principal_and_stored_credentials() {
     az ad sp delete --id "${id}" --output none
 
     printf "deleting credentials in keyvault..."
-    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --output none
+    az keyvault secret delete --vault-name "${AZ_COMMON_KEYVAULT}" --name "${name}" --output none
     printf "Done.\n"
 }
 
@@ -572,13 +572,13 @@ function delete_ad_app_and_stored_credentials() {
     printf "Working on ad app \"${name}\": "
 
     # Get id from key vault as trying to use the name is just hopeless for client apps when using cli
-    app_id="$(az keyvault secret show --vault-name ${AZ_RESOURCE_KEYVAULT} --name "${name}" | jq -r .value | jq -r .id)"
+    app_id="$(az keyvault secret show --vault-name ${AZ_COMMON_KEYVAULT} --name "${name}" | jq -r .value | jq -r .id)"
 
     printf "deleting app in az ad..."
     az ad app delete --id "${app_id}" --output none
 
     printf "deleting credentials in keyvault..."
-    az keyvault secret delete --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --output none
+    az keyvault secret delete --vault-name "${AZ_COMMON_KEYVAULT}" --name "${name}" --output none
     printf "Done.\n"
 }
 

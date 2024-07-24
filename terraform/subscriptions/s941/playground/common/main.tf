@@ -113,15 +113,25 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-tekton:ref:refs/heads/release"
     },
+    radix-operator-release = {
+      name    = "radix-operator-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-operator:ref:refs/heads/release"
+    },
+    radix-velero-plugin-release = {
+      name    = "radix-velero-plugin-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-velero-plugin:ref:refs/heads/release"
+    },
   }
 }
 
 module "radix-cr-cicd" {
-  source          = "../../../modules/app_registration"
-  display_name    = "radix-cr-cicd-${module.config.environment}"
-  service_id      = "110327"
-  owners          = data.azuread_group.radix.members
-  identifier_uris = "https://radix-cr-cicd-${module.config.environment}"
+  source       = "../../../modules/app_registration"
+  display_name = "radix-cr-cicd-${module.config.environment}"
+  service_id   = "110327"
+  owners       = data.azuread_group.radix.members
+  expose_API   = true
   implicit_grant = {
     access_token_issuance_enabled = false
     id_token_issuance_enabled     = true
@@ -129,11 +139,11 @@ module "radix-cr-cicd" {
 }
 
 module "radix-cr-reader" {
-  source          = "../../../modules/app_registration"
-  display_name    = "radix-cr-reader-${module.config.environment}"
-  service_id      = "110327"
-  owners          = data.azuread_group.radix.members
-  identifier_uris = "https://radix-cr-reader-${module.config.environment}"
+  source       = "../../../modules/app_registration"
+  display_name = "radix-cr-reader-${module.config.environment}"
+  service_id   = "110327"
+  owners       = data.azuread_group.radix.members
+  expose_API   = true
   implicit_grant = {
     access_token_issuance_enabled = false
     id_token_issuance_enabled     = true

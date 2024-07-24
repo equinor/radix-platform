@@ -109,7 +109,7 @@ verify_cluster_access
 printf "Installing registry sp secret in k8s cluster...\n"
 
 az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --vault-name "$AZ_COMMON_KEYVAULT" \
     --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
     --file sp_credentials.json
 
@@ -141,7 +141,7 @@ printf "\nDone\n"
 printf "Installing app registry secret in k8s cluster...\n"
 
 az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --vault-name "$AZ_COMMON_KEYVAULT" \
     --name "${AZ_SYSTEM_USER_APP_REGISTRY_SECRET_KEY}" \
     --file acr_password.json
 

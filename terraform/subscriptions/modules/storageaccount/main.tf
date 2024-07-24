@@ -62,10 +62,6 @@ resource "azurerm_monitor_diagnostic_setting" "blob" {
   target_resource_id         = "${azurerm_storage_account.storageaccount.id}/blobServices/default/"
   log_analytics_workspace_id = var.log_analytics_id
 
-  enabled_log {
-    category_group = "audit"
-  }
-
   metric {
     category = "Capacity"
     enabled  = false

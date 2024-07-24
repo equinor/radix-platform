@@ -268,7 +268,7 @@ printf "...Done\n"
 # Create secret for Flux v2 to use to authenticate with ACR.
 printf "\nCreating k8s secret \"radix-docker\"..."
 az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --vault-name "$AZ_COMMON_KEYVAULT" \
     --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
     --file sp_credentials.json \
     2>&1 >/dev/null

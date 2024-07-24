@@ -41,13 +41,19 @@ resource "azuread_application" "this" {
   }
 }
 
-resource "azuread_application_api_access" "app" {
-  for_each = var.resource_access
+resource "azuread_application_identifier_uri" "this" {
+  for_each       = var.expose_API ? { "${var.display_name}" : true } : {}
+  application_id = azuread_application.this.id
+  identifier_uri = "api://${azuread_application.this.client_id}"
+  depends_on     = [azuread_service_principal.this]
+}
 
+
+resource "azuread_application_api_access" "app" {
+  for_each       = var.resource_access
   api_client_id  = each.value.app_id
   application_id = azuread_application.this.id
-
-  scope_ids = each.value.scope_ids
+  scope_ids      = each.value.scope_ids
 }
 
 resource "azuread_service_principal" "this" {
