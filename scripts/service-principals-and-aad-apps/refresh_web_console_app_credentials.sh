@@ -86,7 +86,7 @@ echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                               : $RADIX_ZONE"
-echo -e "   -  AZ_RESOURCE_KEYVAULT                     : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  AZ_RESOURCE_KEYVAULT                     : $AZ_COMMON_KEYVAULT"
 echo -e "   -  VAULT_CLIENT_SECRET_NAME                 : $VAULT_CLIENT_SECRET_NAME"
 echo -e ""
 echo -e "   > WHAT:"
@@ -123,10 +123,10 @@ password="$(az ad app credential reset --id "${OAUTH2_PROXY_CLIENT_ID}" --displa
 secret="$(az ad app credential list --id "${OAUTH2_PROXY_CLIENT_ID}" --query "sort_by([?displayName=='web console'], &endDateTime)[-1:].{endDateTime:endDateTime,keyId:keyId}")"
 expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')" || exit
 
-printf "Update credentials for ${WEB_CONSOLE_DISPLAY_NAME} in keyvault ${AZ_RESOURCE_KEYVAULT}..."
+printf "Update credentials for ${WEB_CONSOLE_DISPLAY_NAME} in keyvault ${AZ_COMMON_KEYVAULT}..."
 
 # Upload to keyvault
-az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${VAULT_CLIENT_SECRET_NAME}" --value "${password}" --expires "${expiration_date}" --output none || exit
+az keyvault secret set --vault-name "${AZ_COMMON_KEYVAULT}" --name "${VAULT_CLIENT_SECRET_NAME}" --value "${password}" --expires "${expiration_date}" --output none || exit
 
 printf "Done.\n"
 
