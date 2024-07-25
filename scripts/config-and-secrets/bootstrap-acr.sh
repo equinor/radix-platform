@@ -114,15 +114,15 @@ az keyvault secret download \
     --file sp_credentials.json
 
 # create secret for authenticating to ACR via az cli
-kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run=client -o yaml | kubectl apply -f -
+# kubectl create secret generic radix-sp-acr-azure --from-file=sp_credentials.json --dry-run=client -o yaml | kubectl apply -f -
 
 # create secret for authenticating to ACR via buildah client (same value as other ACR secret)
-username="$(jq .id sp_credentials.json --raw-output)"
-password="$(jq .password sp_credentials.json --raw-output)"
-kubectl create secret generic radix-sp-buildah-azure \
-    --from-literal=username=$username \
-    --from-literal=password=$password \
-    --dry-run=client -o yaml | kubectl apply -f -
+# username="$(jq .id sp_credentials.json --raw-output)"
+# password="$(jq .password sp_credentials.json --raw-output)"
+# kubectl create secret generic radix-sp-buildah-azure \
+#     --from-literal=username=$username \
+#     --from-literal=password=$password \
+#     --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl create secret docker-registry radix-docker \
     --docker-server="$AZ_RESOURCE_CONTAINER_REGISTRY.azurecr.io" \
