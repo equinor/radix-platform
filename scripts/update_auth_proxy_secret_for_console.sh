@@ -4,17 +4,17 @@
 # Configures the auth proxy for the cluster given the context.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-prod" AUTH_PROXY_REPLY_PATH="/oauth2/callback" ./update_auth_proxy_secret_for_console.sh)
 #
 # Example 3: Use the .custom-domain ingress suffix when updating secrets when cluster is the active cluster
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" AUTH_PROXY_REPLY_PATH="/oauth2/callback" AUTH_INGRESS_SUFFIX=".custom-domain" ./update_auth_proxy_secret_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-01" AUTH_PROXY_COMPONENT="auth" WEB_COMPONENT="web" WEB_CONSOLE_NAMESPACE="radix-web-console-qa" AUTH_PROXY_REPLY_PATH="/oauth2/callback" AUTH_INGRESS_SUFFIX=".custom-domain" ./update_auth_proxy_secret_for_console.sh
 #
 
 # INPUTS:
-#   CLUSTER          (Mandatory)
+#   DEST_CLUSTER          (Mandatory)
 #   RADIX_ZONE_ENV          (Mandatory)
 #   AUTH_PROXY_COMPONENT    (Mandatory)
 #   WEB_COMPONENT           (Mandatory)
@@ -57,8 +57,8 @@ if [[ -z "$AUTH_PROXY_REPLY_PATH" ]]; then
     exit 1
 fi
 
-if [[ -z "$CLUSTER" ]]; then
-    echo "ERROR: Please provide CLUSTER" >&2
+if [[ -z "$DEST_CLUSTER" ]]; then
+    echo "ERROR: Please provide DEST_CLUSTER" >&2
     exit 1
 fi
 
@@ -87,12 +87,12 @@ function updateAuthProxySecret() {
     az keyvault secret download \
         -f radix-web-console-client-secret.yaml \
         -n "$VAULT_CLIENT_SECRET_NAME" \
-        --vault-name "$AZ_COMMON_KEYVAULT"
+        --vault-name "$AZ_RESOURCE_KEYVAULT"
 
-    WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl --context "$CLUSTER" get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
+    WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl --context "$DEST_CLUSTER" get secret -l radix-component="$AUTH_PROXY_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
     OAUTH2_PROXY_CLIENT_SECRET=$(cat radix-web-console-client-secret.yaml)
     OAUTH2_PROXY_COOKIE_SECRET=$(python3 -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(16)).decode())')
-    HOST_NAME=$(kubectl --context "$CLUSTER" get ing -n "$WEB_CONSOLE_NAMESPACE" "$AUTH_PROXY_COMPONENT$AUTH_INGRESS_SUFFIX" -o json | jq --raw-output .spec.rules[0].host)
+    HOST_NAME=$(kubectl --context "$DEST_CLUSTER" get ing -n "$WEB_CONSOLE_NAMESPACE" "$AUTH_PROXY_COMPONENT$AUTH_INGRESS_SUFFIX" -o json | jq --raw-output .spec.rules[0].host)
     OAUTH2_PROXY_REDIRECT_URL="https://${HOST_NAME}${AUTH_PROXY_REPLY_PATH}"
     AUTH_SECRET_ENV_FILE="auth_secret.env"
 
@@ -102,8 +102,8 @@ function updateAuthProxySecret() {
     echo "OAUTH2_PROXY_REDIRECT_URL=$OAUTH2_PROXY_REDIRECT_URL" >>"$AUTH_SECRET_ENV_FILE"
     echo "OAUTH2_PROXY_SCOPE=$OAUTH2_PROXY_SCOPE" >>"$AUTH_SECRET_ENV_FILE"
 
-    kubectl --context "$CLUSTER" patch secret "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
-        --patch "$(kubectl --context "$CLUSTER" create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$AUTH_SECRET_ENV_FILE" --dry-run=client -o yaml)"
+    kubectl --context "$DEST_CLUSTER" patch secret "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
+        --patch "$(kubectl --context "$DEST_CLUSTER" create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$AUTH_SECRET_ENV_FILE" --dry-run=client -o yaml)"
 
     rm radix-web-console-client-secret.yaml
     rm "$AUTH_SECRET_ENV_FILE"
@@ -112,7 +112,7 @@ function updateAuthProxySecret() {
 
     printf "Restarting auth deployment...\n"
     echo "kubectl rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $AUTH_PROXY_COMPONENT"
-    kubectl --context "$CLUSTER" rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $AUTH_PROXY_COMPONENT
+    kubectl --context "$DEST_CLUSTER" rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $AUTH_PROXY_COMPONENT
     printf " Done."
     echo ""
     echo "NOTE: Console is set up with redirect url $OAUTH2_PROXY_REDIRECT_URL. If this cluster will be"
@@ -121,20 +121,20 @@ function updateAuthProxySecret() {
 }
 
 function updateWebSecret() {
-    WEB_CONSOLE_SECRET_NAME=$(kubectl --context "$CLUSTER" get secret -l radix-component="$WEB_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
+    WEB_CONSOLE_SECRET_NAME=$(kubectl --context "$DEST_CLUSTER" get secret -l radix-component="$WEB_COMPONENT" -n "$WEB_CONSOLE_NAMESPACE" -o=jsonpath=‘{.items[0].metadata.name}’ | sed 's/‘/ /g;s/’/ /g' | tr -d '[:space:]')
     WEB_SECRET_ENV_FILE="web_secret.env"
 
     echo "OAUTH2_CLIENT_ID=$OAUTH2_PROXY_CLIENT_ID" >>"$WEB_SECRET_ENV_FILE"
 
-    kubectl --context "$CLUSTER" patch secret "$WEB_CONSOLE_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
-        --patch "$(kubectl --context "$CLUSTER" create secret generic "$WEB_CONSOLE_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$WEB_SECRET_ENV_FILE" --dry-run=client -o yaml)"
+    kubectl --context "$DEST_CLUSTER" patch secret "$WEB_CONSOLE_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
+        --patch "$(kubectl --context "$DEST_CLUSTER" create secret generic "$WEB_CONSOLE_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$WEB_SECRET_ENV_FILE" --dry-run=client -o yaml)"
 
     rm "$WEB_SECRET_ENV_FILE"
 
     echo "Web secret updated"
 
     printf "Restarting Web deployment...\n"
-    kubectl --context "$CLUSTER" rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $WEB_COMPONENT
+    kubectl --context "$DEST_CLUSTER" rollout restart deployment -n $WEB_CONSOLE_NAMESPACE $WEB_COMPONENT
     printf " Done."
     echo ""
 }
