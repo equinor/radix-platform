@@ -110,7 +110,7 @@ printf "Installing registry sp secret in k8s cluster...\n"
 
 az keyvault secret download \
     --vault-name "$AZ_COMMON_KEYVAULT" \
-    --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
+    --name "radix-cr-cicd" \
     --file sp_credentials.json
 
 # create secret for authenticating to ACR via az cli
