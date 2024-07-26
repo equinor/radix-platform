@@ -269,7 +269,7 @@ printf "...Done\n"
 printf "\nCreating k8s secret \"radix-docker\"..."
 az keyvault secret download \
     --vault-name "$AZ_COMMON_KEYVAULT" \
-    --name "${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}" \
+    --name "radix-cr-cicd" \
     --file sp_credentials.json \
     2>&1 >/dev/null
 
