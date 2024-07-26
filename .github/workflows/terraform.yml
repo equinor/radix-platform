@@ -92,10 +92,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Az CLI login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -116,7 +116,7 @@ jobs:
         run: sleep 30s
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform_version }}
           terraform_wrapper: false
@@ -217,16 +217,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: actions/github-script@v7
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            #### Directory: ${{ inputs.working_directory }}
-            #### Terraform Format and Style 🖌 ${{ needs.Terraform.outputs.tf-fmt }}
-            #### Terraform Initialization ⚙️ ${{ needs.Terraform.outputs.tf-init }}
-            #### Terraform Validation 🤖 ${{ needs.Terraform.outputs.tf-validate }}
-            #### Terraform Plan 📖 ${{ needs.Terraform.outputs.tf-plan }}
-
-            <details><summary>Show Plan</summary>
-            ${{ needs.Terraform.outputs.plan }}
-            </details>
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              issue_number: github.event.pull_request.number,
+              repo: context.repo.repo,
+              body:  |
+                #### Directory: ${{ inputs.working_directory }}
+                #### Terraform Format and Style 🖌 ${{ needs.Terraform.outputs.tf-fmt }}
+                #### Terraform Initialization ⚙️ ${{ needs.Terraform.outputs.tf-init }}
+                #### Terraform Validation 🤖 ${{ needs.Terraform.outputs.tf-validate }}
+                #### Terraform Plan 📖 ${{ needs.Terraform.outputs.tf-plan }}
+    
+                <details><summary>Show Plan</summary>
+                ${{ needs.Terraform.outputs.plan }}
+                </details>
+            })
