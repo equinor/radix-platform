@@ -38,7 +38,7 @@ jobs:
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     # Set dynamic variables for the job
     - name: Set job variables
@@ -145,7 +145,7 @@ jobs:
     steps:
 
     # Checks-out your repository under $GITHUB_WORKSPACE
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     # Set dynamic variables for the job
     - name: Set job variables

@@ -14,9 +14,9 @@ jobs:
       KV_GROUP: common
       ENVIROMENT: dev
     steps:
-      - uses: actions/checkout@v3 #Clone Repo
+      - uses: actions/checkout@v4 #Clone Repo
       - name: 'Az CLI login'
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
