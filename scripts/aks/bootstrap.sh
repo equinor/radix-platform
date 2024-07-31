@@ -768,13 +768,13 @@ if [ "$RADIX_ZONE" = "prod" ]; then
     --node-osdisk-size "$MONITOR_DISK_SIZE"
     --node-vm-size "$MONITOR_VM_SIZE"
     --vnet-subnet-id "$SUBNET_ID"
-    --node-taints "nodepooltasks=monitor:NoSchedule"
+    --node-taints "nodetasks=monitor:NoSchedule"
     --labels "nodepooltasks=monitor"
     )
     echo "Create monitor pool"
     az aks nodepool add "${AKS_MONITOR_OPTIONS[@]}"
 fi
-
+nodetasks=monitor:NoSchedule
 
 
 #######################################################################################
