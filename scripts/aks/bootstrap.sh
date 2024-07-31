@@ -749,6 +749,31 @@ AKS_ARM64_PIPELINE_OPTIONS=(
 echo "Create Arm64 pipelinepool"
 az aks nodepool add "${AKS_ARM64_PIPELINE_OPTIONS[@]}"
 
+#######################################################################################
+### Add dedicated Monitor pool in prod
+###
+
+if [ "$RADIX_ZONE" = "prod" ]; then
+    AKS_MONITOR_OPTIONS=(
+    --cluster-name "$CLUSTER_NAME"
+    --nodepool-name "monitorpool"
+    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
+    --enable-cluster-autoscaler
+    --kubernetes-version "$KUBERNETES_VERSION"
+    --max-count "$MONITOR_MAX_COUNT"
+    --min-count "$MONITOR_MIN_COUNT"
+    --max-pods "$POD_PER_NODE"
+    --mode User
+    --node-count "$MONITOR_BOOTSTRAP_COUNT"
+    --node-osdisk-size "$MONITOR_DISK_SIZE"
+    --node-vm-size "$MONITOR_VM_SIZE"
+    --vnet-subnet-id "$SUBNET_ID"
+    --node-taints "nodetasks=monitor:NoSchedule"
+    --labels "nodepooltasks=monitor"
+    )
+    echo "Create monitor pool"
+    az aks nodepool add "${AKS_MONITOR_OPTIONS[@]}"
+fi
 
 #######################################################################################
 ### Add GPU node pools
