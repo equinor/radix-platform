@@ -774,8 +774,6 @@ if [ "$RADIX_ZONE" = "prod" ]; then
     echo "Create monitor pool"
     az aks nodepool add "${AKS_MONITOR_OPTIONS[@]}"
 fi
-nodetasks=monitor:NoSchedule
-
 
 #######################################################################################
 ### Add GPU node pools
