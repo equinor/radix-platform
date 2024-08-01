@@ -39,11 +39,6 @@ data "azurerm_container_registry" "this" {
   resource_group_name = "common" #TODO
 }
 
-data "azurerm_container_registry" "dev" {
-  name                = "radixdev"
-  resource_group_name = "common" #TODO
-}
-
 data "azurerm_container_registry" "cache" {
   name                = "radix${module.config.environment}cache"
   resource_group_name = module.config.common_resource_group
@@ -85,10 +80,6 @@ module "radix_id_akskubelet_mi" {
       role     = "AcrPull"
       scope_id = data.azurerm_container_registry.this.id
     }
-    arcpulldev = {
-      role     = "AcrPull"
-      scope_id = data.azurerm_container_registry.dev.id #TODO - Removed in the future
-    }
     arccache = {
       role     = "AcrPull"
       scope_id = data.azurerm_container_registry.cache.id
@@ -122,7 +113,7 @@ module "id_radix_akskubelet_mi" {
   roleassignments = {
     arcpull = {
       role     = "AcrPull"
-      scope_id = data.azurerm_container_registry.dev.id #TODO - Linked to radixdev ACR
+      scope_id = data.azurerm_container_registry.this.id
     }
   }
 }

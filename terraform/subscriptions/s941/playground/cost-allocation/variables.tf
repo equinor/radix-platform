@@ -5,5 +5,5 @@ variable "admin-adgroup" {
 
 variable "acr_name" {
   type    = string
-  default = "radixdev"
+  default = "radixplayground"
 }
