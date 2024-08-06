@@ -194,55 +194,10 @@ fi
 
 
 #######################################################################################
-### App registration permissions
-###
-
-function update_app_registrations(){
-    update_app_registration_permissions="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../update_app_registration_permissions.sh"
-    if [[ ! -f "$update_app_registration_permissions" ]]; then
-        echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$update_app_registration_permissions is invalid, the file does not exist." >&2
-        exit 1
-    fi
-}
-
-#######################################################################################
-### Resource groups
-###
-
-# function create_resource_groups() {
-#     printf "Creating all resource groups..."
-#     az group create \
-#         --location "${AZ_RADIX_ZONE_LOCATION}" \
-#         --name "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-#         --subscription "${AZ_SUBSCRIPTION_ID}" \
-#         --output none
-    
-#     az group create \
-#         --location "${AZ_RADIX_ZONE_LOCATION}" \
-#         --name "${AZ_RESOURCE_GROUP_COMMON}" \
-#         --subscription "${AZ_SUBSCRIPTION_ID}" \
-#         --output none
-    
-#     az group create \
-#         --location "${AZ_RADIX_ZONE_LOCATION}" \
-#         --name "${AZ_RESOURCE_GROUP_MONITORING}" \
-#         --subscription "${AZ_SUBSCRIPTION_ID}" \
-#         --output none
-# }
-
-#######################################################################################
 ### Common resources
 ###
 
 function create_common_resources() {
-    printf "Creating key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
-    az keyvault create \
-        --name "${AZ_RESOURCE_KEYVAULT}" \
-        --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-        --subscription "${AZ_SUBSCRIPTION_ID}" \
-        --enable-purge-protection \
-        --output none
-    printf "...Done\n"
 
     printf "Set access policy for group \"Radix Platform Operators\" in key vault: %s...\n" "${AZ_RESOURCE_KEYVAULT}"
     az keyvault set-policy \
@@ -541,8 +496,6 @@ function update_app_registration() {
 ### MAIN
 ###
 
-update_app_registrations
-# create_resource_groups
 create_common_resources
 create_outbound_public_ip_prefix
 create_inbound_public_ip_prefix
