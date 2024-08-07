@@ -120,6 +120,11 @@ variable "cacheregistry" {
       library   = "jetstack/cert-manager-webhook"
       repo      = "quay.io"
     }
+    cert-manager-acmesolver = {
+      namespace = "jetstack/cert-manager-acmesolver"
+      library   = "jetstack/cert-manager-acmesolver"
+      repo      = "quay.io"
+    }
     kubernetes-replicator = {
       namespace = "mittwald/kubernetes-replicator"
       library   = "mittwald/kubernetes-replicator"
