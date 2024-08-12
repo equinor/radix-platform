@@ -3,15 +3,6 @@ data "azuread_group" "admin" {
   security_enabled = true
 }
 
-resource "azurerm_user_assigned_identity" "server" {
-  name                = var.managed_identity_server_name
-  location            = var.location
-  resource_group_name = var.rg_name
-  tags = {
-    IaC = "terraform"
-  }
-
-}
 resource "azurerm_user_assigned_identity" "admin" {
   name                = var.managed_identity_admin_name
   location            = var.location
@@ -28,9 +19,11 @@ resource "azurerm_role_assignment" "security" {
 }
 
 resource "azurerm_role_assignment" "auditlog" {
-  principal_id         = azurerm_user_assigned_identity.server.principal_id
+  principal_id         = azurerm_mssql_server.sqlserver.identity[0].principal_id
   scope                = data.azurerm_storage_account.this.id
   role_definition_name = "Storage Blob Data Contributor"
+
+  depends_on = [azurerm_mssql_server.sqlserver]
 }
 
 resource "azuread_group_member" "admin" {

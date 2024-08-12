@@ -15,7 +15,6 @@ module "mssql-database" {
   database_name                 = "sqldb-radix-cost-allocation"
   server_name                   = "sql-radix-cost-allocation-${module.config.environment}"
   managed_identity_admin_name   = "radix-id-cost-allocation-admin-${module.config.environment}"
-  managed_identity_server_name  = "radix-id-cost-allocation-server-${module.config.environment}"
   audit_storageaccount_name     = module.config.log_storageaccount_name
   admin_adgroup                 = var.admin-adgroup
   azuread_authentication_only   = true

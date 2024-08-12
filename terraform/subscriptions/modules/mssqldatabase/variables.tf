@@ -17,9 +17,6 @@ variable "admin_adgroup" {
 variable "managed_identity_admin_name" {
   type = string
 }
-variable "managed_identity_server_name" {
-  type = string
-}
 variable "location" {
   default = "northeurope"
   type    = string
