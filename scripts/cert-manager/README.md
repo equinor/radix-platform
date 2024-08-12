@@ -47,45 +47,15 @@ Until this process is complete, and `{appName}-tls-secret` is populated, then th
 
 
 ## Bootstrap
-
-Run script [`./bootstrap.sh`](./bootstrap.sh), see script header for more info.  
-
-Bootstrap will
-1. Read dns credentials from keyvault
-1. Install cert-manager using the official helm chart
-1. Transform the templated custom resources and apply them to the cluster
-1. Annotate the tls secrets for `Kubed` syncronization
-
-### Examples
-
-```sh
-# Example: Bootstrap a debug cluster
-
-# Step 1: bootstrap aks
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster ../aks/bootstrap.sh
-# Step 2: bootstrap helm
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster ../helm/bootstrap.sh
-# Step 3: bootstrap cert-manager - note the use of STAGING to avoid messing with the LetsEncrypt weekly quota for real certs
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-little-cluster STAGING=true ./bootstrap.sh
-# Done!
-```
+Cert-Manager core is installed by Flux. (Only letsencrypt issuer is installed by its own bootstrap.sh script)
 
 ## Credentials
 
 `cert-manager` use dedicated service principal to work with the DNS.  
-The name of this service principal is declared in var `AZ_SYSTEM_USER_DNS` in `radix_zone_*.env` config files
+The name of this service principal is declared in Flux.
 
-For updating/refreshing the credentials then 
-1. Decide if you need to refresh the service principal credentials in AAD  
-   Multiple components may use this service principal and refreshing credentials in AAD will impact all of them 
-   - If yes to refresh credentials in AAD: 
-     Refresh service principal credentials in AAD and update keyvault by following the instructions provided in doc ["service-principals-and-aad-apps/README.md"](../service-principals-and-aad-apps/README.md#refresh-component-service-principals-credentials)      
-1. Update the credentials for `cert-manager` in the cluster by
-   - (Normal usage) Executing the `..\install_base_components.sh` script as described in paragraph ["Deployment"](#deployment)
-   - (Alternative for debugging) Run the [cert-manager bootstrap](./bootstrap) script
-1. Restart the `cert-manager` pods so that the new replicas will read the updated k8s secrets
-1. Done!
-
+### Digicert credentials
+Digicert has its own update_account.sh script that will rotate secrets. see the [README](./digicert/README.md) for more details
 
 ## Troubleshooting
 
