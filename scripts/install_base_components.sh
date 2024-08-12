@@ -253,24 +253,6 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/ingress-nginx/boot
 wait
 
 #######################################################################################
-### Install cert-manager
-###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/bootstrap.sh" "${normal}"
-(USER_PROMPT="false" STAGING="${STAGING}" ./cert-manager/bootstrap.sh)
-wait
-
-#######################################################################################
-### Install Digicert issuer values for Flux
-###
-# Replaced by external secret operator
-# echo ""
-# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/cluster-issuers/digicert/bootstrap.sh" "${normal}"
-# (USER_PROMPT="$USER_PROMPT" ./cert-manager/cluster-issuers/digicert/bootstrap.sh)
-# wait
-
-#######################################################################################
 ### Install Lets Encrypt issuer values for Flux
 ###
 
