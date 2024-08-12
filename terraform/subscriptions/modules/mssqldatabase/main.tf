@@ -17,16 +17,12 @@ resource "azurerm_mssql_server" "sqlserver" {
   }
 
   identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.server.id]
+    type         = "SystemAssigned"
   }
-  primary_user_assigned_identity_id = azurerm_user_assigned_identity.server.id
 
   lifecycle {
     prevent_destroy = true
   }
-
-  depends_on = [azurerm_role_assignment.auditlog]
 }
 
 resource "azurerm_mssql_database" "mssql_database" {
