@@ -79,7 +79,8 @@ output "private_dns_zones_names" {
     "privatelink.table.core.windows.net",
     "privatelink.table.cosmos.azure.com",
     "privatelink.vaultcore.azure.net",
-    "privatelink.web.core.windows.net"
+    "privatelink.web.core.windows.net",
+    "privatelink.redis.cache.windows.net"
   ]
 }
 
