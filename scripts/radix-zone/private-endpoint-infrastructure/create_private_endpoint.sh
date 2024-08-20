@@ -124,6 +124,7 @@ declare -A DNS_ZONE_MAP=(
     ["configurationStores"]="privatelink.azconfig.io"
     ["Sql"]="privatelink.documents.azure.com"
     ["azuremonitor"]="privatelink.monitor.azure.com"
+    ["redisCache"]="privatelink.redis.cache.windows.net"
 )
 
 dns_zone=${DNS_ZONE_MAP[$TARGET_SUBRESOURCE]} 2>/dev/null # can't figure out how to properly suppress this error message
@@ -137,7 +138,7 @@ if [[ -z ${dns_zone} ]]; then
         at https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns#azure-services-dns-zone-configuration, you can add
         this mapping to the logic in this script. If you proceed without a mapping, this script will not create a DNS record in our
         Private DNS Zones to make the current FQDN of the target resource resolve to the Private Endpoint's IP address from within Radix.
-        E.g., if you create a PE to a blob containerin a storage account with FQDN radixblob.core.windows.net _without_ creating the
+        E.g., if you create a PE to a blob container in a storage account with FQDN radixblob.core.windows.net _without_ creating the
         appropriate record in the private DNS zone .privatelink.blob.core.windows.net, the result will be that radixblob.core.windows.net
         is resolvable outside of the Radix cluster, but _not_ inside the Radix cluster.
 
