@@ -25,7 +25,7 @@
 ###
 
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env AAD_APP_NAME=demo-rbac-dev ./refresh_aad_app_credentials.sh
-# This makes the JSON look like 
+# This makes the JSON look like
 # {
 #   "name": "",
 #   "id": "",
