@@ -129,18 +129,6 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 #######################################################################################
-### Resolve dependencies on other scripts
-###
-
-WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-CUSTOM_ERROR_PAGE_PATH="$WORKDIR_PATH/custom_error_page.sh"
-if ! [[ -x "$CUSTOM_ERROR_PAGE_PATH" ]]; then
-    # Print to stderror
-    echo "ERROR: The custom error pages script is not found or it is not executable in path $CUSTOM_ERROR_PAGE_PATH" >&2
-fi
-
-#######################################################################################
 ### Prepare az session
 ###
 
@@ -364,10 +352,5 @@ kubectl create secret generic ingress-nginx-ip \
     kubectl apply -f -
 
 rm config
-
-echo "Create custom-backend-errors..."
-printf "%s► Execute %s%s\n" "${grn}" "${CUSTOM_ERROR_PAGE_PATH}" "${normal}"
-(RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${CLUSTER_NAME}" source "${CUSTOM_ERROR_PAGE_PATH}")
-wait # wait for subshell to finish
 
 printf "Done.\n"
