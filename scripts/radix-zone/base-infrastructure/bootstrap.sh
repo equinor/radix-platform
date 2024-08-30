@@ -474,24 +474,6 @@ function update_app_registration() {
 #         "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.ContainerRegistry/registries/${AZ_RESOURCE_CONTAINER_REGISTRY}"
 # }
 
-
-# function update_acr_whitelist() {
-#     #######################################################################################
-#     ### Add ACR network rule
-#     ###
-
-#     printf "Whitelisting cluster egress IP(s) in ACR network rules\n"
-#     printf "Retrieving egress IP range for %s cluster...\n" "${CLUSTER_NAME}"
-#     local egress_ip_range=$(get_cluster_outbound_ip ${MIGRATION_STRATEGY} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
-#     printf "Retrieved IP range %s.\n" "${egress_ip_range}"
-#     # Update ACR IP whitelist with cluster egress IP(s)
-#     printf "\n"
-#     printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
-#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=add $WHITELIST_IP_IN_ACR_SCRIPT)
-#     wait # wait for subshell to finish
-#     printf "\n"
-# }
-
 #######################################################################################
 ### MAIN
 ###

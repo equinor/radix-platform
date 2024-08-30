@@ -113,12 +113,6 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/${CLUSTER_TYPE}.env
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_clusterlist.sh
 
-# WHITELIST_IP_IN_ACR_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/acr/update_acr_whitelist.sh"
-# if [[ ! -f "$WHITELIST_IP_IN_ACR_SCRIPT" ]]; then
-#     echo "ERROR: The dependency WHITELIST_IP_IN_ACR_SCRIPT=$WHITELIST_IP_IN_ACR_SCRIPT is invalid, the file does not exist." >&2
-#     exit 1
-# fi
-
 # Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
