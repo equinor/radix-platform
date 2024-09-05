@@ -176,7 +176,7 @@ rm ${tmp_file_name}
 # TODO: DevOps issue 259748, downgrade Contributor role when new role is ready
 # https://github.com/equinor/Solum/issues/10900
 create_role_assignment_for_identity "${mi_name}" "${AKS_COMMAND_RUNNER_ROLE_NAME}" "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}"
-set-kv-policy "${mi_object_id}" "get"
+# set-kv-policy "${mi_object_id}" "get"
 create-role-and-rolebinding "${WORKDIR_PATH}/role.yaml" "${WORKDIR_PATH}/rolebinding.yaml"
 modify-role-binding ${mi_object_id}
 add-federated-gh-credentials ${mi_name} "radix-platform" "master"

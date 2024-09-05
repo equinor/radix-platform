@@ -111,7 +111,7 @@ echo -e "Update Docker auth in keyvault:"
 echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_COMMON_KEYVAULT"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   ------------------------------------------------------------------"
@@ -147,13 +147,13 @@ printf "Updating Docker auth in keyvault... "
 EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME") # The secrets have no real expiration date
 
 az keyvault secret set \
-    --vault-name "${AZ_COMMON_KEYVAULT}" \
+    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
     --name docker-io-auth-username \
     --value "${USER_NAME}" \
     --expires "${EXPIRY_DATE}" --output none || exit
 
 az keyvault secret set \
-    --vault-name "${AZ_COMMON_KEYVAULT}" \
+    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
     --name docker-io-auth-access-token \
     --value "${ACCESS_TOKEN}" \
     --expires "${EXPIRY_DATE}" --output none || exit

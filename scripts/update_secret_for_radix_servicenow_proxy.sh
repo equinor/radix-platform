@@ -122,9 +122,9 @@ function updateSecret() {
         echo "ERROR: Could not find secret $KV_SECRET_SERVICENOW_API_KEY in keyvault. Quitting.." >&2
         return 1
     fi
-    SERVICENOW_CLIENT_SECRET=$(az keyvault secret show -n $KV_SECRET_SERVICENOW_CLIENT_SECRET --vault-name $AZ_RESOURCE_KEYVAULT --query value -otsv)
+    SERVICENOW_CLIENT_SECRET=$(az keyvault secret show -n ar-radix-servicenow-proxy-client-secret --vault-name $AZ_RESOURCE_KEYVAULT --query value -otsv)
     if [[ -z $SERVICENOW_CLIENT_SECRET ]]; then
-        echo "ERROR: Could not find secret $KV_SECRET_SERVICENOW_CLIENT_SECRET in keyvault. Quitting.." >&2
+        echo "ERROR: Could not find secret ar-radix-servicenow-proxy-client-secret in keyvault. Quitting.." >&2
         return 1
     fi
 
