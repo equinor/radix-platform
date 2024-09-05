@@ -3,6 +3,10 @@ data "azuread_group" "this" {
   security_enabled = true
 }
 
+data "azurerm_role_definition" "this" {
+  name = "Key Vault Secrets User"
+}
+
 resource "azurerm_key_vault" "this" {
   name                = var.vault_name
   location            = var.location
@@ -24,6 +28,12 @@ resource "azurerm_key_vault" "this" {
   sku_name = "standard"
 }
 
+resource "azurerm_role_assignment" "this" {
+  for_each           = var.enable_rbac_authorization && length(var.kv_secrets_user_id) > 0 ? { "${var.vault_name}" : true } : {}
+  scope              = azurerm_key_vault.this.id
+  role_definition_id = data.azurerm_role_definition.this.role_definition_id
+  principal_id       = var.kv_secrets_user_id
+}
 
 data "azurerm_subnet" "subnet" {
   name                 = "private-links"
@@ -32,7 +42,7 @@ data "azurerm_subnet" "subnet" {
 }
 
 resource "azurerm_key_vault_access_policy" "this" {
-  for_each = var.enable_rbac_authorization == false ? { "${var.vault_name}" : true } : {}
+  for_each     = var.enable_rbac_authorization == false ? { "${var.vault_name}" : true } : {}
   key_vault_id = azurerm_key_vault.this.id
   tenant_id    = var.tenant_id
   object_id    = data.azuread_group.this.object_id

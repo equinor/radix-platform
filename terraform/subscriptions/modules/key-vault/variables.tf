@@ -48,6 +48,12 @@ variable "enable_rbac_authorization" {
   default     = true
 }
 
+variable "kv_secrets_user_id" {
+  description = "The ID of the App that got Key Vault Secrets user permission?"
+  type        = string
+  default     = ""
+}
+
 variable "public_network_access_enabled" {
   description = "Should public network access be enabled for this Key Vault?"
   type        = bool
