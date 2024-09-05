@@ -1,5 +1,6 @@
 name: start-cluster
 on:
+  workflow_dispatch:
   schedule:
     # - cron: '0 4 * * 1-5' #utc Summer time
     - cron: '0 5 * * 1-5' #utc Winter time
@@ -11,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: operations
     env:
-      KV_GROUP: common
+      KV_GROUP: common-dev
       ENVIROMENT: dev
     steps:
       - uses: actions/checkout@v4 #Clone Repo
@@ -28,7 +29,7 @@ jobs:
       
       - name: Add GitHub IP to KeyVault
         run: |
-          az keyvault network-rule add --name "radix-vault-${{ env.ENVIROMENT}}" \
+          az keyvault network-rule add --name "radix-keyv-${{ env.ENVIROMENT}}" \
             --resource-group "${{ env.KV_GROUP}}" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
@@ -40,6 +41,6 @@ jobs:
       
       - name: Revoke GitHub IP on KeyVault
         run: |
-          az keyvault network-rule remove --name "radix-vault-${{ env.ENVIROMENT}}" \
+          az keyvault network-rule remove --name "radix-keyv-${{ env.ENVIROMENT}}" \
             --resource-group "${{ env.KV_GROUP}}" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
