@@ -118,7 +118,7 @@ object_id=$(az identity show --name "${MI_GITHUB_MAINTENANCE}-${RADIX_ENVIRONMEN
     exit 1
 }
 
-set-kv-policy "${object_id}" "get set"
+# set-kv-policy "${object_id}" "get set"
 
 namespaces=("default" "ingress-nginx" "radix-web-console-qa" "radix-cicd-canary" "flux-system" "radix-api-qa" "radix-canary-golang-qa" "radix-cost-allocation-api-qa" "radix-platform-qa" "radix-github-webhook-qa" "monitor")
 

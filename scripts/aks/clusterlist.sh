@@ -92,7 +92,7 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_clusterlist.sh
 ###
 
 K8S_CLUSTER_LIST=$(az keyvault secret show \
-    --vault-name "${AZ_COMMON_KEYVAULT}" --name "${SECRET_NAME}" \
+    --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" \
     --query="value" \
     --output tsv | jq '{clusters:.clusters | sort_by(.name | ascii_downcase)}' 2>/dev/null)
 temp_file_path="/tmp/$(uuidgen)"
@@ -104,7 +104,7 @@ if [[ ${update_keyvault} == true ]]; then
     EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
 
     printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
-    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_COMMON_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
+    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
         printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
         exit 1
     fi

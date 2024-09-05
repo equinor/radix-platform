@@ -220,24 +220,24 @@ function create-role-and-rolebinding {
     printf "Done\n"
 }
 
-function set-kv-policy {
-    local object_id
-    local permissions
+# function set-kv-policy {
+#     local object_id
+#     local permissions
 
-    object_id=$1
-    permissions=$2
+#     object_id=$1
+#     permissions=$2
 
-    printf "Creating vault access policy on %s for %s...\n" "${AZ_RESOURCE_KEYVAULT}" "${object_id}"
-    az keyvault set-policy \
-        --name "${AZ_RESOURCE_KEYVAULT}" \
-        --secret-permissions ${permissions} \
-        --object-id "${object_id}" \
-        --only-show-errors >/dev/null || {
-        echo -e "ERROR: Could not create vault access policy on ${AZ_RESOURCE_KEYVAULT}." >&2
-        exit 1
-    }
-    printf "Done\n"
-}
+#     printf "Creating vault access policy on %s for %s...\n" "${AZ_RESOURCE_KEYVAULT}" "${object_id}"
+#     az keyvault set-policy \
+#         --name "${AZ_RESOURCE_KEYVAULT}" \
+#         --secret-permissions ${permissions} \
+#         --object-id "${object_id}" \
+#         --only-show-errors >/dev/null || {
+#         echo -e "ERROR: Could not create vault access policy on ${AZ_RESOURCE_KEYVAULT}." >&2
+#         exit 1
+#     }
+#     printf "Done\n"
+# }
 
 function create-az-role {
     local name

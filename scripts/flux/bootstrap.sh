@@ -171,7 +171,7 @@ echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_COMMON_KEYVAULT"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
 echo -e "   -  GIT_REPO                         : $GIT_REPO"
 echo -e "   -  GIT_BRANCH                       : $GIT_BRANCH"
 echo -e "   -  GIT_DIR                          : $GIT_DIR"
@@ -231,8 +231,8 @@ printf "...Done"
 ### CREDENTIALS
 ###
 
-FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_COMMON_KEYVAULT")"
-# FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_COMMON_KEYVAULT")"
+FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
+# FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 
 # printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
 # if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
@@ -258,7 +258,7 @@ FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --va
 # fi
 
 az keyvault secret download \
-    --vault-name "$AZ_COMMON_KEYVAULT" \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
     --name "$FLUX_PRIVATE_KEY_NAME" \
     --file "$FLUX_PRIVATE_KEY_NAME" \
     2>&1 >/dev/null
@@ -268,7 +268,7 @@ printf "...Done\n"
 # Create secret for Flux v2 to use to authenticate with ACR.
 printf "\nCreating k8s secret \"radix-docker\"..."
 az keyvault secret download \
-    --vault-name "$AZ_COMMON_KEYVAULT" \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
     --name "radix-cr-cicd" \
     --file sp_credentials.json \
     2>&1 >/dev/null
@@ -309,7 +309,7 @@ else
 fi
 
 printf "\nGetting Slack Webhook URL..."
-SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name $KV_SECRET_SLACK_WEBHOOK | jq -r .value)"
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook | jq -r .value)"
 printf "...Done\n"
 
 IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"

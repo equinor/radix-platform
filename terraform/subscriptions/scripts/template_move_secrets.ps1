@@ -1,22 +1,23 @@
+$secrets = @{}
 Get-Content ./keyvaultsecret.env | ForEach-Object {
   $name, $value = $_.split('=')
+  $secrets[$name] = $value
 }
 
-$secretNamenew=$secretName.ToLower()
-$secretExists=(az keyvault secret list --vault-name $destinationVault --query "[?name=='$secretNamenew']" -o tsv) 
+$secretExists=(az keyvault secret list --vault-name $secrets.destinationVault --query "[?name=='$secrets.newsecretName']" -o tsv) 
 if($null -eq $secretExists) {
-  write-host "Copy Secret across $secretName"
-  az keyvault secret show --vault-name $sourceVault -n $secretName --query "value" -o tsv > secret.txt
-  $contenttype=(az keyvault secret show --vault-name $sourceVault -n $secretName --query contentType)
+  write-host "Copy secret" $secrets.oldsecretName "to" $secrets.newsecretName
+  az keyvault secret show --vault-name $secrets.sourceVault -n $secrets.oldsecretName --query "value" -o tsv > secret.txt
+  $contenttype=(az keyvault secret show --vault-name $secrets.sourceVault -n $secrets.oldsecretName --query contentType)
   if ($null -eq $contenttype) {
-    az keyvault secret set --vault-name $destinationVault --name $secretNamenew --tags migratedfrom=$sourceVault --file secret.txt
+    az keyvault secret set --vault-name $secrets.destinationVault --name $secrets.newsecretName --tags migratedfrom=$secrets.sourceVault --file secret.txt
   }
   else {
-    az keyvault secret set --vault-name $destinationVault --name $secretNamenew --description $contenttype --tags migratedfrom=$sourceVault --file secret.txt
+    az keyvault secret set --vault-name $secrets.destinationVault --name $secrets.newsecretName --description $contenttype --tags migratedfrom=$secrets.sourceVault --file secret.txt
   }
-  az keyvault secret delete --vault-name $sourceVault -n $secretName
+  az keyvault secret delete --vault-name $secrets.sourceVault -n $secrets.oldsecretName
   rm secret.txt
 }
 else {
-  write-host "$secretNamenew already exists in $destinationVault"
+  write-host $secrets.newsecretName "already exists in" $secrets.destinationVault
 }

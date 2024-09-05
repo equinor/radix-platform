@@ -81,7 +81,7 @@ fi
 
 # Define script variables
 
-SECRET_NAME="kubernetes-api-server-whitelist-ips-${RADIX_ENVIRONMENT}"
+SECRET_NAME="kubernetes-api-auth-ip-range"
 update_keyvault=false
 
 #######################################################################################
