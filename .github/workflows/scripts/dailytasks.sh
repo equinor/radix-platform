@@ -89,7 +89,7 @@ CLUSTERS=$(az aks list --subscription "${DEV_SUBSCRIPTION}" \
     jq '[{k8s:[.[] | select(.name | startswith("playground") | not) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code, autostartupschedule: .tags.autostartupschedule}]}]')
 SLACK_WEBHOOK_URL="$(az keyvault secret show \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
-    --name "${KV_SECRET_SLACK_WEBHOOK}" \
+    --name "slack-webhook" \
     --subscription "${DEV_SUBSCRIPTION}" |
     jq -r .value)"
 
