@@ -17,7 +17,7 @@ resource "azurerm_mssql_server" "sqlserver" {
   }
 
   identity {
-    type         = "SystemAssigned"
+    type = "SystemAssigned"
   }
 
   lifecycle {

@@ -19,6 +19,7 @@ module "keyvault" {
   # log_analytics_workspace_id  = local.external_outputs.common.workspace_id
   soft_delete_retention_days  = each.value.soft_delete_retention_days
   enable_rbac_authorization   = each.value.enable_rbac_authorization
+  kv_secrets_user_id          = each.value.kv_secrets_user_id
   purge_protection_enabled    = each.value.purge_protection_enabled
   network_acls_default_action = each.value.network_acls_default_action
   vnet_resource_group         = module.config.vnet_resource_group
