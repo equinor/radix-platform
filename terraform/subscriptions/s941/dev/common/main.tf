@@ -128,6 +128,11 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-job-scheduler:ref:refs/heads/main"
     },
+    radix-buildkit-builder-main = {
+      name    = "radix-buildkit-builder-main"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-buildkit-builder:ref:refs/heads/main"
+    },
   }
 }
 
