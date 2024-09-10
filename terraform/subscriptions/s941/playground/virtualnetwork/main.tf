@@ -54,5 +54,14 @@ output "public_ip_prefix_ids" {
     egress_id  = module.azurerm_public_ip_prefix_egress.data.id
     ingress_id = module.azurerm_public_ip_prefix_ingress.data.id
   }
+}
 
+module "private_endpoints" {
+  source              = "../../../modules/private-endpoints"
+  for_each            = var.private_endpoints
+  server_name         = each.key
+  subresourcename     = each.value.subresourcename
+  resource_id         = each.value.resource_id
+  vnet_resource_group = module.resourcegroups.data.name
+  manual_connection   = each.value.manual_connection
 }
