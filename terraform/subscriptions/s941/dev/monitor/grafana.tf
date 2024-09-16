@@ -1,14 +1,3 @@
-
-data "azurerm_key_vault" "this" {
-  name                = module.config.key_vault_name
-  resource_group_name = module.config.common_resource_group
-}
-
-data "azurerm_key_vault_secret" "grafana-admin-password" {
-  name         = "mysql-grafana-${module.config.environment}-admin-password"
-  key_vault_id = data.azurerm_key_vault.this.id
-}
-
 # This MI must not be deleted, has been given Directory Reader role by Equnior AAD Team!
 module "grafana-mi-server" {
   source              = "../../../modules/userassignedidentity"
@@ -31,8 +20,6 @@ resource "azurerm_mysql_flexible_server" "grafana" {
   zone                   = 2
   backup_retention_days  = 7
   sku_name               = "B_Standard_B1ms"
-  administrator_login    = "radixadmin"
-  administrator_password = data.azurerm_key_vault_secret.grafana-admin-password.value
 
   tags = {
     IaC = "terraform"
