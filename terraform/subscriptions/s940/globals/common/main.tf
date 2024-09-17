@@ -38,3 +38,4 @@ module "storageaccount" {
 output "environment" {
   value = module.config.environment
 }
+

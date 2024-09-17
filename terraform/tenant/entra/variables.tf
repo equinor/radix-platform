@@ -46,3 +46,4 @@ variable "service-manager-ref" {
   default     = "110327"
   description = "Service Manager Reference, required on all App Registrations"
 }
+
