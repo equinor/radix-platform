@@ -32,14 +32,14 @@ jobs:
       - name: Add GitHub IP to KeyVault in Prod
         id: update_prod_firewall
         run: |
-          az keyvault network-rule add --name "radix-vault-prod" \
-            --resource-group "common" \
+          az keyvault network-rule add --name "radix-keyv-platform" \
+            --resource-group "common-platform" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Add GitHub IP to KeyVault in C2
         id: update_c2_firewall
         run: |
-          az keyvault network-rule add --name "radix-vault-c2-prod" \
-            --resource-group "common-westeurope" \
+          az keyvault network-rule add --name "radix-keyv-c2" \
+            --resource-group "common-c2" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: lock-resources-prod
         run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_prod.env .github/workflows/scripts/check_resource_lock.sh
@@ -48,12 +48,12 @@ jobs:
       - name: Revoke GitHub IP on KeyVault in Prod
         if: ${{ steps.update_prod_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
-          az keyvault network-rule remove --name "radix-vault-prod" \
-            --resource-group "common" \
+          az keyvault network-rule remove --name "radix-keyv-platform" \
+            --resource-group "common-platform" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Revoke GitHub IP on KeyVault in C2
         if: ${{ steps.update_c2_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
-          az keyvault network-rule remove --name "radix-vault-c2-prod" \
-            --resource-group "common-westeurope" \
+          az keyvault network-rule remove --name "radix-keyv-c2" \
+            --resource-group "common-c2" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
