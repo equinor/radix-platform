@@ -23,7 +23,11 @@
 ### HOW TO USE
 ###
 
-# KEYVAULT_LIST="radix-vault-dev,radix-vault-prod,radix-vault-c2-prod" ./update_auth_secret.sh
+# Update key vaults in S941-Omnia-Radix-Development
+# KEYVAULT_LIST="radix-keyv-dev,radix-keyv-playground" ./update_auth_secret.sh
+#
+# Update key vaults in S940-Omnia-Radix-Production
+# KEYVAULT_LIST="radix-keyv-platform,radix-keyv-c2" ./update_auth_secret.sh
 
 
 #######################################################################################
