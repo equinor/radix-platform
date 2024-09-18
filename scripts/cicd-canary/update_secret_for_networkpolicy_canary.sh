@@ -6,7 +6,10 @@
 # Example 1:
 # RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh
 #
-# Example 2: Using a subshell to avoid polluting parent shell
+# Example 2: Reset the Appreg password and update keyvault
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh --reset
+#
+# Example 3: Using a subshell to avoid polluting parent shell
 # (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh)
 #
 
@@ -52,6 +55,13 @@ else
     fi
     source "$RADIX_ZONE_ENV"
 fi
+
+for arg in "$@"; do
+  if [ "$arg" == "--reset" ]; then
+    RESET=true
+    # Add your reset logic here
+  fi
+done
 
 # Source util scripts
 
@@ -150,24 +160,6 @@ function updateSecret() {
     printf " Secret updated\n"
 }
 
-function resetAppRegistrationPassword() {
-    # Generate new secret for App Registration.
-    printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"...\n"
-    APP_REGISTRATION_CLIENT_ID=$(az ad app list --filter "displayname eq '${APP_REGISTRATION_NETWORKPOLICY_CANARY}'" | jq -r '.[].appId')
-    # For some reason, description can not be too long.
-    UPDATED_APP_REGISTRATION_PASSWORD=$(az ad app credential reset \
-        --id "$APP_REGISTRATION_CLIENT_ID" \
-        --display-name "${RADIX_ZONE}-${RADIX_ENVIRONMENT}" \
-        --append \
-        --query password \
-        --output tsv \
-        --only-show-errors) || {
-        echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"." >&2
-        return 1
-    }
-    printf " Done.\n"
-}
-
 function environmentIsOauthEnvironment() {
     env=$1
     GET_ENV=$($curl_command \
@@ -220,13 +212,42 @@ function updateNetworkPolicyOauthAppRegistrationPasswordAndRedisSecret() {
     printf "Resetting ${APP_REGISTRATION_NETWORKPOLICY_CANARY} credentials and updating radixapp secrets...\n"
     getApiTokenResource || return 1
     getApiToken || return 1
-    getAppEnvironments && getOauthAppEnvironments && resetAppRegistrationPassword
+    if [[ $RESET == true ]]; then
+        getAppEnvironments && getOauthAppEnvironments && resetAppRegistrationPassword
+        EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
+        az keyvault secret set \
+            --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+            --name "ar-radix-networkpolicy-canary" \
+            --value "${UPDATED_APP_REGISTRATION_PASSWORD}" \
+            --expires "${EXPIRY_DATE}" --output none || exit
+    else
+        local UPDATED_APP_REGISTRATION_PASSWORD=$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name ar-radix-networkpolicy-canary | jq -r '.value')
+        getAppEnvironments && getOauthAppEnvironments
+    fi
     for app_env in $OAUTH_APP_ENVIRONMENTS; do
         updateSecret $app_env web-oauth2proxy-clientsecret ${UPDATED_APP_REGISTRATION_PASSWORD} web || return 1
         redis_password=$(openssl rand -base64 32 | tr -- '+/' '-_')
         updateSecret $app_env web-oauth2proxy-redispassword $redis_password web || return 1
         updateSecret $app_env REDIS_PASSWORD $redis_password redis || return 1
     done
+}
+
+function resetAppRegistrationPassword() {
+    # Generate new secret for App Registration.
+    printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"...\n"
+    APP_REGISTRATION_CLIENT_ID=$(az ad app list --filter "displayname eq '${APP_REGISTRATION_NETWORKPOLICY_CANARY}'" | jq -r '.[].appId')
+    # For some reason, description can not be too long.
+    UPDATED_APP_REGISTRATION_PASSWORD=$(az ad app credential reset \
+        --id "$APP_REGISTRATION_CLIENT_ID" \
+        --display-name "${RADIX_ZONE}" \
+        --append \
+        --query password \
+        --output tsv \
+        --only-show-errors) || {
+        echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NETWORKPOLICY_CANARY\"." >&2
+        return 1
+    }
+    printf " Done.\n"
 }
 
 function restartAllEnvironments() {
