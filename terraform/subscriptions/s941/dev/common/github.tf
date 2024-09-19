@@ -33,11 +33,11 @@ resource "azurerm_role_assignment" "github-operator-user-admin" {
 
 resource "azuread_application_federated_identity_credential" "github-operator-federated-credentials" {
   application_id = data.azuread_application.github_operator.id
-  display_name          = "radix-platform-operations"
-  description           = "Allow Github to authenticate"
-  audiences             = ["api://AzureADTokenExchange"]
-  issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:equinor/radix-platform:environment:s941"
+  display_name   = "radix-platform-operations"
+  description    = "Allow Github to authenticate"
+  audiences      = ["api://AzureADTokenExchange"]
+  issuer         = "https://token.actions.githubusercontent.com"
+  subject        = "repo:equinor/radix-platform:environment:s941"
 
   timeouts {}
 }
