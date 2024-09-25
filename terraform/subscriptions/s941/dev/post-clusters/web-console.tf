@@ -73,7 +73,11 @@ module "webconsole" {
       app_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
       scope_ids = [
         data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["GroupMember.Read.All"],
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["Application.Read.All"],
         data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["User.Read"],
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["offline_access"],
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["openid"],
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["profile"],
       ]
     }
   }
