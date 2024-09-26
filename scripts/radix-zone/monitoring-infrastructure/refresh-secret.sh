@@ -2,6 +2,10 @@
 
 # sh ./create-sp.sh 'env'
 
+if [[ -z "$USER_PROMPT" ]]; then
+    USER_PROMPT=true
+fi
+
 #######################################################################################
 ### Check for prerequisites binaries
 ###
@@ -11,12 +15,21 @@ printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
+# tenantId="$(az ad app show --id ${id} --query appOwnerOrganizationId --output tsv)"
+script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+template_path="${script_dir_path}/template-credentials.json"
+
+if [ ! -e "$template_path" ]; then
+    echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}" >&2
+    exit 1
+fi
+
 if [[ $1 == "ext-mon" ]]; then
     APP_REGISTRATION="radix-ar-grafana-ext-mon"
     KEYVAULT="radix-keyv-extmon"
 else
     APP_REGISTRATION="radix-ar-grafana-$1"
-    KEYVAULT="radix-keyv-%1"
+    KEYVAULT="radix-keyv-$1"
 fi
 
 
@@ -49,20 +62,6 @@ fi
 
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
-az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
-printf "Done.\n"
-
-
-
-LIB_SERVICE_PRINCIPAL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../service-principals-and-aad-apps/lib_service_principal.sh"
-if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
-    echo "ERROR: The dependency LIB_SERVICE_PRINCIPAL_PATH=$LIB_SERVICE_PRINCIPAL_PATH is invalid, the file does not exist." >&2
-    exit 1
-else
-    source "$LIB_SERVICE_PRINCIPAL_PATH"
-fi
-
-
 
 name="$APP_REGISTRATION"
 secretname="$name"
@@ -76,8 +75,24 @@ secret="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=
 secret_id="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${secretname}'], &endDateTime)[-1].keyId")"
 expiration_date="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${secretname}'], &endDateTime)[-1].endDateTime" --output tsv)"
 
+   
+# update_app_credentials_in_az_keyvault "${secretname}" "${id}" "${password}" "${description}" "${secret_id}" ${expiration_date} "${KEYVAULT}"
+
+# Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
+tmp_file_path="${script_dir_path}/${secretname}.json"
+cat "$template_path" | jq -r \
+    --arg name "${secretname}" \
+    --arg id "${id}" \
+    --arg password "${password}" \
+    --arg description "${description}" \
+    --arg tenantId "" \
+    --arg secretId "${secret_id}" \
+    '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId | .secretId=$secretId' >"$tmp_file_path"
+
 echo "Update credentials in keyvault..."
-    
-update_app_credentials_in_az_keyvault "${secretname}" "${id}" "${password}" "${description}" "${secret_id}" ${expiration_date} "${KEYVAULT}"
+az keyvault secret set --vault-name $KEYVAULT --name "${secretname}" --file "${tmp_file_path}" --expires ${expiration_date} 2>&1 >/dev/null
+
+# Clean up
+rm -rf "$tmp_file_path"
 
 echo "Client secret refreshed and stored in Keyvault"
