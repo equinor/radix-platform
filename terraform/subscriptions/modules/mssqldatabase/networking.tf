@@ -9,6 +9,9 @@ resource "azurerm_private_endpoint" "endpoint" {
   location            = var.location
   resource_group_name = var.vnet_resource_group
   subnet_id           = data.azurerm_subnet.subnet.id
+  tags = {
+    IaC = "terraform"
+  }
 
   private_service_connection {
     name                           = "pe-${var.server_name}"
