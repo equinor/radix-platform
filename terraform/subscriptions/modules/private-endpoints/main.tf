@@ -1,5 +1,5 @@
 locals {
-  dnszone = lookup(var.subresourcename_dns, "${var.subresourcename}", "")
+  dnszone       = lookup(var.subresourcename_dns, "${var.subresourcename}", "")
   customdnszone = join("/", concat(slice(split("/", data.azurerm_private_dns_zone.this.id), 0, length(split("/", data.azurerm_private_dns_zone.this.id)) - 1), [var.customdnszone]))
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_private_endpoint" "this" {
   location            = var.location
   resource_group_name = var.vnet_resource_group
   subnet_id           = data.azurerm_subnet.this.id
-  
+
   lifecycle {
     ignore_changes = [
       private_service_connection[0].request_message
@@ -35,7 +35,7 @@ resource "azurerm_private_endpoint" "this" {
       name                           = "pe-${var.server_name}"
       private_connection_resource_id = var.resource_id
       subresource_names              = [var.subresourcename]
-      is_manual_connection           = true
+      is_manual_connection           = var.manual_connection
       request_message                = "Radix Private Link"
     }
   }
@@ -65,22 +65,16 @@ resource "azurerm_private_endpoint" "this" {
       private_dns_zone_ids = [local.customdnszone]
     }
   }
-
-
 }
 
-
 resource "azurerm_private_dns_a_record" "this" {
-  # name                = var.server_name
-  name                = lower(element(split("/", azurerm_private_endpoint.this.private_service_connection[0].private_connection_resource_id), length(split("/", azurerm_private_endpoint.this.private_service_connection[0].private_connection_resource_id)) - 1))
-  zone_name           = local.dnszone
+  name                = var.customname != "" ? var.customname : lower(element(split("/", azurerm_private_endpoint.this.private_service_connection[0].private_connection_resource_id), length(split("/", azurerm_private_endpoint.this.private_service_connection[0].private_connection_resource_id)) - 1))
+  zone_name           = var.customdnszone != "" ? var.customdnszone : local.dnszone
   resource_group_name = var.vnet_resource_group
   ttl                 = 10
   records             = [azurerm_private_endpoint.this.private_service_connection[0].private_ip_address]
   lifecycle {
     ignore_changes = [
-      # Ignore changes to tags, e.g. because a management agent
-      # updates these based on some ruleset managed elsewhere.
       tags
     ]
   }

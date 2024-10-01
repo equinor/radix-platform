@@ -43,5 +43,13 @@ variable "subresourcename" {
 
 variable "customdnszone" {
   type = string
-  default = ""
+}
+
+variable "customname" {
+  type = string
+}
+
+variable "manual_connection" {
+  type    = bool
+  default = true
 }

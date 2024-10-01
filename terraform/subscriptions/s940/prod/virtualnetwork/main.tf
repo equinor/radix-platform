@@ -111,8 +111,8 @@ module "private_endpoints" {
   subresourcename     = each.value.subresourcename
   resource_id         = each.value.resource_id
   vnet_resource_group = module.resourcegroups.data.name
-  # manual_connection   = lookup(each.value, "manual_connection", true)
   customdnszone       = lookup(each.value, "customdnszone", "")
+  customname          = lookup(each.value, "customname", "")
   location            = module.config.location
   depends_on          = [data.github_repository_file.this]
 }
