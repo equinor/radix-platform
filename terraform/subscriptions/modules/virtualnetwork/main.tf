@@ -13,11 +13,12 @@ resource "azurerm_virtual_network" "vnet-hub" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "private-links"
-  resource_group_name  = var.vnet_resource_group
-  virtual_network_name = azurerm_virtual_network.vnet-hub.name
-  address_prefixes     = ["10.0.0.0/18"]
-  service_endpoints    = ["Microsoft.Storage"] #"["Microsoft.Storage","Microsoft.ContainerRegistry","Microsoft.KeyVault","Microsoft.Sql","Microsoft.Storage"]
+  name                              = "private-links"
+  resource_group_name               = var.vnet_resource_group
+  virtual_network_name              = azurerm_virtual_network.vnet-hub.name
+  address_prefixes                  = ["10.0.0.0/18"]
+  service_endpoints                 = ["Microsoft.Storage"] #"["Microsoft.Storage","Microsoft.ContainerRegistry","Microsoft.KeyVault","Microsoft.Sql","Microsoft.Storage"]
+  private_endpoint_network_policies = "Disabled"
 }
 
 resource "azurerm_private_dns_zone" "this" {
