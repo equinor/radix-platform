@@ -63,7 +63,7 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 #### Step 2 Bootstrap and teardown of a Radix cluster
 
 - [./aks/bootstrap](./aks/README.md#bootstrap)
-- [./aks/teardown](./aks/README.md#teardown)
+- [./aks/teardown](./aks/teardown.sh)
 
 #### Step 3 Deploy base components
 
@@ -78,7 +78,6 @@ Handled by script, see header in [install_base_components.sh](./install_base_com
 This script requires secret files to be available in the `keyvault` of the corresponding cluster as follows.
 
 * `slack-token`
-* `grafana-database-password` # grafana database password
 
 **NB: The `keyvault` is created by the "install infrastructure" step**
 
