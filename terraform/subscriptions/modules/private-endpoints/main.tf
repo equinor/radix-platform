@@ -15,7 +15,7 @@ data "azurerm_private_dns_zone" "this" {
 }
 
 resource "azurerm_private_endpoint" "this" {
-  name                = "pe-${var.server_name}"
+  name                = var.server_name
   location            = var.location
   resource_group_name = var.vnet_resource_group
   subnet_id           = data.azurerm_subnet.this.id
@@ -32,7 +32,7 @@ resource "azurerm_private_endpoint" "this" {
   dynamic "private_service_connection" {
     for_each = var.subresourcename != "privatelinkservice" ? [1] : []
     content {
-      name                           = "pe-${var.server_name}"
+      name                           = var.server_name
       private_connection_resource_id = var.resource_id
       subresource_names              = [var.subresourcename]
       is_manual_connection           = var.manual_connection
@@ -43,7 +43,7 @@ resource "azurerm_private_endpoint" "this" {
   dynamic "private_service_connection" {
     for_each = var.subresourcename == "privatelinkservice" ? [1] : []
     content {
-      name                           = "pe-${var.server_name}"
+      name                           = var.server_name
       private_connection_resource_id = var.resource_id
       is_manual_connection           = true
       request_message                = "Radix Private Link"
