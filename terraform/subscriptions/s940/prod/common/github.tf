@@ -44,11 +44,11 @@ resource "azuread_application_federated_identity_credential" "github-operator-fe
 
 resource "azuread_application_federated_identity_credential" "github-operator-federated-credentials-operations" {
   application_id = data.azuread_application.github_operator.id
-  display_name          = "radix-platform-operations-operations"
-  description           = "Allow Github to authenticate"
-  audiences             = ["api://AzureADTokenExchange"]
-  issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:equinor/radix-platform:environment:operations"
+  display_name   = "radix-platform-operations-operations"
+  description    = "Allow Github to authenticate"
+  audiences      = ["api://AzureADTokenExchange"]
+  issuer         = "https://token.actions.githubusercontent.com"
+  subject        = "repo:equinor/radix-platform:environment:operations"
 
   timeouts {}
 }
