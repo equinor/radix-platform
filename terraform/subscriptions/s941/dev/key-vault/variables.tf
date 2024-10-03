@@ -9,9 +9,6 @@ variable "keyvaults" {
     kv_secrets_user_id          = optional(string, "")
   }))
   default = {
-    radix-vault-dev = {
-      resource_group = "common"
-    }
     radix-keyv-dev = {
       resource_group            = "common-dev"
       enable_rbac_authorization = true

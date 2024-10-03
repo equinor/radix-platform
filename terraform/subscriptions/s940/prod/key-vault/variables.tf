@@ -8,9 +8,6 @@ variable "keyvaults" {
     network_acls_default_action = optional(string, "Allow")
   }))
   default = {
-    radix-vault-prod = {
-      resource_group = "common"
-    }
     radix-keyv-platform = {
       enable_rbac_authorization = true
     }
