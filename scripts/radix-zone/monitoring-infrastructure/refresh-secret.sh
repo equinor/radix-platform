@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# sh ./create-sp.sh 'env'
+# sh ./refresh-secret.sh 'env'
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
@@ -15,14 +15,6 @@ printf "Check for neccesary executables... "
 hash az 2> /dev/null || { echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2;  exit 1; }
 printf "Done.\n"
 
-# tenantId="$(az ad app show --id ${id} --query appOwnerOrganizationId --output tsv)"
-script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-template_path="${script_dir_path}/template-credentials.json"
-
-if [ ! -e "$template_path" ]; then
-    echo "Error in func \"update_service_principal_credentials_in_az_keyvault\": sp credentials template not found at ${template_path}" >&2
-    exit 1
-fi
 
 if [[ $1 == "ext-mon" ]]; then
     APP_REGISTRATION="radix-ar-grafana-ext-mon"
@@ -32,16 +24,18 @@ else
     KEYVAULT="radix-keyv-$1"
 fi
 
+SECRETNAME="radix-ar-grafana-oauth"
 
 cat << EOF
 Will use the following configuration:
 
     -------------------------------------------------------------------
-    -  APP REGISTRATION     : $APP_REGISTRATION
-    -  KEYVAULT             : $KEYVAULT
+    -  APP Registration    : $APP_REGISTRATION
+    -  Key Vault           : $KEYVAULT
+    -  Secret              : $SECRETNAME
     -------------------------------------------------------------------
-    -  AZ_SUBSCRIPTION                  : $(az account show --query name -otsv)
-    -  AZ_USER                          : $(az account show --query user.name -o tsv)
+    -  AZ subscription     : $(az account show --query name -otsv)
+    -  AZ user             : $(az account show --query user.name -o tsv)
 EOF
 
 
@@ -63,36 +57,18 @@ fi
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 
-name="$APP_REGISTRATION"
-secretname="$name"
-description="Grafana OAuth secret"
+appname="$APP_REGISTRATION"
 
-echo "Create secret for ${name}"
-id="$(az ad app list --filter "displayname eq '${name}'" --query [].id --output tsv)"
 
-password="$(az ad app credential reset --id "${id}" --display-name "${secretname}" --append --query password --output tsv --only-show-errors)"
-secret="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${secretname}'], &endDateTime)[-1].{endDateTime:endDateTime,keyId:keyId}")"
-secret_id="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${secretname}'], &endDateTime)[-1].keyId")"
-expiration_date="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${secretname}'], &endDateTime)[-1].endDateTime" --output tsv)"
+echo "Create secret for ${appname}"
+id="$(az ad app list --filter "displayname eq '${appname}'" --query [].id --output tsv)"
 
-   
-# update_app_credentials_in_az_keyvault "${secretname}" "${id}" "${password}" "${description}" "${secret_id}" ${expiration_date} "${KEYVAULT}"
+password="$(az ad app credential reset --id "${id}" --display-name "${SECRETNAME}" --append --query password --output tsv --only-show-errors)"
+expiration_date="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${SECRETNAME}'], &endDateTime)[-1].endDateTime" --output tsv)"
 
-# Use jq together with a credentials json template to ensure we end up with valid json, and then put the result into a tmp file which we will upload to the keyvault.
-tmp_file_path="${script_dir_path}/${secretname}.json"
-cat "$template_path" | jq -r \
-    --arg name "${secretname}" \
-    --arg id "${id}" \
-    --arg password "${password}" \
-    --arg description "${description}" \
-    --arg tenantId "" \
-    --arg secretId "${secret_id}" \
-    '.name=$name | .id=$id | .password=$password | .description=$description | .tenantId=$tenantId | .secretId=$secretId' >"$tmp_file_path"
-
+# update_app_credentials_in_az_keyvault 
 echo "Update credentials in keyvault..."
-az keyvault secret set --vault-name $KEYVAULT --name "${secretname}" --file "${tmp_file_path}" --expires ${expiration_date} 2>&1 >/dev/null
 
-# Clean up
-rm -rf "$tmp_file_path"
+az keyvault secret set --vault-name $KEYVAULT --name $SECRETNAME --value "${password}" --expires ${expiration_date} 2>&1 >/dev/null
 
 echo "Client secret refreshed and stored in Keyvault"
