@@ -3,9 +3,9 @@ module "config" {
 }
 
 data "github_repository_file" "this" {
-  repository = "equinor/radix-private"
-  branch     = "master"
-  file       = "terraform/privatelinks/${module.config.environment}.yaml"
+  repository = "equinor/radix"
+  branch     = "main"
+  file       = "privatelinks/${module.config.environment}.yaml"
 }
 
 module "resourcegroups" {
