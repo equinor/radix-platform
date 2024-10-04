@@ -145,7 +145,7 @@ module "radix-id-acr-workflows" {
 
 module "radix-cr-cicd" {
   source       = "../../../modules/app_registration"
-  display_name = "radix-cr-cicd-${module.config.environment}-prod"
+  display_name = "radix-cr-cicd-${module.config.environment}"
   service_id   = "110327"
   owners       = data.azuread_group.radix.members
   expose_API   = true
@@ -157,7 +157,7 @@ module "radix-cr-cicd" {
 
 module "radix-cr-reader" {
   source       = "../../../modules/app_registration"
-  display_name = "radix-cr-reader-${module.config.environment}-prod"
+  display_name = "radix-cr-reader-${module.config.environment}"
   service_id   = "110327"
   owners       = data.azuread_group.radix.members
   expose_API   = true
