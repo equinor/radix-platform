@@ -393,7 +393,7 @@ function set_app_registration_api_scopes {
         fi
 
         new_scopes=$(jq --argjson new_scope "$new_scope" '.? + [$new_scope]' <<<$new_scopes) || return
-    done < <(echo "${iterate_scopes[@]}")
+    done
 
     patch=$(jq -n --argjson new_scopes "$new_scopes" '{"api":{"oauth2PermissionScopes":$new_scopes}}' .) || return
     az rest -m PATCH -u https://graph.microsoft.com/v1.0/myorganization/applications/${app_obj_id} -b "$patch" || return
