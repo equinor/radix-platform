@@ -44,15 +44,10 @@ jobs:
         run: sleep 30s
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-      - name: Just list
-        run: |
-          pwd
-          ls ./
-          echo "terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork"
       - name: Terraform Init
         id: init
         run: |
-          terraform -chdir="/terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork" init
+          terraform -chdir="./terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork" init
       - name: Revoke GitHub IP on StorageAccount
         run: |
           az storage account network-rule remove \
