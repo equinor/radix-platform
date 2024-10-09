@@ -1,0 +1,61 @@
+name: Privatelinks
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  privatelinks-dev:
+    name: Check privatelinks in dev
+    runs-on: ubuntu-latest
+    env:
+      SUBSCRIPTION: s941
+      terraform_version: ~> 6.0
+      ARM_USE_OIDC: true
+      ARM_USE_AZUREAD: true
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      storage_account_name: ${{ inputs.subscription }}radixinfra
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 #Clone Repo
+        with:
+          sparse-checkout: 'terraform/subscriptions'
+          sparse-checkout-cone-mode: false
+      - name: 'Az login'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
+      - name: Add GitHub IP to StorageAccount
+        run: |
+          az storage account network-rule add \
+            --resource-group "${{ env.SUBSCRIPTION}}-tfstate" \
+            --account-name "${{ env.SUBSCRIPTION}}radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        run: sleep 30s
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.terraform_version }}
+      - name: Just list
+        run: |
+          ls /terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform -chdir="/terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork" init
+      - name: Revoke GitHub IP on StorageAccount
+        run: |
+          az storage account network-rule remove \
+            --resource-group "${{ env.SUBSCRIPTION}}-tfstate" \
+            --account-name "${{ env.SUBSCRIPTION}}radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+          
