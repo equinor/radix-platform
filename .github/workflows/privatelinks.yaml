@@ -46,7 +46,9 @@ jobs:
         uses: hashicorp/setup-terraform@v3
       - name: Just list
         run: |
-          ls /terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork
+          pwd
+          ls ./
+          echo "terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork"
       - name: Terraform Init
         id: init
         run: |
