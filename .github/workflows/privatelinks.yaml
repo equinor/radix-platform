@@ -6,6 +6,7 @@ jobs:
   privatelinks-dev:
     name: Check privatelinks in dev
     runs-on: ubuntu-latest
+    environment: s941
     env:
       SUBSCRIPTION: s941
       terraform_version: ~> 6.0
