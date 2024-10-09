@@ -48,6 +48,7 @@ jobs:
         id: init
         run: |
           terraform -chdir="./terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork" init
+          terraform -chdir="./terraform/subscriptions/${{ env.SUBSCRIPTION}}/dev/virtualnetwork" apply
       - name: Revoke GitHub IP on StorageAccount
         run: |
           az storage account network-rule remove \
