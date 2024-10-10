@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 
 function updateComponentEnvVar() {
-    local resource="$1"
-    local radix_api_fqdn="$2"
-    local app="$3"
-    local env="$4"
-    local component="$5"
-    local var="$6"
-    local value="$7"
+    local radix_api_fqdn="$1"
+    local app="$2"
+    local env="$3"
+    local component="$4"
+    local var="$5"
+    local value="$6"
 
-    local access_token=$(az account get-access-token --resource "${resource}" | jq -r '.accessToken')
+    local access_token=$(az account get-access-token --resource "6dae42f8-4368-4678-94ff-3960e28e3630" | jq -r '.accessToken')
     if [[ -z ${access_token} ]]; then
         echo "ERROR: Could not get access token for Radix API." >&2
         return 1
