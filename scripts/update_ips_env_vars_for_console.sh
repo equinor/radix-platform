@@ -119,14 +119,6 @@ function updateIpsEnvVars() {
     local ip_list
     local ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
 
-    # Get resource for access token
-    printf "Getting resource for access token..."
-    local resource=$(echo "${OAUTH2_PROXY_SCOPE}" | awk '{print $4}' | sed 's/\/.*//')
-    if [[ -z ${resource} ]]; then
-        echo "ERROR: Could not get access token resource." >&2
-        return
-    fi
-
     # Get list of IPs for Public IPs assigned to Cluster Type
     printf "Getting list of IPs from Public IP Prefix %s..." "${ippre_name}"
     local ip_prefixes="$(az network public-ip list --query "[?publicIPPrefix.id=='${ippre_id}'].ipAddress" --output json)"
@@ -149,7 +141,7 @@ function updateIpsEnvVars() {
         ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
     fi
     printf "Done.\n"
-    updateComponentEnvVar "${resource}" "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${ip_list}"
+    updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${ip_list}"
     echo "Web component env variable updated with Public IP Prefix IPs."
 }
 
