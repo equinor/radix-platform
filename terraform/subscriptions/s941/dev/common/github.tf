@@ -38,7 +38,6 @@ resource "azuread_application_federated_identity_credential" "github-operator-fe
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
   subject        = "repo:equinor/radix-platform:environment:s941"
-
   timeouts {}
 }
 
@@ -49,6 +48,5 @@ resource "azuread_application_federated_identity_credential" "github-operator-fe
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
   subject        = "repo:equinor/radix-platform:environment:operations"
-
   timeouts {}
 }

@@ -687,6 +687,7 @@ WEB_COMPONENT="web"
 
 # Update replyUrls for those radix apps that require AD authentication
 printf "\nWaiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
+printf "\nIf this takes to long, you can try to restart the radix operator (kubectl rollout restart deployment radix-operator) in another console window"
 while [[ "$(kubectl get ingress $AUTH_PROXY_COMPONENT --namespace $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
