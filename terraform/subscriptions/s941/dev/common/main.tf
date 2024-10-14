@@ -136,6 +136,38 @@ module "radix-id-acr-workflows" {
   }
 }
 
+module "radix_id_gitrunner" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-gitrunner-${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
+  location            = module.config.location
+  roleassignments = {
+    contributor = {
+      role     = "Radix Privatelink rbac-${module.config.subscription_shortname}"
+      scope_id = "/subscriptions/${module.config.subscription}"
+    }
+    blob_contributor = {
+      role     = "Contributor" # Needed to open firewall
+      scope_id = "${module.config.backend.terraform_storage_id}"
+    }
+    storage_blob_contributor = {
+      role     = "Storage Blob Data Contributor" # Needed to read blobdata
+      scope_id = "${module.config.backend.terraform_storage_id}"
+    }
+    vnet_contributor = {
+      role     = "Contributor"
+      scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/${data.azurerm_virtual_network.this.resource_group_name}"
+    }
+  }
+  federated_credentials = {
+    radix-id-gitrunner = {
+      name    = "radix-id-gitrunner-${module.config.environment}"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix:environment:${module.config.environment}"
+    },
+  }
+}
+
 module "radix-cr-cicd" {
   source       = "../../../modules/app_registration"
   display_name = "radix-cr-cicd-${module.config.environment}"
