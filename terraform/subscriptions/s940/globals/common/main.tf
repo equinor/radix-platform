@@ -52,14 +52,21 @@ resource "azurerm_role_definition" "privatelink_role" {
     actions = [
       "Microsoft.Resources/deployments/*",
       "Microsoft.Resources/subscriptions/resourceGroups/read",
+      
+      "Microsoft.Network/privateEndpoints/read",
+      "Microsoft.Network/privateEndpoints/write",
+      "Microsoft.Network/privateEndpoints/delete",
+
       "Microsoft.Network/virtualNetworks/read",
       "Microsoft.Network/virtualNetworks/subnets/read",
       "Microsoft.Network/virtualNetworks/subnets/write",
       "Microsoft.Network/virtualNetworks/subnets/join/action",
-      "Microsoft.Network/privateEndpoints/read",
-      "Microsoft.Network/privateEndpoints/write",
-      "Microsoft.Network/locations/availablePrivateEndpointTypes/read",
-      "Microsoft.Network/privateDNSZones/*"
+
+      // Persmissions to create Private DNS Zone entry:
+      "Microsoft.Network/privateDnsZones/join/action",
+      "Microsoft.Network/privateEndpoints/privateDnsZoneGroups/write",
+      "Microsoft.Network/privateEndpoints/privateDnsZoneGroups/read",
+      "Microsoft.Network/privateEndpoints/privateDnsZoneGroups/delete",
     ]
   }
   assignable_scopes = [
