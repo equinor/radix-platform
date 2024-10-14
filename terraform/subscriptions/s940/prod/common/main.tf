@@ -147,7 +147,7 @@ module "radix_id_gitrunner" {
   resource_group_name = module.config.common_resource_group
   location            = module.config.location
   roleassignments = {
-    contributor = {
+    privatelink-contributor = {
       role     = "Radix Privatelink rbac-${module.config.subscription_shortname}"
       scope_id = "/subscriptions/${module.config.subscription}"
     }
