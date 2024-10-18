@@ -59,7 +59,7 @@ fi
 
 SECRET_NAME="radix-cicd-canary-values"
 APP_REGISTRATION_NAME="radix-cicd-canary-private-acr"
-APP_SECRET_NAME="${RADIX_ZONE}-${RADIX_ENVIRONMENT}"
+APP_SECRET_NAME="$RADIX_ZONE"
 
 #######################################################################################
 ### Prepare az session
