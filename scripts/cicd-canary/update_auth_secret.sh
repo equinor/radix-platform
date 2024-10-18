@@ -23,11 +23,7 @@
 ### HOW TO USE
 ###
 
-# Update key vaults in S941-Omnia-Radix-Development
-# KEYVAULT_LIST="radix-keyv-dev,radix-keyv-playground" ./update_auth_secret.sh
-#
-# Update key vaults in S940-Omnia-Radix-Production
-# KEYVAULT_LIST="radix-keyv-platform,radix-keyv-c2" ./update_auth_secret.sh
+# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./update_auth_secret.sh
 
 
 #######################################################################################
@@ -36,9 +32,21 @@
 
 # Required inputs
 
-if [[ -z "$KEYVAULT_LIST" ]]; then
-    echo "ERROR: Please provide KEYVAULT_LIST" >&2
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
+
+if [[ -z "$RADIX_ZONE_ENV" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
+else
+    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+        exit 1
+    fi
+    source "$RADIX_ZONE_ENV"
 fi
 
 # Optional inputs
@@ -51,6 +59,7 @@ fi
 
 SECRET_NAME="radix-cicd-canary-values"
 APP_REGISTRATION_NAME="radix-cicd-canary-private-acr"
+APP_SECRET_NAME="$RADIX_ZONE"
 
 #######################################################################################
 ### Prepare az session
@@ -70,9 +79,10 @@ echo -e "Update auth secret will use the following configuration:"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  KEYVAULT_LIST                    : $KEYVAULT_LIST"
-echo -e "   -  SECRET_NAME                      : $SECRET_NAME"
+echo -e "   -  AZ_RESOURCE_KEYVAULT             : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  KV_SECRET_NAME                   : $SECRET_NAME"
 echo -e "   -  APP_REGISTRATION_NAME            : $APP_REGISTRATION_NAME"
+echo -e "   -  APP_SECRET_NAME                  : $APP_SECRET_NAME"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -98,7 +108,7 @@ fi
 printf "Re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\"..."
 APP_REGISTRATION_CLIENT_ID=$(az ad app list --filter "displayname eq '${APP_REGISTRATION_NAME}'" | jq -r '.[].appId')
 
-UPDATED_PRIVATE_IMAGE_HUB_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --display-name "rdx-cicd-canary" 2>/dev/null | jq -r '.password')
+UPDATED_PRIVATE_IMAGE_HUB_PASSWORD=$(az ad app credential reset --id "$APP_REGISTRATION_CLIENT_ID" --append --display-name "$APP_SECRET_NAME" 2>/dev/null | jq -r '.password')
 if [[ -z "$UPDATED_PRIVATE_IMAGE_HUB_PASSWORD" ]]; then
     echo -e "\nERROR: Could not re-generate client secret for App Registration \"$APP_REGISTRATION_NAME\". Exiting..." >&2
     exit 1
@@ -106,39 +116,25 @@ fi
 printf " Done.\n"
 
 # Get expiration date of updated credential
-EXPIRATION_DATE=$(az ad app credential list --id $APP_REGISTRATION_CLIENT_ID --query "[?displayName=='rdx-cicd-canary'].endDateTime" --output tsv | sed 's/\..*//')""
-# Get the existing secret and change the value using jq.
-FIRST_KEYVAULT=${KEYVAULT_LIST%%,*}
+EXPIRATION_DATE=$(az ad app credential list --id $APP_REGISTRATION_CLIENT_ID --query "sort_by([?displayName=='${APP_SECRET_NAME}'], &endDateTime)[-1].endDateTime" --output tsv | sed 's/\..*//')""
 
-printf "Getting secret from keyvault \"$FIRST_KEYVAULT\"..."
+printf "Getting secret from keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
 SECRET_VALUES=$(az keyvault secret show \
-    --vault-name "$FIRST_KEYVAULT" \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
     --name radix-cicd-canary-values 2>/dev/null |
     jq --arg password "${UPDATED_PRIVATE_IMAGE_HUB_PASSWORD}" \
     '.value | fromjson | .privateImageHub.password=$password')
 
 if [[ -z "$SECRET_VALUES" ]]; then
-    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$FIRST_KEYVAULT\". Exiting..." >&2
+    echo -e "\nERROR: Could not get secret \"$SECRET_NAME\" in keyvault \"$AZ_RESOURCE_KEYVAULT\". Exiting..." >&2
     exit 1
 fi
 printf " Done.\n"
 
-# Update keyvault with new json secret for every keyvault in KEYVAULT_LIST
-oldIFS=$IFS
-IFS=","
-for KEYVAULT_NAME in $KEYVAULT_LIST; do
-    printf "Updating keyvault \"$KEYVAULT_NAME\"..."
-    if [[ ""$(az keyvault secret set --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" 2>&1)"" == *"ERROR"* ]]; then
-        echo -e "\nERROR: Could not update secret in keyvault \"$KEYVAULT_NAME\"." >&2
-        script_errors=true
-        continue
-    fi
-    printf " Done\n"
-done
-IFS=$oldIFS
+# Update keyvault with new json secret
+printf "Updating keyvault \"$AZ_RESOURCE_KEYVAULT\"..."
 
-if [[ $script_errors == true ]]; then
-    echo "ERROR: Script completed with errors." >&2
-else
-    echo "Script completed successfully."
-fi
+az keyvault secret set --name "$SECRET_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" --output none || exit
+
+printf " Done\n"
+
