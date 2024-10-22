@@ -112,23 +112,6 @@ Keep in mind the following:
    1. Delete all the running pods of the component so that k8s will redeploy them with updated k8s secret
 
 
-#### Refresh Radix Web Console App Credentials
-
-There are currently three app registrations for Radix Web Console:
-- Radix Web Console - Development Clusters
-- Radix Web Console - Playground Clusters
-- Radix Web Console - Production Clusters
-
-Each of them are used by one or multiple clusters and is defined by the OAUTH2_PROXY_CLIENT_ID variable in the zone-files.
-
-1. Decide if you need to refresh the client secret for any of the Radix Web Console app registrations.
-   Multiple clusters may use the same Radix Web Console app registration and refreshing the app secret will impact all of them.
-   - If yes to refresh the client secret in AAD:
-     Refresh client secret for Radix Web Console and store in keyvault by using script ['refresh_web_console_app_credentials.sh](./refresh_web_console_app_credentials.sh)
-1. Update the OAUTH2_CLIENT_PROXY_SECRET for Radix Web Console auth component in all clusters using the app registration
-   - Manual: Use Radix Web Console, navigate to the radix-web-console application's `auth` component and update the `OAUTH2_PROXY_CLIENT_SECRET` secret with the newly generated app secret.
-   - Script: Run [update_auth_proxy_secret_for_console.sh](./../update_auth_proxy_secret_for_console.sh) to update k8s secret for the `auth` component
-
 
 ### Refresh Radix ServiceNow Proxy Client app registration credentials
 
