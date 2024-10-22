@@ -338,13 +338,13 @@ echo "Done."
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-printf "\n%s► Execute Redis Cache for QA %s%s\n" "${grn}" "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh")
-wait # wait for subshell to finish
-echo ""
-printf "%s► Execute Redis Cache for Prod %s%s\n" "${grn}" "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh")
-wait # wait for subshell to finish
+# printf "\n%s► Execute Redis Cache for QA %s%s\n" "${grn}" "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh" "${normal}"
+# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh")
+# wait # wait for subshell to finish
+# echo ""
+# printf "%s► Execute Redis Cache for Prod %s%s\n" "${grn}" "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh" "${normal}"
+# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh")
+# wait # wait for subshell to finish
 
 #######################################################################################
 ### Delete replyUrls

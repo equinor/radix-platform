@@ -52,7 +52,7 @@ resource "azurerm_role_definition" "privatelink_role" {
     actions = [
       "Microsoft.Resources/deployments/*",
       "Microsoft.Resources/subscriptions/resourceGroups/read",
-      
+
       "Microsoft.Network/privateEndpoints/read",
       "Microsoft.Network/privateEndpoints/write",
       "Microsoft.Network/privateEndpoints/delete",
