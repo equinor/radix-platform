@@ -233,11 +233,11 @@ if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
     echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
 fi
 
-CREATE_REDIS_CACHE_SCRIPT="$WORKDIR_PATH/redis/create_redis_cache_for_console.sh"
-if ! [[ -x "$CREATE_REDIS_CACHE_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The create redis cache script is not found or it is not executable in path $CREATE_REDIS_CACHE_SCRIPT" >&2
-fi
+# CREATE_REDIS_CACHE_SCRIPT="$WORKDIR_PATH/redis/create_redis_cache_for_console.sh"
+# if ! [[ -x "$CREATE_REDIS_CACHE_SCRIPT" ]]; then
+#     # Print to stderror
+#     echo "ERROR: The create redis cache script is not found or it is not executable in path $CREATE_REDIS_CACHE_SCRIPT" >&2
+# fi
 
 UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/redis/update_redis_cache_for_console.sh"
 if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
@@ -389,33 +389,33 @@ if [[ ${BACKUP_NAME} == "migration-"* ]]; then
     echo ""
 fi
 
-create_redis_cache=true
-if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        read -r -p "Create Redis Caches for Console? (Y/n) " yn
-        case $yn in
-        [Yy]*) break ;;
-        [Nn]*)
-            create_redis_cache=false
-            exit 0
-            ;;
-        *) echo "Please answer yes or no." ;;
-        esac
-    done
-    echo ""
-fi
+# create_redis_cache=true
+# if [[ $USER_PROMPT == true ]]; then
+#     while true; do
+#         read -r -p "Create Redis Caches for Console? (Y/n) " yn
+#         case $yn in
+#         [Yy]*) break ;;
+#         [Nn]*)
+#             create_redis_cache=false
+#             exit 0
+#             ;;
+#         *) echo "Please answer yes or no." ;;
+#         esac
+#     done
+#     echo ""
+# fi
 
-if [[ $create_redis_cache == true ]]; then
-    printf "Creating Redis Caches for Console...\n"
-    (
-        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
-        echo ""
-        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
-    )
-    printf "Done...\n"
-fi
+# if [[ $create_redis_cache == true ]]; then
+#     printf "Creating Redis Caches for Console...\n"
+#     (
+#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
+#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
+#         echo ""
+#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
+#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
+#     )
+#     printf "Done...\n"
+# fi
 
 # Give option to create dest cluster if it does not exist
 echo ""
@@ -726,21 +726,21 @@ printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SC
 wait # wait for subshell to finish
 echo ""
 
-update_redis_cache=true
-if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        read -r -p "Update Redis Caches for Console? (Y/n) " yn
-        case $yn in
-        [Yy]*) break ;;
-        [Nn]*)
-            update_redis_cache=false
-            exit 0
-            ;;
-        *) echo "Please answer yes or no." ;;
-        esac
-    done
-    echo ""
-fi
+# update_redis_cache=true
+# if [[ $USER_PROMPT == true ]]; then
+#     while true; do
+#         read -r -p "Update Redis Caches for Console? (Y/n) " yn
+#         case $yn in
+#         [Yy]*) break ;;
+#         [Nn]*)
+#             update_redis_cache=false
+#             exit 0
+#             ;;
+#         *) echo "Please answer yes or no." ;;
+#         esac
+#     done
+#     echo ""
+# fi
 
 # Wait for redis caches to be created.
 printf "\nWaiting for redis caches to be created..."
@@ -750,16 +750,22 @@ while [[ $(az redis show --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --name "
 done
 printf " Done\n."
 
-if [[ $update_redis_cache == true ]]; then
-    printf "Updating Redis Caches for Console...\n"
-    (
-        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
-        printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
-    )
-    printf "Done...\n"
-fi
+printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
+RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
+printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
+RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
+
+
+# if [[ $update_redis_cache == true ]]; then
+#     printf "Updating Redis Caches for Console...\n"
+#     (
+#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
+#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
+#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
+#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
+#     )
+#     printf "Done...\n"
+# fi
 
 # Move custom ingresses
 # if [[ $MIGRATION_STRATEGY == "aa" ]]; then
