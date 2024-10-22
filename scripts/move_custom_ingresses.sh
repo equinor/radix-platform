@@ -215,46 +215,10 @@ verify_cluster_access
 #######################################################################################
 ### Move custom ingresses
 ###
-if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground" ]]; then
-    echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
-else
-    echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
-fi
 
-echo ""
-printf "Enabling monitoring addon in the destination cluster...\n"
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
-omsagent=$(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${DEST_CLUSTER}" --query addonProfiles.omsagent.enabled)
-if [[ "${omsagent}" == "false" || -z "${omsagent}" ]]; then
-    az aks enable-addons \
-        --addons monitoring \
-        --name "${DEST_CLUSTER}" \
-        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-        --workspace-resource-id "${WORKSPACE_ID}" \
-        --data-collection-settings dataCollectionSettings.json \
-        --no-wait || {
-        echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2
-        exit 1
-    }
-fi
-printf "Done.\n"
-rm dataCollectionSettings.json
 
 if [[ -n "${SOURCE_CLUSTER}" ]]; then
     echo ""
-    printf "Disabling monitoring addon in the source cluster... "
-    if [[ "${omsagent}" == "true" ]]; then
-        az aks disable-addons \
-            --addons monitoring \
-            --name "${SOURCE_CLUSTER}" \
-            --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-            --subscription "${AZ_SUBSCRIPTION_ID}" \
-            --no-wait || {
-            echo -e "\nERROR: Failed to disable monitoring addon. Exiting... " >&2
-            exit 1
-        }
-    fi
-    printf "Done.\n"
 
     echo ""
     printf "Point to source cluster...\n"
@@ -265,20 +229,6 @@ if [[ -n "${SOURCE_CLUSTER}" ]]; then
     #######################################################################################
     ### Point grafana to cluster specific ingress
     ###
-
-    echo ""
-    printf "Scale down radix-cicd-canary in %s..." "$SOURCE_CLUSTER"
-    kubectl scale deployment \
-        --namespace radix-cicd-canary radix-cicd-canary \
-        --replicas=0
-    wait
-    printf "Done.\n"
-
-    echo ""
-    printf "Suspend radix-cicd-canary kustomizations...\n"
-    flux suspend kustomization radix-cicd-canary
-    wait
-    printf "Done.\n"
 
     printf "Update Auth proxy secret...\n"
     printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" "${normal}"
