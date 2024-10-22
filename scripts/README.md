@@ -40,13 +40,15 @@ NOTE: If there is a need to migrate to a new cluster with a different setup, ple
 
 This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
-The whole process should be handled by the [migrate.sh](./migrate.sh) script. See file header in for usage. The only exception is the last manual step to make the cluster the active one.
+Run script by the [migrate.sh](./migrate.sh). See file header in for usage.
 
-#### 2.1.2 Manuall steps:
+#### 2.1.1 Set new cluster to active
 
-- Run SQL Server scripts to fix user accounts for vulnerability scanner and cost api
-- Trigger Github Action to migrate custom ingresses. Change active cluster here: https://github.com/equinor/radix-flux/edit/master/clusters/development/postBuild.yaml (development)
-  - Make sure the scripts completes without errors... often fails because of Token Timeout
+The following steps should only be performed when `active-to-active` was selected as migration strategy in `migrate.sh`.
+
+Steps:
+1. Run [move_custom_ingresses.sh](./move_custom_ingresses.sh).
+2. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `postBuild.yaml` for the respective Radix zone.
 
 ### 2.2 Setting up a cluster from scratch
 
