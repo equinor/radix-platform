@@ -12,6 +12,9 @@ resource "azurerm_public_ip_prefix" "publicipprefix" {
   tags = {
     IaC = "terraform"
   }
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_public_ip" "this" {

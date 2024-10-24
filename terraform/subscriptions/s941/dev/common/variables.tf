@@ -24,4 +24,14 @@ variable "storageaccounts" {
   }
 }
 
+variable "enviroment_temporary" {
+  type    = string
+  default = "development"
+}
+
+variable "resource_groups_common_temporary" {
+  type    = string
+  default = "common"
+}
+
 
