@@ -5,9 +5,8 @@ module "config" {
 }
 
 module "resourcegroups" {
-  for_each = toset(var.resource_groups)
   source   = "../../../modules/resourcegroups"
-  name     = each.value
+  name     = module.config.cluster_resource_group
   location = module.config.location
 }
 

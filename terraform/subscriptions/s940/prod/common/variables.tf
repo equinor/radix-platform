@@ -28,3 +28,8 @@ variable "storageaccounts" {
     }
   }
 }
+
+variable "resource_groups_common_temporary" {
+  type    = string
+  default = "common"
+}
