@@ -290,7 +290,6 @@ fi
 
 printf "Initializing Terraform..."
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" init
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/virtualnetwork" init
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" init
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
@@ -349,7 +348,7 @@ fi
 # if migrating active to active cluster (eg. dev to dev)
 if [ "$MIGRATION_STRATEGY" = "aa" ]; then
     # Path to Public IP Prefix which contains the public outbound IPs
-    IPPRE=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/virtualnetwork" output -json public_ip_prefix_ids)
+    IPPRE=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -json public_ip_prefix_ids)
     IPPRE_EGRESS_ID=$(jq -n "${IPPRE}" | jq -r .egress_id)
     IPPRE_INGRESS_ID=$(jq -n "${IPPRE}" | jq -r .ingress_id)
     # IPPRE_EGRESS_ID="/subscriptions/$AZ_SUBSCRIPTION_ID/resourceGroups/$AZ_RESOURCE_GROUP_IPPRE/providers/Microsoft.Network/publicIPPrefixes/$AZ_IPPRE_OUTBOUND_NAME"
