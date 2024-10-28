@@ -37,7 +37,7 @@ resource "azurerm_role_assignment" "this" {
 
 data "azurerm_subnet" "subnet" {
   name                 = "private-links"
-  virtual_network_name = var.virtual_network
+  virtual_network_name = "vnet-hub"
   resource_group_name  = var.vnet_resource_group
 }
 
