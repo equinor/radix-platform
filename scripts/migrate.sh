@@ -840,3 +840,5 @@ echo ""
 
 printf "\n"
 printf "%sDone.%s\n" "${grn}" "${normal}"
+
+printf "\n\n\n %sRemember to run ./move_custom_ingresses.sh after you have patched activeClusterName in radix-flux!%s\n\n" "${grn}" "${normal}"
