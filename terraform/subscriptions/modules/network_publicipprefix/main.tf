@@ -19,7 +19,7 @@ resource "azurerm_public_ip_prefix" "publicipprefix" {
 
 resource "azurerm_public_ip" "this" {
   count                   = var.publicipcounter
-  name                    = "pip-${var.pipprefix}-${var.enviroment}-${var.pippostfix}-${format("%03d", count.index + 1)}"
+  name                    = "pip-${var.pipprefix}-${var.enviroment}-${var.pippostfix}-${format("%03d", var.puplicipstartcounter  +  count.index)}"
   public_ip_prefix_id     = resource.azurerm_public_ip_prefix.publicipprefix.id
   resource_group_name     = var.resource_group_name
   location                = var.location

@@ -45,3 +45,8 @@ variable "publicipcounter" {
   type        = number
   default     = 4
 }
+
+variable "puplicipstartcounter" {
+  type = number
+  default = 1
+}

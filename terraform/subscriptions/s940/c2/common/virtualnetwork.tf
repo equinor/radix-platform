@@ -39,6 +39,18 @@ module "azurerm_public_ip_prefix_egress" {
   publicipcounter     = 8
 }
 
+module "azurerm_public_ip_prefix_egress_egress2" {
+  source              = "../../../modules/network_publicipprefix"
+  location            = module.config.location
+  resource_group_name = module.config.cluster_resource_group
+  publicipprefixname  = "ippre-radix-aks-${module.config.environment}-${module.config.location}-001"
+  pipprefix           = "radix-aks"
+  pippostfix          = module.config.location
+  enviroment          = "c2"
+  prefix_length       = 28
+  publicipcounter     = 16
+}
+
 output "vnet_hub_id" {
   value = module.azurerm_virtual_network.data.vnet_hub.id
 }
