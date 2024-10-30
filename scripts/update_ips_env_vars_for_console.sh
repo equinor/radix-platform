@@ -118,6 +118,9 @@ function updateIpsEnvVars() {
 
     local ip_list
     local ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
+    if [[ $RADIX_ZONE == "c2" ]]; then
+        local ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_IPPRE}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
+    fi
 
     # Get list of IPs for Public IPs assigned to Cluster Type
     printf "Getting list of IPs from Public IP Prefix %s..." "${ippre_name}"
@@ -137,8 +140,24 @@ function updateIpsEnvVars() {
             ip_list2=$(az network public-ip prefix show --name "ippre-ingress-radix-aks-platform-northeurope-001" --resource-group "common-platform" | jq -r .ipPrefix)
             ip_list="${ip_list1},${ip_list2}"
         fi
+    elif [[ $RADIX_ZONE == "playground" ]]; then
+        if [[ $ippre_name = "ippre-radix-aks-playground-northeurope-001" ]]; then
+            ip_list1=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
+            ip_list2=$(az network public-ip prefix show --name "ippre-radix-aks-playground-northeurope-002" --resource-group "clusters-playground" | jq -r .ipPrefix)
+            ip_list="${ip_list1},${ip_list2}"
+        else
+            ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
+        fi
+    elif [[ $RADIX_ZONE == "c2" ]]; then
+        if [[ $ippre_name = "ippre-egress-radix-aks-c2-prod-001" ]]; then
+            ip_list1=$(az network public-ip prefix show --name ${ippre_name} --resource-group "common-westeurope" | jq -r .ipPrefix)
+            ip_list2=$(az network public-ip prefix show --name "ippre-radix-aks-c2-westeurope-001" --resource-group "clusters-c2" | jq -r .ipPrefix)
+            ip_list="${ip_list1},${ip_list2}"
+        else
+            ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group "common-westeurope" | jq -r .ipPrefix)
+        fi
     else
-        ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
+        ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group "common-westeurope" | jq -r .ipPrefix)
     fi
     printf "Done.\n"
     updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${ip_list}"
