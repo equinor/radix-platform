@@ -40,9 +40,10 @@ resource "azurerm_virtual_network" "this" {
   address_space       = ["${var.address_space}/16"]
 
   subnet {
-    name           = "subnet-${var.cluster_name}"
-    address_prefix = "${var.address_space}/18"
-    security_group = azurerm_network_security_group.this.id
+    name                            = "subnet-${var.cluster_name}"
+    address_prefixes                = ["${var.address_space}/18"]
+    security_group                  = azurerm_network_security_group.this.id
+    default_outbound_access_enabled = false
   }
   dynamic "ddos_protection_plan" {
     for_each = var.enviroment == "platform" || var.enviroment == "c2" ? [1] : []
