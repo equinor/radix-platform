@@ -266,145 +266,6 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 #######################################################################################
-### Delete cluster
-###
-
-printf "Verifying that cluster exist and/or the user can access it... "
-# We use az aks get-credentials to test if both the cluster exist and if the user has access to it.
-
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
-    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found, or you do not have access to it." >&2
-    if [[ $USER_PROMPT == true ]]; then
-        echo ""
-        while true; do
-            read -r -p "Do you want to continue? (Y/n) " yn
-            case $yn in
-            [Yy]*) break ;;
-            [Nn]*)
-                echo ""
-                echo "Quitting."
-                exit 0
-                ;;
-            *) echo "Please answer yes or no." ;;
-            esac
-        done
-    else
-        exit 0
-    fi
-}
-printf "Done.\n"
-
-# Determining egress IP of cluster before deletion
-migration_strategy=$(az resource show --id /subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME} --query tags.migrationStrategy -o tsv)
-if [[ "${migration_strategy}" == "at" ]]; then
-    echo ""
-    echo "Cluster ${CLUSTER_NAME} is a test cluster. Determining cluster egress IP in order to remove it after cluster deletion..."
-    egress_ip_range=$(get_cluster_outbound_ip ${migration_strategy} ${CLUSTER_NAME} ${AZ_SUBSCRIPTION_ID} ${AZ_IPPRE_OUTBOUND_NAME} ${AZ_RESOURCE_GROUP_COMMON})
-    echo ""
-fi
-echo "Done."
-
-# Delete the cluster
-echo ""
-echo "Deleting cluster... "
-az aks delete \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$CLUSTER_NAME" \
-    --subscription "$AZ_SUBSCRIPTION_ID" \
-    --yes \
-    --output none \
-    --only-show-errors
-echo "Done."
-
-#######################################################################################
-### Delete ACR network rule
-###
-
-# if [[ "${migration_strategy}" == "at" ]]; then
-#     echo ""
-#     echo "Cluster ${CLUSTER_NAME} is a test cluster. Removing egress IP range ${egress_ip_range} from ACR rules..."
-#     printf "%s► Execute %s%s\n" "${grn}" "$WHITELIST_IP_IN_ACR_SCRIPT" "${normal}"
-#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" IP_MASK=${egress_ip_range} IP_LOCATION=$CLUSTER_NAME ACTION=delete $WHITELIST_IP_IN_ACR_SCRIPT)
-#     wait # wait for subshell to finish
-#     echo ""
-# else
-#     echo "Cluster ${CLUSTER_NAME} is a non-test cluster. Leaving ACR network rules as they are..."
-# fi
-# echo "Done."
-
-#######################################################################################
-### Delete Redis Cache
-###
-
-WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# printf "\n%s► Execute Redis Cache for QA %s%s\n" "${grn}" "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh" "${normal}"
-# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh")
-# wait # wait for subshell to finish
-# echo ""
-# printf "%s► Execute Redis Cache for Prod %s%s\n" "${grn}" "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh" "${normal}"
-# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$CLUSTER_NAME" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="$USER_PROMPT" source "$WORKDIR_PATH/../redis/delete_redis_cache_for_console.sh")
-# wait # wait for subshell to finish
-
-#######################################################################################
-### Delete replyUrls
-###
-
-# echo ""
-# echo "Delete replyUrls"
-
-# # Delete replyUrl for Radix web-console
-# WEB_CONSOLE_ENV="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-# APP_REGISTRATION_WEB_CONSOLE="Omnia Radix Web Console - ${CLUSTER_TYPE^}" # "Development", "Playground", "Production"
-# APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].appId --output tsv --only-show-errors)"
-# APP_REGISTRATION_OBJ_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_WEB_CONSOLE}'" --query [].id --output tsv --only-show-errors)"
-# HOST_NAME_WEB_CONSOLE="auth-${WEB_CONSOLE_ENV}.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
-# REPLY_URL="https://${HOST_NAME_WEB_CONSOLE}/oauth2/callback"
-# WEB_REDIRECT_URI="https://${HOST_NAME_WEB_CONSOLE}/applications"
-
-# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
-# (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="$WEB_REDIRECT_URI" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
-# wait # wait for subshell to finish
-
-# Delete replyUrl for grafana
-# APP_REGISTRATION_ID="$(az ad app list --filter "displayname eq '${APP_REGISTRATION_GRAFANA}'" --query [].appId --output tsv --only-show-errors)"
-# HOST_NAME_GRAFANA="grafana.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
-# REPLY_URL="https://${HOST_NAME_GRAFANA}/login/generic_oauth"
-
-# printf "\n%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh" "${normal}"
-# (APP_REGISTRATION_ID="$APP_REGISTRATION_ID" APP_REGISTRATION_OBJ_ID="${APP_REGISTRATION_OBJ_ID}" REPLY_URL="$REPLY_URL" USER_PROMPT="$USER_PROMPT" WEB_REDIRECT_URI="" source "$WORKDIR_PATH/../delete_reply_url_for_cluster.sh")
-# wait # wait for subshell to finish
-
-#######################################################################################
-### Delete related stuff
-###
-
-echo "Delete Data collection rule... "
-APIVersion="2022-06-01"
-DataCollectionRule="$(az rest \
-    --method GET \
-    --url "https://management.azure.com/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.Insights/dataCollectionRules?api-version=${APIVersion}" \
-    --query "value[?name=='MSCI-${AZ_INFRASTRUCTURE_REGION}-${CLUSTER_NAME}']")"
-
-if [[ $(jq '. | length' <<<"${DataCollectionRule}") -gt 0 ]]; then
-    dataCollectionRuleName=$(jq -r '.[].name' <<<"${DataCollectionRule}")
-    printf "   Deleting %s... " "${dataCollectionRuleName}"
-    az rest \
-        --method DELETE \
-        --url "https://management.azure.com/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.Insights/dataCollectionRules/${dataCollectionRuleName}?api-version=${APIVersion}"
-    printf "Done.\n"
-fi
-echo "Done."
-
-echo "Cleaning up local kube config... "
-kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
-if [[ "$(kubectl config get-contexts -o name)" == *"${CLUSTER_NAME}"* ]]; then
-    kubectl config delete-context "${CLUSTER_NAME}" &>/dev/null
-fi
-kubectl config delete-cluster "${CLUSTER_NAME}" &>/dev/null
-echo "Done."
-
-#######################################################################################
 ### Store new clusterlist to Keyvault
 ###
 SECRET_NAME="radix-clusters"
@@ -429,29 +290,21 @@ if [[ ${update_keyvault} == true ]]; then
     printf "Done.\n"
 fi
 
+for row in $(kubectl get pdb -A -o json | jq -c '.items[] | select(.spec.minAvailable == 1) | {namespace: .metadata.namespace, name: .metadata.name, minAvailable: .spec.minAvailable}'); do
+  namespace=$(echo "$row" | jq -r '.namespace')
+  name=$(echo "$row" | jq -r '.name')
+  minAvailable=$(echo "$row" | jq -r '.minAvailable')
+  kubectl patch pdb -n ${namespace} ${name} -p '{"spec":{"minAvailable":0}}'
+done
+
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" destroy -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster_node_pool.this
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" destroy -target module.aks[\"${CLUSTER_NAME}\"].azurerm_network_watcher_flow_log.this --auto-approve
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" destroy -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster.this --auto-approve
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
 
-# if [[ "${VNET}" ]]; then
-#     echo "Deleting vnet... "
-
-#     az network vnet delete \
-#         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#         --name "$VNET_NAME" \
-#         --subscription "$AZ_SUBSCRIPTION_ID" \
-#         --output none \
-#         --only-show-errors
-#     echo "Done."
-# fi
-
-# echo "Deleting Network Security Group..."
-# az network nsg delete \
-#     --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-#     --name "$NSG_NAME" \
-#     --subscription "$AZ_SUBSCRIPTION_ID"
-# echo "Done."
 
 if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
     # IP cannot be deleted while still allocated to loadbalancer.
@@ -468,12 +321,6 @@ echo "Delete DNS records"
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dns/delete_dns_entries_for_cluster.sh" "${normal}"
 (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" CLUSTER_NAME="$CLUSTER_NAME" ../dns/delete_dns_entries_for_cluster.sh)
 wait # wait for subshell to finish
-
-# echo ""
-# echo "Delete orphaned DNS records"
-# printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/../dns/delete_orphaned_dns_entries.sh" "${normal}"
-# (RADIX_ENVIRONMENT="$RADIX_ENVIRONMENT" CLUSTER_TYPE="$CLUSTER_TYPE" RESOURCE_GROUP="$RESOURCE_GROUP" DNS_ZONE="$DNS_ZONE" ../dns/delete_orphaned_dns_entries.sh)
-# wait # wait for subshell to finish
 
 #######################################################################################
 ### END
