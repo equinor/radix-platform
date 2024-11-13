@@ -7,32 +7,20 @@ variable "aksclusters" {
     node_os_upgrade_channel   = optional(string, "None")
     ip                        = string
     subnet_id                 = string
-    aksversion                = optional(string, "1.29.8")
+    aksversion                = optional(string, "1.29.2")
     cost_analysis             = optional(bool, "false")
     dns_prefix                = optional(string)
     clustertags               = optional(map(string))
     workload_identity_enabled = optional(bool, "false")
-    network_policy            = optional(string, "cilium") #Currently supported values are calico, azure and cilium
-    cluster_sku_tier          = optional(string, "Free")
+    network_policy            = optional(string, "calico")
   }))
   default = {
-    weekly-45 = {
-      autostartupschedule     = true
-      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"]
-      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/virtualNetworks/vnet-weekly-45/subnets/subnet-weekly-45"
-      ip                      = "10.4.0.0"
+    c2-11 = {
+      outbound_ip_address_ids = ["/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-003", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-004", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-005", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-006", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-007", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-008"]
+      subnet_id               = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/virtualNetworks/vnet-c2-11/subnets/subnet-c2-11"
+      ip                      = "10.5.0.0"
       clustertags = {
-        # "autostartupschedule" = "true"
         "migrationStrategy" = "aa"
-      }
-    }
-    weekly-46 = {
-      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004"]
-      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/virtualNetworks/vnet-weekly-46/subnets/subnet-weekly-46"
-      ip                      = "10.3.0.0"
-      clustertags = {
-        "autostartupschedule" = "true"
-        "migrationStrategy"   = "aa"
       }
     }
   }
@@ -47,12 +35,12 @@ variable "systempool" {
   })
 
   default = {
-    vm_size = "Standard_B4as_v2"
+    vm_size = "Standard_E16as_v4"
     tags = {
       "nodepool" = "systempool"
     }
-    min_nodes = 2
-    max_nodes = 3
+    min_nodes = 3
+    max_nodes = 4
   }
 }
 
@@ -114,24 +102,24 @@ variable "nodepools" {
 
     }
     armpipepool = {
-      vm_size   = "Standard_B4ps_v2"
+      vm_size   = "Standard_E16ps_v5"
       min_count = 1
-      max_count = 4
+      max_count = 16
       node_labels = {
         "nodepooltasks" = "jobs"
       }
       node_taints = ["nodepooltasks=jobs:NoSchedule"]
     }
     armuserpool = {
-      vm_size   = "Standard_B4ps_v2"
+      vm_size   = "Standard_E16ps_v5"
       min_count = 1
-      max_count = 4
+      max_count = 16
 
     }
     x86pipepool = {
-      vm_size   = "Standard_B4as_v2"
+      vm_size   = "Standard_E16as_v5"
       min_count = 1
-      max_count = 4
+      max_count = 16
       node_labels = {
         "nodepooltasks" = "jobs"
       }
@@ -139,9 +127,9 @@ variable "nodepools" {
 
     }
     x86userpool = {
-      vm_size   = "Standard_B4as_v2"
-      min_count = 1
-      max_count = 4
+      vm_size   = "Standard_E16as_v5"
+      min_count = 3
+      max_count = 16
 
     }
   }
@@ -152,10 +140,7 @@ variable "authorized_ip_ranges" {
   default = ["143.97.110.1/32",
     "143.97.2.129/32",
     "143.97.2.35/32",
-    "158.248.121.139/32",
-    "213.236.148.45/32",
     "8.29.230.8/32",
-    "92.221.23.247/32",
     "92.221.25.155/32",
   "92.221.72.153/32"]
 }

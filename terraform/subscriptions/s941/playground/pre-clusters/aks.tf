@@ -14,10 +14,9 @@ data "azurerm_log_analytics_workspace" "defender" {
 }
 
 data "azurerm_log_analytics_workspace" "containers" {
-  name                = "radix-container-logs-dev"
+  name                = "radix-container-logs-playground"
   resource_group_name = "Logs-Dev"
 }
-
 
 module "aks" {
   source = "../../../modules/aks"
@@ -27,7 +26,8 @@ module "aks" {
   resource_group = module.config.cluster_resource_group
   location       = module.config.location
   subnet_id      = each.value.subnet_id
-  dns_prefix     = "${each.key}-${module.config.cluster_resource_group}-${substr(module.config.subscription, 0, 6)}"
+  # dns_prefix                  = "${each.key}-${module.config.cluster_resource_group}-${substr(module.config.subscription, 0, 6)}"
+  dns_prefix = each.value.dns_prefix
   # autostartupschedule         = each.value.autostartupschedule
   clustertags = each.value.clustertags
   # migrationStrategy           = each.value.migrationStrategy
@@ -49,7 +49,6 @@ module "aks" {
   cost_analysis             = each.value.cost_analysis
   workload_identity_enabled = each.value.workload_identity_enabled
   network_policy            = each.value.network_policy
-  cluster_sku_tier          = each.value.cluster_sku_tier
   developers                = module.config.developers
 }
 

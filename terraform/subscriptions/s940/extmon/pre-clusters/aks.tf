@@ -1,10 +1,10 @@
 data "azurerm_user_assigned_identity" "aks" {
-  name                = "radix-id-aks-${module.config.environment}"
+  name                = "id-radix-aks-extmon-northeurope"
   resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_user_assigned_identity" "akskubelet" {
-  name                = "radix-id-akskubelet-${module.config.environment}"
+  name                = "id-radix-akskubelet-extmon-northeurope"
   resource_group_name = module.config.common_resource_group
 }
 
@@ -14,10 +14,9 @@ data "azurerm_log_analytics_workspace" "defender" {
 }
 
 data "azurerm_log_analytics_workspace" "containers" {
-  name                = "radix-container-logs-dev"
-  resource_group_name = "Logs-Dev"
+  name                = "radix-container-logs-mon"
+  resource_group_name = "Logs"
 }
-
 
 module "aks" {
   source = "../../../modules/aks"
@@ -49,7 +48,6 @@ module "aks" {
   cost_analysis             = each.value.cost_analysis
   workload_identity_enabled = each.value.workload_identity_enabled
   network_policy            = each.value.network_policy
-  cluster_sku_tier          = each.value.cluster_sku_tier
   developers                = module.config.developers
 }
 

@@ -1,11 +1,11 @@
 data "azurerm_user_assigned_identity" "aks" {
-  name                = "radix-id-aks-${module.config.environment}"
-  resource_group_name = module.config.common_resource_group
+  name                = "id-radix-aks-c2-prod" #TODO radix-id-aks-${module.config.environment} 
+  resource_group_name = "common-westeurope"    #TODO module.config.common_resource_group
 }
 
 data "azurerm_user_assigned_identity" "akskubelet" {
-  name                = "radix-id-akskubelet-${module.config.environment}"
-  resource_group_name = module.config.common_resource_group
+  name                = "id-radix-akskubelet-c2-prod" #TODO radix-id-akskubelet-${module.config.environment}
+  resource_group_name = "common-westeurope"           #TODO module.config.common_resource_group
 }
 
 data "azurerm_log_analytics_workspace" "defender" {
@@ -14,10 +14,9 @@ data "azurerm_log_analytics_workspace" "defender" {
 }
 
 data "azurerm_log_analytics_workspace" "containers" {
-  name                = "radix-container-logs-dev"
-  resource_group_name = "Logs-Dev"
+  name                = "radix-container-logs-c2-prod"
+  resource_group_name = "logs-westeurope"
 }
-
 
 module "aks" {
   source = "../../../modules/aks"
@@ -29,7 +28,6 @@ module "aks" {
   subnet_id      = each.value.subnet_id
   dns_prefix     = "${each.key}-${module.config.cluster_resource_group}-${substr(module.config.subscription, 0, 6)}"
   # autostartupschedule         = each.value.autostartupschedule
-  clustertags = each.value.clustertags
   # migrationStrategy           = each.value.migrationStrategy
   outbound_ip_address_ids     = each.value.outbound_ip_address_ids
   node_os_upgrade_channel     = each.value.node_os_upgrade_channel
@@ -49,7 +47,6 @@ module "aks" {
   cost_analysis             = each.value.cost_analysis
   workload_identity_enabled = each.value.workload_identity_enabled
   network_policy            = each.value.network_policy
-  cluster_sku_tier          = each.value.cluster_sku_tier
   developers                = module.config.developers
 }
 

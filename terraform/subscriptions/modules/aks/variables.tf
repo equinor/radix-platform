@@ -2,7 +2,7 @@ variable "cluster_name" {
   type = string
 }
 
-variable "subnet_id" {
+variable "resource_group" {
   type = string
 }
 
@@ -10,30 +10,45 @@ variable "location" {
   type = string
 }
 
-variable "resource_group" {
-  type = string
-}
-
 variable "dns_prefix" {
   type = string
 }
 
-variable "autostartupschedule" {
+variable "aks_version" {
+  type = string
+}
+
+variable "node_os_upgrade_channel" {
+  type = string
+}
+
+variable "cost_analysis" {
   type    = bool
   default = false
 }
 
-variable "migrationStrategy" {
-  type = string
+variable "cluster_sku_tier" {
+  type    = string
+  default = "Standard"
+}
+
+variable "workload_identity_enabled" {
+  type    = bool
+  default = true
+}
+
+variable "clustertags" {
+  type    = map(string)
+  default = {}
+}
+
+variable "authorized_ip_ranges" {
+  type = list(string)
 }
 
 variable "developers" {
-  type    = list(any)
-  default = ["a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"]
-}
-
-variable "outbound_ip_address_ids" {
-  type = list(any)
+  type = string
+  # default = []
 }
 
 variable "tenant_id" {
@@ -41,6 +56,88 @@ variable "tenant_id" {
   default = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 }
 
-variable "node_os_upgrade_channel" {
+variable "subnet_id" {
   type = string
+}
+
+variable "systempool" {
+  type = object({
+    vm_size   = string
+    tags      = optional(map(string))
+    min_nodes = number
+    max_nodes = number
+  })
+}
+
+variable "identity_aks" {
+  type = string
+}
+
+variable "identity_kublet_client" {
+  type = string
+}
+variable "identity_kublet_object" {
+  type = string
+}
+variable "identity_kublet_identity_id" {
+  type = string
+}
+
+variable "defender_workspace_id" {
+  type = string
+}
+
+variable "network_policy" {
+  description = "Specifies the data plane used for building the Kubernetes network. Currently supported values are calico, azure and cilium"
+  type        = string
+  default     = "calico"
+}
+
+variable "outbound_ip_address_ids" {
+  type = list(any)
+}
+
+variable "nodepools" {
+  type = map(object({
+    vm_size      = string
+    min_count    = number
+    max_count    = number
+    node_count   = optional(number, 1)
+    node_labels  = optional(map(string))
+    node_taints  = optional(list(string), [])
+    os_disk_type = optional(string, "Managed")
+  }))
+}
+
+# variable "autostartupschedule" {
+#   type    = bool
+#   default = false
+# }
+
+# variable "migrationStrategy" {
+#   type = string
+# }
+
+variable "storageaccount_id" {
+  description = "The ID of the Storage Account"
+  type        = string
+}
+
+variable "address_space" {
+  description = "Address space"
+  type        = string
+}
+
+variable "enviroment" {
+  description = "Enviroment"
+  type        = string
+}
+
+# variable "containers_workspace_id" {
+#   type    = string
+# }
+
+variable "service_endpoints" {
+  type    = list(string)
+  default = []
 }

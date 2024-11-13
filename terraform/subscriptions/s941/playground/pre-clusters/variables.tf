@@ -7,32 +7,22 @@ variable "aksclusters" {
     node_os_upgrade_channel   = optional(string, "None")
     ip                        = string
     subnet_id                 = string
-    aksversion                = optional(string, "1.29.8")
+    aksversion                = optional(string, "1.29.2")
     cost_analysis             = optional(bool, "false")
-    dns_prefix                = optional(string)
+    dns_prefix                = string
     clustertags               = optional(map(string))
     workload_identity_enabled = optional(bool, "false")
     network_policy            = optional(string, "cilium") #Currently supported values are calico, azure and cilium
-    cluster_sku_tier          = optional(string, "Free")
   }))
   default = {
-    weekly-45 = {
-      autostartupschedule     = true
-      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"]
-      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/virtualNetworks/vnet-weekly-45/subnets/subnet-weekly-45"
-      ip                      = "10.4.0.0"
+    playground-29 = {
+      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004"]
+      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/virtualNetworks/vnet-playground-29/subnets/subnet-playground-29"
+      ip                      = "10.5.0.0"
+      cost_analysis           = true
+      dns_prefix              = "playground-clusters-playgro-16ede4"
       clustertags = {
-        # "autostartupschedule" = "true"
         "migrationStrategy" = "aa"
-      }
-    }
-    weekly-46 = {
-      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004"]
-      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/virtualNetworks/vnet-weekly-46/subnets/subnet-weekly-46"
-      ip                      = "10.3.0.0"
-      clustertags = {
-        "autostartupschedule" = "true"
-        "migrationStrategy"   = "aa"
       }
     }
   }
@@ -47,12 +37,12 @@ variable "systempool" {
   })
 
   default = {
-    vm_size = "Standard_B4as_v2"
+    vm_size = "Standard_B8as_v2"
     tags = {
       "nodepool" = "systempool"
     }
-    min_nodes = 2
-    max_nodes = 3
+    min_nodes = 3
+    max_nodes = 4
   }
 }
 
@@ -114,7 +104,7 @@ variable "nodepools" {
 
     }
     armpipepool = {
-      vm_size   = "Standard_B4ps_v2"
+      vm_size   = "Standard_B8ps_v2"
       min_count = 1
       max_count = 4
       node_labels = {
@@ -123,13 +113,13 @@ variable "nodepools" {
       node_taints = ["nodepooltasks=jobs:NoSchedule"]
     }
     armuserpool = {
-      vm_size   = "Standard_B4ps_v2"
+      vm_size   = "Standard_B8ps_v2"
       min_count = 1
       max_count = 4
 
     }
     x86pipepool = {
-      vm_size   = "Standard_B4as_v2"
+      vm_size   = "Standard_B8as_v2"
       min_count = 1
       max_count = 4
       node_labels = {
@@ -139,9 +129,9 @@ variable "nodepools" {
 
     }
     x86userpool = {
-      vm_size   = "Standard_B4as_v2"
+      vm_size   = "Standard_B8as_v2"
       min_count = 1
-      max_count = 4
+      max_count = 16
 
     }
   }
@@ -152,10 +142,7 @@ variable "authorized_ip_ranges" {
   default = ["143.97.110.1/32",
     "143.97.2.129/32",
     "143.97.2.35/32",
-    "158.248.121.139/32",
-    "213.236.148.45/32",
     "8.29.230.8/32",
-    "92.221.23.247/32",
     "92.221.25.155/32",
   "92.221.72.153/32"]
 }

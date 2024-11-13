@@ -1,69 +1,58 @@
 resource "azurerm_kubernetes_cluster" "this" {
-  location                         = var.location
   name                             = var.cluster_name
   resource_group_name              = var.resource_group
+  location                         = var.location
   dns_prefix                       = var.dns_prefix
-  azure_policy_enabled             = true
-  cost_analysis_enabled            = false
-  http_application_routing_enabled = false
-  kubernetes_version               = "1.29.8"
-  local_account_disabled           = true
+  kubernetes_version               = var.aks_version
   node_os_upgrade_channel          = var.node_os_upgrade_channel
+  cost_analysis_enabled            = var.cost_analysis
+  sku_tier                         = var.cluster_sku_tier
+  http_application_routing_enabled = false
+  local_account_disabled           = true
   oidc_issuer_enabled              = true
+  open_service_mesh_enabled        = false
+  azure_policy_enabled             = true
+  key_vault_secrets_provider {
+    secret_rotation_enabled = true
+  }
+
+  workload_identity_enabled = var.workload_identity_enabled
   lifecycle {
     ignore_changes = [
-      key_vault_secrets_provider
+      default_node_pool[0].upgrade_settings
     ]
   }
 
-  open_service_mesh_enabled = false
-  tags = {
-    "autostartupschedule" = var.autostartupschedule
-    "migrationStrategy"   = var.migrationStrategy
-  }
-
+  tags = var.clustertags
   api_server_access_profile {
-    authorized_ip_ranges = [
-      "143.97.110.1/32",
-      "143.97.2.129/32",
-      "143.97.2.35/32",
-      "158.248.121.139/32",
-      "213.236.148.45/32",
-      "8.29.230.8/32",
-      "92.221.23.247/32",
-      "92.221.25.155/32",
-      "92.221.72.153/32"
-    ]
+    authorized_ip_ranges = var.authorized_ip_ranges
   }
   azure_active_directory_role_based_access_control {
-    admin_group_object_ids = var.developers
+    admin_group_object_ids = [var.developers]
     azure_rbac_enabled     = false
     tenant_id              = var.tenant_id
   }
 
   default_node_pool {
     name                         = "systempool"
-    node_count                   = 2
     node_public_ip_enabled       = false
     only_critical_addons_enabled = true
-    vm_size                      = "Standard_B4as_v2"
-    # vnet_subnet_id    = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/virtualNetworks/vnet-weekly-43/subnets/subnet-weekly-43"
-    vnet_subnet_id          = var.subnet_id
-    auto_scaling_enabled    = true
-    fips_enabled            = false
-    host_encryption_enabled = false
-    max_count               = 3
-    min_count               = 2
+    vm_size                      = var.systempool.vm_size
+    vnet_subnet_id               = var.subnet_id
+    auto_scaling_enabled         = true
+    fips_enabled                 = false
+    host_encryption_enabled      = false
+    min_count                    = var.systempool.min_nodes
+    max_count                    = var.systempool.max_nodes
     node_labels = {
       "app"           = "system-apps"
       "nodepool-type" = "system"
       "nodepoolos"    = "linux"
     }
-    upgrade_settings {
-      drain_timeout_in_minutes      = 0
-      max_surge                     = "10%"
-      node_soak_duration_in_minutes = 0
-    }
+    kubelet_disk_type = "OS"
+    max_pods          = 110
+    tags              = var.systempool.tags #{}
+    zones             = []
   }
 
   auto_scaler_profile {
@@ -89,27 +78,33 @@ resource "azurerm_kubernetes_cluster" "this" {
   identity {
     type = "UserAssigned"
     identity_ids = [
-      "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.ManagedIdentity/userAssignedIdentities/radix-id-aks-dev",
+      var.identity_aks
     ]
   }
 
   kubelet_identity {
-    client_id                 = "3353dc52-333a-4713-a743-09e57bafe736"
-    object_id                 = "ea0a9ed4-24e6-4ede-952f-48921cf9829b"
-    user_assigned_identity_id = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.ManagedIdentity/userAssignedIdentities/radix-id-akskubelet-dev"
+    client_id                 = var.identity_kublet_client
+    object_id                 = var.identity_kublet_object
+    user_assigned_identity_id = var.identity_kublet_identity_id
   }
 
   microsoft_defender {
-    log_analytics_workspace_id = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.OperationalInsights/workspaces/radix-logs-dev"
+    log_analytics_workspace_id = var.defender_workspace_id
+  }
+  oms_agent {
+    log_analytics_workspace_id      = var.defender_workspace_id
+    msi_auth_for_monitoring_enabled = true
   }
 
-  dynamic "oms_agent" {
-    for_each = var.autostartupschedule == false ? [1] : []
-    content {
-      log_analytics_workspace_id      = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/Logs-Dev/providers/Microsoft.OperationalInsights/workspaces/radix-container-logs-dev"
-      msi_auth_for_monitoring_enabled = true
-    }
-  }
+
+  # addon_profile {
+  #   azure-keyvault-secrets-provider {
+  #     enabled = true
+  #   }
+  #   azure-policy {
+  #     enabled = true
+  #   }
+  # }
 
   network_profile {
     dns_service_ip = "10.2.0.10"
@@ -117,199 +112,48 @@ resource "azurerm_kubernetes_cluster" "this" {
       "IPv4",
     ]
     load_balancer_sku   = "standard"
-    network_data_plane  = "cilium" # forces replacement
+    network_data_plane  = var.network_policy == "cilium" ? "cilium" : "azure" #var.network_policy #Dependency
     network_plugin      = "azure"
-    network_plugin_mode = "overlay"
-    network_policy      = "cilium"
+    network_policy      = var.network_policy
     outbound_type       = "loadBalancer"
-    pod_cidr            = "10.244.0.0/16"
-    pod_cidrs = [
-      "10.244.0.0/16",
-    ]
+    network_plugin_mode = var.network_policy == "cilium" ? "overlay" : null
+    # pod_cidr            = "10.244.0.0/16"
+    # pod_cidrs = [
+    #   "10.244.0.0/16",
+    # ]
     service_cidr = "10.2.0.0/18"
     service_cidrs = [
       "10.2.0.0/18",
     ]
- 
+
     load_balancer_profile {
-      idle_timeout_in_minutes = 30
-      outbound_ip_address_ids = var.outbound_ip_address_ids
+      idle_timeout_in_minutes  = 30
+      outbound_ip_address_ids  = var.outbound_ip_address_ids
       outbound_ports_allocated = 4000
     }
   }
+
+  # depends_on = [azurerm_network_security_group.this,azurerm_virtual_network.this,azurerm_network_watcher_flow_log.this]
 }
 
-resource "azurerm_kubernetes_cluster_node_pool" "nc24sv3" {
-  name                    = "nc24sv3"
+resource "azurerm_kubernetes_cluster_node_pool" "this" {
+  for_each                = { for k, v in var.nodepools : k => v }
+  name                    = each.key
   kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = "Standard_NC24s_v3"
+  vm_size                 = each.value.vm_size
   auto_scaling_enabled    = true
-  max_count               = 1
-  min_count               = 0
-  node_count              = 0
+  min_count               = each.value.min_count
+  max_count               = each.value.max_count
   fips_enabled            = false
   host_encryption_enabled = false
-  node_labels = {
-    "gpu"                  = "nvidia-v100"
-    "gpu-count"            = "4"
-    "radix-node-gpu"       = "nvidia-v100"
-    "radix-node-gpu-count" = "4"
-    "sku"                  = "gpu"
-  }
-  node_public_ip_enabled = false
-  node_taints = [
-    "radix-node-gpu-count=4:NoSchedule"
-  ]
-  os_disk_type     = "Ephemeral"
-  tags             = {}
-  vnet_subnet_id   = var.subnet_id
-  workload_runtime = "OCIContainer"
-  zones            = []
-  depends_on = [ azurerm_kubernetes_cluster.this ]
+  node_labels             = each.value.node_labels
+  node_public_ip_enabled  = false
+  node_taints             = each.value.node_taints
+  os_disk_type            = each.value.os_disk_type
+  vnet_subnet_id          = var.subnet_id
+  workload_runtime        = "OCIContainer"
+  tags                    = {}
+  zones                   = []
+  depends_on              = [azurerm_kubernetes_cluster.this]
 }
 
-resource "azurerm_kubernetes_cluster_node_pool" "nc12sv3" {
-  name                    = "nc12sv3"
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = "Standard_NC12s_v3"
-  auto_scaling_enabled    = true
-  max_count               = 1
-  min_count               = 0
-  node_count              = 0
-  fips_enabled            = false
-  host_encryption_enabled = false
-  node_labels = {
-    "gpu"                  = "nvidia-v100"
-    "gpu-count"            = "2"
-    "radix-node-gpu"       = "nvidia-v100"
-    "radix-node-gpu-count" = "2"
-    "sku"                  = "gpu"
-  }
-  node_public_ip_enabled = false
-  node_taints = [
-    "radix-node-gpu-count=2:NoSchedule"
-  ]
-  os_disk_type     = "Ephemeral"
-  tags             = {}
-  vnet_subnet_id   = var.subnet_id
-  workload_runtime = "OCIContainer"
-  zones            = []
-  depends_on = [ azurerm_kubernetes_cluster.this ]
-}
-
-resource "azurerm_kubernetes_cluster_node_pool" "nc6sv3" {
-  name                    = "nc6sv3"
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = "Standard_NC6s_v3"
-  auto_scaling_enabled    = true
-  max_count               = 1
-  min_count               = 0
-  node_count              = 0
-  fips_enabled            = false
-  host_encryption_enabled = false
-  node_labels = {
-    "gpu"                  = "nvidia-v100"
-    "gpu-count"            = "1"
-    "radix-node-gpu"       = "nvidia-v100"
-    "radix-node-gpu-count" = "1"
-    "sku"                  = "gpu"
-  }
-  node_public_ip_enabled = false
-  node_taints = [
-    "radix-node-gpu-count=1:NoSchedule"
-  ]
-  os_disk_type     = "Ephemeral"
-  tags             = {}
-  vnet_subnet_id   = var.subnet_id
-  workload_runtime = "OCIContainer"
-  zones            = []
-  depends_on = [ azurerm_kubernetes_cluster.this ]
-}
-
-resource "azurerm_kubernetes_cluster_node_pool" "armpipepool" {
-  name                    = "armpipepool"
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = "Standard_B4ps_v2"
-  auto_scaling_enabled    = true
-  max_count               = 4
-  min_count               = 1
-  #node_count              = 1
-  fips_enabled            = false
-  host_encryption_enabled = false
-  node_labels = {
-    "nodepooltasks"        = "jobs"
-  }
-  node_public_ip_enabled = false
-  node_taints = [
-    "nodepooltasks=jobs:NoSchedule"
-  ]
-  os_disk_type     = "Managed"
-  tags             = {}
-  vnet_subnet_id   = var.subnet_id
-  workload_runtime = "OCIContainer"
-  zones            = []
-  depends_on = [ azurerm_kubernetes_cluster.this ]
-}
-
-resource "azurerm_kubernetes_cluster_node_pool" "armuserpool" {
-  name                    = "armuserpool"
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = "Standard_B4ps_v2"
-  auto_scaling_enabled    = true
-  max_count               = 4
-  min_count               = 1
-  #node_count              = 1
-  fips_enabled            = false
-  host_encryption_enabled = false
-  node_public_ip_enabled = false
-  os_disk_type     = "Managed"
-  tags             = {}
-  vnet_subnet_id   = var.subnet_id
-  workload_runtime = "OCIContainer"
-  zones            = []
-  depends_on = [ azurerm_kubernetes_cluster.this ]
-}
-
-resource "azurerm_kubernetes_cluster_node_pool" "x86pipepool" {
-  name                    = "x86pipepool"
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = "Standard_B4as_v2"
-  auto_scaling_enabled    = true
-  max_count               = 4
-  min_count               = 1
-  #node_count              = 1
-  fips_enabled            = false
-  host_encryption_enabled = false
-  node_labels = {
-    "nodepooltasks"        = "jobs"
-  }
-  node_public_ip_enabled = false
-  node_taints = [
-    "nodepooltasks=jobs:NoSchedule"
-  ]
-  os_disk_type     = "Managed"
-  tags             = {}
-  vnet_subnet_id   = var.subnet_id
-  workload_runtime = "OCIContainer"
-  zones            = []
-  depends_on = [ azurerm_kubernetes_cluster.this ]
-}
-
-resource "azurerm_kubernetes_cluster_node_pool" "x86userpool" {
-  name                    = "x86userpool"
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = "Standard_B4as_v2"
-  auto_scaling_enabled    = true
-  max_count               = 4
-  min_count               = 1
-  #node_count              = 1
-  fips_enabled            = false
-  host_encryption_enabled = false
-  node_public_ip_enabled = false
-  os_disk_type     = "Managed"
-  tags             = {}
-  vnet_subnet_id   = var.subnet_id
-  workload_runtime = "OCIContainer"
-  zones            = []
-  depends_on = [ azurerm_kubernetes_cluster.this ]
-}

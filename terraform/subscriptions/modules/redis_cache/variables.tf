@@ -13,7 +13,7 @@ variable "rg_name" {
 }
 
 variable "sku_name" {
-  default = "Basic"
+  default = "Standard"
   type    = string
 }
 
