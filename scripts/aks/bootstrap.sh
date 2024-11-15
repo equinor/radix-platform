@@ -509,6 +509,38 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
+### Diagnostic settings
+###
+
+printf "Adding Diagnostic settings to the cluster.. "
+
+STORAGEACCOUNT_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw log_storageaccount_id)
+az monitor diagnostic-settings create --name Radix-Diagnostics \
+    --resource "/subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_CLUSTERS/providers/Microsoft.ContainerService/managedClusters/$CLUSTER_NAME" \
+    --logs '[{"category": "kube-audit","enabled": true},{"category": "kube-apiserver","enabled": true}]' \
+    --storage-account "$STORAGEACCOUNT_ID" \
+    --output none \
+    --only-show-errors
+
+if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground" ]]; then
+    echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+else
+    echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+fi
+
+echo ""
+printf "Enabling monitoring addon in the destination cluster...\n"
+WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
+az aks enable-addons \
+    --addons monitoring \
+    --name "${DEST_CLUSTER}" \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --workspace-resource-id "${WORKSPACE_ID}" \
+    --data-collection-settings dataCollectionSettings.json \
+    --no-wait || {echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2 && exit 1}
+rm dataCollectionSettings.json
+printf "Done.\n"
+
 ### Install Cilium
 ###
 
