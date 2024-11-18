@@ -133,9 +133,9 @@ variable "enviroment" {
   type        = string
 }
 
-# variable "containers_workspace_id" {
-#   type    = string
-# }
+variable "containers_workspace_id" {
+  type = string
+}
 
 variable "service_endpoints" {
   type    = list(string)

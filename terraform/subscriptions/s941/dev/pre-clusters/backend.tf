@@ -9,6 +9,10 @@ terraform {
       source  = "Azure/azapi"
       version = "~>2.0"
     }
+    jq = {
+      source  = "massdriver-cloud/jq"
+      version = "~>0.2.0"
+    }
   }
 
   backend "azurerm" {
