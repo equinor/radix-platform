@@ -522,24 +522,24 @@ printf "Done.\n"
 #     --output none \
 #     --only-show-errors
 
-if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground" ]]; then
-    echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
-else
-    echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
-fi
+# if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground" ]]; then
+#     echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+# else
+#     echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+# fi
 
-echo ""
-printf "Enabling monitoring addon in the destination cluster...\n"
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
-az aks enable-addons \
-    --addons monitoring \
-    --name "${DEST_CLUSTER}" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --workspace-resource-id "${WORKSPACE_ID}" \
-    --data-collection-settings dataCollectionSettings.json \
-    --no-wait || {echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2 && exit 1}
-rm dataCollectionSettings.json
-printf "Done.\n"
+# echo ""
+# printf "Enabling monitoring addon in the destination cluster...\n"
+# WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
+# az aks enable-addons \
+#     --addons monitoring \
+#     --name "${DEST_CLUSTER}" \
+#     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+#     --workspace-resource-id "${WORKSPACE_ID}" \
+#     --data-collection-settings dataCollectionSettings.json \
+#     --no-wait || {printf -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2 && exit 1}
+# rm dataCollectionSettings.json
+# printf "Done.\n"
 
 ### Install Cilium
 ###
