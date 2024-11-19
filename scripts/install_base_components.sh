@@ -271,7 +271,7 @@ kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
 # Create radix platform shared configs and secrets
-# Create 4 secrets for Radix platform: radix-sp-acr-azure, radix-sp-buildah-azure and radix-docker and radix-snyk-service-account
+# Create 4 secrets for Radix platform: radix-sp-acr-azure, radix-sp-buildah-azure and radix-docker
 
 echo ""
 echo "Start on radix platform shared configs and secrets..."
@@ -281,15 +281,6 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets
 wait
 
 echo "Done."
-
-#######################################################################################
-# Bootstrap snyk-monitor
-# NOTE: Depends on radix-docker secret, created in scripts/config-and-secrets/bootstrap-acr.sh
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/snyk-monitor/bootstrap.sh" "${normal}"
-(USER_PROMPT="$USER_PROMPT" ./snyk-monitor/bootstrap.sh)
-wait
 
 #######################################################################################
 ### Install Radix CICD Canary
