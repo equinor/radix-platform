@@ -18,7 +18,7 @@ resource "azurerm_monitor_diagnostic_setting" "this" {
 }
 
 resource "azurerm_monitor_data_collection_rule" "this" {
-  name                = "MSCI-${var.location}-${var.cluster_name}"
+  name                = var.enviroment == "platform" ? "MSCI-NEU-${var.cluster_name}" : "MSCI-${var.location}-${var.cluster_name}" #"MSCI-${var.location}-${var.cluster_name}" #TODO
   resource_group_name = var.resource_group
   location            = var.location
   kind                = "Linux"

@@ -45,10 +45,10 @@ module "aks" {
   identity_kublet_identity_id = data.azurerm_user_assigned_identity.akskubelet.id
   defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
   containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
-  cost_analysis             = each.value.cost_analysis
-  workload_identity_enabled = each.value.workload_identity_enabled
-  network_policy            = each.value.network_policy
-  developers                = module.config.developers
+  cost_analysis               = each.value.cost_analysis
+  workload_identity_enabled   = each.value.workload_identity_enabled
+  network_policy              = each.value.network_policy
+  developers                  = module.config.developers
 }
 
 locals {
