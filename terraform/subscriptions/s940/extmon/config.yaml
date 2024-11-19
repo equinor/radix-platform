@@ -1,6 +1,7 @@
 environment: "extmon"
 subscription_shortname: "s940"
 location: "northeurope"
+developers: "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" # Radix Platform Developers
 backend:
   resource_group_name:  = "s940-tfstate"
   storage_account_name: = "s940radixinfra"

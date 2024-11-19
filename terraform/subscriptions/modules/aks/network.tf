@@ -1,7 +1,7 @@
 resource "azurerm_network_security_group" "this" {
   name                = "nsg-${var.cluster_name}"
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resource_group
 
   tags = {
     IaC = "terraform"
@@ -30,13 +30,13 @@ resource "azurerm_network_watcher_flow_log" "this" {
   tags = {
     IaC = "terraform"
   }
-
+  depends_on = [azurerm_network_security_group.this]
 }
 
 resource "azurerm_virtual_network" "this" {
   name                = "vnet-${var.cluster_name}"
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resource_group
   address_space       = ["${var.address_space}/16"]
 
   subnet {
@@ -44,6 +44,10 @@ resource "azurerm_virtual_network" "this" {
     address_prefixes                = ["${var.address_space}/18"]
     security_group                  = azurerm_network_security_group.this.id
     default_outbound_access_enabled = false
+    service_endpoints               = var.service_endpoints
+    # service_endpoints = [
+    #   "Microsoft.Storage",
+    # ]
   }
   dynamic "ddos_protection_plan" {
     for_each = var.enviroment == "platform" || var.enviroment == "c2" ? [1] : []

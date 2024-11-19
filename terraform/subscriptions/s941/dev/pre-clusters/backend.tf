@@ -1,11 +1,17 @@
 terraform {
+  required_version = ">= 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">=3.110.0"
+      version = ">= 4.1"
     }
     azapi = {
-      source = "Azure/azapi"
+      source  = "Azure/azapi"
+      version = "~>2.0"
+    }
+    jq = {
+      source  = "massdriver-cloud/jq"
+      version = "~>0.2.0"
     }
   }
 

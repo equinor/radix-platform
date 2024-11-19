@@ -2,6 +2,7 @@ environment: "dev"
 subscription_shortname: "s941"
 location: "northeurope"
 all_ip_prefix_enviroments: ["development","playground"]
+developers: "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" # Radix Platform Developers
 backend:
   resource_group_name:   "s941-tfstate"
   storage_account_name:  "s941radixinfra"

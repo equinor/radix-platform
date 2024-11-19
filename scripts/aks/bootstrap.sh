@@ -300,29 +300,6 @@ terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/p
 ID_AKS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" output -raw radix_id_aks_mi_id)
 ID_AKSKUBELET=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/clusters" output -raw radix_id_akskubelet_mi_id)
 ACR_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw acr_id)
-# if [[ -z "$CREDENTIALS_FILE" ]]; then
-#     # No file found, default to read credentials from keyvault
-#     # Key/value pairs (these are the one you must provide if you want to use a custom credentials file)
-#     ID_AKS="$(az identity show \
-#         --name "$MI_AKS" \
-#         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-#         --query 'id' \
-#         --output tsv 2>/dev/null)"
-#     ID_AKSKUBELET="$(az identity show \
-#         --name "$MI_AKSKUBELET" \
-#         --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
-#         --query 'id' \
-#         --output tsv 2>/dev/null)"
-#     ACR_ID="$(az acr show \
-#         --name "${AZ_RESOURCE_CONTAINER_REGISTRY}" \
-#         --resource-group "${AZ_RESOURCE_GROUP_ACR}" \
-#         --query "id" \
-#         --output tsv)"
-# else
-#     # Credentials are provided from input.
-#     # Source the file to make the key/value pairs readable as script vars
-#     source ./"$CREDENTIALS_FILE"
-# fi
 printf "Done.\n"
 
 #######################################################################################
@@ -483,8 +460,11 @@ if [[ ${update_keyvault} == true ]]; then
     printf "Done.\n"
 fi
 
+
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks[\"${CLUSTER_NAME}\"].azurerm_virtual_network.this --auto-approve
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 
+#
 #######################################################################################
 ### Create NSG and update subnet
 ###
@@ -502,11 +482,6 @@ fi
 
 echo "Bootstrap of advanced network done."
 
-#######################################################################################
-### Create cluster
-###
-
-echo "Creating aks instance \"${CLUSTER_NAME}\"... "
 
 ###############################################################################
 ### Add Usermode pool - System - Tainted
@@ -518,101 +493,9 @@ cat <<EOF >$DEFENDER_CONFIG
 {"logAnalyticsWorkspaceResourceId": "$WORKSPACE_ID"}
 EOF
 
-AKS_BASE_OPTIONS=(
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --name "$CLUSTER_NAME"
-    --no-ssh-key
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --node-osdisk-size "$SYSTEM_DISK_SIZE"
-    --node-vm-size "$SYSTEM_VM_SIZE"
-    --max-pods "$POD_PER_NODE"
-    --dns-service-ip "$VNET_DNS_SERVICE_IP"
-    --service-cidr "$VNET_SERVICE_CIDR"
-    --location "$AZ_RADIX_ZONE_LOCATION"
-    --enable-managed-identity
-    --enable-aad
-    --enable-defender
-    --defender-config "$DEFENDER_CONFIG"
-    --aad-admin-group-object-ids "$(az ad group show --group "${AZ_AD_DEV_GROUP}" --query id --output tsv --only-show-errors)"
-    --assign-identity "$ID_AKS"
-    --assign-kubelet-identity "$ID_AKSKUBELET"
-    --attach-acr "$ACR_ID"
-    --api-server-authorized-ip-ranges "$K8S_API_IP_WHITELIST"
-    --vnet-subnet-id "$SUBNET_ID"
-    --disable-local-accounts
-    --enable-addons "azure-keyvault-secrets-provider,azure-policy"
-    --nodepool-name systempool
-    --enable-secret-rotation
-    --enable-oidc-issuer
-    --enable-cluster-autoscaler
-    --node-count "$SYSTEM_BOOTSTRAP_COUNT"
-    --min-count "$SYSTEM_MIN_COUNT"
-    --max-count "$SYSTEM_MAX_COUNT"
-)
-
-if [ "$MIGRATION_STRATEGY" = "aa" ]; then
-    MIGRATION_STRATEGY_OPTIONS=(
-        --load-balancer-outbound-ips "$EGRESS_IP_ID_LIST"
-        --load-balancer-outbound-ports "4000"
-    )
-fi
-
-if [ "$CILIUM" = true ]; then
-    AKS_NETWORK_OPTIONS=(
-        --network-plugin "azure"
-        --network-plugin-mode overlay
-        --network-dataplane cilium
-    )
-else
-    AKS_NETWORK_OPTIONS=(
-        --network-plugin "$NETWORK_PLUGIN"
-        --network-policy "$NETWORK_POLICY"
-    )
-fi
-
-if [ "$CLUSTER_TYPE" = "production" ]; then
-    AKS_CLUSTER_OPTIONS=(
-        --tier standard
-    )
-elif [[ "$CLUSTER_TYPE" = "playground" ]]; then
-    AKS_CLUSTER_OPTIONS=(
-        --tier standard
-    )
-elif [[ "$CLUSTER_TYPE" = "development" ]]; then
-    AKS_CLUSTER_OPTIONS=()
-else
-    echo "ERROR: Unknown parameter" >&2
-fi
-
-az aks create "${AKS_BASE_OPTIONS[@]}" "${AKS_NETWORK_OPTIONS[@]}" "${AKS_CLUSTER_OPTIONS[@]}" "${MIGRATION_STRATEGY_OPTIONS[@]}"
 
 rm -f $DEFENDER_CONFIG
 
-#######################################################################################
-### Tag cluster
-###
-
-printf "Tagging cluster %s with tag migrationStrategy=%s...\n" "${CLUSTER_NAME}" "${MIGRATION_STRATEGY}"
-az resource tag \
-    --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
-    --tags migrationStrategy="${MIGRATION_STRATEGY}" \
-    --is-incremental &>/dev/null
-printf "Done.\n"
-
-if [ "$RADIX_ZONE" = "dev" ]; then
-    printf "Tagging cluster %s with tag autostartupschedule...\n" "${CLUSTER_NAME}"
-    az resource tag \
-        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${CLUSTER_NAME}" \
-        --tags autostartupschedule=false \
-        --is-incremental &>/dev/null
-    printf "Done.\n"
-fi
-
-#######################################################################################
-### Get api server whitelist
-###
-
-(USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${CLUSTER_NAME}" source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/update_api_server_whitelist.sh")
 
 #######################################################################################
 ### Update local kube config
@@ -626,6 +509,38 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
+### Diagnostic settings
+###
+
+# printf "Adding Diagnostic settings to the cluster.. "
+
+# STORAGEACCOUNT_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw log_storageaccount_id)
+# az monitor diagnostic-settings create --name Radix-Diagnostics \
+#     --resource "/subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_CLUSTERS/providers/Microsoft.ContainerService/managedClusters/$CLUSTER_NAME" \
+#     --logs '[{"category": "kube-audit","enabled": true},{"category": "kube-apiserver","enabled": true}]' \
+#     --storage-account "$STORAGEACCOUNT_ID" \
+#     --output none \
+#     --only-show-errors
+
+# if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground" ]]; then
+#     echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+# else
+#     echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
+# fi
+
+# echo ""
+# printf "Enabling monitoring addon in the destination cluster...\n"
+# WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
+# az aks enable-addons \
+#     --addons monitoring \
+#     --name "${DEST_CLUSTER}" \
+#     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+#     --workspace-resource-id "${WORKSPACE_ID}" \
+#     --data-collection-settings dataCollectionSettings.json \
+#     --no-wait || {printf -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2 && exit 1}
+# rm dataCollectionSettings.json
+# printf "Done.\n"
+
 ### Install Cilium
 ###
 
@@ -647,233 +562,6 @@ function retry() {
         fi
     done
 }
-
-#######################################################################################
-### Taint the 'systempool'
-###
-
-echo "Taint the 'systempool'"
-az aks nodepool update \
-    --cluster-name "$CLUSTER_NAME" \
-    --name systempool \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --node-taints CriticalAddonsOnly=true:NoSchedule \
-    --labels nodepool-type=system nodepoolos=linux app=system-apps >/dev/null
-printf "Done.\n"
-
-#######################################################################################
-### Add untainted User nodepool
-###
-
-AKS_X86_USER_OPTIONS=(
-    --cluster-name "$CLUSTER_NAME"
-    --nodepool-name "x86userpool"
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --enable-cluster-autoscaler
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --max-count "$X86_USER_MAX_COUNT"
-    --min-count "$X86_USER_MIN_COUNT"
-    --max-pods "$POD_PER_NODE"
-    --mode User
-    --node-count "$X86_BOOTSTRAP_COUNT"
-    --node-osdisk-size "$X86_DISK_SIZE"
-    --node-vm-size "$X86_VM_SIZE"
-    --vnet-subnet-id "$SUBNET_ID"
-)
-echo "Create x86 user nodepool"
-az aks nodepool add "${AKS_X86_USER_OPTIONS[@]}"
-
-#######################################################################################
-### Add tainted pipelinepool
-###
-
-AKS_X86_PIPELINE_OPTIONS=(
-    --cluster-name "$CLUSTER_NAME"
-    --nodepool-name "x86pipepool"
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --enable-cluster-autoscaler
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --max-count "$X86_PIPE_MAX_COUNT"
-    --min-count "$X86_PIPE_MIN_COUNT"
-    --max-pods "$POD_PER_NODE"
-    --mode User
-    --node-count "$X86_BOOTSTRAP_COUNT"
-    --node-osdisk-size "$X86_DISK_SIZE"
-    --node-vm-size "$X86_VM_SIZE"
-    --vnet-subnet-id "$SUBNET_ID"
-    --node-taints "nodepooltasks=jobs:NoSchedule"
-    --labels "nodepooltasks=jobs"
-)
-echo "Create x86 pipeline nodepool"
-az aks nodepool add "${AKS_X86_PIPELINE_OPTIONS[@]}"
-
-#######################################################################################
-### Add Arm64 user and pipeline nodepool
-###
-AKS_ARM64_USER_OPTIONS=(
-    --cluster-name "$CLUSTER_NAME"
-    --nodepool-name "armuserpool"
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --enable-cluster-autoscaler
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --max-count "$ARM_USER_MAX_COUNT"
-    --min-count "$ARM_USER_MIN_COUNT"
-    --max-pods "$POD_PER_NODE"
-    --mode User
-    --node-count "$ARM_BOOTSTRAP_COUNT"
-    --node-osdisk-size "$ARM_DISK_SIZE"
-    --node-vm-size "$ARM_VM_SIZE"
-    --vnet-subnet-id "$SUBNET_ID"
-)
-echo "Create Arm nodepool"
-az aks nodepool add "${AKS_ARM64_USER_OPTIONS[@]}"
-
-AKS_ARM64_PIPELINE_OPTIONS=(
-    --cluster-name "$CLUSTER_NAME"
-    --nodepool-name "armpipepool"
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --enable-cluster-autoscaler
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --max-count "$ARM_PIPE_MAX_COUNT"
-    --min-count "$ARM_PIPE_MIN_COUNT"
-    --max-pods "$POD_PER_NODE"
-    --mode User
-    --node-count "$ARM_BOOTSTRAP_COUNT"
-    --node-osdisk-size "$ARM_DISK_SIZE"
-    --node-vm-size "$ARM_VM_SIZE"
-    --vnet-subnet-id "$SUBNET_ID"
-    --node-taints "nodepooltasks=jobs:NoSchedule"
-    --labels "nodepooltasks=jobs"
-)
-echo "Create Arm64 pipelinepool"
-az aks nodepool add "${AKS_ARM64_PIPELINE_OPTIONS[@]}"
-
-#######################################################################################
-### Add dedicated Monitor pool in prod
-###
-
-if [ "$RADIX_ZONE" = "prod" ]; then
-    AKS_MONITOR_OPTIONS=(
-    --cluster-name "$CLUSTER_NAME"
-    --nodepool-name "monitorpool"
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS"
-    --enable-cluster-autoscaler
-    --kubernetes-version "$KUBERNETES_VERSION"
-    --max-count "$MONITOR_MAX_COUNT"
-    --min-count "$MONITOR_MIN_COUNT"
-    --max-pods "$POD_PER_NODE"
-    --mode User
-    --node-count "$MONITOR_BOOTSTRAP_COUNT"
-    --node-osdisk-size "$MONITOR_DISK_SIZE"
-    --node-vm-size "$MONITOR_VM_SIZE"
-    --vnet-subnet-id "$SUBNET_ID"
-    --node-taints "nodetasks=monitor:NoSchedule"
-    --labels "nodepooltasks=monitor"
-    )
-    echo "Create monitor pool"
-    az aks nodepool add "${AKS_MONITOR_OPTIONS[@]}"
-fi
-
-#######################################################################################
-### Add GPU node pools
-###
-
-printf "Adding GPU node pools to the cluster... "
-
-az aks nodepool add \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --cluster-name "$CLUSTER_NAME" \
-    --name nc6sv3 \
-    --enable-cluster-autoscaler \
-    --node-count 0 \
-    --min-count 0 \
-    --max-count 1 \
-    --max-pods 110 \
-    --node-vm-size Standard_NC6s_v3 \
-    --labels sku=gpu gpu=nvidia-v100 gpu-count=1 radix-node-gpu=nvidia-v100 radix-node-gpu-count=1 \
-    --node-taints sku=gpu:NoSchedule \
-    --node-taints gpu=nvidia-v100:NoSchedule \
-    --node-taints gpu-count=1:NoSchedule \
-    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
-    --node-taints radix-node-gpu-count=1:NoSchedule \
-    --no-wait \
-    --output none \
-    --only-show-errors
-
-az aks nodepool add \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --cluster-name "$CLUSTER_NAME" \
-    --name nc12sv3 \
-    --enable-cluster-autoscaler \
-    --node-count 0 \
-    --min-count 0 \
-    --max-count 1 \
-    --max-pods 110 \
-    --node-vm-size Standard_NC12s_v3 \
-    --labels sku=gpu gpu=nvidia-v100 gpu-count=2 radix-node-gpu=nvidia-v100 radix-node-gpu-count=2 \
-    --node-taints sku=gpu:NoSchedule \
-    --node-taints gpu=nvidia-v100:NoSchedule \
-    --node-taints gpu-count=2:NoSchedule \
-    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
-    --node-taints radix-node-gpu-count=2:NoSchedule \
-    --no-wait \
-    --output none \
-    --only-show-errors
-
-az aks nodepool add \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --cluster-name "$CLUSTER_NAME" \
-    --name nc24sv3 \
-    --enable-cluster-autoscaler \
-    --node-count 0 \
-    --min-count 0 \
-    --max-count 1 \
-    --max-pods 110 \
-    --node-vm-size Standard_NC24s_v3 \
-    --labels sku=gpu gpu=nvidia-v100 gpu-count=4 radix-node-gpu=nvidia-v100 radix-node-gpu-count=4 \
-    --node-taints sku=gpu:NoSchedule \
-    --node-taints gpu=nvidia-v100:NoSchedule \
-    --node-taints gpu-count=4:NoSchedule \
-    --node-taints radix-node-gpu=nvidia-v100:NoSchedule \
-    --node-taints radix-node-gpu-count=4:NoSchedule \
-    --no-wait \
-    --output none \
-    --only-show-errors
-
-printf "Done."
-
-#######################################################################################
-### Diagnostic settings
-###
-
-printf "Adding Diagnostic settings to the cluster.. "
-
-STORAGEACCOUNT_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw log_storageaccount_id)
-az monitor diagnostic-settings create --name Radix-Diagnostics \
-    --resource "/subscriptions/$AZ_SUBSCRIPTION_ID/resourcegroups/$AZ_RESOURCE_GROUP_CLUSTERS/providers/Microsoft.ContainerService/managedClusters/$CLUSTER_NAME" \
-    --logs '[{"category": "kube-audit","enabled": true},{"category": "kube-apiserver","enabled": true}]' \
-    --storage-account "$STORAGEACCOUNT_ID" \
-    --output none \
-    --only-show-errors
-
-if [[ $CLUSTER_TYPE == "development" || $CLUSTER_TYPE == "playground" ]]; then
-    echo '{"interval": "5m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
-else
-    echo '{"interval": "1m", "namespaceFilteringMode": "Exclude", "namespaces": ["kube-system","gatekeeper-system","azure-arc"], "enableContainerLogV2": true, "streams": ["Microsoft-ContainerLog","Microsoft-ContainerLogV2","Microsoft-KubeEvents","Microsoft-KubePodInventory","Microsoft-InsightsMetrics","Microsoft-ContainerInventory","Microsoft-ContainerNodeInventory","Microsoft-KubeNodeInventory","Microsoft-KubeServices"]}' | jq '.' > dataCollectionSettings.json
-fi
-
-echo ""
-printf "Enabling monitoring addon in the destination cluster...\n"
-WORKSPACE_ID=$(az resource list --resource-type Microsoft.OperationalInsights/workspaces --name "${AZ_RESOURCE_LOG_ANALYTICS_WORKSPACE}" --subscription "${AZ_SUBSCRIPTION_ID}" --query "[].id" --output tsv)
-az aks enable-addons \
-    --addons monitoring \
-    --name "${DEST_CLUSTER}" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --workspace-resource-id "${WORKSPACE_ID}" \
-    --data-collection-settings dataCollectionSettings.json \
-    --no-wait || {echo -e "\nERROR: Failed to enable monitoring addon. Exiting... " >&2 && exit 1}
-rm dataCollectionSettings.json
-printf "Done.\n"
 
 #######################################################################################
 ### Lock cluster and network resources

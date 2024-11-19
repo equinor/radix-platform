@@ -157,7 +157,7 @@ function updateIpsEnvVars() {
             ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group "common-westeurope" | jq -r .ipPrefix)
         fi
     else
-        ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group "common-westeurope" | jq -r .ipPrefix)
+        ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
     fi
     printf "Done.\n"
     updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${ip_list}"

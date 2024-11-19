@@ -87,3 +87,7 @@ output "private_dns_zones_names" {
 output "radix_log_api_mi_name" {
   value = "radix-id-log-api-${local.config.environment}"
 }
+
+output "developers" {
+  value = local.config.developers
+}

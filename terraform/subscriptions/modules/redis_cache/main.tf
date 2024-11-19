@@ -9,11 +9,11 @@ resource "azurerm_redis_cache" "this" {
   minimum_tls_version           = "1.2"
   public_network_access_enabled = false
   redis_configuration {
-    maxmemory_reserved              = 125
-    maxmemory_delta                 = 125
-    maxfragmentationmemory_reserved = 125
+    maxmemory_reserved                     = 125
+    maxmemory_delta                        = 125
+    maxfragmentationmemory_reserved        = 125
+    data_persistence_authentication_method = "SAS"
 
-    # data_persistence_authentication_method = "SAS"
     maxmemory_policy = "volatile-lru"
   }
 }
