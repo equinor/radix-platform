@@ -127,6 +127,7 @@ resource "azurerm_kubernetes_cluster" "this" {
       idle_timeout_in_minutes  = 30
       outbound_ip_address_ids  = var.outbound_ip_address_ids
       outbound_ports_allocated = 4000
+      // TODO: Support managed ips for temporary clusters: https://registry.terraform.io/providers/hashicorp/azurerm/3.108.0/docs/resources/kubernetes_cluster#managed_outbound_ip_count-1
     }
   }
 
