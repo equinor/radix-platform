@@ -140,6 +140,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
   vm_size                 = each.value.vm_size
   auto_scaling_enabled    = true
+  max_pods = 110
   min_count               = each.value.min_count
   max_count               = each.value.max_count
   fips_enabled            = false
