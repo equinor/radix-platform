@@ -122,9 +122,6 @@ resource "azurerm_kubernetes_cluster" "this" {
     #   "10.244.0.0/16",
     # ]
     service_cidr = "10.2.0.0/18"
-    service_cidrs = [
-      "10.2.0.0/18",
-    ]
 
     load_balancer_profile {
       idle_timeout_in_minutes  = 30
