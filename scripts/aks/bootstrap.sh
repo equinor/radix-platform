@@ -138,11 +138,11 @@ else
     source $LIB_DNS_SCRIPT
 fi
 
-ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/activate_ddos_protection_standard.sh"
-if ! [[ -x "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The script for activating DDoS Protection Standard is not found or it is not executable in path $ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" >&2
-fi
+# ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/activate_ddos_protection_standard.sh"
+# if ! [[ -x "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" ]]; then
+#     # Print to stderror
+#     echo "ERROR: The script for activating DDoS Protection Standard is not found or it is not executable in path $ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" >&2
+# fi
 
 # Optional inputs
 
@@ -464,37 +464,46 @@ fi
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks[\"${CLUSTER_NAME}\"].azurerm_virtual_network.this --auto-approve
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 
+#######################################################################################
+### Do some terraform post tasks
+###
+echo "Do some terraform post tasks"
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
+printf "Done."
+#######################################################################################
+### END
+
 #
 #######################################################################################
 ### Create NSG and update subnet
 ###
 
-SUBNET=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq '.[] | select(.cluster==env.CLUSTER_NAME)')
-SUBNET_ID=$(jq -n "${SUBNET}" | jq -r .subnet_id)
-VNET_ID=$(jq -n "${SUBNET}" | jq -r .vnet_id)
+# SUBNET=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json vnets | jq '.[] | select(.cluster==env.CLUSTER_NAME)')
+# SUBNET_ID=$(jq -n "${SUBNET}" | jq -r .subnet_id)
+# VNET_ID=$(jq -n "${SUBNET}" | jq -r .vnet_id)
 
-echo ""
-printf "Checking if %s are associated with %s\n" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
-if [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; then
-  printf "Not associated, execute Terraform"
-  terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply -target module.vnet_peering
-fi
+# echo ""
+# printf "Checking if %s are associated with %s\n" "$VNET_NAME" "$AZ_VNET_HUB_NAME"
+# if [ -z "$(az network vnet peering list --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" --vnet-name "$VNET_NAME" --query "[].id" --output tsv)" ]; then
+#   printf "Not associated, execute Terraform"
+#   terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply -target module.vnet_peering
+# fi
 
-echo "Bootstrap of advanced network done."
+# echo "Bootstrap of advanced network done."
 
 
 ###############################################################################
 ### Add Usermode pool - System - Tainted
 ###
-WORKSPACE_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw workspace_id)
-DEFENDER_CONFIG="DEFENDER_CONFIG.json"
+# WORKSPACE_ID=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/common" output -raw workspace_id)
+# DEFENDER_CONFIG="DEFENDER_CONFIG.json"
 
-cat <<EOF >$DEFENDER_CONFIG
-{"logAnalyticsWorkspaceResourceId": "$WORKSPACE_ID"}
-EOF
+# cat <<EOF >$DEFENDER_CONFIG
+# {"logAnalyticsWorkspaceResourceId": "$WORKSPACE_ID"}
+# EOF
 
 
-rm -f $DEFENDER_CONFIG
+# rm -f $DEFENDER_CONFIG
 
 
 #######################################################################################
@@ -563,64 +572,30 @@ function retry() {
     done
 }
 
-#######################################################################################
-### Lock cluster and network resources
+
 ###
 
-if [ "$RADIX_ENVIRONMENT" = "prod" ]; then
-    az lock create \
-        --lock-type CanNotDelete \
-        --name "${CLUSTER_NAME}"-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --resource-type Microsoft.ContainerService/managedClusters \
-        --resource "$CLUSTER_NAME" &>/dev/null
+# if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
+#     echo ""
+#     echo "###########################################################"
+#     echo ""
+#     echo "FOR PRODUCTION ONLY: ENABLE AKS DIAGNOSTIC LOGS"
+#     echo ""
+#     echo "You need to manually enable AKS Diagnostic logs. See https://docs.microsoft.com/en-us/azure/aks/view-master-logs ."
+#     echo ""
+#     echo "Complete the steps in the section 'Enable diagnostics logs'. "
+#     echo "PS: It has been enabled on our subscriptions so no need to do that step."
+#     echo ""
+#     echo "###########################################################"
+# fi
 
-    az lock create \
-        --lock-type ReadOnly \
-        --name "${CLUSTER_NAME}"-readonly-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --resource-type Microsoft.ContainerService/managedClusters \
-        --resource "$CLUSTER_NAME" &>/dev/null
-
-    az lock create \
-        --lock-type CanNotDelete \
-        --name "${VNET_NAME}"-lock \
-        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --resource-type Microsoft.Network/virtualNetworks \
-        --resource "$VNET_NAME" &>/dev/null
-fi
-
-#######################################################################################
-### Do some terraform post tasks
-###
-echo "Do some terraform post tasks"
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
-printf "Done."
-#######################################################################################
-### END
-###
-
-if [ "$RADIX_ENVIRONMENT" == "prod" ]; then
-    echo ""
-    echo "###########################################################"
-    echo ""
-    echo "FOR PRODUCTION ONLY: ENABLE AKS DIAGNOSTIC LOGS"
-    echo ""
-    echo "You need to manually enable AKS Diagnostic logs. See https://docs.microsoft.com/en-us/azure/aks/view-master-logs ."
-    echo ""
-    echo "Complete the steps in the section 'Enable diagnostics logs'. "
-    echo "PS: It has been enabled on our subscriptions so no need to do that step."
-    echo ""
-    echo "###########################################################"
-fi
-
-if [ "$RADIX_ZONE" == "c2" ] || [ "$RADIX_ZONE" == "prod" ]; then
-    # Activate DDoS Protection Standard
-    printf "%s► Execute %s%s\n" "${grn}" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT")
-    wait # wait for subshell to finish
-    echo ""
-fi
+# if [ "$RADIX_ZONE" == "c2" ] || [ "$RADIX_ZONE" == "prod" ]; then
+#     # Activate DDoS Protection Standard
+#     printf "%s► Execute %s%s\n" "${grn}" "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT" "${normal}"
+#     (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$ACTIVATE_DDOS_PROTECTION_STANDARD_SCRIPT")
+#     wait # wait for subshell to finish
+#     echo ""
+# fi
 
 echo ""
 echo "Bootstrap of \"${CLUSTER_NAME}\" done!"

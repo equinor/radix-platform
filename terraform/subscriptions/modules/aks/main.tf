@@ -96,16 +96,6 @@ resource "azurerm_kubernetes_cluster" "this" {
     msi_auth_for_monitoring_enabled = true
   }
 
-
-  # addon_profile {
-  #   azure-keyvault-secrets-provider {
-  #     enabled = true
-  #   }
-  #   azure-policy {
-  #     enabled = true
-  #   }
-  # }
-
   network_profile {
     dns_service_ip = "10.2.0.10"
     ip_versions = [
@@ -154,5 +144,13 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   tags                    = {}
   zones                   = []
   depends_on              = [azurerm_kubernetes_cluster.this]
+}
+
+resource "azurerm_management_lock" "aks" {
+  for_each   = var.enviroment == "platform" || var.enviroment == "c2" ? { "${var.cluster_name}" : true } : {}
+  name       = "${var.cluster_name}-CanNotDelete-Lock"
+  scope      = azurerm_kubernetes_cluster.this.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
 }
 
