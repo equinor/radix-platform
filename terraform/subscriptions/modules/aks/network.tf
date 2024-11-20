@@ -45,9 +45,6 @@ resource "azurerm_virtual_network" "this" {
     security_group                  = azurerm_network_security_group.this.id
     default_outbound_access_enabled = false
     service_endpoints               = var.service_endpoints
-    # service_endpoints = [
-    #   "Microsoft.Storage",
-    # ]
   }
   dynamic "ddos_protection_plan" {
     for_each = var.enviroment == "platform" || var.enviroment == "c2" ? [1] : []
@@ -63,6 +60,14 @@ resource "azurerm_virtual_network" "this" {
   }
 }
 
+
+resource "azurerm_management_lock" "network" {
+  for_each   = var.enviroment == "platform" || var.enviroment == "c2" ? { "${azurerm_virtual_network.this.name}" : true } : {}
+  name       = "${azurerm_virtual_network.this.name}-CanNotDelete-Lock"
+  scope      = azurerm_virtual_network.this.id
+  lock_level = "CanNotDelete"
+  notes      = "IaC : Terraform"
+}
 
 output "vnet" {
   value = azurerm_virtual_network.this

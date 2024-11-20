@@ -20,17 +20,14 @@ data "azurerm_log_analytics_workspace" "containers" {
 
 
 module "aks" {
-  source = "../../../modules/aks"
-  # for_each            = { for k, v in jsondecode(nonsensitive(data.azurerm_key_vault_secret.this.value)).clusters : v.name => v.ip }
-  for_each       = var.aksclusters
-  cluster_name   = each.key
-  resource_group = module.config.cluster_resource_group
-  location       = module.config.location
-  subnet_id      = each.value.subnet_id
-  dns_prefix     = "${each.key}-${module.config.cluster_resource_group}-${substr(module.config.subscription, 0, 6)}"
-  # autostartupschedule         = each.value.autostartupschedule
-  clustertags = each.value.clustertags
-  # migrationStrategy           = each.value.migrationStrategy
+  source                      = "../../../modules/aks"
+  for_each                    = var.aksclusters
+  cluster_name                = each.key
+  resource_group              = module.config.cluster_resource_group
+  location                    = module.config.location
+  subnet_id                   = each.value.subnet_id
+  dns_prefix                  = "${each.key}-${module.config.cluster_resource_group}-${substr(module.config.subscription, 0, 6)}"
+  clustertags                 = each.value.clustertags
   outbound_ip_address_ids     = each.value.outbound_ip_address_ids
   node_os_upgrade_channel     = each.value.node_os_upgrade_channel
   storageaccount_id           = data.azurerm_storage_account.this.id

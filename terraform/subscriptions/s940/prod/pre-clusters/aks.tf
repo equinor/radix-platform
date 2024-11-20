@@ -19,17 +19,14 @@ data "azurerm_log_analytics_workspace" "containers" {
 }
 
 module "aks" {
-  source = "../../../modules/aks"
-  # for_each            = { for k, v in jsondecode(nonsensitive(data.azurerm_key_vault_secret.this.value)).clusters : v.name => v.ip }
-  for_each       = var.aksclusters
-  cluster_name   = each.key
-  resource_group = "clusters" # TODO module.config.cluster_resource_group
-  location       = module.config.location
-  subnet_id      = each.value.subnet_id
-  dns_prefix     = "${each.key}-clusters-${substr(module.config.subscription, 0, 6)}" #TODO
-  # autostartupschedule         = each.value.autostartupschedule
-  clustertags = each.value.clustertags
-  # migrationStrategy           = each.value.migrationStrategy
+  source                      = "../../../modules/aks"
+  for_each                    = var.aksclusters
+  cluster_name                = each.key
+  resource_group              = "clusters" # TODO module.config.cluster_resource_group
+  location                    = module.config.location
+  subnet_id                   = each.value.subnet_id
+  dns_prefix                  = "${each.key}-clusters-${substr(module.config.subscription, 0, 6)}" #TODO
+  clustertags                 = each.value.clustertags
   outbound_ip_address_ids     = each.value.outbound_ip_address_ids
   node_os_upgrade_channel     = each.value.node_os_upgrade_channel
   storageaccount_id           = data.azurerm_storage_account.this.id
@@ -43,12 +40,13 @@ module "aks" {
   identity_kublet_client      = data.azurerm_user_assigned_identity.akskubelet.client_id
   identity_kublet_object      = data.azurerm_user_assigned_identity.akskubelet.principal_id
   identity_kublet_identity_id = data.azurerm_user_assigned_identity.akskubelet.id
-  defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
-  containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
-  cost_analysis               = each.value.cost_analysis
-  workload_identity_enabled   = each.value.workload_identity_enabled
-  network_policy              = each.value.network_policy
-  developers                  = module.config.developers
+  # defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
+  defender_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
+  containers_workspace_id   = data.azurerm_log_analytics_workspace.containers.id
+  cost_analysis             = each.value.cost_analysis
+  workload_identity_enabled = each.value.workload_identity_enabled
+  network_policy            = each.value.network_policy
+  developers                = module.config.developers
 }
 
 locals {
