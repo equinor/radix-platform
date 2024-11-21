@@ -4,19 +4,15 @@ resource "azurerm_network_security_group" "this" {
   resource_group_name = var.resource_group
   security_rule {
 
-    access                                     = "Allow"
-    destination_address_prefixes               = var.ingressIP
-    destination_application_security_group_ids = []
-    destination_port_ranges                    = ["80", "443"]
-    direction                                  = "Inbound"
-    name                                       = "nsg-${var.cluster_name}-rule"
-    priority                                   = 100
-    protocol                                   = "Tcp"
-    source_address_prefix                      = "*"
-    # source_address_prefixes                    = []
-    source_application_security_group_ids = []
-    source_port_range                     = "*"
-    source_port_ranges                    = []
+    access                       = "Allow"
+    destination_address_prefixes = var.ingressIP
+    destination_port_ranges      = ["80", "443"]
+    direction                    = "Inbound"
+    name                         = "nsg-${var.cluster_name}-rule"
+    priority                     = 100
+    protocol                     = "Tcp"
+    source_address_prefix        = "*"
+    source_port_range            = "*"
 
   }
 
@@ -56,13 +52,6 @@ resource "azurerm_virtual_network" "this" {
   resource_group_name = var.resource_group
   address_space       = ["${var.address_space}/16"]
 
-  subnet {
-    name                            = "subnet-${var.cluster_name}"
-    address_prefixes                = ["${var.address_space}/18"]
-    security_group                  = azurerm_network_security_group.this.id
-    default_outbound_access_enabled = false
-    service_endpoints               = var.service_endpoints
-  }
   dynamic "ddos_protection_plan" {
     for_each = var.enviroment == "platform" || var.enviroment == "c2" ? [1] : []
     content {
@@ -75,6 +64,19 @@ resource "azurerm_virtual_network" "this" {
   tags = {
     IaC = "terraform"
   }
+}
+
+resource "azurerm_subnet" "this" {
+  name                 = "subnet-${var.cluster_name}"
+  resource_group_name  = var.resource_group
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["${var.address_space}/18"]
+}
+
+resource "azurerm_subnet_network_security_group_association" "this" {
+  subnet_id                 = azurerm_subnet.this.id
+  network_security_group_id = azurerm_network_security_group.this.id
+  depends_on                = [azurerm_virtual_network.this]
 }
 
 
