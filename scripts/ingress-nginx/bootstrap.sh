@@ -321,16 +321,16 @@ create-a-record "*.${CLUSTER_NAME}" "$SELECTED_INGRESS_IP_RAW_ADDRESS" "$AZ_RESO
 
 # printf "Done.\n"
 
-printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
-az network vnet subnet update \
-    --vnet-name "${VNET_NAME}" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --name "${SUBNET_NAME}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --network-security-group "${NSG_NAME}" \
-    --output none \
-    --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
-printf "Done.\n"
+# printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
+# az network vnet subnet update \
+#     --vnet-name "${VNET_NAME}" \
+#     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+#     --name "${SUBNET_NAME}" \
+#     --subscription "${AZ_SUBSCRIPTION_ID}" \
+#     --network-security-group "${NSG_NAME}" \
+#     --output none \
+#     --only-show-errors || { echo "ERROR: Could not update subnet." >&2; }
+# printf "Done.\n"
 
 kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -
