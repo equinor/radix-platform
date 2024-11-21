@@ -14,6 +14,7 @@ variable "aksclusters" {
     workload_identity_enabled = optional(bool, "false")
     network_policy            = optional(string, "cilium") #Currently supported values are calico, azure and cilium
     cluster_sku_tier          = optional(string, "Free")
+    ingressIP                 = optional(list(string))
   }))
   default = {
     weekly-47 = {
@@ -25,6 +26,7 @@ variable "aksclusters" {
         "autostartupschedule" = "true"
         "migrationStrategy"   = "aa"
       }
+      ingressIP = ["20.223.40.149"]
     }
     weekly-46 = {
       outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004"]
@@ -34,6 +36,7 @@ variable "aksclusters" {
         # "autostartupschedule" = "true"
         "migrationStrategy" = "aa"
       }
+      ingressIP = ["20.223.40.148"]
     }
   }
 }

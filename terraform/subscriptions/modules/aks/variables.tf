@@ -109,15 +109,6 @@ variable "nodepools" {
   }))
 }
 
-# variable "autostartupschedule" {
-#   type    = bool
-#   default = false
-# }
-
-# variable "migrationStrategy" {
-#   type = string
-# }
-
 variable "storageaccount_id" {
   description = "The ID of the Storage Account"
   type        = string
@@ -140,4 +131,10 @@ variable "containers_workspace_id" {
 variable "service_endpoints" {
   type    = list(string)
   default = []
+}
+
+variable "ingressIP" {
+  type    = list(string)
+  default = []
+
 }

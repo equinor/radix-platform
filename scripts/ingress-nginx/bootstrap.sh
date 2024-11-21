@@ -302,24 +302,24 @@ create-a-record "*.${CLUSTER_NAME}" "$SELECTED_INGRESS_IP_RAW_ADDRESS" "$AZ_RESO
 
 # create nsg rule, update subnet.
 # Create network security group rule
-printf "Creating azure NSG rule %s-rule... " "${NSG_NAME}"
-az network nsg rule create \
-    --nsg-name "${NSG_NAME}" \
-    --name "${NSG_NAME}-rule" \
-    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --destination-address-prefixes "${SELECTED_INGRESS_IP_RAW_ADDRESS}" \
-    --destination-port-ranges 80 443 \
-    --access "Allow" \
-    --direction "Inbound" \
-    --priority 100 \
-    --protocol Tcp \
-    --source-address-prefixes "*" \
-    --source-port-ranges "*" \
-    --output none \
-    --only-show-errors
+# printf "Creating azure NSG rule %s-rule... " "${NSG_NAME}"
+# az network nsg rule create \
+#     --nsg-name "${NSG_NAME}" \
+#     --name "${NSG_NAME}-rule" \
+#     --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+#     --subscription "${AZ_SUBSCRIPTION_ID}" \
+#     --destination-address-prefixes "${SELECTED_INGRESS_IP_RAW_ADDRESS}" \
+#     --destination-port-ranges 80 443 \
+#     --access "Allow" \
+#     --direction "Inbound" \
+#     --priority 100 \
+#     --protocol Tcp \
+#     --source-address-prefixes "*" \
+#     --source-port-ranges "*" \
+#     --output none \
+#     --only-show-errors
 
-printf "Done.\n"
+# printf "Done.\n"
 
 printf "    Updating subnet %s to associate NSG... " "${SUBNET_NAME}"
 az network vnet subnet update \

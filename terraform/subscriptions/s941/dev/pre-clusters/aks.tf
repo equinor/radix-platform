@@ -48,6 +48,8 @@ module "aks" {
   network_policy              = each.value.network_policy
   cluster_sku_tier            = each.value.cluster_sku_tier
   developers                  = module.config.developers
+  ingressIP                   = each.value.ingressIP
+
 }
 
 locals {

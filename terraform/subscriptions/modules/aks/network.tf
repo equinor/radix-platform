@@ -2,6 +2,23 @@ resource "azurerm_network_security_group" "this" {
   name                = "nsg-${var.cluster_name}"
   location            = var.location
   resource_group_name = var.resource_group
+  security_rule {
+
+    access                                     = "Allow"
+    destination_address_prefixes               = var.ingressIP
+    destination_application_security_group_ids = []
+    destination_port_ranges                    = ["80", "443"]
+    direction                                  = "Inbound"
+    name                                       = "nsg-${var.cluster_name}-rule"
+    priority                                   = 100
+    protocol                                   = "Tcp"
+    source_address_prefix                      = "*"
+    # source_address_prefixes                    = []
+    source_application_security_group_ids = []
+    source_port_range                     = "*"
+    source_port_ranges                    = []
+
+  }
 
   tags = {
     IaC = "terraform"
