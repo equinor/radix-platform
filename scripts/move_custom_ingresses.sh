@@ -277,30 +277,6 @@ printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SC
 wait # wait for subshell to finish
 
 #######################################################################################
-### Tag $DEST_CLUSTER to have tag: autostartupschedule="true"
-### Used in GHA to determine which cluster shall be powered on daily
-###
-
-echo ""
-if [[ $CLUSTER_TYPE == "development" ]]; then
-    CLUSTERS=$(az aks list -ojson | jq '[{k8s:[.[] | select((.name | startswith("playground") or startswith('\"$DEST_CLUSTER\"') | not) and (.powerState.code!="Stopped") and (.tags.autostartupschedule == null) or (.name == '\"$SOURCE_CLUSTER\"')) | {name: .name, powerstate: .powerState.code, id: .id}]}]')
-
-    while read -r list; do
-        CLUSTER=$(jq -n "${list}" | jq -r .name)
-        ID=$(jq -n "${list}" | jq -r .id)
-        printf "Clear tag 'autostartupschedule' on cluster %s\n" "${CLUSTER}"
-        az resource tag \
-            --ids "${ID}" \
-            --tags autostartupschedule=false \
-            --is-incremental
-    done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
-
-    printf "Tag cluster %s to autostartupschedule\n" "${DEST_CLUSTER}"
-    az resource tag \
-        --ids "/subscriptions/${AZ_SUBSCRIPTION_ID}/resourcegroups/${AZ_RESOURCE_GROUP_CLUSTERS}/providers/Microsoft.ContainerService/managedClusters/${DEST_CLUSTER}" \
-        --tags autostartupschedule=true \
-        --is-incremental
-fi
 
 if [[ -z $CI ]]; then
     echo ""

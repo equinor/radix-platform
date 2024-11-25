@@ -4,15 +4,15 @@ resource "azurerm_network_security_group" "this" {
   resource_group_name = var.resource_group
   security_rule {
 
-    access                       = "Allow"
-    destination_address_prefixes = var.ingressIP
-    destination_port_ranges      = ["80", "443"]
-    direction                    = "Inbound"
-    name                         = "nsg-${var.cluster_name}-rule"
-    priority                     = 100
-    protocol                     = "Tcp"
-    source_address_prefix        = "*"
-    source_port_range            = "*"
+    access                     = "Allow"
+    destination_address_prefix = var.ingressIP
+    destination_port_ranges    = ["80", "443"]
+    direction                  = "Inbound"
+    name                       = "nsg-${var.cluster_name}-rule"
+    priority                   = 100
+    protocol                   = "Tcp"
+    source_address_prefix      = "*"
+    source_port_range          = "*"
 
   }
 
@@ -67,10 +67,11 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "subnet-${var.cluster_name}"
-  resource_group_name  = var.resource_group
-  virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = ["${var.address_space}/18"]
+  name                            = "subnet-${var.cluster_name}"
+  resource_group_name             = var.resource_group
+  virtual_network_name            = azurerm_virtual_network.this.name
+  address_prefixes                = ["${var.address_space}/18"]
+  default_outbound_access_enabled = false
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
@@ -90,4 +91,8 @@ resource "azurerm_management_lock" "network" {
 
 output "vnet" {
   value = azurerm_virtual_network.this
+}
+
+output "subnet" {
+  value = azurerm_subnet.this
 }

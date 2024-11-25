@@ -58,8 +58,8 @@ locals {
       cluster     = key
       vnet_name   = value.vnet.name
       vnet_id     = value.vnet.id
-      subnet_id   = tolist(value.vnet.subnet)[0].id
-      subnet_name = tolist(value.vnet.subnet)[0].name
+      subnet_id   = value.subnet.id
+      subnet_name = value.subnet.name
     }
   }
 }

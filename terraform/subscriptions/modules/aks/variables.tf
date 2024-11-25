@@ -134,7 +134,5 @@ variable "service_endpoints" {
 }
 
 variable "ingressIP" {
-  type    = list(string)
-  default = []
-
+  type = string
 }
