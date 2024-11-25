@@ -2,6 +2,19 @@ resource "azurerm_network_security_group" "this" {
   name                = "nsg-${var.cluster_name}"
   location            = var.location
   resource_group_name = var.resource_group
+  security_rule {
+
+    access                     = "Allow"
+    destination_address_prefix = var.ingressIP
+    destination_port_ranges    = ["80", "443"]
+    direction                  = "Inbound"
+    name                       = "nsg-${var.cluster_name}-rule"
+    priority                   = 100
+    protocol                   = "Tcp"
+    source_address_prefix      = "*"
+    source_port_range          = "*"
+
+  }
 
   tags = {
     IaC = "terraform"
@@ -39,13 +52,6 @@ resource "azurerm_virtual_network" "this" {
   resource_group_name = var.resource_group
   address_space       = ["${var.address_space}/16"]
 
-  subnet {
-    name                            = "subnet-${var.cluster_name}"
-    address_prefixes                = ["${var.address_space}/18"]
-    security_group                  = azurerm_network_security_group.this.id
-    default_outbound_access_enabled = false
-    service_endpoints               = var.service_endpoints
-  }
   dynamic "ddos_protection_plan" {
     for_each = var.enviroment == "platform" || var.enviroment == "c2" ? [1] : []
     content {
@@ -60,6 +66,20 @@ resource "azurerm_virtual_network" "this" {
   }
 }
 
+resource "azurerm_subnet" "this" {
+  name                            = "subnet-${var.cluster_name}"
+  resource_group_name             = var.resource_group
+  virtual_network_name            = azurerm_virtual_network.this.name
+  address_prefixes                = ["${var.address_space}/18"]
+  default_outbound_access_enabled = false
+}
+
+resource "azurerm_subnet_network_security_group_association" "this" {
+  subnet_id                 = azurerm_subnet.this.id
+  network_security_group_id = azurerm_network_security_group.this.id
+  depends_on                = [azurerm_virtual_network.this]
+}
+
 
 resource "azurerm_management_lock" "network" {
   for_each   = var.enviroment == "platform" || var.enviroment == "c2" ? { "${azurerm_virtual_network.this.name}" : true } : {}
@@ -71,4 +91,8 @@ resource "azurerm_management_lock" "network" {
 
 output "vnet" {
   value = azurerm_virtual_network.this
+}
+
+output "subnet" {
+  value = azurerm_subnet.this
 }

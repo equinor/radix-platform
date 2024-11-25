@@ -48,6 +48,8 @@ module "aks" {
   network_policy              = each.value.network_policy
   cluster_sku_tier            = each.value.cluster_sku_tier
   developers                  = module.config.developers
+  ingressIP                   = each.value.ingressIP
+
 }
 
 locals {
@@ -56,8 +58,8 @@ locals {
       cluster     = key
       vnet_name   = value.vnet.name
       vnet_id     = value.vnet.id
-      subnet_id   = tolist(value.vnet.subnet)[0].id
-      subnet_name = tolist(value.vnet.subnet)[0].name
+      subnet_id   = value.subnet.id
+      subnet_name = value.subnet.name
     }
   }
 }

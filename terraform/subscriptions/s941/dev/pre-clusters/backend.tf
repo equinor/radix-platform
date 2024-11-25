@@ -13,6 +13,11 @@ terraform {
       source  = "massdriver-cloud/jq"
       version = "~>0.2.0"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">=2.33.0"
+
+    }
   }
 
   backend "azurerm" {
