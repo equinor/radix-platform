@@ -59,8 +59,7 @@ locals {
       subnet_name = value.subnet.name
     }
   }
-  # clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
-  clustersets = jsondecode(nonsensitive(data.azurerm_key_vault_secret.clustersets.value))
+  clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
 }
 
 output "vnets" {
