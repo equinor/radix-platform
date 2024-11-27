@@ -38,12 +38,13 @@ resource "azurerm_kubernetes_cluster" "this" {
     node_public_ip_enabled       = false
     only_critical_addons_enabled = true
     vm_size                      = var.systempool.vm_size
-    vnet_subnet_id               = var.subnet_id
-    auto_scaling_enabled         = true
-    fips_enabled                 = false
-    host_encryption_enabled      = false
-    min_count                    = var.systempool.min_nodes
-    max_count                    = var.systempool.max_nodes
+    # vnet_subnet_id               = var.subnet_id
+    vnet_subnet_id          = azurerm_subnet.this.id
+    auto_scaling_enabled    = true
+    fips_enabled            = false
+    host_encryption_enabled = false
+    min_count               = var.systempool.min_nodes
+    max_count               = var.systempool.max_nodes
     node_labels = {
       "app"           = "system-apps"
       "nodepool-type" = "system"
@@ -139,11 +140,12 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   node_public_ip_enabled  = false
   node_taints             = each.value.node_taints
   os_disk_type            = each.value.os_disk_type
-  vnet_subnet_id          = var.subnet_id
-  workload_runtime        = "OCIContainer"
-  tags                    = {}
-  zones                   = []
-  depends_on              = [azurerm_kubernetes_cluster.this]
+  # vnet_subnet_id          = var.subnet_id
+  vnet_subnet_id   = azurerm_subnet.this.id
+  workload_runtime = "OCIContainer"
+  tags             = {}
+  zones            = []
+  depends_on       = [azurerm_kubernetes_cluster.this]
 }
 
 resource "azurerm_management_lock" "aks" {

@@ -56,9 +56,9 @@ variable "tenant_id" {
   default = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 }
 
-variable "subnet_id" {
-  type = string
-}
+# variable "subnet_id" {
+#   type = string
+# }
 
 variable "systempool" {
   type = object({
