@@ -25,15 +25,3 @@ data "azurerm_storage_account" "this" {
   resource_group_name = module.config.common_resource_group
 }
 
-# data "jq_query" "clustersets" {
-#   data = nonsensitive(data.azurerm_key_vault_secret.clustersets.value)
-#   # data = jsonencode({a = "b"})
-#   query = "."
-# }
-
-
-# output "clustersets" {
-#   value = jsondecode(data.jq_query.clustersets.data)
-#   # value = data.jq_query.this
-# }
-

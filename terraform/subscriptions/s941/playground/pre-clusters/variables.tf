@@ -3,24 +3,20 @@ variable "aksclusters" {
   type = map(object({
     autostartupschedule       = optional(bool, "false")
     migrationStrategy         = optional(string, "aa")
-    outbound_ip_address_ids   = list(string)
     node_os_upgrade_channel   = optional(string, "None")
-    ip                        = string
-    subnet_id                 = string
     aksversion                = optional(string, "1.29.2")
     cost_analysis             = optional(bool, "false")
     dns_prefix                = string
     clustertags               = optional(map(string))
     workload_identity_enabled = optional(bool, "false")
     network_policy            = optional(string, "cilium") #Currently supported values are calico, azure and cilium
+    clusterset                = string
   }))
   default = {
     playground-29 = {
-      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004"]
-      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/virtualNetworks/vnet-playground-29/subnets/subnet-playground-29"
-      ip                      = "10.5.0.0"
-      cost_analysis           = true
-      dns_prefix              = "playground-clusters-playgro-16ede4"
+      clusterset    = "clusterset1"
+      cost_analysis = true
+      dns_prefix    = "playground-clusters-playgro-16ede4"
       clustertags = {
         "migrationStrategy" = "aa"
       }

@@ -24,13 +24,12 @@ module "aks" {
   cluster_name                = each.key
   resource_group              = "clusters" # TODO module.config.cluster_resource_group
   location                    = module.config.location
-  subnet_id                   = each.value.subnet_id
   dns_prefix                  = "${each.key}-clusters-${substr(module.config.subscription, 0, 6)}" #TODO
   clustertags                 = each.value.clustertags
-  outbound_ip_address_ids     = each.value.outbound_ip_address_ids
+  outbound_ip_address_ids     = local.clustersets[each.value.clusterset].egress
   node_os_upgrade_channel     = each.value.node_os_upgrade_channel
   storageaccount_id           = data.azurerm_storage_account.this.id
-  address_space               = each.value.ip
+  address_space               = local.clustersets[each.value.clusterset].vnet
   enviroment                  = module.config.environment
   aks_version                 = each.value.aksversion
   authorized_ip_ranges        = var.authorized_ip_ranges
@@ -47,7 +46,7 @@ module "aks" {
   workload_identity_enabled = each.value.workload_identity_enabled
   network_policy            = each.value.network_policy
   developers                = module.config.developers
-  ingressIP                 = each.value.ingressIP
+  ingressIP                 = local.clustersets[each.value.clusterset].ingressIP
 }
 
 locals {
@@ -60,6 +59,7 @@ locals {
       subnet_name = value.subnet.name
     }
   }
+  clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
 }
 
 output "vnets" {

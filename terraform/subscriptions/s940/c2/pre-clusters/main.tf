@@ -8,6 +8,11 @@ data "azurerm_key_vault_secret" "this" {
   key_vault_id = data.azurerm_key_vault.this.id
 }
 
+data "azurerm_key_vault_secret" "clustersets" {
+  name         = "radix-clustersets"
+  key_vault_id = data.azurerm_key_vault.this.id
+}
+
 data "azurerm_storage_account" "this" {
   name                = "radixlog${module.config.environment}"
   resource_group_name = module.config.common_resource_group

@@ -20,12 +20,11 @@ data "azurerm_log_analytics_workspace" "containers" {
 
 
 module "aks" {
-  source         = "../../../modules/aks"
-  for_each       = var.aksclusters
-  cluster_name   = each.key
-  resource_group = module.config.cluster_resource_group
-  location       = module.config.location
-  # subnet_id                   = each.value.subnet_id
+  source                      = "../../../modules/aks"
+  for_each                    = var.aksclusters
+  cluster_name                = each.key
+  resource_group              = module.config.cluster_resource_group
+  location                    = module.config.location
   dns_prefix                  = "${each.key}-${module.config.cluster_resource_group}-${substr(module.config.subscription, 0, 6)}"
   clustertags                 = each.value.clustertags
   outbound_ip_address_ids     = local.clustersets[each.value.clusterset].egress
@@ -49,7 +48,6 @@ module "aks" {
   cluster_sku_tier            = each.value.cluster_sku_tier
   developers                  = module.config.developers
   ingressIP                   = local.clustersets[each.value.clusterset].ingressIP
-
 }
 
 locals {

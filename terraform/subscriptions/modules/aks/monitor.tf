@@ -66,7 +66,7 @@ resource "azurerm_monitor_data_collection_rule" "this" {
       extension_json = jsonencode({
         dataCollectionSettings = {
           enableContainerLogV2   = true
-          interval               = var.enviroment == "dev" || var.enviroment == "playground" ? "5m" : "1m"
+          interval               = var.enviroment == "dev" || var.enviroment == "playground" || var.enviroment == "extmon" ? "5m" : "1m"
           namespaceFilteringMode = "Exclude"
           streams = [
             "Microsoft-ContainerLog",

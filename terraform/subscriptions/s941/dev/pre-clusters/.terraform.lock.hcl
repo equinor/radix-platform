@@ -60,24 +60,3 @@ provider "registry.terraform.io/hashicorp/kubernetes" {
     "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
   ]
 }
-
-provider "registry.terraform.io/massdriver-cloud/jq" {
-  version     = "0.2.0"
-  constraints = "0.2.0"
-  hashes = [
-    "h1:+lw+c/8s8ecVnYDF0NlLU1pGR5c/WmJDIRmyRRzgN90=",
-    "zh:03ea45b45bae7157db2271b0a8edf090823119bdeb7794e37f701c79a0586a92",
-    "zh:200c5e908e7d1b3b4ced27f58889b19bc8e16cd6c607e53b123adbc76526ea52",
-    "zh:427e258cd6b742753aa689f67da7c879b39bd8fe9326dd42dfa0b25ae308a9d2",
-    "zh:5a69017d7888b9a30bcce6d645efebd0be02092b88862518835e03c9ba357784",
-    "zh:65fe1c6819cc6e296b8277e7ba42be2a8e97bfa871d75ac1b8aa8f62fbfff522",
-    "zh:71c025bc96a8e5952d34d9d6efc1890e5a9f470b4204d8a7c7fe5e0a49b89fc8",
-    "zh:7c2cdd34165356645b654027c341c0d0ee32c50a271ee013de09d2c11f0e8372",
-    "zh:95395baa95676ac7eb384918682f8ad8874ae6b82aed02f776c5a3f60ed5df3c",
-    "zh:9cb70469f54aaeec53c68f49a00792b439ad268d8ca68b0eedbcbc3235b55efd",
-    "zh:aa7b232b234e28fc7c107f754ed908ef923d1fa1480471abbf948f2830c0da7c",
-    "zh:b3247dd4600a859465784029f385248c1bc33305ea10990659d9f8181974b79f",
-    "zh:be6bfc547887064de971731ecd905d789a80b7637ec91bbffb36dfb7b7834cec",
-    "zh:decd49460cbe8fe79339561cdbffea9b8886705d3da82f11cdce8897285dea09",
-  ]
-}
