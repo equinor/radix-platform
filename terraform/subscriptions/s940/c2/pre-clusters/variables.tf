@@ -3,22 +3,18 @@ variable "aksclusters" {
   type = map(object({
     autostartupschedule       = optional(bool, "false")
     migrationStrategy         = optional(string, "aa")
-    outbound_ip_address_ids   = list(string)
     node_os_upgrade_channel   = optional(string, "None")
-    ip                        = string
-    subnet_id                 = string
     aksversion                = optional(string, "1.29.2")
     cost_analysis             = optional(bool, "false")
     dns_prefix                = optional(string)
     clustertags               = optional(map(string))
     workload_identity_enabled = optional(bool, "false")
     network_policy            = optional(string, "calico")
+    clusterset                = string
   }))
   default = {
     c2-11 = {
-      outbound_ip_address_ids = ["/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-003", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-004", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-005", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-006", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-007", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-westeurope/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-008"]
-      subnet_id               = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/virtualNetworks/vnet-c2-11/subnets/subnet-c2-11"
-      ip                      = "10.5.0.0"
+      clusterset = "clusterset1"
       clustertags = {
         "migrationStrategy" = "aa"
       }

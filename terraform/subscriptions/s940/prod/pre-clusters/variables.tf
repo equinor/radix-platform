@@ -3,23 +3,19 @@ variable "aksclusters" {
   type = map(object({
     autostartupschedule       = optional(bool, "false")
     migrationStrategy         = optional(string, "aa")
-    outbound_ip_address_ids   = list(string)
     node_os_upgrade_channel   = optional(string, "None")
-    ip                        = string
-    subnet_id                 = string
     aksversion                = optional(string, "1.29.2")
     cost_analysis             = optional(bool, "false")
     dns_prefix                = optional(string)
     clustertags               = optional(map(string))
     workload_identity_enabled = optional(bool, "false")
     network_policy            = optional(string, "calico") #Currently supported values are calico, azure and cilium
+    clusterset                = string
   }))
   default = {
     eu-18 = {
-      outbound_ip_address_ids = ["/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-001", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-002", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-003", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-004", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-005", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-006", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-007", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-008"]
-      subnet_id               = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters/providers/Microsoft.Network/virtualNetworks/vnet-eu-18/subnets/subnet-eu-18"
-      ip                      = "10.8.0.0"
-      cost_analysis           = false
+      clusterset    = "clusterset1"
+      cost_analysis = false
       clustertags = {
         "migrationStrategy" = "aa"
       }

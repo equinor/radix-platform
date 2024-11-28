@@ -3,10 +3,7 @@ variable "aksclusters" {
   type = map(object({
     autostartupschedule       = optional(bool, "false")
     migrationStrategy         = optional(string, "aa")
-    outbound_ip_address_ids   = list(string)
     node_os_upgrade_channel   = optional(string, "None")
-    ip                        = string
-    subnet_id                 = string
     aksversion                = optional(string, "1.29.8")
     cost_analysis             = optional(bool, "false")
     dns_prefix                = optional(string)
@@ -14,29 +11,23 @@ variable "aksclusters" {
     workload_identity_enabled = optional(bool, "false")
     network_policy            = optional(string, "cilium") #Currently supported values are calico, azure and cilium
     cluster_sku_tier          = optional(string, "Free")
-    ingressIP                 = optional(string)
+    clusterset                = string
   }))
   default = {
     weekly-47 = {
-      autostartupschedule     = true
-      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"]
-      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/virtualNetworks/vnet-weekly-47/subnets/subnet-weekly-47"
-      ip                      = "10.4.0.0"
+      clusterset          = "clusterset2"
+      autostartupschedule = true
       clustertags = {
         "autostartupschedule" = "false"
         "migrationStrategy"   = "aa"
       }
-      ingressIP = "20.223.40.149"
     }
     weekly-48 = {
-      outbound_ip_address_ids = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004"]
-      subnet_id               = "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/virtualNetworks/vnet-weekly-48/subnets/subnet-weekly-48"
-      ip                      = "10.3.0.0"
+      clusterset = "clusterset1"
       clustertags = {
         "autostartupschedule" = "true"
         "migrationStrategy"   = "aa"
       }
-      ingressIP = "20.223.40.148"
     }
   }
 }
@@ -156,9 +147,9 @@ variable "authorized_ip_ranges" {
     "143.97.2.129/32",
     "143.97.2.35/32",
     "158.248.121.139/32",
-    "213.236.148.45/32",
+    "185.55.105.28/32",
     "8.29.230.8/32",
     "92.221.23.247/32",
     "92.221.25.155/32",
-  "92.221.72.153/32"]
+  "92.221.72.153/32", ]
 }

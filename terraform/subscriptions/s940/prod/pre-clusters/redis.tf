@@ -3,5 +3,5 @@ module "rediscache" {
   for_each            = { for k in jsondecode(nonsensitive(data.azurerm_key_vault_secret.this.value)).clusters : k.name => k }
   rg_name             = "clusters"
   name                = each.key
-  vnet_resource_group = "cluster-vnet-hub-${module.config.environment}"
+  vnet_resource_group = "cluster-vnet-hub-prod" #TODO ${module.config.environment}"
 }

@@ -71,7 +71,7 @@ resource "azurerm_subnet" "this" {
   resource_group_name             = var.resource_group
   virtual_network_name            = azurerm_virtual_network.this.name
   address_prefixes                = ["${var.address_space}/18"]
-  default_outbound_access_enabled = false
+  default_outbound_access_enabled = true
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {

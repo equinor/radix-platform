@@ -3,10 +3,7 @@ variable "aksclusters" {
   type = map(object({
     autostartupschedule       = optional(bool, "false")
     migrationStrategy         = optional(string, "aa")
-    outbound_ip_address_ids   = list(string)
     node_os_upgrade_channel   = optional(string, "None")
-    ip                        = string
-    subnet_id                 = string
     aksversion                = optional(string, "1.29.2")
     cost_analysis             = optional(bool, "false")
     dns_prefix                = optional(string)
@@ -14,12 +11,11 @@ variable "aksclusters" {
     workload_identity_enabled = optional(bool, "true")
     network_policy            = optional(string, "calico")
     service_endpoints         = optional(list(string), [])
+    clusterset                = string
   }))
   default = {
     ext-mon-11 = {
-      outbound_ip_address_ids = ["/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-002", "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-003"]
-      subnet_id               = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/virtualNetworks/vnet-ext-mon-11/subnets/subnet-ext-mon-11"
-      ip                      = "10.4.0.0"
+      clusterset              = "clusterset2"
       node_os_upgrade_channel = "NodeImage"
       clustertags = {
         "migrationStrategy" = "aa"
