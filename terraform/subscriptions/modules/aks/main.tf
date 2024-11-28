@@ -139,7 +139,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   node_public_ip_enabled  = false
   node_taints             = each.value.node_taints
   os_disk_type            = each.value.os_disk_type
-  # vnet_subnet_id          = var.subnet_id
   vnet_subnet_id   = azurerm_subnet.this.id
   workload_runtime = "OCIContainer"
   tags             = {}
