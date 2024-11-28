@@ -109,7 +109,7 @@ module "radix_id_aks_mi" {
       role     = "Contributor"
       scope_id = data.azurerm_resource_group.common.id
     }
-    rg_contributor = {
+    rg_clusters_platform = {
       role     = "Contributor"
       scope_id = data.azurerm_resource_group.clusters_platform.id
     }

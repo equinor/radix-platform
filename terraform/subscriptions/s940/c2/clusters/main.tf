@@ -16,7 +16,7 @@ data "azurerm_resource_group" "common" {
   name = "common-westeurope" #TODO
 }
 
-data "azurerm_resource_group" "clusters_c2" {
+data "azurerm_resource_group" "rg_clusters_c2" {
   name = "clusters-c2" #TODO
 }
 
@@ -104,7 +104,7 @@ module "radix_id_aks_mi" {
     }
     rg_clusters_c2 = {
       role     = "Contributor"
-      scope_id = data.azurerm_resource_group.clusters_c2.id
+      scope_id = data.azurerm_resource_group.rg_clusters_c2.id
     }
   }
 }
