@@ -18,6 +18,10 @@ data "azurerm_resource_group" "common" {
   name = "monitoring" #TODO
 }
 
+data "azurerm_resource_group" "clusters_extmon" {
+  name = "clusters-extmon" #TODO
+}
+
 data "azurerm_key_vault" "keyvault" {
   name                = module.config.key_vault_name
   resource_group_name = module.config.common_resource_group
@@ -99,6 +103,10 @@ module "radix_id_aks_mi" {
     rg_contributor = {
       role     = "Contributor"
       scope_id = data.azurerm_resource_group.common.id
+    }
+    rg_clusters_extmon = {
+      role     = "Contributor"
+      scope_id = data.azurerm_resource_group.clusters_extmon.id
     }
   }
 }

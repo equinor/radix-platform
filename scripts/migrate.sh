@@ -290,26 +290,26 @@ if [[ "$?" != "0" ]]; then
 fi
 printf "Done.\n"
 
-#######################################################################################
-### Check the migration strategy
-###
+# #######################################################################################
+# ### Check the migration strategy
+# ###
 
-while true; do
-    read -r -e -p "Are you migrating active to active or active to test? (aa/at) " -i "at" yn
-    case $yn in
-    "aa")
-        MIGRATION_STRATEGY="aa"
-        break
-        ;;
-    "at")
-        MIGRATION_STRATEGY="at"
-        break
-        ;;
-    *) echo "Please answer aa or at." ;;
-    esac
-done
+# while true; do
+#     read -r -e -p "Are you migrating active to active or active to test? (aa/at) " -i "at" yn
+#     case $yn in
+#     "aa")
+#         MIGRATION_STRATEGY="aa"
+#         break
+#         ;;
+#     "at")
+#         MIGRATION_STRATEGY="at"
+#         break
+#         ;;
+#     *) echo "Please answer aa or at." ;;
+#     esac
+# done
 
-echo ""
+MIGRATION_STRATEGY="aa"
 
 #######################################################################################
 ### Staging certs on test cluster

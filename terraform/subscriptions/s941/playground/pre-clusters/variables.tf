@@ -21,6 +21,14 @@ variable "aksclusters" {
         "migrationStrategy" = "aa"
       }
     }
+    playground-30 = {
+      clusterset    = "clusterset2"
+      cost_analysis = true
+      dns_prefix    = "playground-30-clusters-playground-16ede4"
+      clustertags = {
+        "migrationStrategy" = "aa"
+      }
+    }
   }
 }
 
