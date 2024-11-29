@@ -100,8 +100,17 @@ variable "nodepools" {
     }
     armpipepool = {
       vm_size   = "Standard_E16ps_v5"
+      min_count = 0
+      max_count = 8
+      node_labels = {
+        "nodepooltasks" = "jobs"
+      }
+      node_taints = ["nodepooltasks=jobs:NoSchedule"]
+    }
+    armpipepool2 = {
+      vm_size   = "Standard_E16ps_v5"
       min_count = 1
-      max_count = 16
+      max_count = 8
       node_labels = {
         "nodepooltasks" = "jobs"
       }
