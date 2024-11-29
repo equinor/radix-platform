@@ -10,3 +10,9 @@ backend:
   tenant_id:             "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
   ip_key_vault_id:       "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-playground/providers/Microsoft.KeyVault/vaults/radix-keyv-playground"
   terraform_storage_id:  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/s941-tfstate/providers/Microsoft.Storage/storageAccounts/s941radixinfra"
+clusters: 
+  playground-29:
+    aksversion: "1.29.2"
+    networkset: "clusterset1"
+    network_policy: "cilium"
+    dns_prefix: "playground-clusters-playgro-16ede4"

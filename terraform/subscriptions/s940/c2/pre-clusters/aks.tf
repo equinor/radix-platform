@@ -20,15 +20,14 @@ data "azurerm_log_analytics_workspace" "containers" {
 
 module "aks" {
   source                      = "../../../modules/aks"
-  for_each                    = var.aksclusters
+  for_each                    = module.config.cluster
   cluster_name                = each.key
   resource_group              = module.config.cluster_resource_group
   location                    = module.config.location
   dns_prefix                  = "${each.key}-${module.config.cluster_resource_group}-${substr(module.config.subscription, 0, 6)}"
-  outbound_ip_address_ids     = local.clustersets[each.value.clusterset].egress
-  node_os_upgrade_channel     = each.value.node_os_upgrade_channel
+  outbound_ip_address_ids     = local.clustersets[each.value.networkset].egress
   storageaccount_id           = data.azurerm_storage_account.this.id
-  address_space               = local.clustersets[each.value.clusterset].vnet
+  address_space               = local.clustersets[each.value.networkset].vnet
   enviroment                  = module.config.environment
   aks_version                 = each.value.aksversion
   authorized_ip_ranges        = var.authorized_ip_ranges
@@ -38,14 +37,12 @@ module "aks" {
   identity_kublet_client      = data.azurerm_user_assigned_identity.akskubelet.client_id
   identity_kublet_object      = data.azurerm_user_assigned_identity.akskubelet.principal_id
   identity_kublet_identity_id = data.azurerm_user_assigned_identity.akskubelet.id
-  # defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
-  defender_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
-  containers_workspace_id   = data.azurerm_log_analytics_workspace.containers.id
-  cost_analysis             = each.value.cost_analysis
-  workload_identity_enabled = each.value.workload_identity_enabled
-  network_policy            = each.value.network_policy
-  developers                = module.config.developers
-  ingressIP                 = local.clustersets[each.value.clusterset].ingressIP
+  defender_workspace_id       = data.azurerm_log_analytics_workspace.containers.id
+  containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
+  network_policy              = each.value.network_policy
+  developers                  = module.config.developers
+  ingressIP                   = local.clustersets[each.value.networkset].ingressIP
+  subscription                = module.config.subscription
 }
 
 locals {
@@ -58,7 +55,6 @@ locals {
       subnet_name = value.subnet.name
     }
   }
-  # clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
   clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
 }
 
