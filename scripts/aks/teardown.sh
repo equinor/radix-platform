@@ -209,17 +209,17 @@ fi
 ### Check for test cluster public IPs
 ###
 
-CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
-IP_EXISTS=$(az network public-ip list \
-    --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" \
-    --query "[?name=='${CLUSTER_PIP_NAME}'].{id:id, ipAddress:ipAddress}" \
-    --only-show-errors)
+# CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
+# IP_EXISTS=$(az network public-ip list \
+#     --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
+#     --subscription "${AZ_SUBSCRIPTION_ID}" \
+#     --query "[?name=='${CLUSTER_PIP_NAME}'].{id:id, ipAddress:ipAddress}" \
+#     --only-show-errors)
 
-if [[ ${IP_EXISTS} ]]; then
-    TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.[].ipAddress')
-    TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq -r '.[].id')
-fi
+# if [[ ${IP_EXISTS} ]]; then
+#     TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.[].ipAddress')
+#     TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq -r '.[].id')
+# fi
 
 #######################################################################################
 ### Verify task at hand
@@ -265,30 +265,6 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
-#######################################################################################
-### Store new clusterlist to Keyvault
-###
-SECRET_NAME="radix-clusters"
-update_keyvault="true"
-K8S_CLUSTER_LIST=$(az keyvault secret show \
-    --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRET_NAME}" \
-    --query="value" \
-    --output tsv | jq '{clusters:.clusters | sort_by(.name | ascii_downcase)}' 2>/dev/null)
-temp_file_path="/tmp/$(uuidgen)"
-delete-single-ip-from-clusters "${K8S_CLUSTER_LIST}" "${temp_file_path}" "${CLUSTER_NAME}"
-new_master_k8s_api_ip_whitelist_base64=$(cat ${temp_file_path})
-new_master_k8s_api_ip_whitelist=$(echo ${new_master_k8s_api_ip_whitelist_base64} | base64 -d)
-rm ${temp_file_path}
-if [[ ${update_keyvault} == true ]]; then
-    EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
-
-    #printf "\nUpdating keyvault \"%s\"... " "${AZ_RESOURCE_KEYVAULT}"
-    if [[ "$(az keyvault secret set --name "${SECRET_NAME}" --vault-name "${AZ_RESOURCE_KEYVAULT}" --value "${new_master_k8s_api_ip_whitelist}" --expires "$EXPIRY_DATE" 2>&1)" == *"ERROR"* ]]; then
-        printf "\nERROR: Could not update secret in keyvault \"%s\". Exiting..." "${AZ_RESOURCE_KEYVAULT}" >&2
-        exit 1
-    fi
-    printf "Done.\n"
-fi
 
 for row in $(kubectl get pdb -A -o json | jq -c '.items[] | select(.spec.minAvailable == 1) | {namespace: .metadata.namespace, name: .metadata.name, minAvailable: .spec.minAvailable}'); do
   namespace=$(echo "$row" | jq -r '.namespace')
@@ -304,17 +280,6 @@ terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZON
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
-
-
-if [[ ${TEST_CLUSTER_PUBLIC_IP_ADDRESS} ]]; then
-    # IP cannot be deleted while still allocated to loadbalancer.
-    printf "Deleting Public IP %s..." "${TEST_CLUSTER_PUBLIC_IP_ADDRESS}"
-    az network public-ip delete \
-        --ids "${TEST_CLUSTER_PUBLIC_IP_ID}" \
-        --output none \
-        --only-show-errors
-    printf "Done.\n"
-fi
 
 echo ""
 echo "Delete DNS records"
