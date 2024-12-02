@@ -23,7 +23,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     ]
   }
 
-  tags = var.clustertags
+  tags = var.autostartupschedule == true ? { "autostartupschedule" = "true" } : {}
   api_server_access_profile {
     authorized_ip_ranges = var.authorized_ip_ranges
   }

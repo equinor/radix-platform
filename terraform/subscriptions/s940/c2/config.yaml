@@ -15,4 +15,3 @@ clusters:
     aksversion: "1.29.2"
     networkset: "clusterset1"
     network_policy: "calico"
-    dns_prefix: ""

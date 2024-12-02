@@ -12,14 +12,13 @@ backend:
   ip_key_vault_id:       "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.KeyVault/vaults/radix-keyv-dev"
   terraform_storage_id:  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/s941-tfstate/providers/Microsoft.Storage/storageAccounts/s941radixinfra"
 clusters:
-  weekly-47:
-    aksversion: "1.29.8"
-    networkset: "clusterset2"
-    network_policy: "cilium"
-    dns_prefix: ""
+  # weekly-47:
+  #   aksversion: "1.29.8"
+  #   networkset: "clusterset2"
+  #   network_policy: "cilium"
+  #   dns_prefix: ""
   weekly-48:
     aksversion: "1.29.8"
     networkset: "clusterset1"
     network_policy: "cilium"
-    dns_prefix: ""
     autostartupschedule: true

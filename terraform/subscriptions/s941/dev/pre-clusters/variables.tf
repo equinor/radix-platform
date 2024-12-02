@@ -1,37 +1,3 @@
-variable "aksclusters" {
-  description = "Max 15 characters lowercase in the storageaccount name"
-  type = map(object({
-    autostartupschedule       = optional(bool, "false")
-    migrationStrategy         = optional(string, "aa")
-    node_os_upgrade_channel   = optional(string, "None")
-    aksversion                = optional(string, "1.29.8")
-    cost_analysis             = optional(bool, "false")
-    dns_prefix                = optional(string)
-    clustertags               = optional(map(string))
-    workload_identity_enabled = optional(bool, "false")
-    network_policy            = optional(string, "cilium") #Currently supported values are calico, azure and cilium
-    cluster_sku_tier          = optional(string, "Free")
-    clusterset                = string
-  }))
-  default = {
-    weekly-47 = {
-      clusterset          = "clusterset2"
-      autostartupschedule = true
-      clustertags = {
-        "autostartupschedule" = "false"
-        "migrationStrategy"   = "aa"
-      }
-    }
-    weekly-48 = {
-      clusterset = "clusterset1"
-      clustertags = {
-        "autostartupschedule" = "true"
-        "migrationStrategy"   = "aa"
-      }
-    }
-  }
-}
-
 variable "systempool" {
   type = object({
     vm_size   = string

@@ -33,11 +33,6 @@ variable "workload_identity_enabled" {
   default = false
 }
 
-variable "clustertags" {
-  type    = map(string)
-  default = {}
-}
-
 variable "authorized_ip_ranges" {
   type = list(string)
 }
@@ -130,6 +125,5 @@ variable "ingressIP" {
 }
 
 variable "autostartupschedule" {
-  type    = bool
-  default = false
+  type = bool
 }

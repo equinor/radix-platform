@@ -24,7 +24,7 @@ module "aks" {
   cluster_name                = each.key
   resource_group              = module.config.cluster_resource_group
   location                    = module.config.location
-  dns_prefix                  = each.value.dns_prefix
+  dns_prefix                  = lookup(module.config.cluster[each.key], "dns_prefix", "")
   outbound_ip_address_ids     = local.clustersets[each.value.networkset].egress
   storageaccount_id           = data.azurerm_storage_account.this.id
   address_space               = local.clustersets[each.value.networkset].vnet
@@ -43,6 +43,7 @@ module "aks" {
   developers                  = module.config.developers
   ingressIP                   = local.clustersets[each.value.networkset].ingressIP
   subscription                = module.config.subscription
+  autostartupschedule         = lookup(module.config.cluster[each.key], "autostartupschedule", false)
 }
 
 
