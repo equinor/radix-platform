@@ -91,3 +91,7 @@ output "radix_log_api_mi_name" {
 output "developers" {
   value = local.config.developers
 }
+
+output "cluster" {
+  value = local.config.clusters
+}

@@ -20,16 +20,14 @@ data "azurerm_log_analytics_workspace" "containers" {
 
 module "aks" {
   source                      = "../../../modules/aks"
-  for_each                    = var.aksclusters
+  for_each                    = module.config.cluster
   cluster_name                = each.key
   resource_group              = module.config.cluster_resource_group
   location                    = module.config.location
-  dns_prefix                  = each.value.dns_prefix
-  clustertags                 = each.value.clustertags
-  outbound_ip_address_ids     = local.clustersets[each.value.clusterset].egress
-  node_os_upgrade_channel     = each.value.node_os_upgrade_channel
+  dns_prefix                  = lookup(module.config.cluster[each.key], "dns_prefix", "")
+  outbound_ip_address_ids     = local.clustersets[each.value.networkset].egress
   storageaccount_id           = data.azurerm_storage_account.this.id
-  address_space               = local.clustersets[each.value.clusterset].vnet
+  address_space               = local.clustersets[each.value.networkset].vnet
   enviroment                  = module.config.environment
   aks_version                 = each.value.aksversion
   authorized_ip_ranges        = var.authorized_ip_ranges
@@ -41,12 +39,14 @@ module "aks" {
   identity_kublet_identity_id = data.azurerm_user_assigned_identity.akskubelet.id
   defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
   containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
-  cost_analysis               = each.value.cost_analysis
-  workload_identity_enabled   = each.value.workload_identity_enabled
   network_policy              = each.value.network_policy
   developers                  = module.config.developers
-  ingressIP                   = local.clustersets[each.value.clusterset].ingressIP
+  ingressIP                   = local.clustersets[each.value.networkset].ingressIP
+  subscription                = module.config.subscription
+  autostartupschedule         = lookup(module.config.cluster[each.key], "autostartupschedule", false)
 }
+
+
 
 locals {
   flattened_vnets = {

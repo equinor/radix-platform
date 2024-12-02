@@ -2,11 +2,11 @@ resource "azurerm_kubernetes_cluster" "this" {
   name                             = var.cluster_name
   resource_group_name              = var.resource_group
   location                         = var.location
-  dns_prefix                       = var.dns_prefix
+  dns_prefix                       = var.dns_prefix != "" ? var.dns_prefix : "${var.cluster_name}-${var.resource_group}-${substr(var.subscription, 0, 6)}"
   kubernetes_version               = var.aks_version
-  node_os_upgrade_channel          = var.node_os_upgrade_channel
+  node_os_upgrade_channel          = var.enviroment == "dev" || var.enviroment == "playground" || var.enviroment == "extmon" ? "NodeImage" : "None"
   cost_analysis_enabled            = var.cost_analysis
-  sku_tier                         = var.cluster_sku_tier
+  sku_tier                         = var.enviroment == "dev" ? "Free" : "Standard"
   http_application_routing_enabled = false
   local_account_disabled           = true
   oidc_issuer_enabled              = true
@@ -16,14 +16,14 @@ resource "azurerm_kubernetes_cluster" "this" {
     secret_rotation_enabled = true
   }
 
-  workload_identity_enabled = var.workload_identity_enabled
+  workload_identity_enabled = var.enviroment == "extmon" ? true : false
   lifecycle {
     ignore_changes = [
       default_node_pool[0].upgrade_settings
     ]
   }
 
-  tags = var.clustertags
+  tags = var.autostartupschedule == true ? { "autostartupschedule" = "true" } : {}
   api_server_access_profile {
     authorized_ip_ranges = var.authorized_ip_ranges
   }
@@ -34,16 +34,16 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   default_node_pool {
-    name                         = "systempool"
-    node_public_ip_enabled       = false
+    name = "systempool"
+    # node_public_ip_enabled       = false
     only_critical_addons_enabled = true
     vm_size                      = var.systempool.vm_size
     vnet_subnet_id               = azurerm_subnet.this.id
     auto_scaling_enabled         = true
     fips_enabled                 = false
-    host_encryption_enabled      = false
-    min_count                    = var.systempool.min_nodes
-    max_count                    = var.systempool.max_nodes
+    # host_encryption_enabled      = false
+    min_count = var.systempool.min_nodes
+    max_count = var.systempool.max_nodes
     node_labels = {
       "app"           = "system-apps"
       "nodepool-type" = "system"
@@ -125,25 +125,25 @@ resource "azurerm_kubernetes_cluster" "this" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "this" {
-  for_each                = { for k, v in var.nodepools : k => v }
-  name                    = each.key
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = each.value.vm_size
-  auto_scaling_enabled    = true
-  max_pods                = 110
-  min_count               = each.value.min_count
-  max_count               = each.value.max_count
-  fips_enabled            = false
-  host_encryption_enabled = false
-  node_labels             = each.value.node_labels
-  node_public_ip_enabled  = false
-  node_taints             = each.value.node_taints
-  os_disk_type            = each.value.os_disk_type
-  vnet_subnet_id          = azurerm_subnet.this.id
-  workload_runtime        = "OCIContainer"
-  tags                    = {}
-  zones                   = []
-  depends_on              = [azurerm_kubernetes_cluster.this]
+  for_each              = { for k, v in var.nodepools : k => v }
+  name                  = each.key
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.this.id
+  vm_size               = each.value.vm_size
+  auto_scaling_enabled  = true
+  max_pods              = 110
+  min_count             = each.value.min_count
+  max_count             = each.value.max_count
+  fips_enabled          = false
+  # host_encryption_enabled = false
+  node_labels = each.value.node_labels
+  # node_public_ip_enabled  = false
+  node_taints      = each.value.node_taints
+  os_disk_type     = each.value.os_disk_type
+  vnet_subnet_id   = azurerm_subnet.this.id
+  workload_runtime = "OCIContainer"
+  tags             = {}
+  zones            = []
+  depends_on       = [azurerm_kubernetes_cluster.this]
 }
 
 resource "azurerm_management_lock" "aks" {

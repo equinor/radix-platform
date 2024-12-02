@@ -1,27 +1,3 @@
-variable "aksclusters" {
-  description = "Max 15 characters lowercase in the storageaccount name"
-  type = map(object({
-    autostartupschedule       = optional(bool, "false")
-    migrationStrategy         = optional(string, "aa")
-    node_os_upgrade_channel   = optional(string, "None")
-    aksversion                = optional(string, "1.29.2")
-    cost_analysis             = optional(bool, "false")
-    dns_prefix                = optional(string)
-    clustertags               = optional(map(string))
-    workload_identity_enabled = optional(bool, "false")
-    network_policy            = optional(string, "calico")
-    clusterset                = string
-  }))
-  default = {
-    c2-11 = {
-      clusterset = "clusterset1"
-      clustertags = {
-        "migrationStrategy" = "aa"
-      }
-    }
-  }
-}
-
 variable "systempool" {
   type = object({
     vm_size   = string

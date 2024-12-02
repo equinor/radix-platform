@@ -1,3 +1,7 @@
+variable "subscription" {
+  type = string
+}
+
 variable "cluster_name" {
   type = string
 }
@@ -11,14 +15,11 @@ variable "location" {
 }
 
 variable "dns_prefix" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "aks_version" {
-  type = string
-}
-
-variable "node_os_upgrade_channel" {
   type = string
 }
 
@@ -27,19 +28,9 @@ variable "cost_analysis" {
   default = false
 }
 
-variable "cluster_sku_tier" {
-  type    = string
-  default = "Standard"
-}
-
 variable "workload_identity_enabled" {
   type    = bool
-  default = true
-}
-
-variable "clustertags" {
-  type    = map(string)
-  default = {}
+  default = false
 }
 
 variable "authorized_ip_ranges" {
@@ -55,10 +46,6 @@ variable "tenant_id" {
   type    = string
   default = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
 }
-
-# variable "subnet_id" {
-#   type = string
-# }
 
 variable "systempool" {
   type = object({
@@ -135,4 +122,8 @@ variable "service_endpoints" {
 
 variable "ingressIP" {
   type = string
+}
+
+variable "autostartupschedule" {
+  type = bool
 }
