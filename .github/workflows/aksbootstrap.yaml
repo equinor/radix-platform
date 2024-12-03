@@ -54,6 +54,18 @@ jobs:
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Lets sleep for 30 seconds for FW rule to complete
         run: sleep 30s
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.terraform_version }}
+      - name: Terraform Init
+        id: init
+        env:
+          ARM_USE_OIDC: true
+          ARM_USE_AZUREAD: true
+        run: |
+          terraform -chdir="./terraform/subscriptions/s941/dev/pre-clusters" init
+          terraform -chdir="./terraform/subscriptions/s941/dev/pre-clusters" plan
       - name: Revoke GitHub IP on StorageAccount
         run: |
           az storage account network-rule remove \
