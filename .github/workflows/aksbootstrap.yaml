@@ -24,7 +24,7 @@ jobs:
     env:
      # ENVIROMENT: dev #variable passed to scipt
       SUBSCRIPTION: s941 #variable passed to scipt
-      terraform_version: ~1.3.0
+      terraform_version: ~1.9.0
       ARM_USE_OIDC: true
       ARM_USE_AZUREAD: true
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
