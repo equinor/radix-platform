@@ -1,4 +1,4 @@
-name: AKS bootstrap
+name: AKS bootstrap 1
 on:
   workflow_dispatch:
     inputs:

@@ -1,0 +1,57 @@
+name: AKS bootstrap 1
+on:
+  workflow_dispatch:
+    inputs:
+      terraformapply:
+        description: 'Terraform apply'
+        type: boolean
+        required: true
+        default: false
+jobs:
+  terraform-plan:
+    name: Terraform plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: "dev"
+            subscription: "s941"
+          - name: "playground"
+            subscription: "s941"
+          - name: "platform"
+            subscription: "s940"
+          - name: "c2"
+            subscription: "s940"
+
+    environment: ${{matrix.target.name }}
+    env:
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    permissions:
+      id-token: write
+      contents: read
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 #Clone Repo
+        with:
+          fetch-depth: '2'
+      - name: Extract data
+        id: data
+        run: |
+
+          # Process filename
+          FILENAME=terraform/subscriptions/${{matrix.target.subscription}}/${{matrix.target.name}}/config.yaml
+          echo "FILENAME=${FILENAME}" >> $GITHUB_OUTPUT
+          echo "Checking file: ${FILENAME}"
+      - name: Check if files changed
+        id: changes
+        run: |
+          echo "Checking file: ${{steps.data.outputs.FILENAME}}"
+          if (git diff --exit-code --quiet HEAD~1 HEAD -- ${{steps.data.outputs.FILENAME}}) then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
