@@ -52,6 +52,11 @@ jobs:
             --resource-group "${{ env.SUBSCRIPTION}}-tfstate" \
             --account-name "${{ env.SUBSCRIPTION}}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Add GitHub IP to KeyVault
+        run: |
+          az keyvault network-rule add --name "radix-keyv-dev" \
+            --resource-group "common-dev" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Lets sleep for 30 seconds for FW rule to complete
         run: sleep 30s
       - name: Setup Terraform
@@ -71,6 +76,11 @@ jobs:
           az storage account network-rule remove \
             --resource-group "${{ env.SUBSCRIPTION}}-tfstate" \
             --account-name "${{ env.SUBSCRIPTION}}radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Revoke GitHub IP on KeyVault
+        run: |
+          az keyvault network-rule remove --name "radix-keyv-dev" \
+            --resource-group "common-dev" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
 
