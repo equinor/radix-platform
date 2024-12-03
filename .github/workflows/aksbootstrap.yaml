@@ -95,6 +95,10 @@ jobs:
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" plan
       - name: Terraform Apply
         if: ${{ steps.changes.outputs.changed == 'true' && github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        id: apply
+        env:
+          ARM_USE_OIDC: true
+          ARM_USE_AZUREAD: true
         run: |
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply
       - name: Revoke GitHub IP on StorageAccount
