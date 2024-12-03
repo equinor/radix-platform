@@ -1,5 +1,8 @@
 name: AKS bootstrap
 on:
+  pull_request:
+    paths:
+    - terraform/subscriptions/**  
   workflow_dispatch:
     inputs:
       terraformapply:
