@@ -124,7 +124,11 @@ verify_cluster_access
 #######################################################################################
 
 function updateRedisCacheConfiguration() {
-    REDIS_CACHE_NAME="${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}"
+    if [[ $RADIX_ZONE == "dev" ]]; then
+        REDIS_CACHE_NAME="redis-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
+    else
+        REDIS_CACHE_NAME="${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}"
+    fi
     REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-${RADIX_WEB_CONSOLE_ENV}"
