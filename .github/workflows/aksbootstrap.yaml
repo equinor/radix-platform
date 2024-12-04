@@ -103,7 +103,7 @@ jobs:
           ARM_USE_OIDC: true
           ARM_USE_AZUREAD: true
         run: |
-          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply -auto-approve
       - name: Revoke GitHub IP on StorageAccount
         if: steps.changes.outputs.changed == 'true'
         run: |

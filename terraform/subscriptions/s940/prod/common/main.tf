@@ -23,6 +23,22 @@ module "loganalytics" {
   #TODO: No setting for 100 GB/day Commitment Tier. Done manually
 }
 
+data "azurerm_resource_group" "logs" {
+  name = "Logs"
+}
+
+data "azurerm_resource_group" "clusters" {
+  name = "clusters"
+}
+
+data "azurerm_resource_group" "networkwatcher" {
+  name = "NetworkWatcherRG"
+}
+
+data "azurerm_key_vault" "this" {
+  name                = "radix-keyv-${module.config.environment}"
+  resource_group_name = "common-${module.config.environment}"
+}
 
 data "azurerm_virtual_network" "this" {
   name                = "vnet-hub"
@@ -154,6 +170,26 @@ module "radix_id_gitrunner" {
       role     = "Storage Blob Data Contributor" # Needed to read blobdata
       scope_id = "${module.config.backend.terraform_storage_id}"
     }
+    common_contributor = {
+      role     = "Contributor" # Needed to open firewall
+      scope_id = "${module.resourcegroups.data.id}"
+    }
+    logs_contributor = {
+      role     = "Contributor"
+      scope_id = "${data.azurerm_resource_group.logs.id}"
+    }
+    clusters_contributor = {
+      role     = "Contributor"
+      scope_id = "${data.azurerm_resource_group.clusters.id}"
+    }
+    networkwatcher_contributor = {
+      role     = "Contributor"
+      scope_id = "${data.azurerm_resource_group.networkwatcher.id}"
+    }
+    keyvault_contributor = {
+      role     = "Key Vault Secrets User" # Needed to read secrets
+      scope_id = "${data.azurerm_key_vault.this.id}"
+    }
     vnet_contributor = {
       role     = "Contributor"
       scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/${data.azurerm_virtual_network.this.resource_group_name}"
@@ -165,6 +201,11 @@ module "radix_id_gitrunner" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix:environment:${module.config.environment}"
     },
+    github_radix-platform = {
+      name    = "radix-platform-env-${module.config.environment}"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-platform:environment:${module.config.environment}"
+    }
   }
 }
 
