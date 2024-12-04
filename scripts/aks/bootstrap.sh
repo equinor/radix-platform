@@ -53,25 +53,13 @@ hash az 2>/dev/null || {
     exit 1
 }
 
-if [ "${CILIUM}" = true ]; then
-    hash cilium 2>/dev/null || {
-        echo -e "\nERROR: cilium not found in PATH. Exiting... " >&2
-        exit 1
-    }
-fi
-
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
     exit 1
 }
 
-hash helm 2>/dev/null || {
-    echo -e "\nERROR: helm not found in PATH. Exiting... " >&2
-    exit 1
-}
-
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.41.0"
+MIN_AZ_CLI="2.67.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
     printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
     exit 1
@@ -114,11 +102,6 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-if [[ -z "$MIGRATION_STRATEGY" ]]; then
-    echo "ERROR: Please provide MIGRATION_STRATEGY" >&2
-    exit 1
-fi
-
 # Read the cluster config that correnspond to selected environment in the zone config.
 if [[ "${RADIX_ZONE}" == "c2" ]]; then
     source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${RADIX_ZONE}.env"
@@ -126,40 +109,6 @@ else
     source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
 fi
 
-# Source util scripts
-
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_clusterlist.sh
-LIB_DNS_SCRIPT="${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/dns/lib_dns.sh"
-if ! [[ -x "$LIB_DNS_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The lib DNS script is not found or it is not executable in path $LIB_DNS_SCRIPT" >&2
-else
-    source $LIB_DNS_SCRIPT
-fi
-
-# Optional inputs
-
-if [[ -z "$CREDENTIALS_FILE" ]]; then
-    CREDENTIALS_FILE=""
-else
-    if [[ ! -f "$CREDENTIALS_FILE" ]]; then
-        echo "ERROR: CREDENTIALS_FILE=\"${CREDENTIALS_FILE}\" is not a valid file path." >&2
-        exit 1
-    fi
-fi
-
-if [[ -z "$USER_PROMPT" ]]; then
-    USER_PROMPT=true
-fi
-
-if [[ -z "$HUB_PEERING_NAME" ]]; then
-    HUB_PEERING_NAME=hub-to-${CLUSTER_NAME}
-fi
-
-if [[ -z "$VNET_DNS_LINK" ]]; then
-    VNET_DNS_LINK=$CLUSTER_NAME-link
-fi
 
 # Script vars
 
