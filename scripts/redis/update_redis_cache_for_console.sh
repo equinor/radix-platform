@@ -112,7 +112,7 @@ printf "Connecting kubectl..."
 get_credentials "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"${CLUSTER_NAME}\" not found." >&2
-    exit 0        
+    exit 0
 }
 printf "...Done.\n"
 
@@ -124,11 +124,8 @@ verify_cluster_access
 #######################################################################################
 
 function updateRedisCacheConfiguration() {
-    if [[ $RADIX_ZONE == "dev" ]]; then
-        REDIS_CACHE_NAME="redis-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
-    else
-        REDIS_CACHE_NAME="${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}"
-    fi
+    REDIS_CACHE_NAME="redis-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
+    echo "Updating Web Console in ${RADIX_WEB_CONSOLE_ENV} with Redis Cache ${REDIS_CACHE_NAME}..."
     REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-${RADIX_WEB_CONSOLE_ENV}"
