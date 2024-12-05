@@ -27,7 +27,7 @@
 # RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./update_redis_cache_for_console.sh
 
 # Example 2:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="true" ./update_redis_cache_for_console.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -112,7 +112,7 @@ printf "Connecting kubectl..."
 get_credentials "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"${CLUSTER_NAME}\" not found." >&2
-    exit 0        
+    exit 0
 }
 printf "...Done.\n"
 
@@ -124,17 +124,14 @@ verify_cluster_access
 #######################################################################################
 
 function updateRedisCacheConfiguration() {
-    if [[ $RADIX_ZONE == "dev" ]]; then
-        REDIS_CACHE_NAME="redis-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
-    else
-        REDIS_CACHE_NAME="${CLUSTER_NAME}-${RADIX_WEB_CONSOLE_ENV}"
-    fi
+    REDIS_CACHE_NAME="redis-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
+    echo "Updating Web Console in ${RADIX_WEB_CONSOLE_ENV} with Redis Cache ${REDIS_CACHE_NAME}..."
     REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-${RADIX_WEB_CONSOLE_ENV}"
     WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="${AUTH_PROXY_COMPONENT}" --namespace "${WEB_CONSOLE_NAMESPACE}" --output json | jq -r .items[0].metadata.name)
     OAUTH2_PROXY_REDIS_CONNECTION_URL="rediss://"$(jq -r '"\(.hostName):\(.sslPort)"' <<< ${REDIS_CACHE_INSTANCE})
-    OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" | jq -r .primaryKey)
+    OAUTH2_PROXY_REDIS_PASSWORD=$(az redis regenerate-keys --key-type Primary --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" | jq -r .primaryKey)
     REDIS_ENV_FILE="redis_secret_${REDIS_CACHE_NAME}.env"
 
     echo "OAUTH2_PROXY_REDIS_CONNECTION_URL=${OAUTH2_PROXY_REDIS_CONNECTION_URL}" >> "${REDIS_ENV_FILE}"
