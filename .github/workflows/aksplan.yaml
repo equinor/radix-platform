@@ -1,15 +1,9 @@
-name: AKS bootstrap
+name: AKS Plan
 on:
   pull_request:
     paths:
     - terraform/subscriptions/**  
   workflow_dispatch:
-    inputs:
-      terraformapply:
-        description: 'Terraform apply'
-        type: boolean
-        required: true
-        default: false
 jobs:
   terraform-plan:
     name: Terraform plan
@@ -26,7 +20,6 @@ jobs:
           #   subscription: "s940"
           # - name: "c2"
           #   subscription: "s940"
-
     environment: ${{matrix.target.name }}
     env:
       ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
@@ -95,15 +88,9 @@ jobs:
           ARM_USE_AZUREAD: true
         run: |
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" init
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" init
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" plan
-      - name: Terraform Apply
-        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
-        id: apply
-        env:
-          ARM_USE_OIDC: true
-          ARM_USE_AZUREAD: true
-        run: |
-          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply -auto-approve
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" plan
       - name: Revoke GitHub IP on StorageAccount
         if: steps.changes.outputs.changed == 'true'
         run: |

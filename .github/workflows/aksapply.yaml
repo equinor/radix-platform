@@ -1,0 +1,94 @@
+name: AKS Apply
+on:
+  workflow_dispatch:
+    inputs:
+      terraformapply:
+        description: 'Terraform apply'
+        type: boolean
+        required: true
+        default: false
+jobs:
+  terraform-plan:
+    name: Terraform plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: "dev"
+            subscription: "s941"
+          - name: "playground"
+            subscription: "s941"
+          # - name: "platform"
+          #   subscription: "s940"
+          # - name: "c2"
+          #   subscription: "s940"
+    environment: ${{matrix.target.name }}
+    env:
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 #Clone Repo
+        with:
+          fetch-depth: '2'
+      - name: 'Az login'
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
+      - name: Add GitHub IP to StorageAccount
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        run: |
+          az storage account network-rule add \
+            --resource-group "${{ matrix.target.subscription }}-tfstate" \
+            --account-name "${{ matrix.target.subscription }}radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Add GitHub IP to KeyVault
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        run: |
+          az keyvault network-rule add --name "radix-keyv-${{ matrix.target.name }}" \
+            --resource-group "common-${{ matrix.target.name }}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        run: sleep 30s
+      - name: Setup Terraform
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'latest'
+      - name: Terraform Apply
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        id: apply
+        env:
+          ARM_USE_OIDC: true
+          ARM_USE_AZUREAD: true
+        run: |
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" init
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" init
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply -auto-approve
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" apply -auto-approve
+      - name: Revoke GitHub IP on StorageAccount
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        run: |
+          az storage account network-rule remove \
+            --resource-group "${{ matrix.target.subscription }}-tfstate" \
+            --account-name "${{ matrix.target.subscription }}radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Revoke GitHub IP on KeyVault
+        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
+        run: |
+          az keyvault network-rule remove --name "radix-keyv-${{ matrix.target.name }}" \
+            --resource-group "common-${{ matrix.target.name }}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
