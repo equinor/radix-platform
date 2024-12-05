@@ -77,4 +77,5 @@ module "rediscache" {
   rg_name             = module.config.cluster_resource_group
   vnet_resource_group = module.config.vnet_resource_group
   sku_name            = "Standard"
+  location            = module.config.location
 }
