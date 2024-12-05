@@ -20,4 +20,3 @@ clusters:
     aksversion: "1.29.2"
     networkset: "clusterset2"
     network_policy: "cilium"
-    dns_prefix: "playground-clusters-playgro-16ede4"
