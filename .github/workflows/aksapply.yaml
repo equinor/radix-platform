@@ -23,7 +23,6 @@ jobs:
           #   subscription: "s940"
           # - name: "c2"
           #   subscription: "s940"
-
     environment: ${{matrix.target.name }}
     env:
       ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
