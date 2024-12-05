@@ -124,14 +124,22 @@ verify_cluster_access
 #######################################################################################
 
 function updateRedisCacheConfiguration() {
-    REDIS_CACHE_NAME="redis-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
+    if [[ $RADIX_ZONE == "prod" ]]; then
+        # TODO: Remove special case for platform
+        REDIS_CACHE_NAME="radix-platform-${RADIX_WEB_CONSOLE_ENV}"
+        REDIS_RESOURCE_GROUP="clusters-platform"
+    else
+        REDIS_CACHE_NAME="radix-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
+        REDIS_RESOURCE_GROUP="${AZ_RESOURCE_GROUP_CLUSTERS}"
+    fi
+
     echo "Updating Web Console in ${RADIX_WEB_CONSOLE_ENV} with Redis Cache ${REDIS_CACHE_NAME}..."
-    REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
+    REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${REDIS_RESOURCE_GROUP}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-${RADIX_WEB_CONSOLE_ENV}"
     WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="${AUTH_PROXY_COMPONENT}" --namespace "${WEB_CONSOLE_NAMESPACE}" --output json | jq -r .items[0].metadata.name)
     OAUTH2_PROXY_REDIS_CONNECTION_URL="rediss://"$(jq -r '"\(.hostName):\(.sslPort)"' <<< ${REDIS_CACHE_INSTANCE})
-    OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${REDIS_CACHE_NAME}" | jq -r .primaryKey)
+    OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "${REDIS_RESOURCE_GROUP}" --name "${REDIS_CACHE_NAME}" | jq -r .primaryKey)
     REDIS_ENV_FILE="redis_secret_${REDIS_CACHE_NAME}.env"
 
     echo "OAUTH2_PROXY_REDIS_CONNECTION_URL=${OAUTH2_PROXY_REDIS_CONNECTION_URL}" >> "${REDIS_ENV_FILE}"
