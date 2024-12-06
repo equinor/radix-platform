@@ -3,27 +3,39 @@ subscription_shortname: "s941"
 location: "northeurope"
 developers: "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
 backend:
-  resource_group_name:   "s941-tfstate"
-  storage_account_name:  "s941radixinfra"
-  container_name:        "infrastructure"
-  subscription_id:       "16ede44b-1f74-40a5-b428-46cca9a5741b"
-  tenant_id:             "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-  ip_key_vault_id:       "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-playground/providers/Microsoft.KeyVault/vaults/radix-keyv-playground"
-  terraform_storage_id:  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/s941-tfstate/providers/Microsoft.Storage/storageAccounts/s941radixinfra"
+  resource_group_name: "s941-tfstate"
+  storage_account_name: "s941radixinfra"
+  container_name: "infrastructure"
+  subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
+  tenant_id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+  ip_key_vault_id: "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-playground/providers/Microsoft.KeyVault/vaults/radix-keyv-playground"
+  terraform_storage_id: "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/s941-tfstate/providers/Microsoft.Storage/storageAccounts/s941radixinfra"
 networksets:
   networkset1:
-    vnet:       "10.5.0.0"
-    ingressIP:  "20.223.26.208"
-    egress:     ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004"]
+    vnet: "10.5.0.0"
+    ingressIP: "20.223.26.208"
+    egress:
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-003"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004"
   networkset2:
-    vnet:       "10.6.0.0"
-    ingressIP:  "20.223.26.209"
-    egress:     ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-005","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-006","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-007","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-008"]
+    vnet: "10.6.0.0"
+    ingressIP: "20.223.26.209"
+    egress:
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-005"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-006"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-007"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-008"
   networkset3:
-    vnet:       "10.7.0.0"
-    ingressIP:  "20.223.26.210"
-    egress:     ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-009","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-010","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-011","/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-012"]
-clusters: 
+    vnet: "10.7.0.0"
+    ingressIP: "20.223.26.210"
+    egress:
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-009"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-010"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-011"
+      - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-012"
+clusters:
   playground-29:
     aksversion: "1.29.2"
     networkset: "networkset1"
