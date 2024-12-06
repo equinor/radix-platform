@@ -76,9 +76,7 @@ jobs:
           ARM_USE_AZUREAD: true
         run: |
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" init
-          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" init
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply -auto-approve
-          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" apply -auto-approve
       - name: Revoke GitHub IP on StorageAccount
         if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply == 'true' }}
         run: |
