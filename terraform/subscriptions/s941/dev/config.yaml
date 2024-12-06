@@ -11,13 +11,24 @@ backend:
   tenant_id:             "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
   ip_key_vault_id:       "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.KeyVault/vaults/radix-keyv-dev"
   terraform_storage_id:  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/s941-tfstate/providers/Microsoft.Storage/storageAccounts/s941radixinfra"
+networksets:
+  networkset1:
+    vnet:       "10.3.0.0"
+    ingressIP:  "20.223.40.148"
+    egress:     ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004"]
+  networkset2:
+    vnet:       "10.4.0.0"
+    ingressIP:  "20.223.40.149"
+    egress:     ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"]
 clusters:
   weekly-49:
     aksversion: "1.29.8"
-    networkset: "clusterset2"
+    networkset: "networkset2"
     network_policy: "cilium"
     autostartupschedule: true
   weekly-48:
     aksversion: "1.29.8"
-    networkset: "clusterset1"
+    networkset: "networkset1"
     network_policy: "cilium"
+
+

@@ -95,3 +95,7 @@ output "developers" {
 output "cluster" {
   value = local.config.clusters
 }
+
+output "networksets" {
+  value = local.config.networksets
+}

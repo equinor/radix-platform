@@ -25,9 +25,9 @@ module "aks" {
   resource_group              = "clusters" # TODO module.config.cluster_resource_group
   location                    = module.config.location
   dns_prefix                  = lookup(module.config.cluster[each.key], "dns_prefix", "")
-  outbound_ip_address_ids     = local.clustersets[each.value.networkset].egress
+  outbound_ip_address_ids     = module.config.networksets[each.value.networkset].egress
   storageaccount_id           = data.azurerm_storage_account.this.id
-  address_space               = local.clustersets[each.value.networkset].vnet
+  address_space               = module.config.networksets[each.value.networkset].vnet
   enviroment                  = module.config.environment
   aks_version                 = each.value.aksversion
   authorized_ip_ranges        = var.authorized_ip_ranges
@@ -41,7 +41,7 @@ module "aks" {
   containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
   network_policy              = each.value.network_policy
   developers                  = module.config.developers
-  ingressIP                   = local.clustersets[each.value.networkset].ingressIP
+  ingressIP                   = module.config.networksets[each.value.networkset].ingressIP
   subscription                = module.config.subscription
   autostartupschedule         = lookup(module.config.cluster[each.key], "autostartupschedule", false)
 }
@@ -56,7 +56,7 @@ locals {
       subnet_name = value.subnet.name
     }
   }
-  clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
+  # clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
 }
 
 output "vnets" {
