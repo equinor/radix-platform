@@ -17,6 +17,10 @@ module "loganalytics" {
   local_authentication_disabled = false
 }
 
+data "azurerm_resource_group" "legacy_common" {
+  name = "common"
+}
+
 data "azurerm_resource_group" "logs" {
   name = "Logs-${module.config.environment}"
 }
@@ -169,6 +173,10 @@ module "radix_id_gitrunner" {
     common_contributor = {
       role     = "Contributor" # Needed to open firewall
       scope_id = "${module.resourcegroups.data.id}"
+    }
+    common_legacy = {
+      role     = "Contributor"
+      scope_id = "${data.azurerm_resource_group.legacy_common.id}"
     }
     logs_contributor = {
       role     = "Contributor"
