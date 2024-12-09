@@ -58,9 +58,18 @@ locals {
       subnet_name = value.subnet.name
     }
   }
-  # clustersets = jsondecode(data.azurerm_key_vault_secret.clustersets.value)
+  clusters = {
+    for key, value in module.config.cluster : key => {
+      cluster   = key
+      ingressIp = module.config.networksets[module.config.cluster[key].networkset].ingressIP
+    }
+  }
 }
 
 output "vnets" {
   value = local.flattened_vnets
+}
+
+output "clusters" {
+  value = local.clusters
 }
