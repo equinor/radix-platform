@@ -418,33 +418,48 @@ fi
 # fi
 
 # Give option to create dest cluster if it does not exist
-echo ""
-echo "Verifying destination cluster existence..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
-    if [[ $USER_PROMPT == true ]]; then
-        while true; do
-            read -r -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
-            case $yn in
-            [Yy]*) break ;;
-            [Nn]*)
-                echo "Aborting..."
-                exit 0
-                ;;
-            *) echo "Please answer yes or no." ;;
-            esac
-        done
-    fi
+# echo ""
+# echo "Verifying destination cluster existence..."
+# get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
+#     if [[ $USER_PROMPT == true ]]; then
+#         while true; do
+#             read -r -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
+#             case $yn in
+#             [Yy]*) break ;;
+#             [Nn]*)
+#                 echo "Aborting..."
+#                 exit 0
+#                 ;;
+#             *) echo "Please answer yes or no." ;;
+#             esac
+#         done
+#     fi
 
-    echo ""
-    echo "Creating destination cluster..."
-    printf "%s► Execute %s%s\n" "${grn}" "$BOOTSTRAP_AKS_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
-    wait # wait for subshell to finish
+#     echo ""
+#     echo "Creating destination cluster..."
+#     printf "%s► Execute %s%s\n" "${grn}" "$BOOTSTRAP_AKS_SCRIPT" "${normal}"
+#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
+#     wait # wait for subshell to finish
 
-    [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
-}
-printf "Done creating cluster.\n"
+#     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+# }
 
+echo "You need to create a pull request to make ready for new cluster"
+echo "Procedure:"
+echo "- Make a new branch in radix-platform"
+echo "- Modify the radix-platform/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster"
+echo "- Create a pull request to master"
+echo "- Monitor the github action and the result"
+echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
+echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
+read -r -s -d ' '
+
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+
+printf "Do post cluster tasks..."
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
 
 
 install_base_components=true
