@@ -8,24 +8,24 @@ locals {
       "https://console.${module.config.environment}.radix.equinor.com/oauth2/callback",
       "https://console.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
 
-      "https://auth-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-qa.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-qa.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-qa.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-qa.radix.equinor.com/oauth2/callback",
 
-      "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-prod.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-prod.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-prod.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-prod.radix.equinor.com/oauth2/callback",
     ]]
   ))
   singlepage-uris = distinct(flatten(
     [for k, v in module.clusters.oidc_issuer_url : [
       "http://localhost:8080/applications",
 
-      "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/applications",
-      "https://auth-radix-web-console-prod.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-prod.${module.config.environment}.radix.equinor.com/applications",
 
-      "https://auth-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/applications",
-      "https://auth-radix-web-console-qa.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-qa.${module.config.environment}.radix.equinor.com/applications",
 
       "https://console.radix.equinor.com/applications",
       "https://console.${k}.${module.config.environment}.radix.equinor.com/applications",
@@ -46,7 +46,7 @@ data "azuread_service_principal" "kubernetes" {
 }
 module "webconsole" {
   source              = "../../../modules/app_registration"
-  display_name        = "Omnia Radix Web Console - Playground" #TODO
+  display_name        = "Omnia Radix Web Console - Playground"
   notes               = "Omnia Radix Web Console - Playground"
   service_id          = "110327"
   web_uris            = local.web-uris
@@ -70,6 +70,7 @@ module "webconsole" {
     msgraph = {
       app_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
       scope_ids = [
+        data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["Application.Read.All"],
         data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["GroupMember.Read.All"],
         data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["User.Read"],
         data.azuread_service_principal.msgraph.oauth2_permission_scope_ids["offline_access"],
