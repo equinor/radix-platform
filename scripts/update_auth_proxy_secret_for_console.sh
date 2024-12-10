@@ -67,7 +67,7 @@ verify_cluster_access
 AUTH_PROXY_COMPONENT="web-aux-oauth"
 
 function updateAuthProxySecret() {
-    SECRETNAME="radix-web-console-auth"
+    SECRETNAME="radix-web-console-client-secret"
     WEB_CONSOLE_NAMESPACE="radix-web-console-${RADIX_WEB_CONSOLE_ENV}"
     WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl --context "$DEST_CLUSTER" get secret -l "radix-aux-component=web,radix-aux-component-type=oauth" --namespace "${WEB_CONSOLE_NAMESPACE}" --output json | jq -r '.items[0].metadata.name')
 

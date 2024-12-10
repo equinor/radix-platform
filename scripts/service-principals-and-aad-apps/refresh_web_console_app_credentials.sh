@@ -27,7 +27,7 @@ else
 fi
 
 KEYVAULT="radix-keyv-$1"
-SECRETNAME="radix-web-console-auth"
+SECRETNAME="radix-web-console-client-secret"
 
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
