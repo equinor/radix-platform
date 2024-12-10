@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
- 
+
 
 # Refresh credentials for Radix Web Console AAD app and store in keyvault
 
 #######################################################################################
 ### HOW TO USE
-### 
-#  sh ./refresh_web_console_app_credentials.sh env
+###
+#  ./refresh_web_console_app_credentials.sh env
 
 
 echo ""
@@ -60,15 +60,13 @@ fi
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 
-appname="$APP_REGISTRATION"
+echo "Generating new app secret for ${APP_REGISTRATION} in Azure AD..."
 
-echo "Generating new app secret for $appname in Azure AD..."
+id="$(az ad app list --filter "displayname eq '${APP_REGISTRATION}'" --output json | jq '.[] | .id' -r)"
+password="$(az ad app credential reset --id "${id}" --display-name "web-console" --append --query password --output tsv)"
+expiration_date="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='web-console'], &endDateTime)[-1].endDateTime" --output tsv)"
 
-id="$(az ad app list --filter "displayname eq '${appname}'" --query [].id --output tsv)"
-password="$(az ad app credential reset --id "${id}" --display-name "${SECRETNAME}" --append --query password --output tsv --only-show-errors)"
-expiration_date="$(az ad app credential list --id "${id}" --query "sort_by([?displayName=='${SECRETNAME}'], &endDateTime)[-1].endDateTime" --output tsv)"
+az keyvault secret set --vault-name "${KEYVAULT}" --name $SECRETNAME --value "${password}" --expires ${expiration_date} 2>&1 >/dev/null
 
-az keyvault secret set --vault-name $KEYVAULT --name $SECRETNAME --value "${password}" --expires ${expiration_date} 2>&1 >/dev/null
-
-echo "Client secret refreshed and stored in Keyvault: $KEYVAULT"
-
+echo "Client secret refreshed and stored in Keyvault: ${KEYVAULT}"
+echo "You want to run update_auth_proxy_secret_for_console.sh to update secrets in cluster"
