@@ -6,12 +6,6 @@
 # Example 1:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-50" RADIX_WEB_CONSOLE_ENV="qa" ./update_auth_proxy_secret_for_console.sh
 #
-# Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-50" RADIX_WEB_CONSOLE_ENV="prod" ./update_auth_proxy_secret_for_console.sh)
-#
-# Example 3: Use the .custom-domain ingress suffix when updating secrets when cluster is the active cluster
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-50" RADIX_WEB_CONSOLE_ENV="qa" ./update_auth_proxy_secret_for_console.sh
-#
 
 # INPUTS:
 #   DEST_CLUSTER          (Mandatory)
@@ -86,15 +80,6 @@ function updateAuthProxySecret() {
     rm "$AUTH_SECRET_ENV_FILE"
 
     echo "Auth proxy secret updated"
-
-    printf "Restarting auth deployment...\n"
-    echo "kubectl rollout restart deployment -n $WEB_CONSOLE_NAMESPACE web-aux-oauth"
-    kubectl --context "$DEST_CLUSTER" rollout restart deployment -n "${WEB_CONSOLE_NAMESPACE}" "web-aux-oauth"
-    printf " Done."
-    echo ""
-    echo "NOTE: Console is set up with redirect url $OAUTH2_PROXY_REDIRECT_URL. If this cluster will be"
-    echo "the official cluster, using the custom aliases, you will need to manually modify the OAUTH2_PROXY_REDIRECT_URL"
-    echo "in the secret to point to the custom alias"
 }
 
 function updateRedisCachePasswordConfiguration() {
@@ -123,12 +108,12 @@ function updateRedisCachePasswordConfiguration() {
     rm "${REDIS_ENV_FILE}"
 
     echo "Redis Cache secrets updated"
-
-    printf "Restarting web deployment in %s..." "${WEB_CONSOLE_NAMESPACE}"
-    kubectl --context "$DEST_CLUSTER" rollout restart deployment --namespace "${WEB_CONSOLE_NAMESPACE}" "web-aux-oauth"
-    printf " Done.\n"
 }
 
 ### MAIN
 updateAuthProxySecret
 updateRedisCachePasswordConfiguration
+
+printf "Restarting web deployment in %s..." "${WEB_CONSOLE_NAMESPACE}"
+kubectl --context "$DEST_CLUSTER" rollout restart deployment --namespace "${WEB_CONSOLE_NAMESPACE}" "web-aux-oauth"
+printf " Done.\n"
