@@ -24,10 +24,10 @@
 ###
 
 # Example 1:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./update_redis_cache_for_console.sh
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="web" CLUSTER_NAME="weekly-42" RADIX_WEB_CONSOLE_ENV="qa" ./update_redis_cache_for_console.sh
 
 # Example 2:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="auth" CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env AUTH_PROXY_COMPONENT="web" CLUSTER_NAME="weekly-49" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" ./update_redis_cache_for_console.sh
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -123,7 +123,7 @@ verify_cluster_access
 
 #######################################################################################
 
-function updateRedisCacheConfiguration() {
+function updateRedisCachePasswordConfiguration() {
     if [[ $RADIX_ZONE == "prod" ]]; then
         # TODO: Remove special case for platform
         REDIS_CACHE_NAME="radix-platform-${RADIX_WEB_CONSOLE_ENV}"
@@ -131,21 +131,23 @@ function updateRedisCacheConfiguration() {
     else
         REDIS_CACHE_NAME="radix-${RADIX_ZONE}-${RADIX_WEB_CONSOLE_ENV}"
         REDIS_RESOURCE_GROUP="${AZ_RESOURCE_GROUP_CLUSTERS}"
-    fi
+    fins
 
     echo "Updating Web Console in ${RADIX_WEB_CONSOLE_ENV} with Redis Cache ${REDIS_CACHE_NAME}..."
-    REDIS_CACHE_INSTANCE=$(az redis show --resource-group "${REDIS_RESOURCE_GROUP}" --name "${REDIS_CACHE_NAME}" 2>/dev/null)
 
     WEB_CONSOLE_NAMESPACE="radix-web-console-${RADIX_WEB_CONSOLE_ENV}"
-    WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l radix-component="${AUTH_PROXY_COMPONENT}" --namespace "${WEB_CONSOLE_NAMESPACE}" --output json | jq -r .items[0].metadata.name)
-    OAUTH2_PROXY_REDIS_CONNECTION_URL="rediss://"$(jq -r '"\(.hostName):\(.sslPort)"' <<< ${REDIS_CACHE_INSTANCE})
+    WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl get secret -l "radix-aux-component=${AUTH_PROXY_COMPONENT},radix-aux-component-type=oauth" --namespace "${WEB_CONSOLE_NAMESPACE}" --output json | jq -r '.items[0].metadata.name')
     OAUTH2_PROXY_REDIS_PASSWORD=$(az redis list-keys --resource-group "${REDIS_RESOURCE_GROUP}" --name "${REDIS_CACHE_NAME}" | jq -r .primaryKey)
     REDIS_ENV_FILE="redis_secret_${REDIS_CACHE_NAME}.env"
 
-    echo "OAUTH2_PROXY_REDIS_CONNECTION_URL=${OAUTH2_PROXY_REDIS_CONNECTION_URL}" >> "${REDIS_ENV_FILE}"
-    echo "OAUTH2_PROXY_REDIS_PASSWORD=${OAUTH2_PROXY_REDIS_PASSWORD}" >> "${REDIS_ENV_FILE}"
+    echo "RedisPassword=${OAUTH2_PROXY_REDIS_PASSWORD}" >> "${REDIS_ENV_FILE}"
+
+    SECRETNAME="radix-web-console-auth"
+    OAUTH_PROXY_CLIENT_SECRETNAME=$(az keyvault secret show -n $SECRETNAME --vault-name $AZ_RESOURCE_KEYVAULT | jq -r '.value')
+    echo "OAUTH_PROXY_CLIENT_SECRETNAME=${OAUTH_PROXY_CLIENT_SECRETNAME}" >> "${REDIS_ENV_FILE}"
 
     kubectl patch secret "${WEB_CONSOLE_AUTH_SECRET_NAME}" \
+        --dry-run=server
         --namespace "${WEB_CONSOLE_NAMESPACE}" \
         --patch "$(kubectl create secret generic "${WEB_CONSOLE_AUTH_SECRET_NAME}" --namespace "${WEB_CONSOLE_NAMESPACE}" --save-config --from-env-file="${REDIS_ENV_FILE}" --dry-run=client --output yaml)"
 
