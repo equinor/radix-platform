@@ -46,6 +46,7 @@ echo "Create managed identity and configure RBAC for scheduled start and stop of
 ### Check for prerequisites binaries
 ###
 
+
 echo ""
 printf "Check for neccesary executables... "
 hash az 2>/dev/null || {
