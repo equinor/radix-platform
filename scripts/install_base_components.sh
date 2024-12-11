@@ -250,16 +250,6 @@ wait
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
 
-
-#######################################################################################
-### Install Radix CICD Canary
-###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cicd-canary/bootstrap.sh" "${normal}"
-(./cicd-canary/bootstrap.sh)
-wait
-
 #######################################################################################
 ### Install prerequisites for Velero
 ###
