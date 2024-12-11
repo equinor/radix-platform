@@ -247,40 +247,9 @@ printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/ingress-nginx/boot
 wait
 
 #######################################################################################
-### Install Lets Encrypt issuer values for Flux
-###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/cert-manager/cluster-issuers/letsencrypt/bootstrap.sh" "${normal}"
-(USER_PROMPT="$USER_PROMPT" ./cert-manager/cluster-issuers/letsencrypt/bootstrap.sh)
-wait
-
-#######################################################################################
-### Create storage classes
-###
-
-echo "Creating storage classes"
-kubectl apply --filename manifests/storageclass-retain.yaml
-kubectl apply --filename manifests/storageclass-retain-nocache.yaml
-echo ""
-
-
-#######################################################################################
 ### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
 kubectl label ns default purpose=radix-base-ns --overwrite
 
-#######################################################################################
-# Create radix platform shared configs and secrets
-# Create 4 secrets for Radix platform: radix-sp-acr-azure, radix-sp-buildah-azure and radix-docker
-
-echo ""
-echo "Start on radix platform shared configs and secrets..."
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/config-and-secrets/bootstrap-acr.sh" "${normal}"
-(CLUSTER_NAME=$CLUSTER_NAME ./config-and-secrets/bootstrap-acr.sh)
-wait
-
-echo "Done."
 
 #######################################################################################
 ### Install Radix CICD Canary
