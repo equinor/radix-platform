@@ -52,26 +52,27 @@ data "azurerm_subnet" "this" {
 }
 
 module "storageaccount" {
-  source                   = "../../../modules/storageaccount"
-  for_each                 = var.storageaccounts
-  name                     = "radix${each.key}${module.config.environment}"
-  tier                     = each.value.account_tier
-  account_replication_type = each.value.account_replication_type
-  resource_group_name      = module.config.common_resource_group
-  location                 = module.config.location
-  environment              = module.config.environment
-  kind                     = each.value.kind
-  change_feed_enabled      = each.value.change_feed_enabled
-  versioning_enabled       = each.value.versioning_enabled
-  backup                   = each.value.backup
-  principal_id             = data.azurerm_data_protection_backup_vault.this.identity[0].principal_id
-  vault_id                 = data.azurerm_data_protection_backup_vault.this.id
-  policyblobstorage_id     = "${data.azurerm_data_protection_backup_vault.this.id}/backupPolicies/Backuppolicy-blob"
-  subnet_id                = data.azurerm_subnet.this.id
-  vnet_resource_group      = module.config.vnet_resource_group
-  lifecyclepolicy          = each.value.lifecyclepolicy
-  ip_rule                  = data.azurerm_key_vault_secret.this.value
-  log_analytics_id         = module.loganalytics.workspace_id
+  source                    = "../../../modules/storageaccount"
+  for_each                  = var.storageaccounts
+  name                      = "radix${each.key}${module.config.environment}"
+  tier                      = each.value.account_tier
+  account_replication_type  = each.value.account_replication_type
+  resource_group_name       = module.config.common_resource_group
+  location                  = module.config.location
+  environment               = module.config.environment
+  kind                      = each.value.kind
+  change_feed_enabled       = each.value.change_feed_enabled
+  versioning_enabled        = each.value.versioning_enabled
+  backup                    = each.value.backup
+  principal_id              = data.azurerm_data_protection_backup_vault.this.identity[0].principal_id
+  vault_id                  = data.azurerm_data_protection_backup_vault.this.id
+  policyblobstorage_id      = "${data.azurerm_data_protection_backup_vault.this.id}/backupPolicies/Backuppolicy-blob"
+  subnet_id                 = data.azurerm_subnet.this.id
+  vnet_resource_group       = module.config.vnet_resource_group
+  lifecyclepolicy           = each.value.lifecyclepolicy
+  ip_rule                   = data.azurerm_key_vault_secret.this.value
+  log_analytics_id          = module.loganalytics.workspace_id
+  shared_access_key_enabled = each.value.shared_access_key_enabled #Needed in module create container when running apply
 }
 
 module "acr" {

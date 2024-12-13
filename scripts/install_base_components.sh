@@ -251,27 +251,6 @@ wait
 kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
-### Install prerequisites for Velero
-###
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/velero/install_prerequisites_in_cluster.sh" "${normal}"
-(USER_PROMPT="$USER_PROMPT" ./velero/install_prerequisites_in_cluster.sh)
-wait
-
-#######################################################################################
-### Patching kube-dns metrics
-###
-
-# TODO: Even with this, kube-dns is not discovered in prometheus. Needs to be debugged.
-#
-# echo "Patching kube-dns metrics"
-# kubectl patch deployment -n kube-system kube-dns-v20 \
-#     --patch "$(cat ./manifests/kube-dns-metrics-patch.yaml)"
-
-#
-
-#######################################################################################
 ### Install Flux
 
 echo ""
