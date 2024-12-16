@@ -46,7 +46,7 @@ Until this process is complete, and `{appName}-tls-secret` is populated, then th
 
 
 ## Bootstrap
-Cert-Manager core is installed by Flux. (Only letsencrypt issuer is installed by its own bootstrap.sh script)
+Cert-Manager core is installed by Flux.
 
 ## Credentials
 All `dns01` providers use Azure Workload identity managed by Flux and Terraform to configure ACME Challenges in the DNS Zone.
