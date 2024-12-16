@@ -25,7 +25,7 @@
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-26 DEST_CLUSTER=cilium-26 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 # or without log:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-01 DEST_CLUSTER=weekly-02 ./migrate.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
 
 # DISASTER RECOVERY:
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
@@ -695,7 +695,7 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
 WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-AUTH_PROXY_COMPONENT="auth"
+AUTH_PROXY_COMPONENT="web-aux-oauth"
 AUTH_PROXY_REPLY_PATH="/oauth2/callback"
 WEB_REDIRECT_URI="/applications"
 WEB_COMPONENT="web"

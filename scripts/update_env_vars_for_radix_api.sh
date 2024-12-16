@@ -6,7 +6,7 @@
 # - REQUIRE_APP_AD_GROUPS
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-51" ./update_env_vars_for_radix_api.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
 # (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh)

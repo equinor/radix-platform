@@ -211,32 +211,6 @@ printf "...Done.\n"
 
 verify_cluster_access
 
-#######################################################################################
-### Create flux namespace
-###
-
-if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
-    printf "\nCreating flux-system namespace..."
-    kubectl create namespace flux-system 2>&1 >/dev/null
-    printf "...Done"
-fi
-
-#######################################################################################
-### Create monitor namespace
-###
-
-if [[ ! $(kubectl get namespace --output jsonpath='{.items[?(.metadata.name=="monitor")]}') ]]; then
-  kubectl create namespace monitor --dry-run=client -o yaml | sed '/^metadata:/a\ \ labels: {"purpose":"radix-base-ns"}' | kubectl apply -f -
-fi
-
-#######################################################################################
-### Add priority classes
-###
-
-echo ""
-kubectl apply --filename ./priority-classes/radixComponentPriorityClass.yaml
-wait
-echo ""
 
 #######################################################################################
 ### Install ingress-nginx
@@ -245,10 +219,6 @@ echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/ingress-nginx/bootstrap.sh" "${normal}"
 (MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
 wait
-
-#######################################################################################
-### For network security policy applied by operator to work, the namespace hosting prometheus and nginx-ingress-controller need to be labeled
-kubectl label ns default purpose=radix-base-ns --overwrite
 
 #######################################################################################
 ### Install Flux
