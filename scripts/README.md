@@ -27,35 +27,28 @@ The following applications tools/applications are required to run the platform s
 ## 1. Install and update shared infrastructure
 
 **NB: You only need to do this once per Azure subscription!** Multiple clusters will share the same base infrastructure.
-
-Handled by script, see [radix-zone/base-infrastructure/README.md](./radix-zone/base-infrastructure/README.md#bootstrap) for details.
+Handled by [terraform global s941](../terraform/subscriptions/s941/globals) and
+Handled by [terraform global s940](../terraform/subscriptions/s940/globals)
 
 ## 2 Set up cluster
 
-A cluster can be set up in two different ways. Either by migrating from an existing cluster to a non-existing cluster (ref 2.1) or by creating a new cluster from scratch.
+A cluster can be set up in two different ways. Either by migrating from an existing cluster to a non-existing cluster or by creating a new cluster from scratch.
 
 ### 2.1 Migrate cluster
 
-NOTE: If there is a need to migrate to a new cluster with a different setup, please run through the bootstrap and installation of base components described below
-
-This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
-
-Run script by the [migrate.sh](./migrate.sh). See file header in for usage.
+1. Run script by the [migrate.sh](./migrate.sh). See file header in for usage.
+2. Follow the instructions in the script
+3. Only hit 'space' in the script when Github action are done created the cluster
 
 #### 2.1.1 Set new cluster to active
 
-The following steps should only be performed when `active-to-active` was selected as migration strategy in `migrate.sh`.
-
-Steps:
-1. Run [move_custom_ingresses.sh](./move_custom_ingresses.sh).
-2. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `postBuild.yaml` for the respective Radix zone.
+1. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `postBuild.yaml` for the respective Radix zone.
 
 ### 2.2 Setting up a cluster from scratch
 
 There are seven steps to setting up a Radix cluster from scratch. These steps can be run individually when modifying an existing cluster, or sequentially when setting up a new cluster:
 
-1. Install infrastructure (described above)
-2. Bootstrap AKS cluster
+1. Bootstrap AKS cluster (terraform)
 3. Deploy base components
 4. Install Radix components
 5. Deploy Radix applications
@@ -69,7 +62,7 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 
 #### Step 3 Deploy base components
 
-This will deploy 3rd party components (`nginx`, `cert-manager`, `flux` etc).
+This will deploy 3rd party components (`nginx`, `flux`).
 
 Handled by script, see header in [install_base_components.sh](./install_base_components.sh) for usage.
 
