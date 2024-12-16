@@ -427,6 +427,7 @@ start_radix_operator() {
   printf " Done.\n"
 }
 
+flux suspend ks -n flux-system velero
 wait_for_velero "BackupStorageLocation default"
 kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
@@ -570,8 +571,10 @@ PATCH_JSON="$(
  }
 END
 )"
+
 # Set velero in read/write mode
 kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+flux resume ks -n flux-system velero
 
 #######################################################################################
 ### Done!
