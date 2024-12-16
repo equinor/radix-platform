@@ -55,26 +55,27 @@ data "azurerm_subnet" "this" {
 }
 
 module "storageaccount" {
-  source                   = "../../../modules/storageaccount"
-  for_each                 = var.storageaccounts
-  name                     = "radix${each.key}${module.config.environment}"
-  tier                     = each.value.account_tier
-  account_replication_type = each.value.account_replication_type
-  resource_group_name      = each.value.resource_group_name
-  location                 = each.value.location
-  environment              = module.config.environment
-  kind                     = each.value.kind
-  change_feed_enabled      = each.value.change_feed_enabled
-  versioning_enabled       = each.value.versioning_enabled
-  backup                   = each.value.backup
-  principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
-  vault_id                 = module.backupvault.data.backupvault.id
-  policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
-  subnet_id                = data.azurerm_subnet.this.id
-  vnet_resource_group      = module.config.vnet_resource_group
-  lifecyclepolicy          = each.value.lifecyclepolicy
-  ip_rule                  = data.azurerm_key_vault_secret.this.value
-  log_analytics_id         = module.loganalytics.workspace_id
+  source                    = "../../../modules/storageaccount"
+  for_each                  = var.storageaccounts
+  name                      = "radix${each.key}${module.config.environment}"
+  tier                      = each.value.account_tier
+  account_replication_type  = each.value.account_replication_type
+  resource_group_name       = each.value.resource_group_name
+  location                  = each.value.location
+  environment               = module.config.environment
+  kind                      = each.value.kind
+  change_feed_enabled       = each.value.change_feed_enabled
+  versioning_enabled        = each.value.versioning_enabled
+  backup                    = each.value.backup
+  principal_id              = module.backupvault.data.backupvault.identity[0].principal_id
+  vault_id                  = module.backupvault.data.backupvault.id
+  policyblobstorage_id      = module.backupvault.data.policyblobstorage.id
+  subnet_id                 = data.azurerm_subnet.this.id
+  vnet_resource_group       = module.config.vnet_resource_group
+  lifecyclepolicy           = each.value.lifecyclepolicy
+  ip_rule                   = data.azurerm_key_vault_secret.this.value
+  log_analytics_id          = module.loganalytics.workspace_id
+  shared_access_key_enabled = each.value.shared_access_key_enabled #Needed in module create container when running apply
 }
 
 module "acr" {
@@ -131,6 +132,11 @@ module "radix-id-acr-workflows" {
       name    = "radix-tekton-release"
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-tekton:ref:refs/heads/release"
+    },
+    radix-operator-master = {
+      name    = "radix-operator-master"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-operator:ref:refs/heads/master"
     },
     radix-operator-release = {
       name    = "radix-operator-release"

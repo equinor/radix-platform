@@ -207,7 +207,7 @@ verify_cluster_access
 ### Create secret required by ingress-nginx
 ###
 
-SELECTED_INGRESS_IP_RAW_ADDRESS=$(terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster==env.CLUSTER_NAME).ingressIp')
+SELECTED_INGRESS_IP_RAW_ADDRESS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster==env.CLUSTER_NAME).ingressIp')
 create-a-record "*.${CLUSTER_NAME}" "$SELECTED_INGRESS_IP_RAW_ADDRESS" "$AZ_RESOURCE_GROUP_IPPRE" "$AZ_RESOURCE_DNS" "60" || {
       echo "ERROR: failed to create A record *.${CLUSTER_NAME}" >&2
   }
