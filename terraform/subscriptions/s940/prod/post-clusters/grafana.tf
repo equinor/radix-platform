@@ -11,7 +11,7 @@ module "grafana" {
   notes        = "Grafana Oauth, main app for user authentication to Grafana"
   service_id   = "110327"
   web_uris     = concat(["https://grafana.radix.equinor.com/login/generic_oauth"], local.grafana_uris)
-  owners       = data.azuread_group.radix.members
+  owners       = keys(jsondecode(data.azurerm_key_vault_secret.radixowners.value))
 }
 
 data "azurerm_user_assigned_identity" "grafana" {

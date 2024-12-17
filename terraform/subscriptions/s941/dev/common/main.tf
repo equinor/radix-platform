@@ -224,7 +224,7 @@ module "radix-cr-cicd" {
   source       = "../../../modules/app_registration"
   display_name = "radix-cr-cicd-${module.config.environment}"
   service_id   = "110327"
-  owners       = data.azuread_group.radix.members
+  owners       = keys(jsondecode(data.azurerm_key_vault_secret.radixowners.value))
   expose_API   = true
   implicit_grant = {
     access_token_issuance_enabled = false
@@ -236,7 +236,7 @@ module "radix-cr-reader" {
   source       = "../../../modules/app_registration"
   display_name = "radix-cr-reader-${module.config.environment}"
   service_id   = "110327"
-  owners       = data.azuread_group.radix.members
+  owners       = keys(jsondecode(data.azurerm_key_vault_secret.radixowners.value))
   expose_API   = true
   implicit_grant = {
     access_token_issuance_enabled = false
