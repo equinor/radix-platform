@@ -179,12 +179,6 @@ if ! [[ -x "$INSTALL_BASE_COMPONENTS_SCRIPT" ]]; then
     echo "ERROR: The install base components script is not found or it is not executable in path $INSTALL_BASE_COMPONENTS_SCRIPT" >&2
 fi
 
-# PROMETHEUS_CONFIGURATION_SCRIPT="$WORKDIR_PATH/prometheus-operator/configure.sh"
-# if ! [[ -x "$PROMETHEUS_CONFIGURATION_SCRIPT" ]]; then
-#     # Print to stderror
-#     echo "ERROR: The prometheus configuration script is not found or it is not executable in path $PROMETHEUS_CONFIGURATION_SCRIPT" >&2
-# fi
-
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
@@ -195,12 +189,6 @@ UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT="$WORKDIR_PATH/velero/update_storageaccoun
 if ! [[ -x "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The update storageaccount firewall script is not found or it is not executable in path $UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" >&2
-fi
-
-ADD_REPLY_URL_SCRIPT="$WORKDIR_PATH/add_reply_url_for_cluster.sh"
-if ! [[ -x "$ADD_REPLY_URL_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The replyUrl script is not found or it is not executable in path $ADD_REPLY_URL_SCRIPT" >&2
 fi
 
 WEB_CONSOLE_EGRESS_IP_SCRIPT="$WORKDIR_PATH/update_ips_env_vars_for_console.sh"
@@ -215,35 +203,11 @@ if ! [[ -x "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" ]]; then
     echo "ERROR: The web console cluster oidc issuer script is not found or it is not executable in path $WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" >&2
 fi
 
-# MOVE_CUSTOM_INGRESSES_SCRIPT="$WORKDIR_PATH/move_custom_ingresses.sh"
-# if ! [[ -x "$MOVE_CUSTOM_INGRESSES_SCRIPT" ]]; then
-#     # Print to stderror
-#     echo "ERROR: The move custom ingresses script is not found or it is not executable in path $MOVE_CUSTOM_INGRESSES_SCRIPT" >&2
-# fi
-
-UPDATE_AUTH_PROXY_SECRET_SCRIPT="$WORKDIR_PATH/update_auth_proxy_secret_for_console.sh"
-if ! [[ -x "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The update auth proxy secret script is not found or it is not executable in path $UPDATE_AUTH_PROXY_SECRET_SCRIPT" >&2
-fi
-
 UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT="$WORKDIR_PATH/cicd-canary/update_secret_for_networkpolicy_canary.sh"
 if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
 fi
-
-# CREATE_REDIS_CACHE_SCRIPT="$WORKDIR_PATH/redis/create_redis_cache_for_console.sh"
-# if ! [[ -x "$CREATE_REDIS_CACHE_SCRIPT" ]]; then
-#     # Print to stderror
-#     echo "ERROR: The create redis cache script is not found or it is not executable in path $CREATE_REDIS_CACHE_SCRIPT" >&2
-# fi
-
-# UPDATE_REDIS_CACHE_SECRET_SCRIPT="$WORKDIR_PATH/redis/update_redis_cache_for_console.sh"
-# if ! [[ -x "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" ]]; then
-#     # Print to stderror
-#     echo "ERROR: The update redis cache script is not found or it is not executable in path $UPDATE_REDIS_CACHE_SECRET_SCRIPT" >&2
-# fi
 
 RADIX_API_ENV_VAR_SCRIPT="$WORKDIR_PATH/update_env_vars_for_radix_api.sh"
 if ! [[ -x "$RADIX_API_ENV_VAR_SCRIPT" ]]; then
@@ -261,12 +225,6 @@ CHECK_APPREG_SECRETS="$WORKDIR_PATH/check_appreg_secrets.sh"
 if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
     # Print to stderror
     echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
-fi
-
-GITHUB_MAINTENANCE_SCRIPT="$WORKDIR_PATH/github_maintenance/bootstrap.sh"
-if ! [[ -x "$GITHUB_MAINTENANCE_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The github maintenance secrets script is not found or it is not executable in path $GITHUB_MAINTENANCE_SCRIPT" >&2
 fi
 
 #######################################################################################
@@ -293,21 +251,6 @@ printf "Done.\n"
 # #######################################################################################
 # ### Check the migration strategy
 # ###
-
-# while true; do
-#     read -r -e -p "Are you migrating active to active or active to test? (aa/at) " -i "at" yn
-#     case $yn in
-#     "aa")
-#         MIGRATION_STRATEGY="aa"
-#         break
-#         ;;
-#     "at")
-#         MIGRATION_STRATEGY="at"
-#         break
-#         ;;
-#     *) echo "Please answer aa or at." ;;
-#     esac
-# done
 
 MIGRATION_STRATEGY="aa"
 
@@ -389,61 +332,6 @@ if [[ ${BACKUP_NAME} == "migration-"* ]]; then
     echo ""
 fi
 
-# create_redis_cache=true
-# if [[ $USER_PROMPT == true ]]; then
-#     while true; do
-#         read -r -p "Create Redis Caches for Console? (Y/n) " yn
-#         case $yn in
-#         [Yy]*) break ;;
-#         [Nn]*)
-#             create_redis_cache=false
-#             exit 0
-#             ;;
-#         *) echo "Please answer yes or no." ;;
-#         esac
-#     done
-#     echo ""
-# fi
-
-# if [[ $create_redis_cache == true ]]; then
-#     printf "Creating Redis Caches for Console...\n"
-#     (
-#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
-#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
-#         echo ""
-#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$CREATE_REDIS_CACHE_SCRIPT" "${normal}"
-#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$CREATE_REDIS_CACHE_SCRIPT"
-#     )
-#     printf "Done...\n"
-# fi
-
-# Give option to create dest cluster if it does not exist
-# echo ""
-# echo "Verifying destination cluster existence..."
-# get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
-#     if [[ $USER_PROMPT == true ]]; then
-#         while true; do
-#             read -r -p "Destination cluster does not exists. Create cluster? (Y/n) " yn
-#             case $yn in
-#             [Yy]*) break ;;
-#             [Nn]*)
-#                 echo "Aborting..."
-#                 exit 0
-#                 ;;
-#             *) echo "Please answer yes or no." ;;
-#             esac
-#         done
-#     fi
-
-#     echo ""
-#     echo "Creating destination cluster..."
-#     printf "%s► Execute %s%s\n" "${grn}" "$BOOTSTRAP_AKS_SCRIPT" "${normal}"
-#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" USER_PROMPT="$USER_PROMPT" MIGRATION_STRATEGY="$MIGRATION_STRATEGY" source "$BOOTSTRAP_AKS_SCRIPT")
-#     wait # wait for subshell to finish
-
-#     [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
-# }
-
 echo "You need to create a pull request to make ready for new cluster"
 echo "Procedure:"
 echo "- Make a new branch in radix-platform"
@@ -515,20 +403,6 @@ if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
 
 fi
 
-# Wait for prometheus to be deployed from flux
-echo ""
-printf "Wait for prometheus to be deployed by flux-operator..."
-while [[ "$(kubectl get deploy prometheus-operator-operator --namespace monitor 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-printf " Done.\n"
-
-# echo ""
-# printf "%s► Execute %s%s\n" "${grn}" "$PROMETHEUS_CONFIGURATION_SCRIPT" "${normal}"
-# (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" USER_PROMPT="${USER_PROMPT}" CLUSTER_NAME="${DEST_CLUSTER}" source "${PROMETHEUS_CONFIGURATION_SCRIPT}")
-# wait
-
 # Wait for operator to be deployed from flux
 echo ""
 echo "Waiting for radix-operator to be deployed by flux-operator so that it can handle migrated apps"
@@ -538,26 +412,6 @@ while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     sleep 5
 done
 printf " Done."
-
-# Wait for grafana to be deployed from flux
-echo ""
-echo "Waiting for grafana to be deployed by flux-operator so that we can add the ingress as a replyURL to \"$APP_REGISTRATION_GRAFANA\""
-while [[ "$(kubectl get deploy grafana --namespace monitor 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-
-echo ""
-# Add grafana replyUrl to AAD app
-# printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
-# (AAD_APP_NAME="${APP_REGISTRATION_GRAFANA}" K8S_NAMESPACE="monitor" K8S_INGRESS_NAME="grafana" REPLY_PATH="/login/generic_oauth" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
-# wait # wait for subshell to finish
-
-# echo ""
-# echo "Updating storageaccount firewall..."
-# printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" "${normal}"
-# (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" ACTION="add" source "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT")
-# wait # wait for subshell to finish
 
 # Wait for velero to be deployed from flux
 echo ""
@@ -694,30 +548,11 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
     # Development cluster uses QA web-console
     RADIX_WEB_CONSOLE_ENV="qa"
 fi
-WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-AUTH_PROXY_COMPONENT="web-aux-oauth"
-AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-WEB_REDIRECT_URI="/applications"
-WEB_COMPONENT="web"
-
-# Update replyUrls for those radix apps that require AD authentication
-printf "\nWaiting for web-console ingress to be ready so we can add replyUrl to web console aad app..."
-printf "\nIf this takes to long, you can try to restart the radix operator (kubectl rollout restart deployment radix-operator) in another console window"
-while [[ "$(kubectl get ingress $AUTH_PROXY_COMPONENT --namespace $WEB_CONSOLE_NAMESPACE 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
-printf "\nIngress is ready, adding replyUrl for radix web-console...\n"
-
-# printf "%s► Execute %s%s\n" "${grn}" "$ADD_REPLY_URL_SCRIPT" "${normal}"
-# (AAD_APP_NAME="Omnia Radix Web Console - ${CLUSTER_TYPE^}" K8S_NAMESPACE="$WEB_CONSOLE_NAMESPACE" K8S_INGRESS_NAME="$AUTH_PROXY_COMPONENT" REPLY_PATH="$AUTH_PROXY_REPLY_PATH" WEB_REDIRECT_URI="${WEB_REDIRECT_URI}" USER_PROMPT="$USER_PROMPT" source "$ADD_REPLY_URL_SCRIPT")
-# wait # wait for subshell to finish
-# printf "Done.\n"
 
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" WEB_COMPONENT="$WEB_COMPONENT" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
+(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
@@ -740,66 +575,6 @@ printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SC
 (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
 wait # wait for subshell to finish
 echo ""
-
-# Set up secret and hostname for Redis Cache in Web Console
-# printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-# RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
-# printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-# RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
-
-
-# if [[ $update_redis_cache == true ]]; then
-#     printf "Updating Redis Caches for Console...\n"
-#     (
-#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="qa" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
-#         printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=prod)%s\n" "${grn}" "$UPDATE_REDIS_CACHE_SECRET_SCRIPT" "${normal}"
-#         RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" CLUSTER_NAME="$DEST_CLUSTER" RADIX_WEB_CONSOLE_ENV="prod" USER_PROMPT="false" source "$UPDATE_REDIS_CACHE_SECRET_SCRIPT"
-#     )
-#     printf "Done...\n"
-# fi
-
-# Move custom ingresses
-# if [[ $MIGRATION_STRATEGY == "aa" ]]; then
-#     CUSTOM_INGRESSES=true
-# else
-#     CUSTOM_INGRESSES=false
-# fi
-
-# echo ""
-# if [[ $USER_PROMPT == true && $MIGRATION_STRATEGY == "aa" ]]; then
-#     while true; do
-#         read -r -p "Move custom ingresses (e.g. console.*.radix.equinor.com) from source to dest cluster? (Y/n) " yn
-#         case $yn in
-#         [Yy]*) break ;;
-#         [Nn]*)
-#             CUSTOM_INGRESSES=false
-#             break
-#             ;;
-#         *) echo "Please answer yes or no." ;;
-#         esac
-#     done
-# fi
-
-# if [[ $CUSTOM_INGRESSES == true ]]; then
-#     printf "%s► Execute %s (RADIX_WEB_CONSOLE_ENV=qa)%s\n" "${grn}" "$MOVE_CUSTOM_INGRESSES_SCRIPT" "${normal}"
-#     source "$MOVE_CUSTOM_INGRESSES_SCRIPT"
-# else
-#     echo ""
-#     printf "For the web console to work we need to apply the secrets for the auth proxy, using the custom ingress as reply url\n"
-#     printf "Update Auth proxy secret...\n"
-#     printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_SCRIPT" "${normal}"
-#     (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_SCRIPT")
-#     wait # wait for subshell to finish
-# fi
-
-if [ "$RADIX_ZONE" = "dev" ]; then
-    # Create role for github maintenance
-    printf "\n%s► Execute %s%s\n" "${grn}" "$GITHUB_MAINTENANCE_SCRIPT" "${normal}"
-    (RADIX_ZONE_ENV="$RADIX_ZONE_ENV" source "$GITHUB_MAINTENANCE_SCRIPT")
-    wait # wait for subshell to finish
-    echo ""
-fi
 
 if [[ -d "${RADIX_ZONE_PATH}" ]]; then
     for filename in "${RADIX_ZONE_PATH}"/*.env; do
