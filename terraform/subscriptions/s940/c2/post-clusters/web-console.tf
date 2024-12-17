@@ -4,10 +4,10 @@ locals {
       "http://localhost:8000/oauth2/callback",
       "https://console.${module.config.environment}.radix.equinor.com/oauth2/callback",
       "https://console.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-prod.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-qa.${module.config.environment}.radix.equinor.com/oauth2/callback",
-      "https://auth-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-prod.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-qa.${module.config.environment}.radix.equinor.com/oauth2/callback",
+      "https://web-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/oauth2/callback",
     ]]
   ))
 
@@ -16,10 +16,10 @@ locals {
       "http://localhost:8080/applications",
       "https://console.${module.config.environment}.radix.equinor.com/applications",
       "https://console.${k}.${module.config.environment}.radix.equinor.com/applications",
-      "https://auth-radix-web-console-prod.${module.config.environment}.radix.equinor.com/applications",
-      "https://auth-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/applications",
-      "https://auth-radix-web-console-qa.${module.config.environment}.radix.equinor.com/applications",
-      "https://auth-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-prod.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-prod.${k}.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-qa.${module.config.environment}.radix.equinor.com/applications",
+      "https://web-radix-web-console-qa.${k}.${module.config.environment}.radix.equinor.com/applications",
 
     ]]
   ))
