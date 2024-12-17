@@ -107,20 +107,6 @@ else
 fi
 
 #######################################################################################
-### Define web console auth secret variables
-###
-
-AUTH_PROXY_COMPONENT="auth"
-AUTH_PROXY_REPLY_PATH="/oauth2/callback"
-WEB_COMPONENT="web"
-RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE == "development" ]]; then
-    RADIX_WEB_CONSOLE_ENV="qa"
-fi
-AUTH_INGRESS_SUFFIX=".custom-domain"
-WEB_CONSOLE_NAMESPACE="radix-web-console-$RADIX_WEB_CONSOLE_ENV"
-
-#######################################################################################
 ### Prepare az session
 ###
 
@@ -218,13 +204,6 @@ for record in ${a_records[@]}; do
 done
 set +f
 printf "Done. \n"
-
-
-#echo ""
-#printf "Update auth proxy secret and redis cache...\n"
-#printf "%s► Execute %s%s\n" "${grn}" "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT" "${normal}"
-#(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER="$DEST_CLUSTER" AUTH_PROXY_COMPONENT="$AUTH_PROXY_COMPONENT" WEB_COMPONENT="$WEB_COMPONENT" AUTH_INGRESS_SUFFIX="$AUTH_INGRESS_SUFFIX" WEB_CONSOLE_NAMESPACE="$WEB_CONSOLE_NAMESPACE" AUTH_PROXY_REPLY_PATH="$AUTH_PROXY_REPLY_PATH" source "$UPDATE_AUTH_PROXY_SECRET_FOR_CONSOLE_SCRIPT")
-#wait # wait for subshell to finish
 
 #######################################################################################
 

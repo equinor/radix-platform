@@ -126,13 +126,6 @@ if [[ -z "$VNET_DNS_LINK" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
 
-# Define web console variables
-RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE == "development" ]]; then
-    # Development cluster uses QA web-console
-    RADIX_WEB_CONSOLE_ENV="qa"
-fi
-
 #######################################################################################
 ### Prepare az session
 ###

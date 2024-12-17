@@ -4,15 +4,14 @@
 # Adds all Private IP Prefix IPs assigned to the Radix Zone to the environment variables of the web component of Radix Web Console.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh
+# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env WEB_COMPONENT="web" RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh)
+# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh)
 #
 
 # INPUTS:
 #   RADIX_ZONE_ENV          (Mandatory)
-#   WEB_COMPONENT           (Mandatory)
 #   RADIX_WEB_CONSOLE_ENV   (Mandatory)
 
 # Optional:
@@ -63,11 +62,6 @@ else
         exit 1
     fi
     source "$RADIX_ZONE_ENV"
-fi
-
-if [[ -z "$WEB_COMPONENT" ]]; then
-    echo "ERROR: Please provide WEB_COMPONENT." >&2
-    exit 1
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
@@ -160,7 +154,7 @@ function updateIpsEnvVars() {
         ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
     fi
     printf "Done.\n"
-    updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}" "${env_var_configmap_name}" "${ip_list}"
+    updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "web" "${env_var_configmap_name}" "${ip_list}"
     echo "Web component env variable updated with Public IP Prefix IPs."
 }
 
@@ -170,6 +164,6 @@ updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAM
 
 # Restart deployment for web component
 printf "Restarting web deployment...\n"
-kubectl rollout restart deployment -n radix-web-console-"${RADIX_WEB_CONSOLE_ENV}" "${WEB_COMPONENT}"
+kubectl rollout restart deployment -n radix-web-console-"${RADIX_WEB_CONSOLE_ENV}" "web"
 
 echo "Done."
