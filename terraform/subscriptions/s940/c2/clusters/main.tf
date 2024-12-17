@@ -58,19 +58,6 @@ module "radix_id_external_secrets_operator_mi" {
   }
 }
 
-module "radix_id_canary_scaler_mi" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-canary-scaler-${module.config.environment}"
-  location            = module.config.location
-  resource_group_name = "common-${module.config.environment}"
-  roleassignments = {
-    command_runner = {
-      role     = "Radix Azure Kubernetes Service Command Runner"
-      scope_id = data.azurerm_resource_group.clusters.id
-    }
-  }
-}
-
 module "radix_id_akskubelet_mi" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-akskubelet-${module.config.environment}"
