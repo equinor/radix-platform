@@ -48,7 +48,7 @@ data "azurerm_role_definition" "this" {
   name = "Omnia Authorization Locks Operator"
 }
 
-data "azuread_group" "radix" {
-  display_name     = "Radix"
-  security_enabled = false
+data "azurerm_key_vault_secret" "radixowners" {
+  name         = "radixowners"
+  key_vault_id = module.config.backend.ip_key_vault_id
 }

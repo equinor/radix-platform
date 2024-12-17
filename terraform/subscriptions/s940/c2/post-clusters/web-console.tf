@@ -41,7 +41,7 @@ module "webconsole" {
   service_id          = "110327"
   web_uris            = local.web-uris
   singlepage_uris     = local.singlepage-uris
-  owners              = data.azuread_group.radix.members
+  owners              = keys(jsondecode(data.azurerm_key_vault_secret.radixowners.value))
   assignment_required = true
 
   resource_access = {
