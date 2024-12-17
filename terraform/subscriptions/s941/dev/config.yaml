@@ -15,13 +15,13 @@ networksets:
   networkset1:
     vnet:       "10.3.0.0"
     ingressIP:  "20.223.40.148"
-    egress:     
+    egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004"
   networkset2:
     vnet:       "10.4.0.0"
     ingressIP:  "20.223.40.149"
-    egress:     
+    egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"
 clusters:
@@ -29,8 +29,8 @@ clusters:
     aksversion: "1.29.8"
     networkset: "networkset2"
     network_policy: "cilium"
+    autostartupschedule: true
   weekly-50:
     aksversion: "1.29.8"
     networkset: "networkset1"
     network_policy: "cilium"
-    autostartupschedule: true
