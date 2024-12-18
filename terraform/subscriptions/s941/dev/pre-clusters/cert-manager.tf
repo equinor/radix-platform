@@ -12,4 +12,5 @@ resource "azurerm_federated_identity_credential" "cert-manager-mi-fedcred" {
   subject             = "system:serviceaccount:cert-manager:cert-manager"
   parent_id           = data.azurerm_user_assigned_identity.cert-manager-mi.id
   resource_group_name = data.azurerm_user_assigned_identity.cert-manager-mi.resource_group_name
+  depends_on          = [module.aks]
 }

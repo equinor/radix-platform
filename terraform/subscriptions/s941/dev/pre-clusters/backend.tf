@@ -37,3 +37,9 @@ module "config" {
   source = "../../../modules/config"
 }
 
+module "clusters" {
+  source              = "../../../modules/active-clusters-nojson"
+  resource_group_name = module.config.cluster_resource_group
+  subscription        = module.config.subscription
+}
+
