@@ -14,6 +14,7 @@ resource "azurerm_federated_identity_credential" "cost-allocation-writer" {
   subject             = "system:serviceaccount:radix-cost-allocation:radix-cost-allocation"
   parent_id           = data.azurerm_user_assigned_identity.cost-allocation-writer.id
   resource_group_name = data.azurerm_user_assigned_identity.cost-allocation-writer.resource_group_name
+  depends_on          = [module.aks]
 }
 
 ### Vulnerability Scanner API - Reader
@@ -31,6 +32,7 @@ resource "azurerm_federated_identity_credential" "cost-allocation-api-reader-pro
   subject             = "system:serviceaccount:radix-cost-allocation-api-prod:server-sa"
   parent_id           = data.azurerm_user_assigned_identity.cost-allocation-api-reader.id
   resource_group_name = data.azurerm_user_assigned_identity.cost-allocation-api-reader.resource_group_name
+  depends_on          = [module.aks]
 }
 resource "azurerm_federated_identity_credential" "cost-allocation-api-reader-qa" {
   for_each = module.clusters.oidc_issuer_url
@@ -41,5 +43,6 @@ resource "azurerm_federated_identity_credential" "cost-allocation-api-reader-qa"
   subject             = "system:serviceaccount:radix-cost-allocation-api-qa:server-sa"
   parent_id           = data.azurerm_user_assigned_identity.cost-allocation-api-reader.id
   resource_group_name = data.azurerm_user_assigned_identity.cost-allocation-api-reader.resource_group_name
+  depends_on          = [module.aks]
 }
 
