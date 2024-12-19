@@ -1,5 +1,8 @@
+name: Clean old cache in App registries
+
 on:
   workflow_dispatch:
+  pull_request:
   schedule:
     - cron: '0 0 * * *' # Daily
 
@@ -8,12 +11,20 @@ permissions:
   contents: read
 
 jobs:
-  purge-prod:
+  purge:
     runs-on: ubuntu-latest
-    environment: s940
     strategy:
       matrix:
-        registry: [radixc2app, radixprodapp]
+        target:
+          - name: "dev"
+            registry: "radixdevapp"
+          - name: "playground"
+            registry: "radixplaygroundapp"
+          - name: "platform"
+            registry: "radixprodapp"
+          - name: "c2"
+            registry: "radixc2app"
+    environment: ${{matrix.target.name }}
 
     steps:
       - uses: actions/checkout@v4
@@ -33,63 +44,21 @@ jobs:
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ var.AZURE_CLIENT_ID }}
+          tenant-id: ${{ var.AZURE_TENANT_ID }}
+          subscription-id: ${{ var.AZURE_SUBSCRIPTION_ID }}
 
       - name: Add GitHub IP to ACR
-        run: az acr network-rule add --name ${{ matrix.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
+        id: update_firewall
+        run: az acr network-rule add --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
 
       - name: Create ACR Token
-        run: echo "token=$(az acr login --name=${{ matrix.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
+        run: echo "token=$(az acr login --name=${{ matrix.target.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
         id: token
 
       - name: Purge old cache
-        run: ./bin/acr purge --registry=${{ matrix.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
+        run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
 
       - name: Revoke GitHub IP on ACR
-        run: az acr network-rule remove --name ${{ matrix.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
-
-
-  purge-dev:
-    runs-on: ubuntu-latest
-    environment: s941
-    strategy:
-      matrix:
-        registry: [radixdevapp, radixplaygroundapp]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: Azure/acr-cli
-          ref: v0.8
-
-      - uses: actions/setup-go@v5
-
-      - name: Compile ACR binary
-        run: make binaries
-
-      - name: Get GitHub Public IP
-        id: github_public_ip
-        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
-
-      - name: 'Az CLI login'
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Add GitHub IP to ACR
-        run: az acr network-rule add --name ${{ matrix.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
-
-      - name: Create ACR Token
-        run: echo "token=$(az acr login --name=${{ matrix.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
-        id: token
-
-      - name: Purge old cache
-        run: ./bin/acr purge --registry=${{ matrix.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
-
-      - name: Revoke GitHub IP on ACR
-        run: az acr network-rule remove --name ${{ matrix.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
-
+        if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        run: az acr network-rule remove --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState

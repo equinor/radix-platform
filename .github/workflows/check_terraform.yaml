@@ -1,8 +1,8 @@
 name: Check Terraform infrastructure
 on:
   pull_request:
- #   paths:
- #     - terraform/subscriptions/**
+    paths:
+      - terraform/subscriptions/**
 
 permissions:
   id-token: write
