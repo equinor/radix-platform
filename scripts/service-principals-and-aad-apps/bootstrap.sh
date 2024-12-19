@@ -119,7 +119,6 @@ echo -e "   -  RADIX_ENVIRONMENT                        : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 echo -e ""
 echo -e "   > WHO:"
@@ -150,7 +149,6 @@ fi
 ### Create service principal
 ###
 
-create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Provide read-only access to container registry"
 create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Provide push, pull, build in container registry"
 
 #######################################################################################

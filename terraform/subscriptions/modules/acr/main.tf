@@ -107,12 +107,6 @@ resource "azurerm_role_assignment" "env" {
   principal_id         = var.radix_cr_cicd
 }
 
-resource "azurerm_role_assignment" "env_pull" {
-  scope                = azurerm_container_registry.env.id
-  role_definition_name = "AcrPull"
-  principal_id         = var.radix_cr_reader
-}
-
 resource "azurerm_private_endpoint" "env" {
   name                = var.acr == "c2" ? "pe-radix-acr-c2prod" : "pe-radix-acr-${var.acr}"
   resource_group_name = var.vnet_resource_group

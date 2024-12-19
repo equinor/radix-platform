@@ -82,7 +82,6 @@ module "acr" {
   subnet_id            = data.azurerm_subnet.this.id
   dockercredentials_id = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
   radix_cr_cicd        = module.radix-cr-cicd.azuread_service_principal_id
-  radix_cr_reader      = module.radix-cr-reader.azuread_service_principal_id
 }
 
 module "radix-id-acr-workflows" {

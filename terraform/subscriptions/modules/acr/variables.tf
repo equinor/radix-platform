@@ -162,8 +162,3 @@ variable "radix_cr_cicd" {
   type        = string
   description = "ID of radix-cr Contributor"
 }
-
-variable "radix_cr_reader" {
-  type        = string
-  description = "ID of radix-cr Reader"
-}

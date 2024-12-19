@@ -2,14 +2,14 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Tear down radix zone infrastructure
 
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -20,14 +20,14 @@
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix_zone_playground.env ./teardown.sh
 
 
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start tear down of Radix Zone... "
@@ -111,7 +111,6 @@ printf "\n"
 printf "\n   -  AZ_RESOURCE_AAD_SERVER                      : $AZ_RESOURCE_AAD_SERVER"
 printf "\n   -  AZ_RESOURCE_AAD_CLIENT                      : $AZ_RESOURCE_AAD_CLIENT"
 printf "\n"
-printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 printf "\n   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 printf "\n   -  AZ_SYSTEM_USER_CLUSTER                      : $AZ_SYSTEM_USER_CLUSTER"
 printf "\n"
@@ -139,7 +138,6 @@ fi
 ### Remove infrastructure
 ###
 
-delete_service_principal_and_stored_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 delete_service_principal_and_stored_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 delete_service_principal_and_stored_credentials "$AZ_SYSTEM_USER_CLUSTER"
 
@@ -155,7 +153,7 @@ printf "...Done.\n"
 
 printf "Working on resource groups: \n"
 printf "Deleting ${AZ_RESOURCE_GROUP_CLUSTERS}...\n"
-az group delete --yes --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none 
+az group delete --yes --name "${AZ_RESOURCE_GROUP_CLUSTERS}" --output none
 printf "Deleting ${AZ_RESOURCE_GROUP_COMMON}...\n"
 az group delete --yes --name "${AZ_RESOURCE_GROUP_COMMON}" --output none
 printf "Deleting ${AZ_RESOURCE_GROUP_MONITORING}...\n"
