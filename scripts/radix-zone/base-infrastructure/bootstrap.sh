@@ -160,7 +160,6 @@ echo -e "   -  AZ_IPPRE_INBOUND_LENGTH                     : $AZ_IPPRE_INBOUND_L
 echo -e "   -  AZ_RESOURCE_CONTAINER_REGISTRY              : $AZ_RESOURCE_CONTAINER_REGISTRY"
 echo -e "   -  AZ_RESOURCE_DNS                             : $AZ_RESOURCE_DNS"
 echo -e ""
-echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER    : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD      : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 echo -e "   -  APP_REGISTRATION_WEB_CONSOLE                : $APP_REGISTRATION_WEB_CONSOLE"
 echo -e "   -  APP_REGISTRATION_GRAFANA                    : $APP_REGISTRATION_GRAFANA"
@@ -232,7 +231,7 @@ function create_common_resources() {
             --tag "issue" \
             --value "letsencrypt.org" \
             --output none
-        
+
         az network dns record-set caa add-record \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
             --zone-name "${AZ_RESOURCE_DNS}" \
@@ -242,7 +241,7 @@ function create_common_resources() {
             --tag "issue" \
             --value "digicert.com" \
             --output none
-        
+
         az network dns record-set caa add-record \
             --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
             --zone-name "${AZ_RESOURCE_DNS}" \
@@ -425,7 +424,6 @@ EOF
 
 # Create service principals
 function create_base_system_users_and_store_credentials() {
-    create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER" "Service principal that provide read-only access to container registry"
     create_service_principal_and_store_credentials "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD" "Service principal that provide push, pull, build in container registry"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_GRAFANA" "Grafana OAuth"
     create_service_principal_and_store_credentials "$APP_REGISTRATION_WEB_CONSOLE" "Used by web console for login and other AD information"
@@ -441,9 +439,9 @@ function create_servicenow_proxy_server_app_registration() {
         "value":"Application.Read",
         "type":"User",
         "isEnabled":true,
-        "userConsentDescription":"Allows the app to read ServiceNow applications", 
+        "userConsentDescription":"Allows the app to read ServiceNow applications",
         "userConsentDisplayName":"Read applications from ServiceNow",
-        "adminConsentDescription":"Allows the app to read ServiceNow applications", 
+        "adminConsentDescription":"Allows the app to read ServiceNow applications",
         "adminConsentDisplayName":"Read applications from ServiceNow"
     }
 ]

@@ -3,7 +3,7 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Library for often used ACR functions.
 
@@ -67,13 +67,6 @@ function set_permissions_on_acr() {
 
     local id
     printf "Working on container registry \"${AZ_RESOURCE_CONTAINER_REGISTRY}\": "
-
-    printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER}\"..." # radix-cr-reader-dev
-    id="$(az ad sp list --display-name ${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD} --query [].appId --output tsv)"
-    # Delete any existing roles
-    az role assignment delete --assignee "${id}" --scope "${scope}" --output none
-    # Configure new roles
-    az role assignment create --assignee "${id}" --role AcrPull --scope "${scope}" --output none
 
     printf "Setting permissions for \"${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}\"..." # radix-cr-cicd-dev
     id="$(az ad sp list --filter "displayname eq '${AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD}'" --query [].appId --output tsv)"
@@ -253,12 +246,12 @@ stepTimeout: 3600
 steps:
   - cmd: buildx create --use # start buildkit
   - cmd: >-
-      buildx build {{.Values.PUSH}} {{.Values.CACHE}} 
-      {{.Values.TAGS}} 
-      --file {{.Values.DOCKER_FILE_NAME}} 
-      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}} 
-      . 
-      {{.Values.BUILD_ARGS}} 
+      buildx build {{.Values.PUSH}} {{.Values.CACHE}}
+      {{.Values.TAGS}}
+      --file {{.Values.DOCKER_FILE_NAME}}
+      --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
+      .
+      {{.Values.BUILD_ARGS}}
 EOF
     printf "Create ACR Task for internal use: ${TASK_NAME} in ACR: ${ACR_NAME}..."
     az acr task create \
@@ -299,7 +292,7 @@ function add_task_credential() {
     local TASK_NAME="$1"
     local ACR_NAME="$2"
     printf "Add credentials for system-assigned identity to task: ${TASK_NAME}..."
-    if [[ 
+    if [[
         $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity') == null ||
         -z $(az acr task credential list --registry ${ACR_NAME} --name ${TASK_NAME} | jq '.["'${ACR_NAME}'.azurecr.io"].identity')
     ]]; then

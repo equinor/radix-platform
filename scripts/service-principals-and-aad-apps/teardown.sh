@@ -3,14 +3,14 @@
 
 #######################################################################################
 ### PURPOSE
-### 
+###
 
 # Teardown radix service principals: delete them and delete credentials in az keyvault
 
 
 #######################################################################################
 ### INPUTS
-### 
+###
 
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
@@ -21,14 +21,14 @@
 
 #######################################################################################
 ### HOW TO USE
-### 
+###
 
 # RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./teardown.sh
 
 
 #######################################################################################
 ### START
-### 
+###
 
 echo ""
 echo "Start teardown radix service principals... "
@@ -104,7 +104,6 @@ echo -e "   -  RADIX_ENVIRONMENT                        : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
-echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 echo -e "   -  AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD   : $AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 echo -e ""
 echo -e "   > WHO:"
@@ -142,7 +141,6 @@ function delete_service_principal() {
     printf "Done.\n"
 }
 
-delete_service_principal "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_READER"
 delete_service_principal "$AZ_SYSTEM_USER_CONTAINER_REGISTRY_CICD"
 
 
