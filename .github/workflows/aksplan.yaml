@@ -2,7 +2,7 @@ name: AKS Plan
 on:
   pull_request:
     paths:
-    - terraform/subscriptions/**  
+    - terraform/subscriptions/**
   workflow_dispatch:
 jobs:
   terraform-plan:
@@ -33,12 +33,14 @@ jobs:
         uses: actions/checkout@v4 #Clone Repo
         with:
           fetch-depth: '2'
+
       - name: Extract data
         id: data
         run: |
           FILENAME=terraform/subscriptions/${{matrix.target.subscription}}/${{matrix.target.name}}/config.yaml
           echo "FILENAME=${FILENAME}" >> $GITHUB_OUTPUT
           echo "Checking file: ${FILENAME}"
+
       - name: Check if files changed
         id: changes
         run: |
@@ -48,6 +50,7 @@ jobs:
           else
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
+
       - name: 'Az login'
         if: steps.changes.outputs.changed == 'true'
         uses: azure/login@v2
@@ -55,10 +58,12 @@ jobs:
           client-id: ${{ env.ARM_CLIENT_ID }}
           tenant-id: ${{ env.ARM_TENANT_ID }}
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+
       - name: Get GitHub Public IP
         id: github_public_ip
         if: steps.changes.outputs.changed == 'true'
         run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
+
       - name: Add GitHub IP to StorageAccount
         if: steps.changes.outputs.changed == 'true'
         run: |
@@ -66,20 +71,25 @@ jobs:
             --resource-group "${{ matrix.target.subscription }}-tfstate" \
             --account-name "${{ matrix.target.subscription }}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+
       - name: Add GitHub IP to KeyVault
         if: steps.changes.outputs.changed == 'true'
         run: |
           az keyvault network-rule add --name "radix-keyv-${{ matrix.target.name }}" \
             --resource-group "common-${{ matrix.target.name }}" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+
       - name: Lets sleep for 30 seconds for FW rule to complete
         if: steps.changes.outputs.changed == 'true'
         run: sleep 30s
+
       - name: Setup Terraform
         if: steps.changes.outputs.changed == 'true'
+        id: update_firewall
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 'latest'
+
       - name: Terraform Init & Plan
         if: steps.changes.outputs.changed == 'true'
         id: init
@@ -89,6 +99,7 @@ jobs:
         run: |
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" init
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" plan
+
       - name: Revoke GitHub IP on StorageAccount
         if: steps.changes.outputs.changed == 'true'
         run: |
@@ -96,8 +107,9 @@ jobs:
             --resource-group "${{ matrix.target.subscription }}-tfstate" \
             --account-name "${{ matrix.target.subscription }}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+
       - name: Revoke GitHub IP on KeyVault
-        if: steps.changes.outputs.changed == 'true'
+        if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
           az keyvault network-rule remove --name "radix-keyv-${{ matrix.target.name }}" \
             --resource-group "common-${{ matrix.target.name }}" \

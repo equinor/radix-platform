@@ -18,6 +18,7 @@ jobs:
       ENVIROMENT: dev
     steps:
       - uses: actions/checkout@v4 #Clone Repo
+
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
@@ -28,8 +29,9 @@ jobs:
       - name: Get GitHub Public IP
         id: github_public_ip
         run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
-      
+
       - name: Add GitHub IP to KeyVault
+        id: update_firewall
         run: |
           az keyvault network-rule add --name "radix-keyv-${{ env.ENVIROMENT}}" \
             --resource-group "${{ env.KV_GROUP}}" \
@@ -42,6 +44,7 @@ jobs:
         run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env TASK=stop .github/workflows/scripts/dailytasks.sh
 
       - name: Revoke GitHub IP on KeyVault
+        if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
           az keyvault network-rule remove --name "radix-keyv-${{ env.ENVIROMENT}}" \
             --resource-group "${{ env.KV_GROUP}}" \
