@@ -2,7 +2,6 @@ name: Clean old cache in App registries
 
 on:
   workflow_dispatch:
-  pull_request:
   schedule:
     - cron: '0 0 * * *' # Daily
 
