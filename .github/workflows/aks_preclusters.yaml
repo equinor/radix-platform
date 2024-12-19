@@ -1,4 +1,4 @@
-name: AKS POST
+name: Terraform - Check pre-cluster
 on:
   # pull_request:
   #   paths:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   terraform-plan:
-    name: Terraform post
+    name: Terraform pre-clusters
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -14,8 +14,8 @@ jobs:
         target:
           - name: "dev"
             subscription: "s941"
-          # - name: "playground"
-          #   subscription: "s941"
+          - name: "playground"
+            subscription: "s941"
           # - name: "platform"
           #   subscription: "s940"
           # - name: "c2"
@@ -33,24 +33,7 @@ jobs:
         uses: actions/checkout@v4 #Clone Repo
         with:
           fetch-depth: '2'
-      - name: Extract data
-        id: data
-        run: |
-          FILENAME=terraform/subscriptions/${{matrix.target.subscription}}/${{matrix.target.name}}/config.yaml
-          echo "FILENAME=${FILENAME}" >> $GITHUB_OUTPUT
-          echo "Checking file: ${FILENAME}"
-      - name: Check if files changed
-        id: changes
-        run: |
-          echo "Checking file: ${{steps.data.outputs.FILENAME}}"
-          if (git diff --exit-code --quiet HEAD~1 HEAD -- ${{steps.data.outputs.FILENAME}}) then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
-          echo "ignorechanged=true" >> $GITHUB_OUTPUT
       - name: 'Az login'
-        if: steps.changes.outputs.ignorechanged
         uses: azure/login@v2
         with:
           client-id: ${{ env.ARM_CLIENT_ID }}
@@ -58,47 +41,39 @@ jobs:
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
       - name: Get GitHub Public IP
         id: github_public_ip
-        if: steps.changes.outputs.ignorechanged
         run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
       - name: Add GitHub IP to StorageAccount
-        if: steps.changes.outputs.ignorechanged
         run: |
           az storage account network-rule add \
             --resource-group "${{ matrix.target.subscription }}-tfstate" \
             --account-name "${{ matrix.target.subscription }}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Add GitHub IP to KeyVault
-        if: steps.changes.outputs.ignorechanged
         run: |
           az keyvault network-rule add --name "radix-keyv-${{ matrix.target.name }}" \
             --resource-group "common-${{ matrix.target.name }}" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Lets sleep for 30 seconds for FW rule to complete
-        if: steps.changes.outputs.ignorechanged
         run: sleep 30s
       - name: Setup Terraform
-        if: steps.changes.outputs.ignorechanged
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 'latest'
       - name: Terraform Init & Plan
-        if: steps.changes.outputs.ignorechanged
         id: init
         env:
           ARM_USE_OIDC: true
           ARM_USE_AZUREAD: true
         run: |
-          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" init
-          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/post-clusters" plan
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" init
+          terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" plan
       - name: Revoke GitHub IP on StorageAccount
-        if: steps.changes.outputs.ignorechanged
         run: |
           az storage account network-rule remove \
             --resource-group "${{ matrix.target.subscription }}-tfstate" \
             --account-name "${{ matrix.target.subscription }}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Revoke GitHub IP on KeyVault
-        if: steps.changes.outputs.ignorechanged
         run: |
           az keyvault network-rule remove --name "radix-keyv-${{ matrix.target.name }}" \
             --resource-group "common-${{ matrix.target.name }}" \
