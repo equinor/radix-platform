@@ -36,14 +36,6 @@ module "clusters" {
   subscription        = module.config.subscription
 }
 
-data "azuread_service_principal" "this" {
-  display_name = "ar-radix-resource-lock-operator-prod"
-}
-
-data "azurerm_role_definition" "this" {
-  name = "Omnia Authorization Locks Operator"
-}
-
 data "azurerm_key_vault_secret" "radixowners" {
   name         = "radixowners"
   key_vault_id = module.config.backend.ip_key_vault_id
