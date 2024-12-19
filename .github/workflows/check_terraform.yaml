@@ -68,7 +68,7 @@ jobs:
 
       - name: Check terrorm in ${{ matrix.target.name}}
         working-directory: terraform/subscriptions/scripts
-        run: SUBSCRIPTION=${{ matrix.target.subscription}} ENVIRONMENT=${{${{ matrix.target.folderName}}}} ./terraform.sh
+        run: SUBSCRIPTION=${{ matrix.target.subscription}} ENVIRONMENT=${{${{ matrix.target.folderName}} ./terraform.sh
 
       - name: Revoke GitHub IP on StorageAccount
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
