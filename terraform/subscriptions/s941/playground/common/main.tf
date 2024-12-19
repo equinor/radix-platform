@@ -198,7 +198,7 @@ module "radix_id_gitrunner" {
     }
     app_registry_contributor = {
       role = "Contributor"
-      scope_id = '/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}app'
+      scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}app"
     }
   }
   federated_credentials = {
