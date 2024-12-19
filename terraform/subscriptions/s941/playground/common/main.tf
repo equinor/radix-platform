@@ -151,10 +151,6 @@ module "radix-id-acr-workflows" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-buildkit-builder:ref:refs/heads/release"
     }
-    app_registry_contributor = {
-      role = "Contributor"
-      scope_id = '/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}app'
-    }
   }
 }
 
@@ -199,6 +195,10 @@ module "radix_id_gitrunner" {
     vnet_contributor = {
       role     = "Contributor"
       scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/${data.azurerm_virtual_network.this.resource_group_name}"
+    }
+    app_registry_contributor = {
+      role = "Contributor"
+      scope_id = '/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}app'
     }
   }
   federated_credentials = {
