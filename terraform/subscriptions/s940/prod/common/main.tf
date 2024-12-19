@@ -206,7 +206,7 @@ module "radix_id_gitrunner" {
       scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/${data.azurerm_virtual_network.this.resource_group_name}"
     }
     app_registry_contributor = {
-      role = "Contributor"
+      role     = "Contributor"
       scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radixprodapp" # TODO: Replace resource name when fixed
     }
   }
