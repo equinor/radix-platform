@@ -19,6 +19,7 @@ data "azurerm_virtual_network" "vnets" {
   for_each            = module.clusters.vnets_url
   resource_group_name = module.config.cluster_resource_group
   name                = each.key
+  depends_on          = [module.aks]
 }
 
 module "vnet_peering" {
@@ -32,6 +33,7 @@ module "vnet_peering" {
   vnet_hub_id                 = data.azurerm_virtual_network.hub.id
   vnet_hub_resource_group     = module.config.vnet_resource_group
   vnet_hub_name               = data.azurerm_virtual_network.hub.name
+  depends_on                  = [module.aks]
 }
 
 module "private_dns_zone_virtual_network_peering" {
@@ -41,4 +43,5 @@ module "private_dns_zone_virtual_network_peering" {
   cluster_vnet_resourcegroup = data.azurerm_virtual_network.hub.resource_group_name
   vnet_cluster_hub_id        = data.azurerm_virtual_network.vnets[each.value.vnet].id
   private_dns_zone           = each.value.private_dns_zone
+  depends_on                 = [module.aks]
 }
