@@ -12,4 +12,5 @@ resource "azurerm_federated_identity_credential" "azure-service-operator-fedcred
   subject             = "system:serviceaccount:azure-service-operator-system:azureserviceoperator-default"
   parent_id           = data.azurerm_user_assigned_identity.azure-service-operator.id
   resource_group_name = data.azurerm_user_assigned_identity.azure-service-operator.resource_group_name
+  depends_on          = [module.aks]
 }
