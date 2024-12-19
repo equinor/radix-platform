@@ -44,9 +44,10 @@ jobs:
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
-          client-id: ${{ var.AZURE_CLIENT_ID }}
-          tenant-id: ${{ var.AZURE_TENANT_ID }}
-          subscription-id: ${{ var.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
 
       - name: Add GitHub IP to ACR
         id: update_firewall
