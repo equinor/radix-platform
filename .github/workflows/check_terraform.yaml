@@ -66,7 +66,7 @@ jobs:
         with:
           terraform_version: 'latest'
 
-      - name: Check terrorm in ${{ matrix.target.name}}
+      - name: Check Terraform in ${{ matrix.target.name}}
         working-directory: terraform/subscriptions/scripts
         shell: bash
         env:

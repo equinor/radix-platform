@@ -22,9 +22,13 @@ directory="../${SUBSCRIPTION}/${ENVIRONMENT}"
 for dir in "$directory"/*; do
     if [ ! -d "$dir" ]; then continue; fi
 
+    echo ""
     printf "%s► Execute %s%s\n" "${grn}" "$dir" "${normal}"
-    terraform -chdir="$dir" init &>/dev/null || echo "Error during terraform init in $dir"
-    terraform -chdir="$dir" plan -no-color -out=plan.out &>/dev/null || echo "Error during terraform plan in $dir"
+    terraform -chdir="$dir" init
+    terraform -chdir="$dir" plan -no-color -out=plan.out
+
+    # Add some vertical space incase the previus steps failed
+    echo ""
 
     if [ ! -f "$dir/plan.out" ]; then
         echo "plan.out was not created in $dir"
