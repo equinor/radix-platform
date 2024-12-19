@@ -205,6 +205,10 @@ module "radix_id_gitrunner" {
       role     = "Contributor"
       scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/${data.azurerm_virtual_network.this.resource_group_name}"
     }
+    app_registry_contributor = {
+      role = "Contributor"
+      scope_id = '/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radixprodapp' # TODO: Replace resource name when fixed
+    }
   }
   federated_credentials = {
     radix-id-gitrunner = {
@@ -216,10 +220,6 @@ module "radix_id_gitrunner" {
       name    = "radix-platform-env-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-platform:environment:${module.config.environment}"
-    }
-    app_registry_contributor = {
-      role = "Contributor"
-      scope_id = '/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radixprodapp' # TODO: Replace resource name when fixed
     }
   }
 }
