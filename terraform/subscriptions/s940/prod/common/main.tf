@@ -212,6 +212,10 @@ module "radix_id_gitrunner" {
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-platform:environment:${module.config.environment}"
     }
+    app_registry_contributor = {
+      role = "Contributor"
+      scope_id = '/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radixprodapp' # TODO: Replace resource name when fixed
+    }
   }
 }
 
