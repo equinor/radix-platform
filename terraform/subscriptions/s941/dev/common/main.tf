@@ -235,18 +235,6 @@ module "radix-cr-cicd" {
   }
 }
 
-module "radix-cr-reader" {
-  source       = "../../../modules/app_registration"
-  display_name = "radix-cr-reader-${module.config.environment}"
-  service_id   = "110327"
-  owners       = keys(jsondecode(data.azurerm_key_vault_secret.radixowners.value))
-  expose_API   = true
-  implicit_grant = {
-    access_token_issuance_enabled = false
-    id_token_issuance_enabled     = true
-  }
-}
-
 output "workspace_id" {
   value = module.loganalytics.workspace_id
 }
