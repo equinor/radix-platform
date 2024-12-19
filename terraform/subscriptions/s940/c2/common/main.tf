@@ -112,7 +112,12 @@ module "radix-id-acr-workflows" {
       name    = "radix-acr-cleanup-release"
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-acr-cleanup:ref:refs/heads/release"
-    }
+    },
+    radix-acr-cleanup-release = {
+      name    = "radix-acr-cleanup-release"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-acr-cleanup:ref:refs/heads/release"
+    },
     radix-cicd-canary-release = {
       name    = "radix-cicd-canary-release"
       issuer  = "https://token.actions.githubusercontent.com"
