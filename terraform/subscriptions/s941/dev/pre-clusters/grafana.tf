@@ -3,10 +3,9 @@ data "azurerm_user_assigned_identity" "grafana" {
   name                = "radix-id-grafana-admin-${module.config.environment}"
 }
 
-resource "azurerm_federated_identity_credential" "grafana-mi-fedcred" {
-  for_each = module.clusters.oidc_issuer_url
-
-  audience            = ["api://AzureADTokenExchange"]
+module "grafana-mi-fedcred" {
+  source              = "../../../modules/federated-credentials"
+  for_each            = module.clusters.oidc_issuer_url
   name                = "k8s-grafana-${each.key}"
   issuer              = each.value
   subject             = "system:serviceaccount:monitor:grafana"
