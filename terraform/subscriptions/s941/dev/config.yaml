@@ -2,7 +2,7 @@ environment: "dev"
 subscription_shortname: "s941"
 location: "northeurope"
 all_ip_prefix_enviroments: ["development","playground"]
-developers: "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d" # Radix Platform Developers
+developers: "bed2b667-ceec-4377-83f7-46888ed23887" # AZ PIM OMNIA RADIX Cluster Admin - dev
 backend:
   resource_group_name:   "s941-tfstate"
   storage_account_name:  "s941radixinfra"
@@ -29,8 +29,8 @@ clusters:
     aksversion: "1.29.8"
     networkset: "networkset2"
     network_policy: "cilium"
-    autostartupschedule: true
-  weekly-50:
+  weekly-02:
     aksversion: "1.29.8"
     networkset: "networkset1"
     network_policy: "cilium"
+    autostartupschedule: true
