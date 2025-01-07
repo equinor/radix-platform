@@ -38,7 +38,7 @@ variable "authorized_ip_ranges" {
 }
 
 variable "developers" {
-  type = string
+  type = list(string)
   # default = []
 }
 
@@ -126,4 +126,17 @@ variable "ingressIP" {
 
 variable "autostartupschedule" {
   type = bool
+}
+
+variable "vnethub_id" {
+  type = string
+}
+
+variable "dnszones" {
+  type    = list(string)
+  default = []
+}
+
+variable "cluster_vnet_resourcegroup" {
+  type = string
 }

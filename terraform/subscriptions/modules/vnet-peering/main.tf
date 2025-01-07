@@ -4,6 +4,9 @@ resource "azurerm_virtual_network_peering" "hub_to_cluster" {
   virtual_network_name      = var.vnet_hub_name
   remote_virtual_network_id = var.vnet_cluster_id
   allow_forwarded_traffic   = true
+  local_subnet_names        = []
+  only_ipv6_peering_enabled = false
+  remote_subnet_names       = []
 }
 
 resource "azurerm_virtual_network_peering" "cluster_to_hub" {
@@ -12,4 +15,7 @@ resource "azurerm_virtual_network_peering" "cluster_to_hub" {
   virtual_network_name      = var.vnet_cluster_name
   remote_virtual_network_id = var.vnet_hub_id
   allow_forwarded_traffic   = true
+  local_subnet_names        = []
+  only_ipv6_peering_enabled = false
+  remote_subnet_names       = []
 }

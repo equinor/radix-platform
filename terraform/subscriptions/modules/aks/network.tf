@@ -96,3 +96,33 @@ output "vnet" {
 output "subnet" {
   value = azurerm_subnet.this
 }
+
+resource "azurerm_virtual_network_peering" "hub_to_cluster" {
+  name                      = "hub-to-vnet-${var.cluster_name}"
+  resource_group_name       = var.cluster_vnet_resourcegroup
+  virtual_network_name      = "vnet-hub"
+  remote_virtual_network_id = azurerm_virtual_network.this.id
+  allow_forwarded_traffic   = true
+  local_subnet_names        = []
+  only_ipv6_peering_enabled = false
+  remote_subnet_names       = []
+}
+
+resource "azurerm_virtual_network_peering" "cluster_to_hub" {
+  name                      = "vnet-${var.cluster_name}-to-hub"
+  resource_group_name       = "clusters-${var.enviroment}"
+  virtual_network_name      = "vnet-${var.cluster_name}"
+  remote_virtual_network_id = var.vnethub_id
+  allow_forwarded_traffic   = true
+  local_subnet_names        = []
+  only_ipv6_peering_enabled = false
+  remote_subnet_names       = []
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "this" {
+  for_each              = toset(var.dnszones)
+  name                  = "${var.cluster_name}-link"
+  resource_group_name   = var.cluster_vnet_resourcegroup
+  private_dns_zone_name = each.value
+  virtual_network_id    = azurerm_virtual_network.this.id
+}

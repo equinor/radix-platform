@@ -267,9 +267,9 @@ for row in $(kubectl get pdb -A -o json | jq -c '.items[] | select(.spec.minAvai
 done
 
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
-terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" destroy -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster_node_pool.this
-terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" destroy -target module.aks[\"${CLUSTER_NAME}\"].azurerm_network_watcher_flow_log.this --auto-approve
-terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" destroy -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster.this --auto-approve
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster_node_pool.this
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks[\"${CLUSTER_NAME}\"].azurerm_network_watcher_flow_log.this #--auto-approve
+terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster.this #--auto-approve
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
