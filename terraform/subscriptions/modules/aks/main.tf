@@ -28,7 +28,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     authorized_ip_ranges = var.authorized_ip_ranges
   }
   azure_active_directory_role_based_access_control {
-    admin_group_object_ids = [var.developers]
+    admin_group_object_ids = var.developers
     azure_rbac_enabled     = false
     tenant_id              = var.tenant_id
   }
