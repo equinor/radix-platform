@@ -1,7 +1,7 @@
 environment: "extmon"
 subscription_shortname: "s940"
 location: "northeurope"
-developers: "bed2b667-ceec-4377-83f7-46888ed23887" # AZ PIM OMNIA RADIX Cluster Admin - dev
+developers: ["a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"]
 backend:
   resource_group_name: = "s940-tfstate"
   storage_account_name: = "s940radixinfra"

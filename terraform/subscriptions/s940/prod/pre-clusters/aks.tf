@@ -18,6 +18,11 @@ data "azurerm_log_analytics_workspace" "containers" {
   resource_group_name = "logs"
 }
 
+data "azurerm_virtual_network" "hub" {
+  name                = "vnet-hub"
+  resource_group_name = module.config.vnet_resource_group
+}
+
 module "aks" {
   source                      = "../../../modules/aks"
   for_each                    = module.config.cluster
@@ -44,6 +49,9 @@ module "aks" {
   ingressIP                   = module.config.networksets[each.value.networkset].ingressIP
   subscription                = module.config.subscription
   autostartupschedule         = lookup(module.config.cluster[each.key], "autostartupschedule", false)
+  vnethub_id                  = data.azurerm_virtual_network.hub.id
+  dnszones                    = module.config.private_dns_zones_names
+  cluster_vnet_resourcegroup  = data.azurerm_virtual_network.hub.resource_group_name
 }
 
 locals {
