@@ -98,7 +98,7 @@ output "subnet" {
 }
 
 resource "azurerm_virtual_network_peering" "hub_to_cluster" {
-  name                      = "hub-to-vnet-${var.cluster_name}"
+  name                      = "hub-to-vnet-${var.cluster_name}" == "hub-to-vnet-c2-11" ? "vnet-hub-to-c2-11" : "hub-to-vnet-${var.cluster_name}"
   resource_group_name       = var.cluster_vnet_resourcegroup
   virtual_network_name      = "vnet-hub"
   remote_virtual_network_id = azurerm_virtual_network.this.id
@@ -109,8 +109,8 @@ resource "azurerm_virtual_network_peering" "hub_to_cluster" {
 }
 
 resource "azurerm_virtual_network_peering" "cluster_to_hub" {
-  name                      = "vnet-${var.cluster_name}-to-hub"
-  resource_group_name       = "clusters-${var.enviroment}"
+  name                      = "vnet-${var.cluster_name}-to-hub" == "vnet-c2-11-to-hub" ? "c2-11-to-vnet-hub" : "vnet-${var.cluster_name}-to-hub"
+  resource_group_name       = "clusters-${var.enviroment}" == "clusters-platform" ? "clusters" : "clusters-${var.enviroment}"
   virtual_network_name      = "vnet-${var.cluster_name}"
   remote_virtual_network_id = var.vnethub_id
   allow_forwarded_traffic   = true
