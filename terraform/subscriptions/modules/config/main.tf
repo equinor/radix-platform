@@ -99,3 +99,11 @@ output "cluster" {
 output "networksets" {
   value = local.config.networksets
 }
+
+output "ar-radix-servicenow-proxy-client" {
+  value = "69031e2e-2341-4116-9dff-236fd906514b"
+}
+
+output "ar-radix-servicenow-proxy-server" {
+  value = "a898a8fa-b030-4783-9d5b-5ebcdeebdc59"
+}
