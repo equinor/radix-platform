@@ -3,9 +3,9 @@ variable "oidc_issuer_url" {
   type        = map(string)
 }
 
-data "azuread_application" "this" {
-  display_name = "ar-radix-servicenow-proxy-client"
-}
+# data "azuread_application" "this" {
+#   display_name = "ar-radix-servicenow-proxy-client"
+# }
 
 locals {
   oidc_issuers = flatten([
@@ -21,7 +21,7 @@ locals {
 
 resource "azuread_application_federated_identity_credential" "ar-radix-servicenow-proxy-client" {
   for_each       = { for item in local.oidc_issuers : "${item.cluster}-${item.env}" => item }
-  application_id = data.azuread_application.this.id
+  application_id = "/applications/${var.clientid}"
   display_name   = "k8s-radix-servicenow-proxy-client-${each.value.cluster}-${each.value.env}"
   description    = "Application registration Federated Identity Credentials to access ServiceNow API"
   audiences      = ["api://AzureADTokenExchange"]

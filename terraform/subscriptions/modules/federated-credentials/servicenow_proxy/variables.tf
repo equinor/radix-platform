@@ -1,0 +1,3 @@
+variable "clientid" {
+  type = string
+}
