@@ -29,17 +29,8 @@
 ### HOW TO USE
 ###
 
-# Logon to docker.com with the user name which you want to generate a new access token for.
-# The password for the user is stored in platform keyvault.
-# Go to Accont Settings > Personal Access Tokens and click Generate New Token:
-# Enter "radix-{environment}-{year}-{month}" in Access Token Description,
-# e.g. "radix-platform-2024-08".
-# Select Public Repo Read-Only in Access Permissions.
-# Copy the generated access token and use it in the ACCESS_TOKEN input.
-# The old personal access token for the same environment can be deleted once the new
-# access token is successfully synced to the Kubernetes secret. You can check the 
-# Last Used column # in the list of Persoanl Access Tokens on docker.com if the new
-# token is being used.
+# Please refer to https://github.com/equinor/radix-private/blob/master/docs/infrastructure/container-registries.md#external-container-registries
+# to get instructions on how to request a new access token.
 
 # Example:
 # RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USER_NAME=radix ACCESS_TOKEN=dckr_pat_abcd ./update_docker_auth.sh
