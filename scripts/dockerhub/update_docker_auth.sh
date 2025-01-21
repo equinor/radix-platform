@@ -33,7 +33,7 @@
 # to get instructions on how to request a new access token.
 
 # Example:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USER_NAME=radix ACCESS_TOKEN=dckr_pat_abcd ./update_docker_auth.sh
+# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USER_NAME=equinor ACCESS_TOKEN=dckr_pat_abcd ./update_docker_auth.sh
 
 #######################################################################################
 ### START
