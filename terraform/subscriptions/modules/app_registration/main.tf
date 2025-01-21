@@ -5,25 +5,13 @@ resource "azuread_application" "this" {
   service_management_reference = var.service_id
 
   lifecycle {
-    ignore_changes = [required_resource_access, api, identifier_uris, web[0].homepage_url, notes]
+    ignore_changes = [single_page_application, web, identifier_uris, api, notes, required_resource_access]
   }
 
   api {
     known_client_applications      = []
     mapped_claims_enabled          = false
     requested_access_token_version = 1
-  }
-
-  web {
-    redirect_uris = var.web_uris
-    implicit_grant {
-      access_token_issuance_enabled = var.implicit_grant.access_token_issuance_enabled
-      id_token_issuance_enabled     = var.implicit_grant.id_token_issuance_enabled
-    }
-
-  }
-  single_page_application {
-    redirect_uris = var.singlepage_uris
   }
 
   dynamic "required_resource_access" {

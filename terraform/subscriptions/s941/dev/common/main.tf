@@ -235,6 +235,22 @@ module "radix-cr-cicd" {
   }
 }
 
+module "grafana" {
+  source       = "../../../modules/app_registration"
+  display_name = "radix-ar-grafana-${module.config.environment}"
+  notes        = "Grafana Oauth, main app for user authentication to Grafana"
+  service_id   = "110327"
+  owners       = keys(jsondecode(data.azurerm_key_vault_secret.radixowners.value))
+}
+
+module "rediscache" {
+  source              = "../../../modules/redis_cache"
+  name                = "radix-${module.config.environment}"
+  rg_name             = module.config.cluster_resource_group
+  vnet_resource_group = module.config.vnet_resource_group
+  sku_name            = "Basic"
+}
+
 output "workspace_id" {
   value = module.loganalytics.workspace_id
 }
