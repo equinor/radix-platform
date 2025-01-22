@@ -3,7 +3,4 @@ resource "azurerm_storage_container" "velero" {
   name                  = each.key
   storage_account_name  = "radixvelero${module.config.environment}"
   container_access_type = "private" # Options: private, blob, container
-  lifecycle {
-    prevent_destroy = true
-  }
 }
