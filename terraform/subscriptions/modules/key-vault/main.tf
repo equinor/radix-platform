@@ -1,3 +1,8 @@
+data "azuread_group" "this" {	
+  display_name     = "Radix Platform Operators"	
+  security_enabled = true	
+}
+
 data "azurerm_role_definition" "this" {
   name = "Key Vault Secrets User"
 }
@@ -40,7 +45,7 @@ resource "azurerm_key_vault_access_policy" "this" {
   for_each     = var.enable_rbac_authorization == false ? { "${var.vault_name}" : true } : {}
   key_vault_id = azurerm_key_vault.this.id
   tenant_id    = var.tenant_id
-  object_id    = "be5526de-1b7d-4389-b1ab-a36a99ef5cc5" # Radix Platform Operators
+  object_id    = data.azuread_group.this.object_id
   certificate_permissions = [
     "Get", "List", "Update", "Create", "Import", "Delete", "Recover", "Backup", "Restore", "ManageContacts", "ManageIssuers", "GetIssuers", "ListIssuers", "SetIssuers", "DeleteIssuers"
   ]
