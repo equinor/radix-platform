@@ -63,14 +63,9 @@ resource "azurerm_monitor_diagnostic_setting" "blob" {
   log_analytics_workspace_id = var.log_analytics_id
 
   metric {
-    category = "Capacity"
-    enabled  = false
+    category = "AllMetrics"
   }
 
-  metric {
-    category = "Transaction"
-    enabled  = false
-  }
 }
 
 ########################################################################################
