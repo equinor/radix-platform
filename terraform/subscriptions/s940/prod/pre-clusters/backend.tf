@@ -32,3 +32,9 @@ module "config" {
   source = "../../../modules/config"
 }
 
+module "clusters" {
+  source              = "../../../modules/active-clusters"
+  resource_group_name = "clusters" #TODO
+  subscription        = module.config.subscription
+}
+

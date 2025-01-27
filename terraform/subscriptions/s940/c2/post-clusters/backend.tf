@@ -40,7 +40,3 @@ module "clusters" {
   subscription        = module.config.subscription
 }
 
-data "azurerm_key_vault_secret" "radixowners" {
-  name         = "radixowners"
-  key_vault_id = module.config.backend.ip_key_vault_id
-}
