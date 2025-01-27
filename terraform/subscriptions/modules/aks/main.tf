@@ -144,6 +144,9 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   tags             = {}
   zones            = []
   depends_on       = [azurerm_kubernetes_cluster.this]
+  lifecycle {
+    ignore_changes = [upgrade_settings]
+  }
 }
 
 resource "azurerm_management_lock" "aks" {

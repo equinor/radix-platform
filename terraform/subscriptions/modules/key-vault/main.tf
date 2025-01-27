@@ -1,6 +1,6 @@
-data "azuread_group" "this" {	
-  display_name     = "Radix Platform Operators"	
-  security_enabled = true	
+data "azuread_group" "this" {
+  display_name     = "Radix Platform Operators"
+  security_enabled = true
 }
 
 data "azurerm_role_definition" "this" {

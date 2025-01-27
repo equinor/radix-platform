@@ -61,11 +61,14 @@ resource "azurerm_monitor_diagnostic_setting" "blob" {
   name                       = "Radix-diagnostics"
   target_resource_id         = "${azurerm_storage_account.storageaccount.id}/blobServices/default/"
   log_analytics_workspace_id = var.log_analytics_id
-
   metric {
-    category = "AllMetrics"
+    category = "Capacity"
+    enabled  = true
   }
-
+  metric {
+    category = "Transaction"
+    enabled  = true
+  }
 }
 
 ########################################################################################

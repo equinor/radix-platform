@@ -85,7 +85,7 @@ module "acr" {
   vnet_resource_group  = module.config.vnet_resource_group
   subnet_id            = data.azurerm_subnet.this.id
   dockercredentials_id = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
-  radix_cr_cicd        = module.radix-cr-cicd.azuread_service_principal_id
+  radix_cr_cicd        = replace(replace(module.app_application_registration.cr_cicd.azuread_service_principal_id, "/servicePrincipals/", ""), "/", "")
 }
 
 module "radix-id-acr-workflows" {
@@ -223,17 +223,14 @@ module "radix_id_gitrunner" {
   }
 }
 
-module "radix-cr-cicd" {
-  source       = "../../../modules/app_registration"
-  display_name = "radix-cr-cicd-${module.config.environment}"
-  service_id   = "110327"
-  owners       = keys(jsondecode(data.azurerm_key_vault_secret.radixowners.value))
-  expose_API   = true
-  implicit_grant = {
-    access_token_issuance_enabled = false
-    id_token_issuance_enabled     = true
-  }
+module "rediscache" {
+  source              = "../../../modules/redis_cache"
+  name                = "radix-${module.config.environment}"
+  rg_name             = module.config.cluster_resource_group
+  vnet_resource_group = module.config.vnet_resource_group
+  sku_name            = "Standard"
 }
+
 
 output "workspace_id" {
   value = module.loganalytics.workspace_id
