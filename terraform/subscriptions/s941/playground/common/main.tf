@@ -199,6 +199,18 @@ module "radix_id_gitrunner" {
       role     = "Contributor"
       scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/common/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}app"
     }
+    vulnerability_scan_contributor = {
+      role     = "Managed Identity Contributor"
+      scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/vulnerability-scan-${module.config.environment}"
+    }
+    cost_allocation_contributor = {
+      role     = "Managed Identity Contributor"
+      scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/cost-allocation-${module.config.environment}"
+    }
+    grafana_contributor = {
+      role     = "Managed Identity Contributor"
+      scope_id = "/subscriptions/${module.config.subscription}/resourceGroups/monitoring"
+    }
   }
   federated_credentials = {
     radix-id-gitrunner = {
