@@ -9,7 +9,7 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 APP_REGISTRATION="radix-cr-cicd-$1"
-APP_SECRET_NAME="radix-cicd-canary-values-$1"
+APP_SECRET_NAME="radix-cr-cicd-$1"
 SECRETNAME="radix-cr-cicd"
 KEYVAULT="radix-keyv-$1"
 
