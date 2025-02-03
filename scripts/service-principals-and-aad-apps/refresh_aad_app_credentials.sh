@@ -16,6 +16,7 @@
 # Required:
 # - RADIX_ZONE_ENV      : Path to *.env file
 # - AAD_APP_NAME        : Name of aad app, example: "radix-rbac-dev"
+# - SECRET              : Name of the secret in Keyvault
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
@@ -84,6 +85,11 @@ if [[ -z "$AAD_APP_NAME" ]]; then
     exit 1
 fi
 
+if [[ -z "$SECRET" ]]; then
+    echo "ERROR: Please provide SECRET" >&2
+    exit 1
+fi
+
 if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
@@ -121,6 +127,7 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  AAD_APP_NAME                             : $AAD_APP_NAME"
+echo -e "   -  SECRET                                   : $SECRET"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -150,7 +157,7 @@ fi
 ### Refresh credentials in Azure AD and key vault
 ###
 
-refresh_ad_app_and_store_credentials_in_ad_and_keyvault "$AAD_APP_NAME"
+refresh_ad_app_and_store_credentials_in_ad_and_keyvault "$AAD_APP_NAME" "$SECRET"
 
 #######################################################################################
 ### Explain manual steps
