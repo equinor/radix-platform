@@ -32,9 +32,9 @@ clusters:
     aksversion: "1.30.7"
     networkset: "networkset2"
     network_policy: "cilium"
-    autostartupschedule: true
-  weekly-04:
-    aksversion: "1.29.8"
+    # autostartupschedule: true
+  weekly-06:
+    aksversion: "1.30.7"
     networkset: "networkset1"
     network_policy: "cilium"
-    # autostartupschedule: true
+    autostartupschedule: true
