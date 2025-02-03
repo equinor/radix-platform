@@ -33,6 +33,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     local description     # Input 4, string, optional
     local secret_id       # Input 5, string, optional
     local expiration_date # Input 6, string, optional
+    local secretkey       # Input 7, string
     local tmp_file_path
     local template_path
     local script_dir_path
@@ -43,6 +44,8 @@ function update_service_principal_credentials_in_az_keyvault() {
     description="$4"
     secret_id="$5"
     expiration_date="$6"
+    secretkey="$7"
+
     tenantId="$(az ad sp show --id ${id} --query appOwnerOrganizationId --output tsv)"
     script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     template_path="${script_dir_path}/template-credentials.json"
@@ -71,7 +74,7 @@ function update_service_principal_credentials_in_az_keyvault() {
     fi
 
     # Upload to keyvault
-    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${name}" --file "${tmp_file_path}" ${expires} 2>&1 >/dev/null
+    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${secretkey}" --file "${tmp_file_path}" ${expires} 2>&1 >/dev/null
 
     # Clean up
     rm -rf "$tmp_file_path"
@@ -528,12 +531,14 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
 function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
     local name        # Input 1
-    local description # Input 2, optional
+    local secretkey   # Input 2
+    local description # Input 3, optional
     local password
     local id
 
     name="$1"
-    description="$2"
+    secretkey="$2"
+    description="$3"
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
@@ -545,7 +550,7 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
     expiration_date="$(echo "${secret}" | jq -r .[].endDateTime | sed 's/\..*//')"
 
     printf "Update credentials in keyvault..."
-    update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}" "${secret_id}" "${expiration_date}"
+    update_service_principal_credentials_in_az_keyvault "${name}" "${id}" "${password}" "${description}" "${secret_id}" "${expiration_date}" "${secretkey}"
 
     printf "Done.\n"
 }
