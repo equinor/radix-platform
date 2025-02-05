@@ -20,7 +20,7 @@ data "azurerm_storage_account" "infra" {
 }
 
 resource "azurerm_role_assignment" "terraform-contributor" {
-  principal_id       = data.terraform_remote_state.global_groups.outputs.radix_platform_developers.object_id
+  principal_id       = data.azuread_group.radix-platform-developers.object_id
   scope              = data.azurerm_storage_account.infra.id
   role_definition_id = azurerm_role_definition.terraform-state-contributor.role_definition_resource_id
 }
