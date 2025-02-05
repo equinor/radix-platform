@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = ">=3.110.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "< 3.0.0"
+    }
 
   }
 
@@ -14,18 +18,6 @@ terraform {
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
     key                  = "extmon/monitor/terraform.tfstate"
-    use_azuread_auth     = true # This enables RBAC instead of access keys
-  }
-}
-
-data "terraform_remote_state" "global_groups" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "s940-tfstate"
-    storage_account_name = "s940radixinfra"
-    container_name       = "infrastructure"
-    key                  = "prod/globals_azuread_group/terraform.tfstate"
     use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }

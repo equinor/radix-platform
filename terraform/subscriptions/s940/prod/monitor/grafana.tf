@@ -52,7 +52,7 @@ resource "azurerm_mysql_flexible_database" "grafana" {
 resource "azurerm_mysql_flexible_server_active_directory_administrator" "grafana" {
   identity_id = module.grafana-mi-server.id
   login       = var.admin-group-name
-  object_id   = data.terraform_remote_state.global_groups.outputs["radix_sql_server_admins_${module.config.environment}"].object_id
+  object_id   = data.azuread_group.mssql_admin.object_id
   server_id   = azurerm_mysql_flexible_server.grafana.id
   tenant_id   = data.azurerm_client_config.current.tenant_id
 }
