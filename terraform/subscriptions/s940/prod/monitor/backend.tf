@@ -18,6 +18,18 @@ terraform {
   }
 }
 
+data "terraform_remote_state" "global_groups" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "s940-tfstate"
+    storage_account_name = "s940radixinfra"
+    container_name       = "infrastructure"
+    key                  = "prod/globals_azuread_group/terraform.tfstate"
+    use_azuread_auth     = true # This enables RBAC instead of access keys
+  }
+}
+
 provider "azurerm" {
   subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   features {

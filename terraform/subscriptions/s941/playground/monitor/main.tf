@@ -4,11 +4,6 @@ module "config" {
 
 data "azurerm_client_config" "current" {}
 
-data "azuread_group" "mssql-developers" {
-  display_name     = var.admin-group-name
-  security_enabled = true
-}
-
 output "mi-admin-client-id" {
   value = module.grafana-mi-admin.client-id
 }

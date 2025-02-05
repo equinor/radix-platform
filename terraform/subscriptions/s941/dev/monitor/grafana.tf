@@ -16,7 +16,7 @@ module "grafana-mi-admin" {
 resource "azurerm_mysql_flexible_server" "grafana" {
   location              = module.config.location
   name                  = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}"
-  resource_group_name   = "monitoring"
+  resource_group_name   = module.config.common_resource_group
   zone                  = 2
   backup_retention_days = 7
   sku_name              = "B_Standard_B1ms"
@@ -43,7 +43,7 @@ resource "azurerm_mysql_flexible_database" "grafana" {
 resource "azurerm_mysql_flexible_server_active_directory_administrator" "grafana" {
   identity_id = module.grafana-mi-server.id
   login       = var.admin-group-name
-  object_id   = data.azuread_group.mssql-developers.object_id
+  object_id   = data.terraform_remote_state.global_groups.outputs["radix_sql_server_admins_${module.config.environment}"].object_id
   server_id   = azurerm_mysql_flexible_server.grafana.id
   tenant_id   = data.azurerm_client_config.current.tenant_id
 }

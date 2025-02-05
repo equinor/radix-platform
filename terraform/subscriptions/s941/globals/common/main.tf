@@ -1,5 +1,5 @@
 module "resourcegroups" {
-  for_each = toset(["backups", "common", "Logs-Dev", "monitoring"])
+  for_each = toset(["common", "Logs-Dev", "monitoring"])
 
   source   = "../../../modules/resourcegroups"
   name     = each.value
@@ -71,4 +71,38 @@ resource "azurerm_role_definition" "privatelink_role" {
   assignable_scopes = [
     data.azurerm_subscription.main.id
   ]
+}
+
+resource "azurerm_monitor_action_group" "this" {
+  name                = "notify-radix-team-test"
+  resource_group_name = "common"
+  short_name          = "notify-radix"
+
+  email_receiver {
+    name                    = "radix-email-notification_-EmailAction-"
+    email_address           = "Radix@StatoilSRM.onmicrosoft.com"
+    use_common_alert_schema = false
+  }
+}
+
+resource "azurerm_monitor_activity_log_alert" "this" {
+  name                = "azure-service-health-radix-test"
+  resource_group_name = "common"
+  location            = module.config.location
+  scopes              = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b"]
+  description         = "This alert will monitor a specific storage account updates."
+
+  criteria {
+    category = "ServiceHealth"
+
+    resource_id    = module.storageaccount.id
+    operation_name = "Microsoft.Storage/storageAccounts/write"
+    # category       = "Recommendation"
+  }
+
+  action {
+    action_group_id = azurerm_monitor_action_group.this.id
+
+    webhook_properties = {}
+  }
 }
