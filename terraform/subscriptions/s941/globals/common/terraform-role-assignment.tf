@@ -19,6 +19,11 @@ data "azurerm_storage_account" "infra" {
   resource_group_name = module.config.backend.resource_group_name
 }
 
+data "azuread_group" "radix-platform-developers" {
+  display_name     = "Radix Platform Developers"
+  security_enabled = true
+}
+
 resource "azurerm_role_assignment" "terraform-contributor" {
   principal_id       = data.azuread_group.radix-platform-developers.object_id
   scope              = data.azurerm_storage_account.infra.id
