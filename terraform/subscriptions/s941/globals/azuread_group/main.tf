@@ -36,7 +36,7 @@ output "radix_sql_server_admins_1" {
   value = data.azuread_group.radix_sql_server_admins_dev
 }
 
-data "azuread_group" "radix_sql_server_admins_2" {
+data "azuread_group" "radix_sql_server_admins_playground" {
   display_name     = "Radix SQL server admin - playground"
   security_enabled = true
 }
