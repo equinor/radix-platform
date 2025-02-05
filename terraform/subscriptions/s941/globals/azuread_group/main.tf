@@ -32,7 +32,7 @@ data "azuread_group" "radix_sql_server_admins_dev" {
   security_enabled = true
 }
 
-output "radix_sql_server_admins_1" {
+output "radix_sql_server_admins_dev" {
   value = data.azuread_group.radix_sql_server_admins_dev
 }
 
@@ -41,6 +41,6 @@ data "azuread_group" "radix_sql_server_admins_playground" {
   security_enabled = true
 }
 
-output "radix_sql_server_admins_2" {
+output "radix_sql_server_admins_playground" {
   value = data.azuread_group.radix_sql_server_admins_playground
 }
