@@ -43,6 +43,11 @@ variable "dockercredentials_id" {
   default = null
 }
 
+variable "retention_policy_env" {
+  type    = number
+  default = null
+}
+
 variable "cacheregistry" {
   type = map(object({
     namespace = string
