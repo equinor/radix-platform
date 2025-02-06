@@ -51,8 +51,8 @@ resource "azurerm_mysql_flexible_database" "grafana" {
 
 resource "azurerm_mysql_flexible_server_active_directory_administrator" "grafana" {
   identity_id = module.grafana-mi-server.id
-  login       = var.admin-group-name
-  object_id   = data.azuread_group.mssql_admin.object_id
+  login       = data.azuread_group.sql_admin.display_name
+  object_id   = data.azuread_group.sql_admin.object_id
   server_id   = azurerm_mysql_flexible_server.grafana.id
   tenant_id   = data.azurerm_client_config.current.tenant_id
 }

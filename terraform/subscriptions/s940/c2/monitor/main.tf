@@ -4,7 +4,7 @@ module "config" {
 
 data "azurerm_client_config" "current" {}
 
-data "azuread_group" "mssql_admin" {
+data "azuread_group" "sql_admin" {
   display_name     = "Radix SQL server admin - ${module.config.environment}"
   security_enabled = true
 }
