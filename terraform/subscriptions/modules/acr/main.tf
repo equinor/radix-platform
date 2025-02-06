@@ -14,9 +14,9 @@ resource "azurerm_container_registry" "this" {
   lifecycle {
     prevent_destroy = true
   }
-
   network_rule_set {
     default_action = "Deny"
+
     ip_rule = [
       {
         action   = "Allow"
@@ -79,6 +79,7 @@ resource "azurerm_container_registry" "env" {
   admin_enabled                 = true
   anonymous_pull_enabled        = false
   public_network_access_enabled = true
+  retention_policy_in_days      = var.retention_policy_env
   tags = {
     IaC = "terraform"
   }
