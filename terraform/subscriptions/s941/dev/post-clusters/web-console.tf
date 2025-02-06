@@ -33,16 +33,20 @@ locals {
   ))
 }
 
+data "azuread_application" "webconsole" {
+  display_name = "Omnia Radix Web Console - Development"
+}
+
 module "webconsole_redirect_uris" {
   source         = "../../../modules/app_registration_redirect_uris"
-  application_id = "/applications/${module.config.appreg.web}"
+  application_id = data.azuread_application.webconsole.id
   type           = "Web"
   redirect_uris  = local.web-uris
 }
 
 module "webconsole_spa" {
   source         = "../../../modules/app_registration_redirect_uris"
-  application_id = "/applications/${module.config.appreg.web}"
+  application_id = data.azuread_application.webconsole.id
   type           = "SPA"
   redirect_uris  = local.singlepage-uris
 }

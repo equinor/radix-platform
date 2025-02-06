@@ -2,9 +2,6 @@ environment: "c2"
 subscription_shortname: "s940"
 location: "westeurope"
 developers: ["be5526de-1b7d-4389-b1ab-a36a99ef5cc5"] # Radix Platform Operators
-appreg:
-  grafana:  "24e39d19-c4c3-4ed5-b7ff-965433ebb466"
-  web:      "f8066a06-d033-428f-b5a0-d7ba714f796d"
 backend:
   resource_group_name: "s940-tfstate"
   storage_account_name: "s940radixinfra"

@@ -2,9 +2,6 @@ environment: "playground"
 subscription_shortname: "s941"
 location: "northeurope"
 developers: ["bed2b667-ceec-4377-83f7-46888ed23887","a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"]
-appreg:
-  grafana:  "a8f5d777-90fb-4273-8a54-ab890dae9e7b"
-  web:      "f9de8756-88e6-4e19-995e-c4bcf57ffbc9"
 backend:
   resource_group_name: "s941-tfstate"
   storage_account_name: "s941radixinfra"

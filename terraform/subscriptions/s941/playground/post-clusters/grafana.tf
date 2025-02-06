@@ -5,10 +5,13 @@ locals {
   ]
 }
 
+data "azuread_application" "grafana" {
+  display_name = "radix-ar-grafana-${module.config.environment}"
+}
 
 module "grafana_redirect_uris" {
   source         = "../../../modules/app_registration_redirect_uris"
-  application_id = "/applications/${module.config.appreg.grafana}"
+  application_id = data.azuread_application.grafana.id
   type           = "Web"
   redirect_uris  = concat(["https://grafana.${module.config.environment}.radix.equinor.com/login/generic_oauth"], local.grafana_uris)
 }
