@@ -40,9 +40,6 @@ output "backend" {
   value = local.config.backend
 }
 
-output "appreg" {
-  value = local.config.appreg
-}
 output "subscription" {
   value = local.config.backend.subscription_id
 }

@@ -2,9 +2,6 @@ environment: "extmon"
 subscription_shortname: "s940"
 location: "northeurope"
 developers: ["a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"]
-appreg:
-  grafana:  "14c54d0b-21d0-4de1-a3af-82a413aca29a"
-  web:      "02c5c437-4f66-4e81-bd8d-95180005f3fc"
 backend:
   resource_group_name: = "s940-tfstate"
   storage_account_name: = "s940radixinfra"
