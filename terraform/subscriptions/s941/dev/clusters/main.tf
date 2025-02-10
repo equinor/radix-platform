@@ -35,7 +35,7 @@ data "azurerm_storage_account" "velero" {
 
 data "azurerm_container_registry" "this" {
   name                = "radix${module.config.environment}"
-  resource_group_name = "common" #TODO
+  resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_container_registry" "cache" {

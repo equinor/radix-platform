@@ -1,3 +1,7 @@
+locals {
+  ip_rule = data.azurerm_key_vault_secret.this.value
+}
+
 module "config" {
   source = "../../../modules/config"
 }
@@ -65,7 +69,7 @@ module "storageaccount" {
   subnet_id                 = data.azurerm_subnet.this.id
   vnet_resource_group       = module.config.vnet_resource_group
   lifecyclepolicy           = each.value.lifecyclepolicy
-  ip_rule                   = data.azurerm_key_vault_secret.this.value
+  ip_rule                   = local.ip_rule
   log_analytics_id          = module.loganalytics.workspace_id
   shared_access_key_enabled = each.value.shared_access_key_enabled #Needed in module create container when running apply
 
@@ -73,7 +77,7 @@ module "storageaccount" {
 
 module "acr" {
   source               = "../../../modules/acr"
-  ip_rule              = data.azurerm_key_vault_secret.this.value
+  ip_rule              = local.ip_rule
   location             = module.config.location
   resource_group_name  = "common" #TODO
   common_res_group     = module.config.common_resource_group

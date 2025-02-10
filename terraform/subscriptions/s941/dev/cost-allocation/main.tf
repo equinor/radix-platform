@@ -52,7 +52,7 @@ module "mssql-database" {
 
 data "azurerm_container_registry" "acr" {
   name                = "radix${module.config.environment}"
-  resource_group_name = "common" # TODO: Fix module.config.common_resource_group
+  resource_group_name = module.config.common_resource_group
 }
 
 module "github-workload-id" {

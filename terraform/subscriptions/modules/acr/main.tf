@@ -16,12 +16,16 @@ resource "azurerm_container_registry" "this" {
   }
   network_rule_set {
     default_action = "Deny"
-
     ip_rule = [
       {
         action   = "Allow"
         ip_range = var.ip_rule
+      },
+      {
+        action   = "Allow"
+        ip_range = "185.55.105.28"
       }
+    
     ]
   }
   georeplications {
@@ -73,13 +77,15 @@ resource "azurerm_management_lock" "this" {
 resource "azurerm_container_registry" "env" {
   name                          = "radix${var.acr}" == "radixc2" ? "radixc2prod" : "radix${var.acr}"
   location                      = var.location
-  resource_group_name           = var.acr == "c2" ? "common-westeurope" : var.resource_group_name
+  # resource_group_name           = var.acr == "c2" ? "common-westeurope" : var.resource_group_name
+  # 
+  resource_group_name           = var.acr == "c2" ? "common-westeurope" : var.acr == "dev" ? var.common_res_group : var.resource_group_name
   sku                           = "Premium"
   zone_redundancy_enabled       = false
   admin_enabled                 = true
   anonymous_pull_enabled        = false
   public_network_access_enabled = true
-  retention_policy_in_days      = var.retention_policy_env
+  # retention_policy_in_days      = var.retention_policy_env
   tags = {
     IaC = "terraform"
   }
@@ -92,6 +98,10 @@ resource "azurerm_container_registry" "env" {
       {
         action   = "Allow"
         ip_range = var.ip_rule
+      },
+      {
+        action   = "Allow"
+        ip_range = "185.55.105.28"
       }
     ]
   }
@@ -99,6 +109,55 @@ resource "azurerm_container_registry" "env" {
     location                  = var.location == "northeurope" ? "westeurope" : "northeurope"
     zone_redundancy_enabled   = false
     regional_endpoint_enabled = true
+  }
+}
+
+resource "azurerm_container_registry_task" "internal" {
+  name                  = "radix-image-builder-internal"
+  container_registry_id = azurerm_container_registry.env.id
+  platform {
+    os = "Linux"
+    architecture = "amd64"
+  }
+   agent_setting {
+    cpu = 2
+  }
+
+  base_image_trigger {
+    enabled = true
+    name = "defaultBaseimageTriggerName"
+    type = "Runtime"
+    update_trigger_payload_type = "Default"
+  }
+  tags = {
+    IaC = "terraform"
+  }
+encoded_step {
+  task_content = <<EOF
+  version: v1.1.0
+  stepTimeout: 3600
+  steps:
+    - cmd: buildx create --use # start buildkit
+    - cmd: >-
+        buildx build {{.Values.PUSH}} {{.Values.CACHE}}
+        {{.Values.TAGS}}
+        --file {{.Values.DOCKER_FILE_NAME}}
+        --cache-from=type=registry,ref={{.Values.DOCKER_REGISTRY}}.azurecr.io/{{.Values.REPOSITORY_NAME}}:radix-cache-{{.Values.BRANCH}} {{.Values.CACHE_TO_OPTIONS}}
+        .
+        {{.Values.BUILD_ARGS}}
+  EOF
+}
+  identity {
+     type         = "SystemAssigned"
+  }
+  registry_credential {
+    source {
+      login_mode = "None"
+    }
+    custom {
+      login_server = azurerm_container_registry.env.login_server
+      identity = "[system]"
+    }
   }
 }
 
@@ -162,6 +221,10 @@ resource "azurerm_container_registry" "cache" {
       {
         action   = "Allow"
         ip_range = var.ip_rule
+      },
+      {
+        action   = "Allow"
+        ip_range = "185.55.105.28"
       }
     ]
   }
