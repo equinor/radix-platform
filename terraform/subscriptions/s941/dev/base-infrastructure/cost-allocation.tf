@@ -1,9 +1,3 @@
-module "resourcegroup" {
-  source   = "../../../modules/resourcegroups"
-  name     = "cost-allocation-${module.config.environment}"
-  location = module.config.location
-}
-
 # MS SQL Server
 module "mssql-database" {
   source                        = "../../../modules/mssqldatabase"
@@ -15,7 +9,7 @@ module "mssql-database" {
   admin_adgroup                 = data.azuread_group.sql_admin.display_name
   azuread_authentication_only   = true
   administrator_login           = "radix"
-  rg_name                       = module.resourcegroup.data.name
+  rg_name                       = module.resourcegroup_cost_allocation.data.name
   vnet_resource_group           = module.config.vnet_resource_group
   common_resource_group         = module.config.common_resource_group
   location                      = module.config.location
@@ -49,8 +43,8 @@ data "azurerm_container_registry" "acr" {
 module "github-workload-id" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-cost-allocation-github-${module.config.environment}"
-  resource_group_name = module.resourcegroup.data.name
-  location            = module.resourcegroup.data.location
+  resource_group_name = module.resourcegroup_cost_allocation.data.name
+  location            = module.resourcegroup_cost_allocation.data.location
   roleassignments = {
     contributor = {
       role     = "Contributor" # Needed to open firewall
@@ -69,15 +63,15 @@ module "github-workload-id" {
 module "mi-writer" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-cost-allocation-writer-${module.config.environment}"
-  resource_group_name = module.resourcegroup.data.name
-  location            = module.resourcegroup.data.location
+  resource_group_name = module.resourcegroup_cost_allocation.data.name
+  location            = module.resourcegroup_cost_allocation.data.location
 }
 
 module "mi-reader" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-cost-allocation-reader-${module.config.environment}"
-  resource_group_name = module.resourcegroup.data.name
-  location            = module.resourcegroup.data.location
+  resource_group_name = module.resourcegroup_cost_allocation.data.name
+  location            = module.resourcegroup_cost_allocation.data.location
 }
 
 output "mi-client-id" {

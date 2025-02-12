@@ -19,14 +19,3 @@ data "azurerm_key_vault_secret" "radixowners" {
   key_vault_id = module.config.backend.ip_key_vault_id
 }
 
-data "azurerm_resource_group" "common" { # Defined in Global
-  name = "common"                        #TODO
-}
-
-data "azurerm_resource_group" "logs" { # Defined in Global
-  name = "Logs-${module.config.environment}"
-}
-
-data "azurerm_resource_group" "networkwatcher" {
-  name = "NetworkWatcherRG"
-}

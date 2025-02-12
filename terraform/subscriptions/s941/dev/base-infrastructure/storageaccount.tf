@@ -1,3 +1,8 @@
+data "azurerm_storage_account" "terraform_state" {
+  name                = "${module.config.subscription_shortname}radixinfra"
+  resource_group_name = module.config.backend.resource_group_name
+}
+
 module "storageaccount" {
   source                    = "../../../modules/storageaccount"
   for_each                  = var.storageaccounts
@@ -17,5 +22,5 @@ module "storageaccount" {
   ip_rule                   = local.ip_rule
   log_analytics_id          = module.loganalytics.workspace_id
   shared_access_key_enabled = each.value.shared_access_key_enabled #Needed in module create container when running apply
-
 }
+
