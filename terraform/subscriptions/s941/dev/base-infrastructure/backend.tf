@@ -8,16 +8,11 @@ terraform {
       source  = "hashicorp/azuread"
       version = "< 3.0.0"
     }
-    # azapi = {
-    #   source = "azure/azapi"
-    #   version = ">=2.2.0"
-    # }
   }
 
   backend "azurerm" {
-    tenant_id       = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-    subscription_id = "16ede44b-1f74-40a5-b428-46cca9a5741b"
-    #     resource_group_name  = "s941-tfstate"
+    tenant_id            = "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+    subscription_id      = "16ede44b-1f74-40a5-b428-46cca9a5741b"
     storage_account_name = "s941radixinfra"
     container_name       = "infrastructure"
     key                  = "dev/base/terraform.tfstate"
@@ -30,8 +25,3 @@ provider "azurerm" {
   storage_use_azuread = true # This enables RBAC instead of access keys
   features {}
 }
-
-# data "azurerm_key_vault_secret" "radixowners" {
-#   name         = "radixowners"
-#   key_vault_id = module.config.backend.ip_key_vault_id
-# }
