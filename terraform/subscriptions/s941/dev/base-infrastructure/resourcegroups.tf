@@ -3,7 +3,7 @@ data "azurerm_resource_group" "common" { # Defined in Global
 }
 
 data "azurerm_resource_group" "logs" { # Defined in Global
-  name = "Logs-${module.config.environment}"
+  name = "Logs-dev"
 }
 
 data "azurerm_resource_group" "monitoring" { # Defined in Global
@@ -26,9 +26,21 @@ module "resourcegroup_clusters" {
   location = module.config.location
 }
 
+module "resourcegroup_logs" {
+  source   = "../../../modules/resourcegroups"
+  name     = "Logs-Dev"
+  location = module.config.location
+}
+
 module "resourcegroup_cost_allocation" {
   source   = "../../../modules/resourcegroups"
   name     = "cost-allocation-${module.config.environment}"
+  location = module.config.location
+}
+
+module "resourcegroup_vulnerability_scan" {
+  source   = "../../../modules/resourcegroups"
+  name     = "vulnerability-scan-${module.config.environment}"
   location = module.config.location
 }
 
@@ -38,8 +50,3 @@ module "vnet_resourcegroup" {
   location = module.config.location
 }
 
-module "resourcegroup_vulnerability_scan" {
-  source   = "../../../modules/resourcegroups"
-  name     = "vulnerability-scan-${module.config.environment}"
-  location = module.config.location
-}

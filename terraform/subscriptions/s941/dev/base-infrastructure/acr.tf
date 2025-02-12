@@ -2,17 +2,6 @@ locals {
   ip_rule = data.azurerm_key_vault_secret.this.value
 }
 
-# data "azurerm_subnet" "this" {
-#   name                 = "private-links"
-#   resource_group_name  = module.config.vnet_resource_group
-#   virtual_network_name = data.azurerm_virtual_network.this.name
-# }
-
-# data "azurerm_virtual_network" "this" {
-#   name                = "vnet-hub"
-#   resource_group_name = module.config.vnet_resource_group
-# }
-
 module "acr" {
   source               = "../../../modules/acr"
   ip_rule              = local.ip_rule

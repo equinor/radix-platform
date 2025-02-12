@@ -1,8 +1,8 @@
 
-data "azurerm_log_analytics_workspace" "this" {
-  name                = "radix-container-logs-${module.config.environment}"
-  resource_group_name = "Logs-Dev"
-}
+# data "azurerm_log_analytics_workspace" "this" {
+#   name                = "radix-container-logs-${module.config.environment}"
+#   resource_group_name = "Logs-Dev"
+# }
 
 module "log-api-mi" {
   source              = "../../../modules/userassignedidentity"
@@ -12,7 +12,7 @@ module "log-api-mi" {
   roleassignments = {
     role = {
       role     = "Log Analytics Reader"
-      scope_id = data.azurerm_log_analytics_workspace.this.id
+      scope_id = module.loganalytics_containers.workspace_id # data.azurerm_log_analytics_workspace.this.id
     }
   }
 }
