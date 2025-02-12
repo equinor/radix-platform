@@ -5,10 +5,7 @@
 #   }
 # }
 
-output "workspace_id" {
-  value = azurerm_log_analytics_workspace.this.id
 
-}
 
 # output "workspace_customer_id" {
 #   description = "The workspace (customer) ID of this Log Analytics workspace."

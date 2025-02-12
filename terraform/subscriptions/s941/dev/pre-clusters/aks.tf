@@ -10,12 +10,12 @@ data "azurerm_user_assigned_identity" "akskubelet" {
 
 data "azurerm_log_analytics_workspace" "defender" {
   name                = module.config.log_analytics_name
-  resource_group_name = module.config.common_resource_group
+  resource_group_name = "Logs-Dev"
 }
 
 data "azurerm_log_analytics_workspace" "containers" {
   name                = "radix-container-logs-dev"
-  resource_group_name = module.config.common_resource_group
+  resource_group_name = "Logs-Dev"
 }
 
 data "azurerm_virtual_network" "hub" {
