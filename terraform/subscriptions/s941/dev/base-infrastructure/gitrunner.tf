@@ -18,7 +18,7 @@ module "radix_id_gitrunner" {
     }
     common_contributor = {
       role     = "Contributor" # Needed to open firewall
-      scope_id = module.resourcegroups_common.data.id
+      scope_id = module.resourcegroup_common.data.id
     }
     common_legacy = {
       role     = "Contributor"
@@ -30,7 +30,7 @@ module "radix_id_gitrunner" {
     }
     clusters_contributor = {
       role     = "Contributor"
-      scope_id = module.resourcegroups_clusters.data.id
+      scope_id = module.resourcegroup_clusters.data.id
     }
     networkwatcher_contributor = {
       role     = "Contributor"

@@ -6,3 +6,12 @@ module "loganalytics" {
   retention_in_days             = 30
   local_authentication_disabled = false
 }
+
+module "loganalytics_containers" {
+  source                        = "../../../modules/log-analytics"
+  workspace_name                = "radix-container-logs-${module.config.environment}"
+  resource_group_name           = "Logs-Dev"
+  location                      = module.config.location
+  retention_in_days             = 30
+  local_authentication_disabled = false
+}

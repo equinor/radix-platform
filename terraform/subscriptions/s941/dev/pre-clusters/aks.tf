@@ -15,7 +15,7 @@ data "azurerm_log_analytics_workspace" "defender" {
 
 data "azurerm_log_analytics_workspace" "containers" {
   name                = "radix-container-logs-dev"
-  resource_group_name = "Logs-Dev"
+  resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_virtual_network" "hub" {

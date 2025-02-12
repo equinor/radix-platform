@@ -14,13 +14,13 @@ data "azurerm_resource_group" "networkwatcher" { # Defined in Global
   name = "NetworkWatcherRG"
 }
 
-module "resourcegroups_common" {
+module "resourcegroup_common" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.common_resource_group
   location = module.config.location
 }
 
-module "resourcegroups_clusters" {
+module "resourcegroup_clusters" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.cluster_resource_group
   location = module.config.location
