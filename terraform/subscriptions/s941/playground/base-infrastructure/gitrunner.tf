@@ -4,7 +4,7 @@ module "radix_id_gitrunner" {
   resource_group_name = module.config.common_resource_group
   location            = module.config.location
   roleassignments = {
-    privatelink-contributor = {
+    privatelinks-contributor = {
       role     = "Radix Privatelink rbac-${module.config.subscription_shortname}"
       scope_id = "/subscriptions/${module.config.subscription}"
     }
@@ -26,7 +26,7 @@ module "radix_id_gitrunner" {
     }
     logs_contributor = {
       role     = "Contributor"
-      scope_id = module.resourcegroup_logs.data.id
+      scope_id = data.azurerm_resource_group.logs_dev.id
     }
     clusters_contributor = {
       role     = "Contributor"

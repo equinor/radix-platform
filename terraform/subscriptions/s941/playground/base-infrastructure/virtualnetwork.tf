@@ -10,11 +10,11 @@ module "azurerm_virtual_network" {
 module "azurerm_public_ip_prefix_ingress" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
-  resource_group_name = var.resource_groups_common_legacy                                                   #TODO
-  publicipprefixname  = "ippre-ingress-radix-aks-${var.enviroment_temporary}-${module.config.location}-001" #TODO
+  resource_group_name = var.resource_groups_common_temporary #TODO
+  publicipprefixname  = "ippre-ingress-radix-aks-${module.config.environment}-${module.config.location}-001"
   pipprefix           = "ingress-radix-aks"
   pippostfix          = module.config.location
-  enviroment          = var.enviroment_temporary #TODO
+  enviroment          = module.config.environment
   prefix_length       = 30
   zones               = ["1", "2", "3"]
 }
@@ -22,12 +22,25 @@ module "azurerm_public_ip_prefix_ingress" {
 module "azurerm_public_ip_prefix_egress" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
-  resource_group_name = var.resource_groups_common_legacy                                           #TODO
-  publicipprefixname  = "ippre-radix-aks-${var.enviroment_temporary}-${module.config.location}-001" #TODO
+  resource_group_name = var.resource_groups_common_temporary #TODO
+  publicipprefixname  = "ippre-radix-aks-${module.config.environment}-northeurope-001"
   pipprefix           = "radix-aks"
   pippostfix          = module.config.location
-  enviroment          = var.enviroment_temporary #TODO
+  enviroment          = module.config.environment
   prefix_length       = 30
+}
+
+module "azurerm_public_ip_prefix_egress2" {
+  source               = "../../../modules/network_publicipprefix"
+  location             = module.config.location
+  resource_group_name  = module.config.cluster_resource_group
+  publicipprefixname   = "ippre-radix-aks-${module.config.environment}-northeurope-002"
+  pipprefix            = "radix-aks"
+  pippostfix           = module.config.location
+  enviroment           = module.config.environment
+  prefix_length        = 29
+  publicipcounter      = 8
+  puplicipstartcounter = 5
 }
 
 

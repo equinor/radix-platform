@@ -69,6 +69,15 @@ resource "azurerm_monitor_diagnostic_setting" "blob" {
     category = "Transaction"
     enabled  = true
   }
+
+  enabled_log {
+    category_group = "audit"
+    retention_policy {
+      days    = 0
+      enabled = false
+    }
+  }
+
 }
 
 ########################################################################################

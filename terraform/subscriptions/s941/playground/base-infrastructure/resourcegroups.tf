@@ -9,6 +9,10 @@ data "azurerm_resource_group" "networkwatcher" { # Defined in Global
   name = "NetworkWatcherRG"
 }
 
+data "azurerm_resource_group" "logs_dev" { # Defined in Global
+  name = "Logs-Dev"
+}
+
 module "resourcegroup_common" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.common_resource_group
@@ -23,7 +27,7 @@ module "resourcegroup_clusters" {
 
 module "resourcegroup_logs" {
   source   = "../../../modules/resourcegroups"
-  name     = "Logs-Dev"
+  name     = "logs-${module.config.environment}"
   location = module.config.location
 }
 
