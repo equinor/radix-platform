@@ -5,3 +5,8 @@ resource "azurerm_resource_group" "resourcegroup" {
     IaC = "terraform"
   }
 }
+
+output "data" {
+  description = "resourcegroup"
+  value       = azurerm_resource_group.resourcegroup
+}
