@@ -29,3 +29,11 @@ resource "azurerm_private_dns_zone" "this" {
     IaC = "terraform"
   }
 }
+
+output "azurerm_virtual_network_id" {
+  value = azurerm_virtual_network.vnet-hub.id
+}
+
+output "azurerm_subnet_id" {
+  value = azurerm_subnet.this.id
+}
