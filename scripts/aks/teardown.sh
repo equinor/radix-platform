@@ -259,12 +259,13 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 
-for row in $(kubectl get pdb -A -o json | jq -c '.items[] | select(.spec.minAvailable == 1) | {namespace: .metadata.namespace, name: .metadata.name, minAvailable: .spec.minAvailable}'); do
+for row in $(kubectl get pdb -A -o json --context ${CLUSTER_NAME} | jq -c '.items[] | select(.spec.minAvailable == 1) | {namespace: .metadata.namespace, name: .metadata.name, minAvailable: .spec.minAvailable}'); do
   namespace=$(echo "$row" | jq -r '.namespace')
   name=$(echo "$row" | jq -r '.name')
   minAvailable=$(echo "$row" | jq -r '.minAvailable')
-  kubectl patch pdb -n ${namespace} ${name} -p '{"spec":{"minAvailable":0}}'
+  kubectl patch pdb -n ${namespace} ${name} --context ${CLUSTER_NAME} -p '{"spec":{"minAvailable":0}}'
 done
+
 
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
 terraform -chdir="../../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster_node_pool.this

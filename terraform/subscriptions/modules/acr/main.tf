@@ -16,6 +16,7 @@ resource "azurerm_container_registry" "this" {
   }
   network_rule_set {
     default_action = "Deny"
+
     ip_rule = [
       {
         action   = "Allow"
