@@ -90,7 +90,6 @@ variable "policyblobstorage_id" {
 variable "subnet_id" {
   description = "A list of virtual network subnet ids to secure the storage account."
   type        = string
-
 }
 
 variable "backup" {
@@ -116,12 +115,12 @@ variable "shared_access_key_enabled" {
   default = false
 }
 
-variable "ip_rule" {
-  description = "IP rule on StorageAccount"
-  type        = string
-}
-
 variable "log_analytics_id" {
   description = "Log Analytics ID"
   type        = string
+}
+
+variable "public_network_access" {
+  type    = bool
+  default = false
 }
