@@ -12,11 +12,7 @@ resource "azurerm_storage_account" "storageaccount" {
   allow_nested_items_to_be_public = false
   default_to_oauth_authentication = true
   shared_access_key_enabled       = var.shared_access_key_enabled
-  network_rules {
-    default_action = "Deny"
-    ip_rules       = [var.ip_rule]
-  }
-
+  public_network_access_enabled   = var.public_network_access
   dynamic "blob_properties" {
     for_each = var.kind == "BlobStorage" || var.kind == "Storage" ? [1] : []
     content {
@@ -51,6 +47,12 @@ resource "azurerm_storage_account" "storageaccount" {
     environment = var.environment
     IaC         = "terraform"
   }
+}
+
+resource "azurerm_storage_account_network_rules" "this" {
+  storage_account_id = azurerm_storage_account.storageaccount.id
+  default_action     = "Deny"
+  ip_rules           = []
 }
 
 ######################################################################################

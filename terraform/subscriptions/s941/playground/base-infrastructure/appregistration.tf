@@ -4,7 +4,7 @@ module "app_application_registration" {
   displayname                        = each.value.display_name
   internal_notes                     = each.value.notes
   service_management_reference       = each.value.service_management_reference
-  radixowners                        = keys(nonsensitive(jsondecode(data.azurerm_key_vault_secret.radixowners.value)))
+  radixowners                        = data.azuread_group.radix.members
   permissions                        = each.value.permissions
   implicit_id_token_issuance_enabled = each.value.implicit_id_token_issuance_enabled
   app_role_assignment_required       = each.value.app_role_assignment_required

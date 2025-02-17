@@ -9,12 +9,6 @@ data "azuread_group" "sql_admin" {
   security_enabled = true
 }
 
-data "azurerm_key_vault_secret" "this" {
-  name         = "storageaccounts-ip-rule"
-  key_vault_id = module.config.backend.ip_key_vault_id
-}
-
-data "azurerm_key_vault_secret" "radixowners" {
-  name         = "radixowners"
-  key_vault_id = module.config.backend.ip_key_vault_id
+data "azuread_group" "radix" {
+  display_name = "Radix"
 }

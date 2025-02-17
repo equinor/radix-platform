@@ -7,7 +7,7 @@ resource "azurerm_container_registry" "this" {
   zone_redundancy_enabled       = false
   admin_enabled                 = false
   anonymous_pull_enabled        = false
-  public_network_access_enabled = true
+  public_network_access_enabled = var.public_network_access
   tags = {
     IaC = "terraform"
   }
@@ -16,13 +16,7 @@ resource "azurerm_container_registry" "this" {
   }
   network_rule_set {
     default_action = "Deny"
-
-    ip_rule = [
-      {
-        action   = "Allow"
-        ip_range = var.ip_rule
-      }
-    ]
+    ip_rule        = []
   }
   georeplications {
     location                  = var.location == "northeurope" ? "westeurope" : "northeurope"
@@ -71,17 +65,15 @@ resource "azurerm_management_lock" "this" {
 
 #Env ACR
 resource "azurerm_container_registry" "env" {
-  name     = "radix${var.acr}" == "radixc2" ? "radixc2prod" : "radix${var.acr}"
-  location = var.location
-  # resource_group_name           = var.acr == "c2" ? "common-westeurope" : var.resource_group_name
-  # 
+  name                          = "radix${var.acr}" == "radixc2" ? "radixc2prod" : "radix${var.acr}"
+  location                      = var.location
   resource_group_name           = var.acr == "c2" ? "common-westeurope" : var.acr == "dev" ? var.common_res_group : var.resource_group_name
   sku                           = "Premium"
   zone_redundancy_enabled       = false
   admin_enabled                 = true
   anonymous_pull_enabled        = false
-  public_network_access_enabled = true
-  # retention_policy_in_days      = var.retention_policy_env
+  public_network_access_enabled = var.public_network_access
+  retention_policy_in_days      = var.acr_retension
   tags = {
     IaC = "terraform"
   }
@@ -90,16 +82,7 @@ resource "azurerm_container_registry" "env" {
   }
   network_rule_set {
     default_action = "Deny"
-    ip_rule = [
-      {
-        action   = "Allow"
-        ip_range = var.ip_rule
-      },
-      {
-        action   = "Allow"
-        ip_range = "185.55.105.28"
-      }
-    ]
+    ip_rule        = []
   }
   georeplications {
     location                  = var.location == "northeurope" ? "westeurope" : "northeurope"
@@ -254,29 +237,21 @@ resource "azurerm_management_lock" "env" {
 
 #Cache
 resource "azurerm_container_registry" "cache" {
-  name                = "radix${var.acr}cache" == "radixprodcache" ? "radixplatformcache" : "radix${var.acr}cache"
-  resource_group_name = var.common_res_group
-  location            = var.location
-  sku                 = "Premium"
+  name                          = "radix${var.acr}cache" == "radixprodcache" ? "radixplatformcache" : "radix${var.acr}cache"
+  resource_group_name           = var.common_res_group
+  location                      = var.location
+  sku                           = "Premium"
+  public_network_access_enabled = var.public_network_access
   tags = {
     IaC = "terraform"
   }
-
   network_rule_set {
     default_action = "Deny"
-    ip_rule = [
-      {
-        action   = "Allow"
-        ip_range = var.ip_rule
-      },
-      {
-        action   = "Allow"
-        ip_range = "185.55.105.28"
-      }
-    ]
+    ip_rule        = []
   }
-
 }
+
+
 
 resource "azurerm_container_registry_cache_rule" "cache" {
   for_each              = var.cacheregistry

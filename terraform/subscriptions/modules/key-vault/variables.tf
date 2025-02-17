@@ -40,7 +40,7 @@ variable "vnet_resource_group" {
   type = string
 }
 
-variable "ip_rule" {
-  description = "IP rule on StorageAccount"
-  type        = string
+variable "public_network_access" {
+  type    = bool
+  default = false
 }

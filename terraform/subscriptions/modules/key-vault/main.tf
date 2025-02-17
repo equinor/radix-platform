@@ -8,21 +8,21 @@ data "azurerm_role_definition" "this" {
 }
 
 resource "azurerm_key_vault" "this" {
-  name                = var.vault_name
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  # enabled_for_disk_encryption = true
-  tenant_id                  = var.tenant_id
-  soft_delete_retention_days = 90
-  purge_protection_enabled   = var.purge_protection_enabled
-  enable_rbac_authorization  = var.enable_rbac_authorization
+  name                          = var.vault_name
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  tenant_id                     = var.tenant_id
+  soft_delete_retention_days    = 90
+  purge_protection_enabled      = var.purge_protection_enabled
+  enable_rbac_authorization     = var.enable_rbac_authorization
+  public_network_access_enabled = var.public_network_access
   tags = {
     IaC = "terraform"
   }
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"
-    ip_rules       = ["143.97.110.1", "185.55.105.28"]
+    ip_rules       = []
   }
 
   sku_name = "standard"

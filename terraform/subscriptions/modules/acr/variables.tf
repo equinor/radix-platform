@@ -19,11 +19,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "ip_rule" {
-  description = "Allowed IP rule"
-  type        = string
-}
-
 variable "virtual_network" {
   type    = string
   default = "vnet-hub"
@@ -168,3 +163,12 @@ variable "radix_cr_cicd" {
   description = "ID of radix-cr Contributor"
 }
 
+variable "public_network_access" {
+  type    = bool
+  default = false
+}
+
+variable "acr_retension" {
+  type    = number
+  default = 1
+}

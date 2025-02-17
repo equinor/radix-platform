@@ -1,10 +1,6 @@
-locals {
-  ip_rule = data.azurerm_key_vault_secret.this.value
-}
 
 module "acr" {
   source               = "../../../modules/acr"
-  ip_rule              = local.ip_rule
   location             = module.config.location
   resource_group_name  = module.config.common_resource_group
   common_res_group     = module.config.common_resource_group
