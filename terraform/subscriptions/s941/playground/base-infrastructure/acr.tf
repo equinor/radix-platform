@@ -1,8 +1,7 @@
 module "acr" {
   source               = "../../../modules/acr"
   location             = module.config.location
-  resource_group_name  = "common" #TODO
-  common_res_group     = module.config.common_resource_group
+  resource_group_name  = module.config.common_resource_group
   acr                  = module.config.environment
   vnet_resource_group  = module.config.vnet_resource_group
   subnet_id            = module.azurerm_virtual_network.azurerm_subnet_id

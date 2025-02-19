@@ -15,10 +15,3 @@ module "radix-id-certmanager-mi" {
     }
   }
 }
-
-# output "mi" {
-#   value = {
-#     client-id = module.radix-id-certmanager-mi.client-id,
-#     name      = module.radix-id-certmanager-mi.name
-#   }
-# }

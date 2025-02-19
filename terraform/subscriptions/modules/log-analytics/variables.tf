@@ -36,3 +36,13 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "sku" {
+  type    = string
+  default = "PerGB2018"
+}
+
+variable "acr_reservation" {
+  type    = number
+  default = null
+}

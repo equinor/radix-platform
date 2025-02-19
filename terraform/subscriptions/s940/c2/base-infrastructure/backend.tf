@@ -16,7 +16,7 @@ terraform {
     resource_group_name  = "s940-tfstate"
     storage_account_name = "s940radixinfra"
     container_name       = "infrastructure"
-    key                  = "prod/common/terraform.tfstate"
+    key                  = "c2/base/terraform.tfstate"
     use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }
@@ -25,9 +25,4 @@ provider "azurerm" {
   subscription_id     = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   storage_use_azuread = true # This enables RBAC instead of access keys
   features {}
-}
-
-data "azurerm_key_vault_secret" "radixowners" {
-  name         = "radixowners"
-  key_vault_id = module.config.backend.ip_key_vault_id
 }

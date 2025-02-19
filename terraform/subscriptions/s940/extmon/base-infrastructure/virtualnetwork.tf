@@ -1,9 +1,3 @@
-module "resourcegroup_vnet" {
-  source   = "../../../modules/resourcegroups"
-  name     = module.config.vnet_resource_group
-  location = module.config.location
-}
-
 module "azurerm_virtual_network" {
   source              = "../../../modules/virtualnetwork"
   location            = module.config.location

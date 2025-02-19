@@ -3,12 +3,6 @@ variable "acr" {
   type        = string
 }
 
-variable "common_res_group" {
-  description = "Enviroment"
-  type        = string
-
-}
-
 variable "location" {
   description = "The Azure Region where the Backup Vault should exist."
   type        = string

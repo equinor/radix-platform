@@ -1,4 +1,4 @@
-module "vnet_resourcegroup" {
+module "resourcegroup_vnet" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.vnet_resource_group
   location = module.config.location
@@ -8,9 +8,9 @@ module "azurerm_virtual_network" {
   source              = "../../../modules/virtualnetwork"
   location            = module.config.location
   enviroment          = module.config.environment
-  vnet_resource_group = module.vnet_resourcegroup.data.name
+  vnet_resource_group = module.resourcegroup_vnet.data.name
   private_dns_zones   = tolist(module.config.private_dns_zones_names)
-  depends_on          = [module.vnet_resourcegroup]
+  depends_on          = [module.resourcegroup_vnet]
 
 }
 
