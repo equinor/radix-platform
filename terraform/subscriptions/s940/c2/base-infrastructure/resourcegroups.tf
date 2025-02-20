@@ -43,3 +43,11 @@ module "resourcegroup_vnet" {
   location = module.config.location
 }
 
+data "azurerm_resource_group" "logs" { #TODO Needed by gitrunner
+  name = "Logs-${module.config.location}"
+}
+
+
+data "azurerm_resource_group" "common" {
+  name = "common-westeurope" #TODO
+}

@@ -73,7 +73,7 @@ variable "appregistrations" {
     #   }
     # }
     grafana = {
-      display_name                 = "radix-ar-grafana-c2"
+      display_name                 = "radix-ar-grafana-ext-mon"
       service_management_reference = "110327"
       notes                        = "Grafana Oauth, main app for user authentication to Grafana"
       permissions = {
