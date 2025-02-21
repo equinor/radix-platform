@@ -14,6 +14,7 @@ module "mssql-database" {
   common_resource_group         = module.config.common_resource_group
   location                      = module.config.location
   public_network_access_enabled = true
+  sku_name                      = "S3"
   zone_redundant                = false
   subscription                  = module.config.subscription
   tags = {
@@ -35,6 +36,12 @@ module "mssql-database" {
   }
 }
 
+
+# data "azurerm_container_registry" "acr" {
+#   name                = "radixprod" # TODO: Fix to platform
+#   resource_group_name = "common"    # TODO: Fix module.config.common_resource_group
+# }
+
 module "github-workload-id" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-cost-allocation-github-${module.config.environment}"
@@ -47,10 +54,10 @@ module "github-workload-id" {
     },
   }
   federated_credentials = {
-    github-main = {
+    github-release = {
       name    = "gh-radix-cost-allocation-acr-main-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/master"
+      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
     }
   }
 }

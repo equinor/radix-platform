@@ -3,8 +3,8 @@ subscription_shortname: "s940"
 location: "northeurope"
 developers: ["a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"]
 backend:
-  resource_group_name: = "s940-tfstate"
-  storage_account_name: = "s940radixinfra"
+  resource_group_name: "s940-tfstate"
+  storage_account_name: "s940radixinfra"
   container_name: "infrastructure"
   subscription_id: "ded7ca41-37c8-4085-862f-b11d21ab341a"
   tenant_id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"

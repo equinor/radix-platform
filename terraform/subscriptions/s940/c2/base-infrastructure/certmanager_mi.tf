@@ -1,6 +1,6 @@
 data "azurerm_dns_zone" "this" {
-  name                = "${module.config.environment}.radix.equinor.com"
-  resource_group_name = data.azurerm_resource_group.common.name
+  name                = "c2.radix.equinor.com"
+  resource_group_name = "common-westeurope"
 }
 
 module "radix-id-certmanager-mi" {

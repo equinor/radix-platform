@@ -2,7 +2,7 @@
 resource "azurerm_container_registry" "this" {
   name                          = "radix${var.acr}app"
   location                      = var.location
-  resource_group_name           = var.resource_group_name
+  resource_group_name           = var.resource_group_name == "common-c2" ? "common" : var.resource_group_name
   sku                           = "Premium"
   zone_redundancy_enabled       = false
   admin_enabled                 = false
@@ -13,6 +13,7 @@ resource "azurerm_container_registry" "this" {
   }
   lifecycle {
     prevent_destroy = true
+    ignore_changes  = [retention_policy_in_days]
   }
   network_rule_set {
     default_action = "Deny"
@@ -67,7 +68,7 @@ resource "azurerm_management_lock" "this" {
 resource "azurerm_container_registry" "env" {
   name                          = "radix${var.acr}" == "radixc2" ? "radixc2prod" : "radix${var.acr}"
   location                      = var.location
-  resource_group_name           = var.acr == "c2" ? "common-westeurope" : var.acr == "dev" ? var.common_res_group : var.resource_group_name
+  resource_group_name           = var.resource_group_name == "common-c2" ? "common-westeurope" : var.resource_group_name
   sku                           = "Premium"
   zone_redundancy_enabled       = false
   admin_enabled                 = true
@@ -79,6 +80,7 @@ resource "azurerm_container_registry" "env" {
   }
   lifecycle {
     prevent_destroy = true
+    ignore_changes  = [retention_policy_in_days]
   }
   network_rule_set {
     default_action = "Deny"
@@ -92,7 +94,7 @@ resource "azurerm_container_registry" "env" {
 }
 
 resource "azurerm_container_registry_task" "build_push" {
-  name                  = "radix-image-builder-build-push"
+  name                  = "radix-image-builder-${var.acr}"
   container_registry_id = azurerm_container_registry.env.id
   platform {
     os           = "Linux"
@@ -143,8 +145,14 @@ resource "azurerm_container_registry_task" "build_push" {
   }
 }
 
+resource "azurerm_role_assignment" "build_push" {
+  scope                = azurerm_container_registry.env.id
+  role_definition_name = "AcrPush"
+  principal_id         = azurerm_container_registry_task.build_push.identity[0].principal_id
+}
+
 resource "azurerm_container_registry_task" "build" {
-  name                  = "radix-image-builder-build"
+  name                  = "radix-image-builder-build-only-${var.acr}"
   container_registry_id = azurerm_container_registry.env.id
   platform {
     os           = "Linux"
@@ -238,12 +246,16 @@ resource "azurerm_management_lock" "env" {
 #Cache
 resource "azurerm_container_registry" "cache" {
   name                          = "radix${var.acr}cache" == "radixprodcache" ? "radixplatformcache" : "radix${var.acr}cache"
-  resource_group_name           = var.common_res_group
+  resource_group_name           = var.resource_group_name == "common" ? "common-platform" : var.resource_group_name
   location                      = var.location
   sku                           = "Premium"
   public_network_access_enabled = var.public_network_access
   tags = {
     IaC = "terraform"
+  }
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [retention_policy_in_days]
   }
   network_rule_set {
     default_action = "Deny"

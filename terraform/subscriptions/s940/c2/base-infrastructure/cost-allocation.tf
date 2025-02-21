@@ -50,7 +50,7 @@ module "github-workload-id" {
     github-main = {
       name    = "gh-radix-cost-allocation-acr-main-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/master"
+      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
     }
   }
 }
