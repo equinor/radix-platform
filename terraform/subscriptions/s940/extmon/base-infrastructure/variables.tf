@@ -77,12 +77,12 @@ variable "appregistrations" {
       service_management_reference = "110327"
       notes                        = "Grafana Oauth, main app for user authentication to Grafana"
       permissions = {
-        msgraph = {
-          id = "00000003-0000-0000-c000-000000000000" # msgraph
-          scope_ids = [
-            "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
-          ]
-        }
+        #   msgraph = {
+        #     id = "00000003-0000-0000-c000-000000000000" # msgraph
+        #     scope_ids = [
+        #       "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+        #     ]
+        #   }
       }
     }
     # cr_cicd = {

@@ -1,5 +1,5 @@
-
 # This MI must not be deleted, has been given Directory Reader role by Equnior AAD Team!
+data "azurerm_client_config" "current" {}
 module "grafana-mi-server" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-grafana-server-${module.config.environment}"
