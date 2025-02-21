@@ -2,7 +2,7 @@
 resource "azurerm_container_registry" "this" {
   name                          = "radix${var.acr}app"
   location                      = var.location
-  resource_group_name           = var.resource_group_name == "common-c2" ? "common" : var.resource_group_name
+  resource_group_name           = var.resource_group_name
   sku                           = "Premium"
   zone_redundancy_enabled       = false
   admin_enabled                 = false
@@ -68,7 +68,7 @@ resource "azurerm_management_lock" "this" {
 resource "azurerm_container_registry" "env" {
   name                          = "radix${var.acr}" == "radixc2" ? "radixc2prod" : "radix${var.acr}"
   location                      = var.location
-  resource_group_name           = var.resource_group_name == "common-c2" ? "common-westeurope" : var.resource_group_name
+  resource_group_name           = var.resource_group_name
   sku                           = "Premium"
   zone_redundancy_enabled       = false
   admin_enabled                 = true
