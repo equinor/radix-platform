@@ -4,7 +4,7 @@ module "radix_id_akskubelet_mi" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-akskubelet-${module.config.environment}"
   location            = module.config.location
-  resource_group_name = "common-${module.config.environment}"
+  resource_group_name = module.resourcegroup_common.data.name
   roleassignments = {
     arcpull = {
       role     = "AcrPull"
@@ -22,7 +22,7 @@ module "radix_id_aks_mi" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-aks-${module.config.environment}"
   location            = module.config.location
-  resource_group_name = "common-${module.config.environment}"
+  resource_group_name = module.resourcegroup_common.data.name
   roleassignments = {
     mi_akskubelet = {
       role     = "Managed Identity Operator"

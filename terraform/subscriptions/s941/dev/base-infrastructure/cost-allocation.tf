@@ -35,11 +35,6 @@ module "mssql-database" {
   }
 }
 
-# data "azurerm_container_registry" "acr" {
-#   name                = "radix${module.config.environment}"
-#   resource_group_name = module.config.common_resource_group
-# }
-
 module "github-workload-id" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-cost-allocation-github-${module.config.environment}"
