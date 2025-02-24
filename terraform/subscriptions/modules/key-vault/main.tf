@@ -15,7 +15,7 @@ resource "azurerm_key_vault" "this" {
   soft_delete_retention_days    = 90
   purge_protection_enabled      = var.purge_protection_enabled
   enable_rbac_authorization     = var.enable_rbac_authorization
-  public_network_access_enabled = var.public_network_access
+  public_network_access_enabled = true
   tags = {
     IaC = "terraform"
   }
