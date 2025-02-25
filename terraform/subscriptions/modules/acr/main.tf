@@ -73,7 +73,7 @@ resource "azurerm_container_registry" "env" {
   zone_redundancy_enabled       = false
   admin_enabled                 = true
   anonymous_pull_enabled        = false
-  public_network_access_enabled = var.public_network_access
+  public_network_access_enabled = true
   retention_policy_in_days      = var.acr_retension
   tags = {
     IaC = "terraform"
@@ -160,6 +160,10 @@ resource "azurerm_container_registry_task" "build" {
   }
   agent_setting {
     cpu = 2
+  }
+
+  lifecycle {
+    ignore_changes = [ agent_pool_name ]
   }
 
   base_image_trigger {
