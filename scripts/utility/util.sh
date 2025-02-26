@@ -9,13 +9,9 @@ function get_credentials() {
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --name "$CLUSTER" \
-        --format exec \
         --only-show-errors ||
         { return; }
-
-    if [[ -n $CI ]]; then
-        kubelogin convert-kubeconfig -l azurecli
-    fi
+    kubelogin convert-kubeconfig -l azurecli
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 function get_credentials_silent() {
@@ -25,13 +21,9 @@ function get_credentials_silent() {
     az aks get-credentials \
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$CLUSTER" \
-        --format exec ||
+        --name "$CLUSTER"
         { return; }
-
-    if [[ -n $CI ]]; then
-        kubelogin convert-kubeconfig -l azurecli
-    fi
+    kubelogin convert-kubeconfig -l azurecli
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 

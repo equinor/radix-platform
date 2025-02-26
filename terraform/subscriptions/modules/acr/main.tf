@@ -158,12 +158,9 @@ resource "azurerm_container_registry_task" "build" {
     os           = "Linux"
     architecture = "amd64"
   }
-  agent_setting {
-    cpu = 2
-  }
 
   lifecycle {
-    ignore_changes = [ agent_pool_name ]
+    ignore_changes = [agent_pool_name]
   }
 
   base_image_trigger {

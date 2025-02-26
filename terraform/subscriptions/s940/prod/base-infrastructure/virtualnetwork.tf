@@ -10,7 +10,7 @@ module "azurerm_virtual_network" {
 module "azurerm_public_ip_prefix_ingress" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
-  resource_group_name = var.resource_groups_common_temporary                               #TODO
+  resource_group_name = module.resourcegroup_clusters.data.name
   publicipprefixname  = "ippre-ingress-radix-aks-production-${module.config.location}-001" #TODO
   pipprefix           = "ingress-radix-aks"
   pippostfix          = module.config.location
@@ -23,7 +23,7 @@ module "azurerm_public_ip_prefix_ingress" {
 module "azurerm_public_ip_prefix_egress" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
-  resource_group_name = var.resource_groups_common_temporary                       #TODO
+  resource_group_name = module.resourcegroup_clusters.data.name
   publicipprefixname  = "ippre-radix-aks-production-${module.config.location}-001" #TODO
   pipprefix           = "radix-aks"
   pippostfix          = module.config.location
@@ -48,7 +48,7 @@ module "azurerm_virtual_network_platform" {
 module "azurerm_public_ip_prefix_ingress_platform" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
-  resource_group_name = module.config.common_resource_group
+  resource_group_name = module.resourcegroup_clusters.data.name
   publicipprefixname  = "ippre-ingress-radix-aks-platform-${module.config.location}-001" #TODO
   pipprefix           = "ingress-radix-aks"
   pippostfix          = module.config.location
@@ -61,7 +61,7 @@ module "azurerm_public_ip_prefix_ingress_platform" {
 module "azurerm_public_ip_prefix_egress_platform" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
-  resource_group_name = module.config.common_resource_group
+  resource_group_name = module.resourcegroup_clusters.data.name
   publicipprefixname  = "ippre-radix-aks-platform-${module.config.location}-001" #TODO
   pipprefix           = "radix-aks"
   pippostfix          = module.config.location
@@ -73,17 +73,17 @@ module "azurerm_public_ip_prefix_egress_platform" {
 ##################################################################################################
 
 
-output "vnet_hub_id" {
-  value = module.azurerm_virtual_network.data.vnet_hub.id
-}
+# output "vnet_hub_id" {
+#   value = module.azurerm_virtual_network.data.vnet_hub.id
+# }
 
-output "vnet_subnet_id" {
-  value = module.azurerm_virtual_network.data.vnet_subnet.id
-}
+# output "vnet_subnet_id" {
+#   value = module.azurerm_virtual_network.data.vnet_subnet.id
+# }
 
-output "public_ip_prefix_ids" {
-  value = {
-    egress_id  = module.azurerm_public_ip_prefix_egress.data.id
-    ingress_id = module.azurerm_public_ip_prefix_ingress.data.id
-  }
-}
+# output "public_ip_prefix_ids" {
+#   value = {
+#     egress_id  = module.azurerm_public_ip_prefix_egress.data.id
+#     ingress_id = module.azurerm_public_ip_prefix_ingress.data.id
+#   }
+# }
