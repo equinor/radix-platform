@@ -12,6 +12,12 @@ module "resourcegroup_common" {
   location = module.config.location
 }
 
+module "resourcegroup_common_legacy" {
+  source   = "../../../modules/resourcegroups"
+  name     = "common-${module.config.location}"
+  location = module.config.location
+}
+
 module "resourcegroup_clusters" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.cluster_resource_group

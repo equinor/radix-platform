@@ -25,13 +25,9 @@ module "radix_id_aks_mi" {
       role     = "Managed Identity Operator"
       scope_id = module.radix_id_akskubelet_mi.data.id
     }
-    rg_contributor = {
+    rg_cluster = {
       role     = "Contributor"
-      scope_id = data.azurerm_resource_group.monitoring.id
-    }
-    rg_common_zone = {
-      role     = "Contributor"
-      scope_id = module.resourcegroup_common.data.id
+      scope_id = module.resourcegroup_clusters.data.id
     }
   }
 }
