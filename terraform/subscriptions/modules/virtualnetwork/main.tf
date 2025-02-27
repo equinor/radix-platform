@@ -9,7 +9,6 @@ resource "azurerm_virtual_network" "vnet-hub" {
   lifecycle {
     prevent_destroy = true
   }
-
 }
 
 resource "azurerm_subnet" "this" {
