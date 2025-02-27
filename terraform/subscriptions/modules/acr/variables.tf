@@ -32,11 +32,6 @@ variable "dockercredentials_id" {
   default = null
 }
 
-variable "retention_policy_env" {
-  type    = number
-  default = null
-}
-
 variable "cacheregistry" {
   type = map(object({
     namespace = string
@@ -162,7 +157,7 @@ variable "public_network_access" {
   default = false
 }
 
-variable "acr_retension" {
+variable "acr_retension_policy" {
   type    = number
-  default = 1
+  default = 0
 }

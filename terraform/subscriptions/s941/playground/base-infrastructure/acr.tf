@@ -7,6 +7,7 @@ module "acr" {
   subnet_id            = module.azurerm_virtual_network.azurerm_subnet_id
   dockercredentials_id = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
   radix_cr_cicd        = replace(replace(module.app_application_registration.cr_cicd.azuread_service_principal_id, "/servicePrincipals/", ""), "/", "")
+  acr_retension_policy = 1
 }
 
 module "radix-id-acr-workflows" {

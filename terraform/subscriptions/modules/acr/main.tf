@@ -13,7 +13,6 @@ resource "azurerm_container_registry" "this" {
   }
   lifecycle {
     prevent_destroy = true
-    ignore_changes  = [retention_policy_in_days]
   }
   network_rule_set {
     default_action = "Deny"
@@ -74,13 +73,13 @@ resource "azurerm_container_registry" "env" {
   admin_enabled                 = true
   anonymous_pull_enabled        = false
   public_network_access_enabled = true
-  retention_policy_in_days      = var.acr_retension
+  retention_policy_in_days      = var.acr_retension_policy
   tags = {
     IaC = "terraform"
   }
+
   lifecycle {
     prevent_destroy = true
-    ignore_changes  = [retention_policy_in_days]
   }
   network_rule_set {
     default_action = "Deny"
@@ -256,7 +255,6 @@ resource "azurerm_container_registry" "cache" {
   }
   lifecycle {
     prevent_destroy = true
-    ignore_changes  = [retention_policy_in_days]
   }
   network_rule_set {
     default_action = "Deny"
