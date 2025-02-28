@@ -64,6 +64,7 @@ output "private_dns_zones_names" {
     "privatelink.azurecr.io",
     "privatelink.blob.core.windows.net",
     "privatelink.cassandra.cosmos.azure.com",
+    "privatelink.cognitiveservices.azure.com",
     "privatelink.database.windows.net",
     "privatelink.dfs.core.windows.net",
     "privatelink.documents.azure.com",
@@ -73,15 +74,17 @@ output "private_dns_zones_names" {
     #"privatelink.monitor.azure.com", Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
     "privatelink.mongo.cosmos.azure.com",
     "privatelink.mysql.database.azure.com",
+    "privatelink.openai.azure.com",
     "privatelink.postgres.cosmos.azure.com",
     "privatelink.postgres.database.azure.com",
     "privatelink.queue.core.windows.net",
     "privatelink.radix.equinor.com",
+    "privatelink.redis.cache.windows.net",
+    "privatelink.services.ai.azure.com",
     "privatelink.table.core.windows.net",
     "privatelink.table.cosmos.azure.com",
     "privatelink.vaultcore.azure.net",
-    "privatelink.web.core.windows.net",
-    "privatelink.redis.cache.windows.net"
+    "privatelink.web.core.windows.net"
   ]
 }
 
