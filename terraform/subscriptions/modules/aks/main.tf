@@ -91,6 +91,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   microsoft_defender {
     log_analytics_workspace_id = var.defender_workspace_id
   }
+
   oms_agent {
     log_analytics_workspace_id      = var.containers_workspace_id
     msi_auth_for_monitoring_enabled = true

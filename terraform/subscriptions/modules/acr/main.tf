@@ -81,10 +81,12 @@ resource "azurerm_container_registry" "env" {
   lifecycle {
     prevent_destroy = true
   }
+
   network_rule_set {
     default_action = "Deny"
     ip_rule        = []
   }
+
   georeplications {
     location                  = var.location == "northeurope" ? "westeurope" : "northeurope"
     zone_redundancy_enabled   = false
@@ -246,7 +248,7 @@ resource "azurerm_management_lock" "env" {
 #Cache
 resource "azurerm_container_registry" "cache" {
   name                          = "radix${var.acr}cache" == "radixprodcache" ? "radixplatformcache" : "radix${var.acr}cache"
-  resource_group_name           = var.resource_group_name == "common" ? "common-platform" : var.resource_group_name
+  resource_group_name           = var.resource_group_name
   location                      = var.location
   sku                           = "Premium"
   public_network_access_enabled = var.public_network_access
