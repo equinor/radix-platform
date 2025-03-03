@@ -113,7 +113,7 @@ done
 
 # Get all txt records bound to the cluster.
 printf "Get TXT records bound to ${CLUSTER_NAME}..."
-
+AZ_RESOURCE_GROUP_COMMON="$AZ_RESOURCE_GROUP_COMMON-$RADIX_ZONE"
 TXT_RECORDS=$(az network dns record-set txt list \
     --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
     --zone-name ${AZ_RESOURCE_DNS} \
