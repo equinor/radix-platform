@@ -198,7 +198,7 @@ a_records=('@' '*' '*.app')
 for record in ${a_records[@]}; do
 
     printf "%s... " $record
-    create-a-record "${record}" "$cluster_ip" "$AZ_RESOURCE_GROUP_COMMON" "$AZ_RESOURCE_DNS" "60" || {
+    create-a-record "${record}" "$cluster_ip" "$AZ_RESOURCE_GROUP_IPPRE" "$AZ_RESOURCE_DNS" "60" || {
         echo "ERROR: failed to create A record ${record}.${AZ_RESOURCE_DNS}" >&2
     }
 done
