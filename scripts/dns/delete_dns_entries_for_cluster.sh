@@ -91,7 +91,7 @@ echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
-echo -e "   -  AZ_RESOURCE_GROUP_COMMON         : $AZ_RESOURCE_GROUP_COMMON"
+echo -e "   -  AZ_RESOURCE_GROUP_IPPRE         : $AZ_RESOURCE_GROUP_IPPRE"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e ""
 echo -e "   > WHO:"
@@ -113,9 +113,8 @@ done
 
 # Get all txt records bound to the cluster.
 printf "Get TXT records bound to ${CLUSTER_NAME}..."
-AZ_RESOURCE_GROUP_COMMON="$AZ_RESOURCE_GROUP_COMMON-$RADIX_ZONE"
 TXT_RECORDS=$(az network dns record-set txt list \
-    --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+    --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
     --zone-name ${AZ_RESOURCE_DNS} \
     --subscription ${AZ_SUBSCRIPTION_ID} \
     --query "[?contains(to_string(txtRecords[].value[]),'external-dns/owner=${CLUSTER_NAME}')].name" \
@@ -131,12 +130,12 @@ function delete_dns_entries() {
     echo "Delete for ${dns_record}..."
     az network dns record-set txt delete \
         --name $dns_record \
-        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
         --zone-name ${AZ_RESOURCE_DNS} \
         --yes
     az network dns record-set a delete \
         --name $dns_record \
-        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
         --zone-name ${AZ_RESOURCE_DNS} \
         --yes
     echo "Deleted ${dns_record}."
@@ -164,7 +163,7 @@ while true; do
 if [[ $delete_cluster_specific_wildcard == true ]]; then
     az network dns record-set a delete \
         --name "*.${CLUSTER_NAME}" \
-        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
         --zone-name ${AZ_RESOURCE_DNS} \
         --yes
 fi

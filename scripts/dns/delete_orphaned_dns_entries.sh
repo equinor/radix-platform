@@ -55,8 +55,8 @@ if [[ -z "$AZ_RESOURCE_DNS" ]]; then
     exit 1
 fi
 
-if [[ -z "$AZ_RESOURCE_GROUP_COMMON" ]]; then
-    echo "ERROR: AZ_RESOURCE_GROUP_COMMON is not defined. Please check the .env file." >&2
+if [[ -z "$AZ_RESOURCE_GROUP_IPPRE" ]]; then
+    echo "ERROR: AZ_RESOURCE_GROUP_IPPRE is not defined. Please check the .env file." >&2
     exit 1
 fi
 
@@ -87,7 +87,7 @@ echo -e ""
 echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  AZ_RESOURCE_DNS                  : $AZ_RESOURCE_DNS"
-echo -e "   -  AZ_RESOURCE_GROUP_COMMON         : $AZ_RESOURCE_GROUP_COMMON"
+echo -e "   -  AZ_RESOURCE_GROUP_IPPRE         : $AZ_RESOURCE_GROUP_IPPRE"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -115,7 +115,7 @@ printf " Done.\n"
 printf "Get TXT records..."
 
 TXT_RECORD_LIST=$(az network dns record-set txt list \
-    --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+    --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
     --zone-name ${AZ_RESOURCE_DNS} \
     --subscription ${AZ_SUBSCRIPTION_ID} \
     --query "[].[name,to_string(txtRecords[].value[])]" -otsv)
@@ -127,7 +127,7 @@ function delete_txt_record() {
     local heritage=${2}
     echo "Deleting: $record_name (heritage: $heritage)..."
     az network dns record-set txt delete \
-        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
         --zone-name ${AZ_RESOURCE_DNS} \
         --name ${record_name} \
         --subscription ${AZ_SUBSCRIPTION_ID} \
@@ -160,7 +160,7 @@ EXCLUDE_LIST=(
 printf "Get A-records..."
 
 A_RECORD_LIST=$(az network dns record-set a list \
-    --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+    --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
     --zone-name ${AZ_RESOURCE_DNS} \
     --subscription ${AZ_SUBSCRIPTION_ID} \
     --query "[].[name]" \
@@ -174,7 +174,7 @@ function delete_a_record() {
     local record_name=${1}
     echo "Deleting: $record_name..."
     az network dns record-set a delete \
-        --resource-group ${AZ_RESOURCE_GROUP_COMMON} \
+        --resource-group ${AZ_RESOURCE_GROUP_IPPRE} \
         --zone-name ${AZ_RESOURCE_DNS} \
         --name ${record_name} \
         --subscription ${AZ_SUBSCRIPTION_ID} \
