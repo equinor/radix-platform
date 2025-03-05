@@ -69,4 +69,5 @@ jobs:
 
       - name: Disable Public Access to ACR
         id: disable_publicaccess
+        if: ${{ steps.enable_publicaccess.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: az acr update --name ${{ matrix.target.registry }} --public-network-enabled false --query provisioningState
