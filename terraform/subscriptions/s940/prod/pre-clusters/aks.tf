@@ -9,13 +9,13 @@ data "azurerm_user_assigned_identity" "akskubelet" {
 }
 
 data "azurerm_log_analytics_workspace" "defender" {
-  name                = module.config.log_analytics_name
+  name                = "radix-logs-${module.config.environment}"
   resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_log_analytics_workspace" "containers" {
-  name                = "radix-container-logs-prod" #TODO // oms_agent
-  resource_group_name = "logs"
+  name                = "radix-container-logs-prod"
+  resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_virtual_network" "hub" {
@@ -42,7 +42,7 @@ module "aks" {
   identity_kublet_client      = data.azurerm_user_assigned_identity.akskubelet.client_id
   identity_kublet_object      = data.azurerm_user_assigned_identity.akskubelet.principal_id
   identity_kublet_identity_id = data.azurerm_user_assigned_identity.akskubelet.id
-  defender_workspace_id       = data.azurerm_log_analytics_workspace.containers.id
+  defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
   containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
   network_policy              = each.value.network_policy
   developers                  = module.config.developers

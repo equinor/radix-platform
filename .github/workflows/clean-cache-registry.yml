@@ -48,6 +48,9 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Enable Public Access to ACR
+        id: enable_publicaccess
+        run: az acr update --name ${{ matrix.target.registry }} --public-network-enabled true --query provisioningState
 
       - name: Add GitHub IP to ACR
         id: update_firewall
@@ -63,3 +66,8 @@ jobs:
       - name: Revoke GitHub IP on ACR
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: az acr network-rule remove --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
+
+      - name: Disable Public Access to ACR
+        id: disable_publicaccess
+        if: ${{ steps.enable_publicaccess.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        run: az acr update --name ${{ matrix.target.registry }} --public-network-enabled false --query provisioningState
