@@ -13,10 +13,3 @@ resource "azurerm_federated_identity_credential" "velero-mi-fedcred" {
   parent_id           = data.azurerm_user_assigned_identity.velero.id
   resource_group_name = module.config.common_resource_group
 }
-
-resource "azurerm_storage_container" "velero" {
-  for_each              = module.clusters.oidc_issuer_url
-  name                  = each.key
-  storage_account_name  = "radixvelero${module.config.environment}"
-  container_access_type = "private" # Options: private, blob, container
-}
