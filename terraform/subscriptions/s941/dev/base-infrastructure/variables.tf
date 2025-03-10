@@ -19,8 +19,8 @@ variable "storageaccounts" {
       name = "log"
     },
     velero = {
-      name                      = "velero"
-      lifecyclepolicy           = true
+      name            = "velero"
+      lifecyclepolicy = true
       # shared_access_key_enabled = true
     }
   }
