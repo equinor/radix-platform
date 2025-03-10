@@ -29,6 +29,10 @@ module "radix_id_aks_mi" {
       role     = "Contributor"
       scope_id = module.resourcegroup_clusters.data.id
     }
+    mi_operator_legacy = {
+      role     = "Managed Identity Operator"
+      scope_id = module.id_radix_akskubelet_mi.data.id
+    }
   }
 }
 
