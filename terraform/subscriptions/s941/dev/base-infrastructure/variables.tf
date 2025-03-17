@@ -12,7 +12,6 @@ variable "storageaccounts" {
     principal_id              = optional(string)
     private_endpoint          = optional(bool, false)
     lifecyclepolicy           = optional(bool, false)
-    shared_access_key_enabled = optional(bool, false)
   }))
   default = {
     log = {
@@ -21,7 +20,6 @@ variable "storageaccounts" {
     velero = {
       name            = "velero"
       lifecyclepolicy = true
-      # shared_access_key_enabled = true
     }
   }
 }

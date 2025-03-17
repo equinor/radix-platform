@@ -11,7 +11,7 @@ resource "azurerm_storage_account" "storageaccount" {
   account_tier                    = var.tier
   allow_nested_items_to_be_public = false
   default_to_oauth_authentication = true
-  shared_access_key_enabled       = var.shared_access_key_enabled
+  shared_access_key_enabled       = false
   public_network_access_enabled   = var.public_network_access
   dynamic "blob_properties" {
     for_each = var.kind == "BlobStorage" || var.kind == "Storage" ? [1] : []

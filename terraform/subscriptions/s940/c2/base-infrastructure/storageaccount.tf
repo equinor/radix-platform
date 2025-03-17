@@ -23,7 +23,6 @@ module "storageaccount" {
   vnet_resource_group       = module.config.vnet_resource_group
   lifecyclepolicy           = each.value.lifecyclepolicy
   log_analytics_id          = module.loganalytics.workspace_id
-  shared_access_key_enabled = each.value.shared_access_key_enabled #Needed in module create container when running apply
   depends_on                = [module.backupvault]
 }
 
