@@ -13,7 +13,6 @@ variable "storageaccounts" {
     principal_id              = optional(string)
     private_endpoint          = optional(bool, false)
     lifecyclepolicy           = optional(bool, false)
-    shared_access_key_enabled = optional(bool, false)
   }))
   default = {
     log = {
@@ -27,7 +26,6 @@ variable "storageaccounts" {
       account_replication_type  = "GRS"
       backup                    = true
       lifecyclepolicy           = true
-      shared_access_key_enabled = true
     }
   }
 }

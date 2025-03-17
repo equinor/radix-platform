@@ -110,11 +110,6 @@ variable "lifecyclepolicy" {
   default = false
 }
 
-variable "shared_access_key_enabled" {
-  type    = bool
-  default = false
-}
-
 variable "log_analytics_id" {
   description = "Log Analytics ID"
   type        = string
