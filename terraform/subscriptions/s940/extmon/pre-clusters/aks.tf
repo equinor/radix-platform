@@ -1,10 +1,10 @@
 data "azurerm_user_assigned_identity" "aks" {
-  name                = "id-radix-aks-extmon-northeurope"
+  name                = "radix-id-aks-${module.config.environment}"
   resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_user_assigned_identity" "akskubelet" {
-  name                = "id-radix-akskubelet-extmon-northeurope"
+  name                = "radix-id-akskubelet-${module.config.environment}"
   resource_group_name = module.config.common_resource_group
 }
 
