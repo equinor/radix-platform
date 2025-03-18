@@ -25,6 +25,6 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-003"
 clusters:
   ext-mon-11:
-    aksversion: "1.29.2"
+    aksversion: "1.30.9"
     networkset: "networkset2"
     network_policy: "calico"
