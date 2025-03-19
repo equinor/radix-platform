@@ -332,6 +332,15 @@ if [[ ${BACKUP_NAME} == "migration-"* ]]; then
     echo ""
 fi
 
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init
+STORAGACCOUNT=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
+if [[ -z "$STORAGACCOUNT" ]]; then
+    echo "ERROR: Got no infomation about the Velero StorageAccount." >&2
+    exit 1
+fi
+echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
+CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
+echo ""
 echo "You need to create a pull request to make ready for new cluster"
 echo "Procedure:"
 echo "- Make a new branch in radix-platform"

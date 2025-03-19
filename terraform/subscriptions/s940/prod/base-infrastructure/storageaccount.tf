@@ -29,3 +29,6 @@ module "storageaccount" {
   log_analytics_id         = module.loganalytics.workspace_id
 }
 
+output "velero_storage_account" {
+  value = module.storageaccount.velero.data.name
+}
