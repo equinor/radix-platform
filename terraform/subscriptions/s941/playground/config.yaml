@@ -41,4 +41,10 @@ clusters:
     networkset: "networkset1"
     network_policy: "cilium"
     dns_prefix: "playground-clusters-playgro-16ede4"
+  playground-12:
+    aksversion: "1.30.9"
+    networkset: "networkset2"
+    network_policy: "cilium"
+
+
 

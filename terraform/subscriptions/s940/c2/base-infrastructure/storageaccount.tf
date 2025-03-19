@@ -26,4 +26,8 @@ module "storageaccount" {
   depends_on               = [module.backupvault]
 }
 
+output "velero_storage_account" {
+  value = module.storageaccount.velero.data.name
+}
+
 
