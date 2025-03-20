@@ -237,16 +237,16 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
-### Verifying owner on scope of subscription is activated
+### Verifying Contributor on scope of subscription is activated
 ###
 
-printf "Verifying that logged in AAD user has Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription... "
-az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Owner\$"
-if [[ "$?" != "0" ]]; then
-    echo -e "ERROR: Logged in user is not Owner on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
-    exit 1
-fi
-printf "Done.\n"
+# printf "Verifying that logged in AAD user has Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription... "
+# az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Contributor\$"
+# if [[ "$?" != "0" ]]; then
+#     echo -e "ERROR: Logged in user is not Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
+#     exit 1
+# fi
+# printf "Done.\n"
 
 # #######################################################################################
 # ### Check the migration strategy
