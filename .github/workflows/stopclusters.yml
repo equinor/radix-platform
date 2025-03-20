@@ -25,28 +25,6 @@ jobs:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Get GitHub Public IP
-        id: github_public_ip
-        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
-
-      - name: Add GitHub IP to KeyVault
-        id: update_firewall
-        run: |
-          az keyvault network-rule add --name "radix-keyv-${{ env.ENVIROMENT}}" \
-            --resource-group "${{ env.KV_GROUP}}" \
-            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
-
-      - name: Lets sleep for 30 seconds for FW rule to complete
-        run: sleep 30s
-
+          
       - name: Stop clusters
-        run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env TASK=stop .github/workflows/scripts/dailytasks.sh
-
-      - name: Revoke GitHub IP on KeyVault
-        if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
-        run: |
-          az keyvault network-rule remove --name "radix-keyv-${{ env.ENVIROMENT}}" \
-            --resource-group "${{ env.KV_GROUP}}" \
-            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
-
+        run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} TASK=stop .github/workflows/scripts/dailytasks.sh

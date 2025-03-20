@@ -34,6 +34,11 @@ if [[ -z "$TASK" ]]; then
     exit 1
 fi
 
+if [[ -z "$SLACK_WEBHOOK_URL" ]]; then
+    echo "ERROR: Please provide Slack Webhook URL ./dailytasks.sh" >&2
+    exit 1
+fi
+
 #######################################################################################
 ### Start
 ###
@@ -87,11 +92,6 @@ DEV_SUBSCRIPTION="16ede44b-1f74-40a5-b428-46cca9a5741b"
 CLUSTERS=$(az aks list --subscription "${DEV_SUBSCRIPTION}" \
     --output json |
     jq '[{k8s:[.[] | select(.name | startswith("playground") | not) | {name: .name, resourceGroup: .resourceGroup, powerstate: .powerState.code, autostartupschedule: .tags.autostartupschedule}]}]')
-SLACK_WEBHOOK_URL="$(az keyvault secret show \
-    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
-    --name "slack-webhook" \
-    --subscription "${DEV_SUBSCRIPTION}" |
-    jq -r .value)"
 
 echo -e ""
 echo -e "Dailytask will use the following configuration:"
