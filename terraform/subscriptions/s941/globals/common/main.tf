@@ -73,36 +73,36 @@ resource "azurerm_role_definition" "privatelink_role" {
   ]
 }
 
-resource "azurerm_monitor_action_group" "this" {
-  name                = "notify-radix-team-test"
-  resource_group_name = "common"
-  short_name          = "notify-radix"
+# resource "azurerm_monitor_action_group" "this" {
+#   name                = "notify-radix-team-test"
+#   resource_group_name = "common"
+#   short_name          = "notify-radix"
 
-  email_receiver {
-    name                    = "radix-email-notification_-EmailAction-"
-    email_address           = "Radix@StatoilSRM.onmicrosoft.com"
-    use_common_alert_schema = false
-  }
-}
+#   email_receiver {
+#     name                    = "radix-email-notification_-EmailAction-"
+#     email_address           = "Radix@StatoilSRM.onmicrosoft.com"
+#     use_common_alert_schema = false
+#   }
+# }
 
-resource "azurerm_monitor_activity_log_alert" "this" {
-  name                = "azure-service-health-radix-test"
-  resource_group_name = "common"
-  location            = module.config.location
-  scopes              = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b"]
-  description         = "This alert will monitor a specific storage account updates."
+# resource "azurerm_monitor_activity_log_alert" "this" {
+#   name                = "azure-service-health-radix-test"
+#   resource_group_name = "common"
+#   location            = module.config.location
+#   scopes              = ["/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b"]
+#   description         = "This alert will monitor a specific storage account updates."
 
-  criteria {
-    category = "ServiceHealth"
+#   criteria {
+#     category = "ServiceHealth"
 
-    resource_id    = module.storageaccount.id
-    operation_name = "Microsoft.Storage/storageAccounts/write"
-    # category       = "Recommendation"
-  }
+#     resource_id    = module.storageaccount.id
+#     operation_name = "Microsoft.Storage/storageAccounts/write"
+#     # category       = "Recommendation"
+#   }
 
-  action {
-    action_group_id = azurerm_monitor_action_group.this.id
+#   action {
+#     action_group_id = azurerm_monitor_action_group.this.id
 
-    webhook_properties = {}
-  }
-}
+#     webhook_properties = {}
+#   }
+# }

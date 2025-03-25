@@ -1,9 +1,9 @@
 resource "azuread_application_registration" "this" {
   display_name                       = var.displayname
-  sign_in_audience                   = "AzureADMyOrg"
+  sign_in_audience                   = var.audience
   service_management_reference       = var.service_management_reference
   notes                              = var.internal_notes
-  requested_access_token_version     = 1
+  requested_access_token_version     = var.token_version
   implicit_id_token_issuance_enabled = var.implicit_id_token_issuance_enabled
 }
 
@@ -28,4 +28,8 @@ resource "azuread_service_principal" "this" {
 
 output "azuread_service_principal_id" {
   value = resource.azuread_service_principal.this.id
+}
+
+output "azuread_application_id" {
+  value = resource.azuread_application_registration.this.id
 }

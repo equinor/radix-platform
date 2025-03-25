@@ -93,15 +93,15 @@ output "radix_log_api_mi_name" {
 }
 
 output "developers" {
-  value = local.config.developers
+  value = lookup(local.config, "developers", null)
 }
 
 output "cluster" {
-  value = local.config.clusters
+  value = lookup(local.config, "clusters", null)
 }
 
 output "networksets" {
-  value = local.config.networksets
+  value = lookup(local.config, "networksets", null)
 }
 
 output "ar-radix-servicenow-proxy-client" {

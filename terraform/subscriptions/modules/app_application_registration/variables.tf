@@ -7,7 +7,8 @@ variable "service_management_reference" {
 }
 
 variable "internal_notes" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "radixowners" {
@@ -30,5 +31,14 @@ variable "implicit_id_token_issuance_enabled" {
 variable "app_role_assignment_required" {
   type    = bool
   default = false
+}
 
+variable "audience" {
+  type    = string
+  default = "AzureADMyOrg"
+}
+
+variable "token_version" {
+  type    = number
+  default = 1
 }
