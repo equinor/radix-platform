@@ -103,11 +103,11 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Read the cluster config that correnspond to selected environment in the zone config.
-if [[ "${RADIX_ZONE}" == "c2" ]]; then
-    source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${RADIX_ZONE}.env"
-else
-    source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
-fi
+# if [[ "${RADIX_ZONE}" == "c2" ]]; then
+#     source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${RADIX_ZONE}.env"
+# else
+#     source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/${CLUSTER_TYPE}.env"
+# fi
 
 
 # Script vars

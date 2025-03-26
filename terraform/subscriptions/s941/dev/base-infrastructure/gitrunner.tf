@@ -16,10 +16,10 @@ module "radix_id_gitrunner" {
       role     = "Storage Blob Data Contributor" # Needed to read blobdata
       scope_id = data.azurerm_storage_account.terraform_state.id
     }
-    # common_contributor = {
-    #   role     = "Contributor" # Needed to open firewall
-    #   scope_id = module.resourcegroup_common.data.id
-    # }
+    common_contributor = {
+      role     = "Contributor" # Needed to open firewall
+      scope_id = module.resourcegroup_common.data.id
+    }
     common_legacy = {
       role     = "Contributor"
       scope_id = data.azurerm_resource_group.common.id
@@ -36,10 +36,6 @@ module "radix_id_gitrunner" {
       role     = "Contributor"
       scope_id = data.azurerm_resource_group.networkwatcher.id
     }
-    # keyvault_contributor = {
-    #   role     = "Key Vault Secrets User" # Needed to read secrets
-    #   scope_id = module.keyvault.vault_id
-    # }
     vnet_contributor = {
       role     = "Contributor"
       scope_id = module.resourcegroup_vnet.data.id
