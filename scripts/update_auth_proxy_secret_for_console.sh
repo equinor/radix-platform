@@ -61,16 +61,13 @@ verify_cluster_access
 AUTH_PROXY_COMPONENT="web-aux-oauth"
 
 function updateAuthProxySecret() {
-    SECRETNAME="radix-web-console-client-secret"
     WEB_CONSOLE_NAMESPACE="radix-web-console-${RADIX_WEB_CONSOLE_ENV}"
     WEB_CONSOLE_AUTH_SECRET_NAME=$(kubectl --context "$DEST_CLUSTER" get secret -l "radix-aux-component=web,radix-aux-component-type=oauth" --namespace "${WEB_CONSOLE_NAMESPACE}" --output json | jq -r '.items[0].metadata.name')
 
-    OAUTH2_PROXY_CLIENT_SECRET=$(az keyvault secret show --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${SECRETNAME}" | jq -r '.value')
     OAUTH2_PROXY_COOKIE_SECRET=$(python3 -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(16)).decode())')
 
     AUTH_SECRET_ENV_FILE="auth_secret.env"
 
-    echo "ClientSecret=$OAUTH2_PROXY_CLIENT_SECRET" >>"$AUTH_SECRET_ENV_FILE"
     echo "CookieSecret=$OAUTH2_PROXY_COOKIE_SECRET" >>"$AUTH_SECRET_ENV_FILE"
 
     kubectl --context "$DEST_CLUSTER" patch secret "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
