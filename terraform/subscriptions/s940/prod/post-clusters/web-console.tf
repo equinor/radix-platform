@@ -49,3 +49,20 @@ module "webconsole_spa" {
   redirect_uris  = local.singlepage-uris
 }
 
+module "webconsole_fedcred_qa" {
+  for_each       = module.clusters.oidc_issuer_url
+  source         = "../../../modules/app_application_federated_credentials"
+  application_id = data.azuread_application.webconsole.id
+  display_name   = "${each.key}-qa"
+  issuer         = each.value
+  subject        = "system:serviceaccount:radix-web-console-qa:web-aux-oauth-sa"
+}
+
+module "webconsole_fedcred_prod" {
+  for_each       = module.clusters.oidc_issuer_url
+  source         = "../../../modules/app_application_federated_credentials"
+  application_id = data.azuread_application.webconsole.id
+  display_name   = "${each.key}-prod"
+  issuer         = each.value
+  subject        = "system:serviceaccount:radix-web-console-prod:web-aux-oauth-sa"
+}
