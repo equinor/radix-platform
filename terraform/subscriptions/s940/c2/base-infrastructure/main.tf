@@ -13,3 +13,6 @@ data "azuread_group" "radix" {
   display_name = "Radix"
 }
 
+data "http" "public_ip" {
+  url = "https://ifconfig.me/ip"
+}

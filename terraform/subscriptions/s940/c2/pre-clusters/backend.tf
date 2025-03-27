@@ -37,3 +37,5 @@ module "clusters" {
   resource_group_name = module.config.cluster_resource_group
   subscription        = module.config.subscription
 }
+
+provider "http" {}

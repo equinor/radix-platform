@@ -35,7 +35,7 @@ module "aks" {
   address_space               = module.config.networksets[each.value.networkset].vnet
   enviroment                  = module.config.environment
   aks_version                 = each.value.aksversion
-  authorized_ip_ranges        = var.authorized_ip_ranges
+  authorized_ip_ranges        = ["${trimspace(data.http.public_ip.response_body)}/32"]
   nodepools                   = var.nodepools
   systempool                  = var.systempool
   identity_aks                = data.azurerm_user_assigned_identity.aks.id

@@ -44,3 +44,9 @@ variable "public_network_access" {
   type    = bool
   default = false
 }
+
+variable "ip_rule" {
+  type    = list(string)
+  default = []
+
+}

@@ -41,12 +41,12 @@ module "id_radix_akskubelet_mi" {
   name                = "id-radix-akskubelet-${module.config.environment}-prod" #TODO
   location            = module.config.location
   resource_group_name = "common-westeurope" #TODO
-  roleassignments = {
-    arcpull = {
-      role     = "AcrPull"
-      scope_id = module.acr.azurerm_container_registry_id
-    }
-  }
+  # roleassignments = {
+  #   arcpull = {
+  #     role     = "AcrPull"
+  #     scope_id = module.acr.azurerm_container_registry_id
+  #   }
+  # }
 }
 
 #Legacy AKS MI
@@ -55,14 +55,14 @@ module "id_radix_aks_mi" {
   name                = "id-radix-aks-${module.config.environment}-prod"
   location            = module.config.location
   resource_group_name = "common-westeurope" #TODO
-  roleassignments = {
-    mi_akskubelet = {
-      role     = "Managed Identity Operator"
-      scope_id = module.id_radix_akskubelet_mi.data.id
-    }
-    rg_cluster = {
-      role     = "Contributor"
-      scope_id = module.resourcegroup_clusters.data.id
-    }
-  }
+  # roleassignments = {
+  #   mi_akskubelet = {
+  #     role     = "Managed Identity Operator"
+  #     scope_id = module.id_radix_akskubelet_mi.data.id
+  #   }
+  #   rg_cluster = {
+  #     role     = "Contributor"
+  #     scope_id = module.resourcegroup_clusters.data.id
+  #   }
+  # }
 }
