@@ -15,14 +15,14 @@ resource "azurerm_key_vault" "this" {
   soft_delete_retention_days    = 90
   purge_protection_enabled      = var.purge_protection_enabled
   enable_rbac_authorization     = var.enable_rbac_authorization
-  public_network_access_enabled = false
+  public_network_access_enabled = true
   tags = {
     IaC = "terraform"
   }
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"
-    ip_rules       = []
+    ip_rules       = var.ip_rule
   }
 
   sku_name = "standard"

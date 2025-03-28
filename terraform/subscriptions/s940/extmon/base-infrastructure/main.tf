@@ -12,3 +12,8 @@ data "azuread_group" "sql_admin" {
 data "azuread_group" "radix" {
   display_name = "Radix"
 }
+
+data "azurerm_key_vault" "this" {
+  name                = module.config.key_vault_name
+  resource_group_name = module.config.common_resource_group
+}

@@ -4,7 +4,7 @@ variable "subscription" {
 }
 
 variable "administrator_login" {
-  default = ""
+  default = "radix"
   type    = string
 }
 variable "administrator_password" {

@@ -1,11 +1,16 @@
+data "azurerm_key_vault_secret" "api_ip" {
+  name         = "kubernetes-api-auth-ip-range"
+  key_vault_id = data.azurerm_key_vault.this.id
+}
+
 data "azurerm_user_assigned_identity" "aks" {
-  name                = "id-radix-aks-c2-prod" #TODO radix-id-aks-${module.config.environment} 
-  resource_group_name = "common-westeurope"    #TODO module.config.common_resource_group
+  name                = "radix-id-aks-${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_user_assigned_identity" "akskubelet" {
-  name                = "id-radix-akskubelet-c2-prod" #TODO radix-id-akskubelet-${module.config.environment}
-  resource_group_name = "common-westeurope"           #TODO module.config.common_resource_group
+  name                = "radix-id-akskubelet-${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
 }
 
 data "azurerm_log_analytics_workspace" "defender" {
@@ -35,7 +40,7 @@ module "aks" {
   address_space               = module.config.networksets[each.value.networkset].vnet
   enviroment                  = module.config.environment
   aks_version                 = each.value.aksversion
-  authorized_ip_ranges        = var.authorized_ip_ranges
+  authorized_ip_ranges        = split(",", nonsensitive(data.azurerm_key_vault_secret.api_ip.value))
   nodepools                   = var.nodepools
   systempool                  = var.systempool
   identity_aks                = data.azurerm_user_assigned_identity.aks.id
