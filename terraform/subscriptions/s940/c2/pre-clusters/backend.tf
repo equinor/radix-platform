@@ -38,4 +38,3 @@ module "clusters" {
   subscription        = module.config.subscription
 }
 
-provider "http" {}

@@ -27,4 +27,4 @@ provider "azurerm" {
   features {}
 }
 
-provider "http" {}
+

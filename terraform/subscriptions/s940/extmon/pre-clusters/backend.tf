@@ -32,4 +32,4 @@ module "config" {
   source = "../../../modules/config"
 }
 
-provider "http" {}
+
