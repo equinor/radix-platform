@@ -617,4 +617,4 @@ echo ""
 printf "\n"
 printf "%sDone.%s\n" "${grn}" "${normal}"
 
-printf "\n\n\n %sRemember to run ./move_custom_ingresses.sh after you have patched activeClusterName in radix-flux!%s\n\n" "${grn}" "${normal}"
+printf "\n\n\n %sRemember to patch ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster and patch activeClusterName in radix-flux!%s\n\n" "${grn}" "${normal}"

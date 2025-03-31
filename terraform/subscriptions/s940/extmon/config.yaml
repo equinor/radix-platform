@@ -28,3 +28,4 @@ clusters:
     aksversion: "1.30.9"
     networkset: "networkset2"
     network_policy: "calico"
+    activecluster: true
