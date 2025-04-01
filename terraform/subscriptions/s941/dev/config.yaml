@@ -34,4 +34,3 @@ clusters:
     networkset: "networkset1"
     network_policy: "cilium"
     activecluster: true
-
