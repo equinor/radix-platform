@@ -53,10 +53,11 @@ module "aks" {
   developers                  = module.config.developers
   ingressIP                   = module.config.networksets[each.value.networkset].ingressIP
   subscription                = module.config.subscription
-  autostartupschedule         = lookup(module.config.cluster[each.key], "autostartupschedule", false)
   vnethub_id                  = data.azurerm_virtual_network.hub.id
   dnszones                    = module.config.private_dns_zones_names
   cluster_vnet_resourcegroup  = data.azurerm_virtual_network.hub.resource_group_name
+  common_resource_group       = module.config.common_resource_group
+  active_cluster              = lookup(module.config.cluster[each.key], "activecluster", false)
 }
 
 locals {

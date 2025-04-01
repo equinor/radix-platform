@@ -124,10 +124,6 @@ variable "ingressIP" {
   type = string
 }
 
-variable "autostartupschedule" {
-  type = bool
-}
-
 variable "vnethub_id" {
   type = string
 }
@@ -140,3 +136,13 @@ variable "dnszones" {
 variable "cluster_vnet_resourcegroup" {
   type = string
 }
+
+variable "common_resource_group" {
+  type = string
+}
+
+variable "active_cluster" {
+  type    = bool
+  default = false
+}
+

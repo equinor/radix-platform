@@ -12,12 +12,6 @@ module "resourcegroup_common" {
   location = module.config.location
 }
 
-module "resourcegroup_common_legacy" {
-  source   = "../../../modules/resourcegroups"
-  name     = "common-${module.config.location}"
-  location = module.config.location
-}
-
 module "resourcegroup_clusters" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.cluster_resource_group
@@ -51,9 +45,4 @@ module "resourcegroup_vnet" {
 
 data "azurerm_resource_group" "logs" { #TODO Needed by gitrunner
   name = "Logs-${module.config.location}"
-}
-
-
-data "azurerm_resource_group" "common" {
-  name = "common-westeurope" #TODO
 }
