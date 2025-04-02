@@ -1,4 +1,5 @@
 environment: "platform"
+radix_environment: "prod"
 subscription_shortname: "s940"
 location: "northeurope"
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod

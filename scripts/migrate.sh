@@ -25,6 +25,9 @@
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-26 DEST_CLUSTER=cilium-26 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 # or without log:
+# RADIX_ZONE_ENV=../terraform/subscriptions/s941/dev/config.yaml SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
+
+
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
 
 # DISASTER RECOVERY:
@@ -55,6 +58,11 @@ hash cilium 2>/dev/null || {
 
 hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+    exit 1
+}
+
+hash yq 2>/dev/null || {
+    echo -e "\nERROR: yq not found in PATH. Exiting..." >&2
     exit 1
 }
 
@@ -131,8 +139,20 @@ else
         echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
         exit 1
     fi
-    source "$RADIX_ZONE_ENV"
+
 fi
+
+#######################################################################################
+### Read Zone Config
+###
+
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+# myvalue=$(yq '.myvalue' <<< "$RADIX_ZONE_YAML")
+
+
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
     echo "ERROR: Please provide SOURCE_CLUSTER" >&2
@@ -145,6 +165,7 @@ if [[ -z "$DEST_CLUSTER" ]]; then
 fi
 
 # Source util scripts
+RADIX_PLATFORM_REPOSITORY_PATH=$(readlink -f $(dirname ${BASH_SOURCE[0]})/../)
 
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
@@ -173,22 +194,10 @@ if ! [[ -x "$BOOTSTRAP_AKS_SCRIPT" ]]; then
     echo "ERROR: The bootstrap script is not found or it is not executable in path $BOOTSTRAP_AKS_SCRIPT" >&2
 fi
 
-INSTALL_BASE_COMPONENTS_SCRIPT="$WORKDIR_PATH/install_base_components.sh"
-if ! [[ -x "$INSTALL_BASE_COMPONENTS_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The install base components script is not found or it is not executable in path $INSTALL_BASE_COMPONENTS_SCRIPT" >&2
-fi
-
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
-fi
-
-UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT="$WORKDIR_PATH/velero/update_storageaccount_firewall.sh"
-if ! [[ -x "$UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The update storageaccount firewall script is not found or it is not executable in path $UPDATE_STORAGEACCOUNT_FIREWALL_SCRIPT" >&2
 fi
 
 WEB_CONSOLE_EGRESS_IP_SCRIPT="$WORKDIR_PATH/update_ips_env_vars_for_console.sh"
@@ -230,50 +239,25 @@ fi
 #######################################################################################
 ### Prepare az session
 ###
-
+# CLUSTER_NAME=$(jq -n "${list}" | jq -r .name)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
-#######################################################################################
-### Verifying Contributor on scope of subscription is activated
-###
-
-# printf "Verifying that logged in AAD user has Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription... "
-# az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Contributor\$"
-# if [[ "$?" != "0" ]]; then
-#     echo -e "ERROR: Logged in user is not Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is PIM assignment activated?" >&2
-#     exit 1
-# fi
-# printf "Done.\n"
-
 # #######################################################################################
-# ### Check the migration strategy
+# ### Set some environment variables
 # ###
 
 MIGRATION_STRATEGY="aa"
-
-#######################################################################################
-### Staging certs on test cluster
-###
-
-STAGING=false
-if [[ ${MIGRATION_STRATEGY} == "at" ]]; then
-    while true; do
-        read -r -e -p "Do you want to use Staging certs on $DEST_CLUSTER? " -i "y" yn
-        case $yn in
-        [Yy]*)
-            check_staging_certs
-            STAGING=true
-            break
-            ;;
-        [Nn]*) break ;;
-        *) echo "Please answer yes or no." ;;
-        esac
-    done
-fi
-echo ""
+RADIX_ZONE=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
+AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
+RADIX_ENVIRONMENT=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
+AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
+terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init
+AZ_RESOURCE_GROUP_CLUSTERS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
+STORAGACCOUNT=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
 
 #######################################################################################
 ### Verify task at hand
@@ -332,8 +316,6 @@ if [[ ${BACKUP_NAME} == "migration-"* ]]; then
     echo ""
 fi
 
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init
-STORAGACCOUNT=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
 if [[ -z "$STORAGACCOUNT" ]]; then
     echo "ERROR: Got no infomation about the Velero StorageAccount." >&2
     exit 1
@@ -342,13 +324,23 @@ echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORA
 CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
 echo ""
 echo "You need to create a pull request to make ready for new cluster"
-echo "Procedure:"
-echo "- Make a new branch in radix-platform"
-echo "- Modify the radix-platform/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster"
+printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
+git checkout -b $DEST_CLUSTER &> /dev/null
+printf "%s► Modify %s%s\n" "${grn}" "radix-platform/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
+echo "DO NOT alter the 'activecluster' value yet.."
+echo "Press 'space' to continue"
+read -r -s -d ' '
+printf "%s► Adding file context to index\n"
+git add -A :/ &> /dev/null
+printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
+git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
+printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
+git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
 echo "- Create a pull request to master"
 echo "- Monitor the github action and the result"
 echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
 echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
+echo "Press 'space' to continue"
 read -r -s -d ' '
 
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
@@ -377,11 +369,27 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 if [[ $install_base_components == true ]]; then
+    #######################################################################################
+    ### Install ingress-nginx
+    ###
     echo ""
-    echo "Installing base components..."
-    printf "%s► Execute %s%s\n" "${grn}" "${INSTALL_BASE_COMPONENTS_SCRIPT}" "${normal}"
-    (RADIX_ZONE_ENV="${RADIX_ZONE_ENV}" CLUSTER_NAME="${DEST_CLUSTER}" MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="${USER_PROMPT}" STAGING="${STAGING}" source "${INSTALL_BASE_COMPONENTS_SCRIPT}")
-    wait # wait for subshell to finish
+    printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/ingress-nginx/bootstrap.sh" "${normal}"
+    (MIGRATION_STRATEGY="${MIGRATION_STRATEGY}" USER_PROMPT="false" ./ingress-nginx/bootstrap.sh)
+    wait
+
+    #######################################################################################
+    ### Install Flux
+    echo ""
+    echo "Install Flux v2"
+    echo ""
+    printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/flux/bootstrap.sh" "${normal}"
+    (USER_PROMPT="$USER_PROMPT" \
+        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
+        CLUSTER_NAME="$CLUSTER_NAME" \
+        OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
+        OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
+        ./flux/bootstrap.sh)
+    wait
 fi
 
 # Connect kubectl so we have the correct context
@@ -501,37 +509,6 @@ if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
 
 fi
 
-if [[ $USER_PROMPT == true ]]; then
-    echo ""
-    echo "About to restore into destination cluster."
-    while true; do
-        read -r -p "Do you want to be notified once restoration has been completed? (Y/n) " yn
-        case $yn in
-        [Yy]*)
-            ENABLE_NOTIFY=true
-            break
-            ;;
-        [Nn]*)
-            ENABLE_NOTIFY=false
-            break
-            ;;
-        *) echo "Please answer yes or no." ;;
-        esac
-    done
-fi
-
-if [[ $ENABLE_NOTIFY == true ]]; then
-    while true; do
-        read -r -p "Enter slack @ username(s). Example: \"@olmt, @ssmol, @omnia-radix\": " slack_users
-        read -r -p "You have selected \"$slack_users\". Is this correct? (Y/n) " yn
-        case $yn in
-        [Yy]*) break ;;
-        [Nn]*) echo "" ;;
-        *) echo "Please answer yes or no." ;;
-        esac
-    done
-fi
-
 echo ""
 printf "Restore into destination cluster...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
@@ -541,14 +518,6 @@ printf "Done restoring into cluster."
 
 if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
-fi
-
-if [[ $ENABLE_NOTIFY == true ]]; then
-    # Notify on slack
-    echo "Notify on slack"
-    # Get slack webhook url
-    SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name "$AZ_RESOURCE_KEYVAULT" --name slack-webhook | jq -r .value)"
-    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$slack_users"' Restore has been completed.","link_names":1}' "$SLACK_WEBHOOK_URL"
 fi
 
 # Define web console variables
