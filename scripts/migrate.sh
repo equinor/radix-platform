@@ -258,6 +258,7 @@ AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
 terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init
 AZ_RESOURCE_GROUP_CLUSTERS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
 STORAGACCOUNT=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
+AZ_RESOURCE_KEYVAULT=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_name)
 
 #######################################################################################
 ### Verify task at hand
@@ -402,14 +403,33 @@ if [[ $install_base_components == true ]]; then
     echo ""
     echo "Install Flux v2"
     echo ""
-    printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/flux/bootstrap.sh" "${normal}"
-    (USER_PROMPT="$USER_PROMPT" \
-        RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
-        CLUSTER_NAME="$CLUSTER_NAME" \
-        OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
-        OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
-        ./flux/bootstrap.sh)
-    wait
+    FLUX_VERSION=$(flux --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+    FLUX_PRIVATE_KEY="$(az keyvault secret show --name "flux-github-deploy-key-private" --vault-name "$AZ_RESOURCE_KEYVAULT")"
+    echo "Installing flux with your flux version: $FLUX_VERSION"
+    flux bootstrap git \
+    --private-key-file="$FLUX_PRIVATE_KEY" \
+    --url="ssh://git@github.com/equinor/radix-flux" \
+    --branch="master" \
+    --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
+    --components-extra=image-reflector-controller,image-automation-controller \
+    --version="$FLUX_VERSION" \
+    --silent
+    if [[ "$?" != "0" ]]; then
+        printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
+        rm "$FLUX_PRIVATE_KEY_NAME"
+        exit 1
+    else
+        rm "$FLUX_PRIVATE_KEY_NAME"
+        echo " Done."
+    fi
+    # printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/flux/bootstrap.sh" "${normal}"
+    # (USER_PROMPT="$USER_PROMPT" \
+    #     RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
+    #     CLUSTER_NAME="$CLUSTER_NAME" \
+    #     OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
+    #     OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
+    #     ./flux/bootstrap.sh)
+    # wait
 fi
 
 # Connect kubectl so we have the correct context

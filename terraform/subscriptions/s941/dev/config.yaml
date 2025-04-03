@@ -1,5 +1,6 @@
 environment: "dev"
 radix_environment: "dev"
+flux_folder: "development"
 subscription_shortname: "s941"
 location: "northeurope"
 all_ip_prefix_enviroments: ["development","playground"]
