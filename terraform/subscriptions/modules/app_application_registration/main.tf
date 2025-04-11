@@ -33,3 +33,7 @@ output "azuread_service_principal_id" {
 output "azuread_application_id" {
   value = resource.azuread_application_registration.this.id
 }
+
+output "azuread_application_client_id" {
+  value = resource.azuread_application_registration.this.client_id
+}

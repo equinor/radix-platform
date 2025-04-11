@@ -45,3 +45,14 @@ output "public_ip_prefix_ids" {
     ingress_id = module.azurerm_public_ip_prefix_ingress.data.id
   }
 }
+
+output "egress_ips" {
+  value = "${module.azurerm_public_ip_prefix_egress.data.ip_prefix},${module.azurerm_public_ip_prefix_egress2.data.ip_prefix}"
+}
+
+output "public_ip_prefix_names" {
+  value = {
+    egress  = module.azurerm_public_ip_prefix_egress.data.name
+    ingress = module.azurerm_public_ip_prefix_ingress.data.name
+  }
+}

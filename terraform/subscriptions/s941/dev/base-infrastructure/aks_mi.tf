@@ -35,3 +35,6 @@ module "radix_id_aks_mi" {
   }
 }
 
+output "oidc_issuer_url" {
+  value = module.clusters.oidc_issuer_url
+}

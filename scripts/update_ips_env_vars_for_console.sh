@@ -4,14 +4,14 @@
 # Adds all Private IP Prefix IPs assigned to the Radix Zone to the environment variables of the web component of Radix Web Console.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh
+# RADIX_ZONE=dev RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh)
+# (RADIX_ZONE=dev RADIX_WEB_CONSOLE_ENV="qa" CLUSTER_NAME="weekly-1" ./update_ips_env_vars_for_console.sh)
 #
 
 # INPUTS:
-#   RADIX_ZONE_ENV          (Mandatory)
+#   RADIX_ZONE              (Mandatory)
 #   RADIX_WEB_CONSOLE_ENV   (Mandatory)
 
 # Optional:
@@ -53,15 +53,20 @@ printf "Done.\n"
 ### Read inputs and configs
 ###
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+# if [[ -z "$RADIX_ZONE_ENV" ]]; then
+#     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+#     exit 1
+# else
+#     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+#         echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+#         exit 1
+#     fi
+#     source "$RADIX_ZONE_ENV"
+# fi
+
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
@@ -69,10 +74,10 @@ if [[ -z "$RADIX_WEB_CONSOLE_ENV" ]]; then
     exit 1
 fi
 
-if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
-    echo "ERROR: Please provide OAUTH2_PROXY_SCOPE." >&2
-    exit 1
-fi
+# if [[ -z "$OAUTH2_PROXY_SCOPE" ]]; then
+#     echo "ERROR: Please provide OAUTH2_PROXY_SCOPE." >&2
+#     exit 1
+# fi
 
 EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_EGRESS_IPS"
 INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME="CLUSTER_INGRESS_IPS"
@@ -81,7 +86,7 @@ echo ""
 echo "Updating \"$EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" and \"$INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME\" environment variables for Radix Web Console"
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 
@@ -90,6 +95,29 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 if [[ -z "$STAGING" ]]; then
     STAGING=false
 fi
+
+
+#######################################################################################
+### Environment
+###
+echo ""
+printf "%s► Read YAML configfile $RADIX_ZONE\n"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "%s► Read terraform variables and configuration\n"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
+OAUTH2_PROXY_SCOPE="openid profile offline_access 6dae42f8-4368-4678-94ff-3960e28e3630/user.read email"
+RADIX_ZONE=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
+AZ_IPPRE_OUTBOUND_NAME=$(jq -r .egress_prefix <<< "$RADIX_RESOURCE_JSON")
+AZ_IPPRE_INBOUND_NAME=$(jq -r .ingress_prefix <<< "$RADIX_RESOURCE_JSON")
+
 
 #######################################################################################
 ### Prepare az session
@@ -104,12 +132,11 @@ printf "Done.\n"
 ### Verify cluster access
 ###
 
-verify_cluster_access
+# verify_cluster_access
 
 function updateIpsEnvVars() {
     local env_var_configmap_name="${1}"
     local ippre_name="${2}"
-
     local ip_list
     local ippre_id="/subscriptions/${AZ_SUBSCRIPTION_ID}/resourceGroups/${AZ_RESOURCE_GROUP_COMMON}/providers/Microsoft.Network/publicIPPrefixes/${ippre_name}"
     if [[ $RADIX_ZONE == "c2" ]]; then
@@ -154,7 +181,8 @@ function updateIpsEnvVars() {
         ip_list=$(az network public-ip prefix show --name ${ippre_name} --resource-group ${AZ_RESOURCE_GROUP_COMMON} | jq -r .ipPrefix)
     fi
     printf "Done.\n"
-    updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "web" "${env_var_configmap_name}" "${ip_list}"
+    # updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "web" "${env_var_configmap_name}" "${ip_list}"
+    echo "updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-web-console" "${RADIX_WEB_CONSOLE_ENV}" "web" "${env_var_configmap_name}" "${ip_list}""
     echo "Web component env variable updated with Public IP Prefix IPs."
 }
 
@@ -163,7 +191,7 @@ updateIpsEnvVars "${EGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_OUTBOUND_NAM
 updateIpsEnvVars "${INGRESS_IPS_ENV_VAR_CONFIGMAP_NAME}" "${AZ_IPPRE_INBOUND_NAME}" STAGING="$STAGING" || exit 1
 
 # Restart deployment for web component
-printf "Restarting web deployment...\n"
-kubectl rollout restart deployment -n radix-web-console-"${RADIX_WEB_CONSOLE_ENV}" "web"
+#printf "Restarting web deployment...\n"
+#kubectl rollout restart deployment -n radix-web-console-"${RADIX_WEB_CONSOLE_ENV}" "web"
 
 echo "Done."

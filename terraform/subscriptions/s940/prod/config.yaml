@@ -1,9 +1,13 @@
 environment: "platform"
 radix_environment: "prod"
 flux_folder: "production"
+cluster_type: "production"
 subscription_shortname: "s940"
 location: "northeurope"
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod
+zoneconfig:
+  RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: true
+  APP_REGISTRATION_NETWORKPOLICY_CANARY: "ar-radix-networkpolicy-canary"
 backend:
   resource_group_name: "s940-tfstate"
   storage_account_name: "s940radixinfra"

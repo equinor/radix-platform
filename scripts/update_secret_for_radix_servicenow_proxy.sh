@@ -48,15 +48,20 @@ echo "Updating secret for Radix ServiceNow Proxy"
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+# if [[ -z "$RADIX_ZONE_ENV" ]]; then
+#     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+#     exit 1
+# else
+#     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+#         echo "ERROR_ RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+#         exit 1
+#     fi
+#     source "$RADIX_ZONE_ENV"
+# fi
+
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR_ RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
@@ -82,8 +87,25 @@ if [[ $USE_SECONDARY_API_KEY == true ]]; then
 fi
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+# AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .kayvault <<< "$RADIX_RESOURCE_JSON")
+
 
 #######################################################################################
 ### Prepare az session
@@ -117,9 +139,9 @@ verify_cluster_access
 ###
 
 function updateSecret() {
-    SERVICENOW_API_KEY=$(az keyvault secret show -n $KV_SECRET_SERVICENOW_API_KEY --vault-name $AZ_RESOURCE_KEYVAULT | jq -r '.value')
+    SERVICENOW_API_KEY=$(az keyvault secret show -n servicenow-api-key --vault-name $AZ_RESOURCE_KEYVAULT | jq -r '.value')
     if [[ -z $SERVICENOW_API_KEY ]]; then
-        echo "ERROR: Could not find secret $KV_SECRET_SERVICENOW_API_KEY in keyvault. Quitting.." >&2
+        echo "ERROR: Could not find secret servicenow-api-key in keyvault. Quitting.." >&2
         return 1
     fi
     SERVICENOW_CLIENT_SECRET=$(az keyvault secret show -n ar-radix-servicenow-proxy-client-secret --vault-name $AZ_RESOURCE_KEYVAULT --query value -otsv)

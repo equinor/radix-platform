@@ -22,10 +22,10 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-26 DEST_CLUSTER=cilium-26 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-26 DEST_CLUSTER=cilium-26 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 # or without log:
-# RADIX_ZONE_ENV=../terraform/subscriptions/s941/dev/config.yaml SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
 
 
 # RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
@@ -131,27 +131,21 @@ printf "Done.\n"
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-
 fi
+# else
+#     if [[ ! -f "$RADIX_ZONE" ]]; then
+#         echo "ERROR: RADIX_ZONE=$RADIX_ZONE is invalid, the file does not exist." >&2
+#         exit 1
+#     fi
+
+# fi
 
 #######################################################################################
 ### Read Zone Config
 ###
-
-RADIX_ZONE_YAML=$(cat <<EOF
-$(<$RADIX_ZONE_ENV)
-EOF
-)
-# myvalue=$(yq '.myvalue' <<< "$RADIX_ZONE_YAML")
-
 
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
@@ -165,8 +159,7 @@ if [[ -z "$DEST_CLUSTER" ]]; then
 fi
 
 # Source util scripts
-RADIX_PLATFORM_REPOSITORY_PATH=$(readlink -f $(dirname ${BASH_SOURCE[0]})/../)
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
@@ -237,28 +230,35 @@ if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
 fi
 
 #######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .kayvault <<< "$RADIX_RESOURCE_JSON")
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
+CLUSTER_NAME="$DEST_CLUSTER"
+IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
+MIGRATION_STRATEGY="aa"
+RADIX_ENVIRONMENT=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
+STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
+
+#######################################################################################
 ### Prepare az session
 ###
-# CLUSTER_NAME=$(jq -n "${list}" | jq -r .name)
-AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
-
-# #######################################################################################
-# ### Set some environment variables
-# ###
-
-MIGRATION_STRATEGY="aa"
-RADIX_ZONE=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
-AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
-RADIX_ENVIRONMENT=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
-AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init
-AZ_RESOURCE_GROUP_CLUSTERS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
-STORAGACCOUNT=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
-AZ_RESOURCE_KEYVAULT=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_name)
 
 #######################################################################################
 ### Verify task at hand
@@ -321,35 +321,37 @@ if [[ -z "$STORAGACCOUNT" ]]; then
     echo "ERROR: Got no infomation about the Velero StorageAccount." >&2
     exit 1
 fi
-echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
-CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
-echo ""
-echo "You need to create a pull request to make ready for new cluster"
-printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
-git checkout -b $DEST_CLUSTER &> /dev/null
-printf "%s► Modify %s%s\n" "${grn}" "radix-platform/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
-echo "DO NOT alter the 'activecluster' value yet.."
-echo "Press 'space' to continue"
-read -r -s -d ' '
-printf "%s► Adding file context to index\n"
-git add -A :/ &> /dev/null
-printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
-git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
-printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
-git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
-echo "- Create a pull request to master"
-echo "- Monitor the github action and the result"
-echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
-echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
-echo "Press 'space' to continue"
-read -r -s -d ' '
+# echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
+# CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
+# echo ""
+# echo "You need to create a pull request to make ready for new cluster"
+# printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
+# git checkout -b $DEST_CLUSTER &> /dev/null
+# printf "%s► Modify %s%s\n" "${grn}" "radix-platform/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
+# echo "DO NOT alter the 'activecluster' value yet.."
+# echo "Press 'space' to continue"
+# read -r -s -d ' '
+# printf "%s► Adding file context to index\n"
+# git add -A :/ &> /dev/null
+# printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
+# git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
+# printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
+# git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
+# echo "- Create a pull request to master"
+# echo "- Monitor the github action and the result"
+# echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
+# echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
+# echo "Press 'space' to continue"
+# read -r -s -d ' '
 
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
-printf "Do post cluster tasks..."
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
-terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
+printf "Do some terraform tasks..."
+terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
+terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
+terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
+terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
 
 
 install_base_components=true
@@ -374,7 +376,7 @@ if [[ $install_base_components == true ]]; then
     ### Install ingress-nginx
     ###
     echo ""
-    SELECTED_INGRESS_IP_RAW_ADDRESS=$(terraform -chdir="../terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster=="${DEST_CLUSTER}") | .ingressIp')
+    SELECTED_INGRESS_IP_RAW_ADDRESS=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster=="'${DEST_CLUSTER}'") | .ingressIp')
     kubectl create namespace ingress-nginx --dry-run=client -o yaml |
     kubectl apply -f -
 
@@ -395,24 +397,74 @@ if [[ $install_base_components == true ]]; then
         kubectl apply -f -
 
     rm config
-
     printf "Done.\n"
-    read -r -s -d ' '
     #######################################################################################
     ### Install Flux
     echo ""
     echo "Install Flux v2"
     echo ""
     FLUX_VERSION=$(flux --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-    FLUX_PRIVATE_KEY="$(az keyvault secret show --name "flux-github-deploy-key-private" --vault-name "$AZ_RESOURCE_KEYVAULT")"
-    echo "Installing flux with your flux version: $FLUX_VERSION"
+    FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
+    FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
+
+    echo "Creating \"radix-flux-config\"..."
+
+    # list of public ips assigned to the cluster
+    printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
+    ASSIGNED_IPS="$(az network public-ip list \
+        --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].ipAddress" \
+        --output json)"
+
+    if [[ "$ASSIGNED_IPS" == "[]" ]]; then
+        echo "ERROR: Could not find Public IP of cluster." >&2
+    else
+        # Loop through list of IPs and create a comma separated string.
+        for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]'); do
+            if [[ -z $IP_LIST ]]; then
+                IP_LIST=$(echo $ipaddress)
+            else
+                IP_LIST="$IP_LIST,$(echo $ipaddress)"
+            fi
+        done
+        printf "...Done\n"
+    fi
+
+    printf "\nGetting Slack Webhook URL..."
+    SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook | jq -r .value)"
+    printf "...Done\n"
+
+    printf "\nWorking on namespace flux-system"
+    if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
+        kubectl create ns flux-system 2>&1 >/dev/null
+    fi
+    printf "...Done"
+
+    # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
+    printf "Deploy \"radix-flux-config\" configmap in flux-system namespace..."
+    kubectl create configmap radix-flux-config -n flux-system \
+        --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
+        --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
+        --from-literal=prometheusName="radix-stage1" \
+        --from-literal=imageRegistry="$IMAGE_REGISTRY" \
+        --from-literal=clusterName="$CLUSTER_NAME" \
+        --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
+        --from-literal=activeClusterIPs="$IP_LIST" \
+        --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL"
+    printf "...Done.\n"
+
+    az keyvault secret download \
+    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --name "$FLUX_PRIVATE_KEY_NAME" \
+    --file "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
+
+    echo "Installing flux with your flux version: v$FLUX_VERSION"
     flux bootstrap git \
-    --private-key-file="$FLUX_PRIVATE_KEY" \
+    --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
     --url="ssh://git@github.com/equinor/radix-flux" \
     --branch="master" \
     --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
     --components-extra=image-reflector-controller,image-automation-controller \
-    --version="$FLUX_VERSION" \
+    --version="v$FLUX_VERSION" \
     --silent
     if [[ "$?" != "0" ]]; then
         printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
@@ -422,21 +474,10 @@ if [[ $install_base_components == true ]]; then
         rm "$FLUX_PRIVATE_KEY_NAME"
         echo " Done."
     fi
-    # printf "%s► Execute %s%s\n" "${grn}" "$WORKDIR_PATH/scripts/flux/bootstrap.sh" "${normal}"
-    # (USER_PROMPT="$USER_PROMPT" \
-    #     RADIX_ZONE_ENV="$RADIX_ZONE_ENV" \
-    #     CLUSTER_NAME="$CLUSTER_NAME" \
-    #     OVERRIDE_GIT_BRANCH="$FLUX_OVERRIDE_GIT_BRANCH" \
-    #     OVERRIDE_GIT_DIR="$FLUX_OVERRIDE_GIT_DIR" \
-    #     ./flux/bootstrap.sh)
-    # wait
-fi
 
-# Connect kubectl so we have the correct context
-echo ""
-printf "Point to destination cluster... "
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER"
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+    echo -e ""
+    echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
+fi
 
 if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
     package="tmux"
@@ -494,7 +535,16 @@ printf "Done.\n"
 echo ""
 
 printf "Making sure Velero backupstoragelocation are set for $SOURCE_CLUSTER... "
-kubectl patch backupstoragelocation default --namespace velero --type merge --patch '{"spec": {"objectStorage": {"bucket": "'${SOURCE_CLUSTER}'"}}}'
+kubectl patch backupstoragelocation default --namespace velero --type merge --dry-run=client --patch "$(cat <<EOF
+{
+  "spec": {
+    "objectStorage": {
+      "bucket": "${SOURCE_CLUSTER}"
+    }
+  }
+}
+EOF
+)"
 
 printf "Making backup of source cluster... "
 cat <<EOF | kubectl apply --filename -
@@ -552,7 +602,7 @@ fi
 echo ""
 printf "Restore into destination cluster...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
+(RADIX_ZONE="$RADIX_ZONE" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
@@ -568,18 +618,42 @@ if [[ $CLUSTER_TYPE == "development" ]]; then
 fi
 
 # Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_EGRESS_IP_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" RADIX_WEB_CONSOLE_ENV="$RADIX_WEB_CONSOLE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$WEB_CONSOLE_EGRESS_IP_SCRIPT")
-wait # wait for subshell to finish
-echo ""
+CLUSTER_EGRESS_IPS=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw egress_ips)
+CLUSTER_OIDC_ISSUER_URL=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value["'${DEST_CLUSTER}'"]')
+OAUTH2_CLIENT_ID=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw app_webconsole_client_id)
 
-# Update web console web component with cluster oidc issuer url
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT")
-wait # wait for subshell to finish
-echo ""
+kubectl patch configmap env-vars-web --namespace radix-web-console-qa --type merge --patch "$(cat <<EOF
+{
+  "data": {
+    "CLUSTER_EGRESS_IPS": "${CLUSTER_EGRESS_IPS}",
+    "CLUSTER_INGRESS_IPS": "${SELECTED_INGRESS_IP_RAW_ADDRESS}",
+    "CLUSTER_OIDC_ISSUER_URL": "${CLUSTER_OIDC_ISSUER_URL}",
+    "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
+    "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
+    "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
+    "SERVICENOW_PROXY_SCOPES": "1b4a22f1-d4a1-4b6a-81b2-fd936daf1786/Application.Read"
+  }
+}
+EOF
+)"
+
+kubectl patch configmap env-vars-web --namespace radix-web-console-prod --type merge --patch "$(cat <<EOF
+{
+  "data": {
+    "CLUSTER_EGRESS_IPS": "${CLUSTER_EGRESS_IPS}",
+    "CLUSTER_INGRESS_IPS": "${SELECTED_INGRESS_IP_RAW_ADDRESS}",
+    "CLUSTER_OIDC_ISSUER_URL": "${CLUSTER_OIDC_ISSUER_URL}",
+    "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
+    "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
+    "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
+    "SERVICENOW_PROXY_SCOPES": "1b4a22f1-d4a1-4b6a-81b2-fd936daf1786/Application.Read"
+  }
+}
+EOF
+)"
+
+kubectl rollout restart deployment -n radix-web-console-qa web
+kubectl rollout restart deployment -n radix-web-console-prod web
 
 printf "Waiting for radix-networkpolicy-canary environments... "
 while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
@@ -590,40 +664,48 @@ printf "Done.\n"
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
+(RADIX_ZONE="$RADIX_ZONE" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
-if [[ -d "${RADIX_ZONE_PATH}" ]]; then
-    for filename in "${RADIX_ZONE_PATH}"/*.env; do
-        if [[ "${filename}" == *test* ]]; then continue; fi
-        radix_zone_env="${filename}"
+#######################################################################################
+### Check keyvault secrets
+###
 
-        # Check keyvault secrets
-        printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
-        (RADIX_ZONE_ENV=${radix_zone_env} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
-        wait # wait for subshell to finish
-        echo ""
-    done
-    unset radix_zone_env
-else
-    printf "ERROR: The radix-zone path is not found\n" >&2
-fi
+# if [[ -d "${RADIX_ZONE_PATH}" ]]; then
+#     for filename in "${RADIX_ZONE_PATH}"/*.env; do
+#         if [[ "${filename}" == *test* ]]; then continue; fi
+#         radix_zone_env="${filename}"
 
-# Update Radix API env vars
+#         # Check keyvault secrets
+#         printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
+#         (RADIX_ZONE_ENV=${radix_zone_env} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
+#         wait # wait for subshell to finish
+#         echo ""
+#     done
+#     unset radix_zone_env
+# else
+#     printf "ERROR: The radix-zone path is not found\n" >&2
+# fi
+
+#######################################################################################
+### Update Radix API env vars
+###
+
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$RADIX_API_ENV_VAR_SCRIPT" "${normal}"
-(RADIX_ZONE_ENV="$RADIX_ZONE_ENV" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$RADIX_API_ENV_VAR_SCRIPT")
+(RADIX_ZONE="$RADIX_ZONE" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$RADIX_API_ENV_VAR_SCRIPT")
 wait # wait for subshell to finish
 echo ""
 
-# Check Appreg secrets
-printf "%s► Execute %s%s\n" "${grn}" "$CHECK_APPREG_SECRETS" "${normal}"
-(RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_APPREG_SECRETS")
-wait # wait for subshell to finish
-echo ""
+#######################################################################################
+### Check appreg secrets
+###
+
+# printf "%s► Execute %s%s\n" "${grn}" "$CHECK_APPREG_SECRETS" "${normal}"
+# (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_APPREG_SECRETS")
+# wait # wait for subshell to finish
+# echo ""
 
 printf "\n"
 printf "%sDone.%s\n" "${grn}" "${normal}"
-
-printf "\n\n\n %sRemember to patch ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster and patch activeClusterName in radix-flux!%s\n\n" "${grn}" "${normal}"

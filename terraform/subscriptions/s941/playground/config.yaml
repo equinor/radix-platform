@@ -1,9 +1,13 @@
 environment: "playground"
 radix_environment: "dev"
 flux_folder: "playground"
+cluster_type: "playground"
 subscription_shortname: "s941"
 location: "northeurope"
 developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev
+zoneconfig:
+  RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: false
+  APP_REGISTRATION_NETWORKPOLICY_CANARY: "ar-radix-networkpolicy-canary"
 backend:
   resource_group_name: "s941-tfstate"
   storage_account_name: "s941radixinfra"

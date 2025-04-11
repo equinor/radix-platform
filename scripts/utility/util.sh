@@ -1,5 +1,63 @@
 #!/usr/bin/env bash
 
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
+
+function config_path() {
+  local env="$1"
+  RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+  if [[ $env == "dev" ]] || [[ $env == "playground" ]]; then
+    if [[ ! -f "$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/s941/$env/config.yaml" ]]; then
+      echo "ERROR: RADIX_ZONE=$env is invalid, the file does not exist." >&2
+      exit 1
+    else
+      echo "$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/s941/$env/config.yaml"
+    fi
+  elif [[ $env == "prod" ]] || [[ $env == "c2" ]] || [[ $env == "extmon" ]] ; then
+    if [[ ! -f "$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/s940/$env/config.yaml" ]]; then
+      echo "ERROR: RADIX_ZONE=$env is invalid, the file does not exist." >&2
+      exit 1
+    else
+      echo "$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/s940/$env/config.yaml"
+    fi
+  fi
+}
+
+function environment_json() {
+  local RADIX_ZONE="$1"
+  RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+  if [[ $RADIX_ZONE == "dev" ]] || [[ $RADIX_ZONE == "playground" ]]; then
+    local AZ_SUBSCRIPTION_NAME="s941"
+  elif [[ $RADIX_ZONE == "prod" ]] || [[ $RADIX_ZONE == "c2" ]] || [[ $RADIX_ZONE == "extmon" ]] ; then
+    local AZ_SUBSCRIPTION_NAME="s940"
+  fi
+  local terraform=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init) >&2
+  local az_resource_group_clusters=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
+  local az_resource_group_common=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_common)
+  local velero_storage_account=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
+  local keyvault_name=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_name)
+  local dns_zone_name=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_name)
+  local imageRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw imageRegistry)
+  local ip_prefix_egress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .egress)
+  local ip_prefix_ingress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .ingress)
+  local json=$(cat <<EOF
+  {
+    "cluster_rg": "$az_resource_group_clusters",
+    "common_rg": "$az_resource_group_common",
+    "velero_sa": "$velero_storage_account",
+    "kayvault" : "$keyvault_name",
+    "dnz_zone": "$dns_zone_name",
+    "acr": "$imageRegistry",
+    "egress_prefix": "$ip_prefix_egress",
+    "ingress_prefix": "$ip_prefix_ingress"
+  }
+EOF
+)
+echo "$json"
+}
+
 function get_credentials() {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
