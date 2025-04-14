@@ -40,6 +40,8 @@ EOF
 AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+echo ""
+echo "$RADIX_RESOURCE_JSON"
 
 #######################################################################################
 ### Start
@@ -51,7 +53,6 @@ SLACK_WEBHOOK_URL="$(az keyvault secret show \
     --subscription "${AZ_SUBSCRIPTION_ID}" |
     jq -r .value)"
 CLUSTERS=$(az aks list --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --output json | jq '{k8s:[.[] | {name: .name, resourceGroup: .resourceGroup, id: .id}]}')
-
 createLock() {
     local NAME=$1
     local TYPE=$2
@@ -72,13 +73,11 @@ while read -r CLUSTER; do
     ID=$(jq -n "${CLUSTER}" | jq -r .id)
     CLUSTER_NAME=$(jq -n "${CLUSTER}" | jq -r .name)
     AZ_RESOURCE_GROUP=$(jq -n "${CLUSTER}" | jq -r .resourceGroup)
-
     VNET_ID=$(az network vnet list \
-        --resource-group "${AZ_RESOURCE_GROUP}" \
-        --query "[?name=='vnet-${CLUSTER}'].id" \
+        --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+        --query "[?name=='vnet-c2-11'].id" \
         --output tsv \
         --only-show-errors)
-
     function checkLock() {
         ID=$1
         NAME=$2
@@ -100,7 +99,6 @@ while read -r CLUSTER; do
             # if [[ $HASREADONLYLOCK == false ]]; then createLock "${NAME}-ReadOnly-Lock" "ReadOnly" "${ID}"; fi
         fi
     }
-
     checkLock "$ID" "$CLUSTER_NAME"
     checkLock "$VNET_ID" "$VNET_NAME"
 
