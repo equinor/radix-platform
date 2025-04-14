@@ -17,15 +17,9 @@
 ### Read inputs and configs
 ###
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
 fi
 
 #######################################################################################

@@ -27,4 +27,4 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           
       - name: Stop clusters
-        run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} TASK=stop .github/workflows/scripts/dailytasks.sh
+        run: RADIX_ZONE=dev SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} TASK=stop .github/workflows/scripts/dailytasks.sh
