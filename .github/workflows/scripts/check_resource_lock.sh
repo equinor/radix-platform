@@ -37,10 +37,9 @@ RADIX_ZONE_YAML=$(cat <<EOF
 $(<$RADIX_ZONE_ENV)
 EOF
 )
-AZ_RESOURCE_KEYVAULT=$(jq -r .kayvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
-
 
 #######################################################################################
 ### Start

@@ -49,7 +49,7 @@ EOF
 )
 RADIX_ZONE=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
 AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_KEYVAULT=$(jq -r .kayvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 
 #######################################################################################
 ### Start

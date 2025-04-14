@@ -95,7 +95,7 @@ EOF
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 OAUTH2_PROXY_SCOPE="openid profile offline_access 6dae42f8-4368-4678-94ff-3960e28e3630/user.read email"
-AZ_RESOURCE_KEYVAULT=$(jq -r .kayvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
 APP_REGISTRATION_NETWORKPOLICY_CANARY=$(yq '.zoneconfig.APP_REGISTRATION_NETWORKPOLICY_CANARY' <<< "$RADIX_ZONE_YAML")
 echo ""

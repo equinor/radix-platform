@@ -47,7 +47,7 @@ function environment_json() {
     "cluster_rg": "$az_resource_group_clusters",
     "common_rg": "$az_resource_group_common",
     "velero_sa": "$velero_storage_account",
-    "kayvault" : "$keyvault_name",
+    "keyvault" : "$keyvault_name",
     "dnz_zone": "$dns_zone_name",
     "acr": "$imageRegistry",
     "egress_prefix": "$ip_prefix_egress",
