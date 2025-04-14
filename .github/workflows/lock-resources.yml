@@ -47,6 +47,14 @@ jobs:
           az keyvault network-rule add --name "radix-keyv-${{matrix.target.name}}" \
             --resource-group "common-${{matrix.target.name}}" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+            
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        run: sleep 30s
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'latest'
 
       - name: lock-resources
         run: RADIX_ZONE=${{matrix.target.zoneFile}} .github/workflows/scripts/check_resource_lock.sh
