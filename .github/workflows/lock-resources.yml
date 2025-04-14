@@ -24,8 +24,8 @@ jobs:
             subscription: "s940"
     environment: ${{matrix.target.name }}
     env:
-      PROD_ENV: "radix_zone_prod.env"
-      C2_ENV: "radix_zone_c2.env"
+      PROD_ENV: "prod"
+      C2_ENV: "c2"
 
     steps:
       - uses: actions/checkout@v4
