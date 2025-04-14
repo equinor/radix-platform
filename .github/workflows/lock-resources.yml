@@ -22,7 +22,7 @@ jobs:
           - name: "c2"
             zoneFile: "c2"
             subscription: "s940"
-    environment: ${{matrix.target.zoneFile }}
+    environment: ${{matrix.target.name }}
     env:
       ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
