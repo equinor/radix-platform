@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE=dev
 
 #######################################################################################
 ### Read inputs and configs
@@ -21,6 +21,26 @@ if [[ -z "$RADIX_ZONE" ]]; then
     echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
 fi
+
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_RESOURCE_KEYVAULT=$(jq -r .kayvault <<< "$RADIX_RESOURCE_JSON")
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+
 
 #######################################################################################
 ### Start
@@ -54,12 +74,9 @@ while read -r CLUSTER; do
     CLUSTER_NAME=$(jq -n "${CLUSTER}" | jq -r .name)
     AZ_RESOURCE_GROUP=$(jq -n "${CLUSTER}" | jq -r .resourceGroup)
 
-    # Import networking variables for AKS
-    source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../scripts/aks/network.env"
-
     VNET_ID=$(az network vnet list \
         --resource-group "${AZ_RESOURCE_GROUP}" \
-        --query "[?name=='${VNET_NAME}'].id" \
+        --query "[?name=='vnet-${CLUSTER}'].id" \
         --output tsv \
         --only-show-errors)
 
