@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE=dev
+# - RADIX_ZONE=prod|c2
 
 #######################################################################################
 ### Read inputs and configs

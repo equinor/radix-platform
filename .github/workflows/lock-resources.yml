@@ -49,7 +49,7 @@ jobs:
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
       - name: lock-resources
-        run: RADIX_ZONE_ENV=${{matrix.target.zoneFile}} .github/workflows/scripts/check_resource_lock.sh
+        run: RADIX_ZONE=${{matrix.target.zoneFile}} .github/workflows/scripts/check_resource_lock.sh
 
       - name: Revoke GitHub IP on KeyVault
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
