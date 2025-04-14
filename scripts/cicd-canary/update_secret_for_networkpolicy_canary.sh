@@ -4,13 +4,13 @@
 # Configures the secrets for radix network policy canary on the cluster given the context.
 
 # Example 1:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh
+# RADIX_ZONE=dev CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh
 #
 # Example 2: Reset the Appreg password and update keyvault
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh --reset
+# # RADIX_ZONE=dev  CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh --reset
 #
 # Example 3: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh)
+# (RADIX_ZONE=dev CLUSTER_NAME="weekly-01" ./update_secret_for_networkpolicy_canary.sh)
 #
 
 # Optional:
@@ -45,16 +45,21 @@ echo ""
 
 # Validate mandatory input
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
 fi
+
+# if [[ -z "$RADIX_ZONE_ENV" ]]; then
+#     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+#     exit 1
+# else
+#     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+#         echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+#         exit 1
+#     fi
+#     source "$RADIX_ZONE_ENV"
+# fi
 
 for arg in "$@"; do
   if [ "$arg" == "--reset" ]; then
@@ -64,7 +69,7 @@ for arg in "$@"; do
 done
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
@@ -76,6 +81,24 @@ else
     curl_command="curl"
 fi
 
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+OAUTH2_PROXY_SCOPE="openid profile offline_access 6dae42f8-4368-4678-94ff-3960e28e3630/user.read email"
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
+APP_REGISTRATION_NETWORKPOLICY_CANARY=$(yq '.zoneconfig.APP_REGISTRATION_NETWORKPOLICY_CANARY' <<< "$RADIX_ZONE_YAML")
+echo ""
 #######################################################################################
 ### Prepare az session
 ###
@@ -157,6 +180,14 @@ function updateSecret() {
         echo -e "\nERROR: API request failed." >&2
         return 1
     fi
+    # echo "API_REQUEST=$($curl_command \
+    #     --silent \
+    #     -X PUT \
+    #     "https://server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}/api/v1/applications/radix-networkpolicy-canary/environments/${app_env}/components/${radix_component}/secrets/${secret_name}" \
+    #     -H "accept: application/json" \
+    #     -H "Authorization: bearer ${API_ACCESS_TOKEN}" \
+    #     -H "Content-Type: application/json" \
+    #     -d "{ \"secretValue\": \"${secret_value}\"}")"
     printf " Secret updated\n"
 }
 

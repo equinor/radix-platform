@@ -85,3 +85,7 @@ output "vnets" {
 output "clusters" {
   value = local.clusters
 }
+
+output "oidc_issuer_url" {
+  value = module.clusters.oidc_issuer_url
+}

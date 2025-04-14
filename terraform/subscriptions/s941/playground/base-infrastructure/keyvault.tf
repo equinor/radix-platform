@@ -12,3 +12,7 @@ module "keyvault" {
   vnet_resource_group = module.config.vnet_resource_group
   ip_rule             = split(",", nonsensitive(data.azurerm_key_vault_secret.api_ip.value))
 }
+
+output "keyvault_name" {
+  value = module.keyvault.vault_name
+}

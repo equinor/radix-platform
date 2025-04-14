@@ -17,39 +17,68 @@ jobs:
       matrix:
         target:
           - name: "platform"
-            zoneFile: "radix_zone_prod.env"
+            zoneFile: "prod"
             subscription: "s940"
           - name: "c2"
-            zoneFile: "radix_zone_c2.env"
+            zoneFile: "c2"
             subscription: "s940"
     environment: ${{matrix.target.name }}
     env:
-      PROD_ENV: "radix_zone_prod.env"
-      C2_ENV: "radix_zone_c2.env"
-
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '2'
 
       - name: 'Az login'
         uses: azure/login@v2
         with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
       - name: Get GitHub Public IP
         id: github_public_ip
         run: echo "ipv4=$(curl 'https://ipinfo.io/ip')" >> $GITHUB_OUTPUT
 
-      - name: Add GitHub IP to KeyVault in Prod
-        id: update_firewall
+      - name: Add GitHub IP to StorageAccount
         run: |
-          az keyvault network-rule add --name "radix-keyv-${{matrix.target.name}}" \
-            --resource-group "common-${{matrix.target.name}}" \
+          az storage account network-rule add \
+            --resource-group "${{ matrix.target.subscription }}-tfstate" \
+            --account-name "${{ matrix.target.subscription }}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
+      - name: Add GitHub IP to KeyVault
+        run: |
+          az keyvault network-rule add --name "radix-keyv-${{ matrix.target.name }}" \
+            --resource-group "common-${{ matrix.target.name }}" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        run: sleep 30s
+
+      - name: Setup Terraform
+        id: update_firewall
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'latest'
+
       - name: lock-resources
-        run: RADIX_ZONE_ENV=./scripts/radix-zone/${{matrix.target.zoneFile}} .github/workflows/scripts/check_resource_lock.sh
+        run: RADIX_ZONE=${{matrix.target.zoneFile}} .github/workflows/scripts/check_resource_lock.sh
+
+      - name: Revoke GitHub IP on StorageAccount
+        if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        run: |
+          az storage account network-rule remove \
+            --resource-group "${{ matrix.target.subscription }}-tfstate" \
+            --account-name "${{ matrix.target.subscription }}radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
       - name: Revoke GitHub IP on KeyVault
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed

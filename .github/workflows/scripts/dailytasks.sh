@@ -18,15 +18,9 @@
 ### Read inputs and configs
 ###
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
 fi
 
 if [[ -z "$TASK" ]]; then
@@ -38,6 +32,24 @@ if [[ -z "$SLACK_WEBHOOK_URL" ]]; then
     echo "ERROR: Please provide Slack Webhook URL ./dailytasks.sh" >&2
     exit 1
 fi
+
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+RADIX_ZONE=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
+AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 
 #######################################################################################
 ### Start

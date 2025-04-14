@@ -45,16 +45,21 @@ printf "Done.\n"
 ### Read inputs and configs
 ###
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
 fi
+
+# if [[ -z "$RADIX_ZONE_ENV" ]]; then
+#     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+#     exit 1
+# else
+#     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+#         echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+#         exit 1
+#     fi
+#     source "$RADIX_ZONE_ENV"
+# fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
     echo "ERROR: Please provide CLUSTER_NAME." >&2
@@ -62,7 +67,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 
@@ -71,6 +76,24 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 if [[ -z "$STAGING" ]]; then
     STAGING=false
 fi
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
+RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM=$(yq '.zoneconfig.RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM' <<< "$RADIX_ZONE_YAML")
+
 
 #######################################################################################
 ### Prepare az session

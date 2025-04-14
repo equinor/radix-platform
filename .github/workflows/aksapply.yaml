@@ -8,8 +8,8 @@ on:
         required: true
         default: false
 jobs:
-  terraform-plan:
-    name: Terraform plan
+  terraform-apply:
+    name: Terraform apply
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

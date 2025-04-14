@@ -17,3 +17,7 @@ module "radix-id-certmanager-mi" {
   }
   depends_on = [module.dns_zone]
 }
+
+output "dns_zone_name" {
+  value = "${module.config.environment}.radix.equinor.com"
+}

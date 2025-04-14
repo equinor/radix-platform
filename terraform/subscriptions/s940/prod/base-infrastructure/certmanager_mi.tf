@@ -15,3 +15,7 @@ module "radix-id-certmanager-mi" {
     }
   }
 }
+
+output "dns_zone_name" {
+  value = "${module.config.environment}.radix.equinor.com"
+}

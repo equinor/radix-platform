@@ -25,4 +25,4 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Start clusters
-        run: RADIX_ZONE_ENV=./scripts/radix-zone/radix_zone_dev.env SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} TASK=start .github/workflows/scripts/dailytasks.sh
+        run: RADIX_ZONE=dev SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} TASK=start .github/workflows/scripts/dailytasks.sh

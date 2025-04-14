@@ -82,3 +82,7 @@ module "radix-id-acr-workflows" {
     },
   }
 }
+
+output "imageRegistry" {
+  value = module.acr.azurerm_container_registry_env_login_server
+}

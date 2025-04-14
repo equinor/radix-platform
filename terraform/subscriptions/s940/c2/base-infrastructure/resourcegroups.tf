@@ -46,3 +46,11 @@ module "resourcegroup_vnet" {
 data "azurerm_resource_group" "logs" { #TODO Needed by gitrunner
   name = "Logs-${module.config.location}"
 }
+
+output "az_resource_group_clusters" {
+  value = module.config.cluster_resource_group
+}
+
+output "az_resource_group_common" {
+  value = module.config.common_resource_group
+}

@@ -317,6 +317,10 @@ output "azurerm_container_registry_id" {
   value = azurerm_container_registry.env.id
 }
 
+output "azurerm_container_registry_env_login_server" {
+  value = azurerm_container_registry.env.login_server
+}
+
 output "azurerm_container_registry_cache_id" {
   value = azurerm_container_registry.cache.id
 }

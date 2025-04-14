@@ -17,7 +17,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev | playground | prod | c2
 # - SOURCE_CLUSTER      : Example: "test-2", "weekly-93"
 # - BACKUP_NAME         : Example: all-hourly-20190703064411
 
@@ -30,10 +30,10 @@
 ###
 
 # Example: Restore into same cluster from where the backup was done
-# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-44 BACKUP_NAME=all-hourly-20241030060001 ./restore_apps.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-44 BACKUP_NAME=all-hourly-20241030060001 ./restore_apps.sh
 
 # Example: Restore into different cluster from where the backup was done
-# RADIX_ZONE_ENV=../../radix-zone/radix_zone_dev.env SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+# # RADIX_ZONE=dev  SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
 
 #######################################################################################
 ### DEVELOPMENT
@@ -104,16 +104,21 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-  echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-  exit 1
-else
-  if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
     exit 1
-  fi
-  source "$RADIX_ZONE_ENV"
 fi
+
+# if [[ -z "$RADIX_ZONE_ENV" ]]; then
+#   echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
+#   exit 1
+# else
+#   if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
+#     echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
+#     exit 1
+#   fi
+#   source "$RADIX_ZONE_ENV"
+# fi
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
   echo "ERROR: Please provide SOURCE_CLUSTER." >&2
@@ -127,6 +132,8 @@ fi
 
 # Source util scripts
 
+# echo "source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
@@ -140,9 +147,23 @@ if [[ -z "$USER_PROMPT" ]]; then
 fi
 
 #######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+
+#######################################################################################
 ### Prepare az session
 ###
-
 printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
@@ -409,7 +430,7 @@ stop_radix_operator() {
   printf "Stop radix-operator"
   kubectl scale deployment radix-operator --namespace default --replicas=0
 
-  printf "Waiting for radix-operator is stopped"
+  printf "Waiting for radix-operator is stopped\n"
   while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default | wc -l) != 0 ]]; do
     sleep 5
   done
