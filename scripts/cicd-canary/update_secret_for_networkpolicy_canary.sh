@@ -45,21 +45,13 @@ echo ""
 
 # Validate mandatory input
 
-if [[ -z "$RADIX_ZONE" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE" >&2
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
+else
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
     exit 1
 fi
-
-# if [[ -z "$RADIX_ZONE_ENV" ]]; then
-#     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-#     exit 1
-# else
-#     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-#         echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-#         exit 1
-#     fi
-#     source "$RADIX_ZONE_ENV"
-# fi
 
 for arg in "$@"; do
   if [ "$arg" == "--reset" ]; then

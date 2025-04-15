@@ -104,8 +104,11 @@ WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE" >&2
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
+else
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
     exit 1
 fi
 
