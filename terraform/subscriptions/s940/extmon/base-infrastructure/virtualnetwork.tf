@@ -47,7 +47,7 @@ output "public_ip_prefix_ids" {
 }
 
 output "egress_ips" {
-  value = "${module.azurerm_public_ip_prefix_egress.data.ip_prefix},${module.azurerm_public_ip_prefix_egress2.data.ip_prefix}"
+  value = module.azurerm_public_ip_prefix_egress.data.ip_prefix
 }
 
 output "public_ip_prefix_names" {

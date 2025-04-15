@@ -28,10 +28,26 @@
 # RADIX_ZONE=dev SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
 
 
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
-
 # DISASTER RECOVERY:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
+
+
+
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
+
+if [[ -z "$RADIX_ZONE" ]]; then
+    echo "ERROR: Please provide RADIX_ZONE" >&2
+    exit 1
+fi
+
+if [[ "$RADIX_ZONE" != "dev" || "$RADIX_ZONE" != "playground" || "$RADIX_ZONE" != "prod" || "$RADIX_ZONE" != "c2" ]]; then
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
+fi
 
 #######################################################################################
 ### Check for prerequisites binaries
@@ -124,24 +140,6 @@ hash terraform 2>/dev/null || {
 }
 
 printf "Done.\n"
-
-#######################################################################################
-### Read inputs and configs
-###
-
-# Required inputs
-
-if [[ -z "$RADIX_ZONE" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE" >&2
-    exit 1
-fi
-# else
-#     if [[ ! -f "$RADIX_ZONE" ]]; then
-#         echo "ERROR: RADIX_ZONE=$RADIX_ZONE is invalid, the file does not exist." >&2
-#         exit 1
-#     fi
-
-# fi
 
 #######################################################################################
 ### Read Zone Config
@@ -321,28 +319,29 @@ if [[ -z "$STORAGACCOUNT" ]]; then
     echo "ERROR: Got no infomation about the Velero StorageAccount." >&2
     exit 1
 fi
-# echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
-# CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
-# echo ""
-# echo "You need to create a pull request to make ready for new cluster"
-# printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
-# git checkout -b $DEST_CLUSTER &> /dev/null
-# printf "%s► Modify %s%s\n" "${grn}" "radix-platform/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
-# echo "DO NOT alter the 'activecluster' value yet.."
-# echo "Press 'space' to continue"
-# read -r -s -d ' '
-# printf "%s► Adding file context to index\n"
-# git add -A :/ &> /dev/null
-# printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
-# git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
-# printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
-# git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
-# echo "- Create a pull request to master"
-# echo "- Monitor the github action and the result"
-# echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
-# echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
-# echo "Press 'space' to continue"
-# read -r -s -d ' '
+
+echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
+CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
+echo ""
+echo "You need to create a pull request to make ready for new cluster"
+printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
+git checkout -b $DEST_CLUSTER &> /dev/null
+printf "%s► Modify %s%s\n" "${grn}" "radix-platform/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
+echo "DO NOT alter the 'activecluster' value yet.."
+echo "Press 'space' to continue"
+read -r -s -d ' '
+printf "%s► Adding file context to index\n"
+git add -A :/ &> /dev/null
+printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
+git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
+printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
+git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
+echo "- Create a pull request to master"
+echo "- Monitor the github action and the result"
+echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
+echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
+echo "Press 'space' to continue"
+read -r -s -d ' '
 
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
 [[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
@@ -709,3 +708,5 @@ echo ""
 
 printf "\n"
 printf "%sDone.%s\n" "${grn}" "${normal}"
+printf "\n\n\n %sRemember to patch ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) and patch activeClusterName in radix-flux!%s\n\n" "${grn}" "${normal}"
+printf "TODO: Make the activecluster: true trigger a github action"

@@ -149,8 +149,13 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
-### Check if cluster or network resources are locked
+### Check if cluster or network resources are locked and not running
 ###
+POWERSTATE=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "powerState.code" --output tsv)
+if [[ $POWERSTATE != "Stopped" ]]; then
+    echo "Please stop cluster ${CLUSTER_NAME} before teardown.."
+    exit 0
+fi
 
 printf "Checking for resource locks..."
 
