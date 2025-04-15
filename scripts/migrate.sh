@@ -59,11 +59,18 @@ normal=$(tput sgr0)
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
 echo ""
-printf "Check for neccesary executables... "
+printf "Check for neccesary executables... \n"
 hash az 2>/dev/null || {
     echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
     exit 1
 }
+
+AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+MIN_AZ_CLI="2.57.0"
+if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    exit 1
+fi
 
 hash cilium 2>/dev/null || {
     echo -e "\nERROR: cilium not found in PATH. Exiting..." >&2
@@ -79,13 +86,6 @@ hash yq 2>/dev/null || {
     echo -e "\nERROR: yq not found in PATH. Exiting..." >&2
     exit 1
 }
-
-AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.57.0"
-if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
-    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
-    exit 1
-fi
 
 hash kubectl 2>/dev/null || {
     echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
@@ -116,6 +116,13 @@ hash flux 2>/dev/null || {
     echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
     exit 1
 }
+REQ_FLUX_VERSION="2.5.1"
+FLUX_VERSION=$(flux --version | awk '{print $3'})
+if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
+    printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
+    exit 1
+fi
+
 
 hash sqlcmd 2>/dev/null || {
     echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
@@ -400,7 +407,6 @@ if [[ $install_base_components == true ]]; then
     echo ""
     echo "Install Flux v2"
     echo ""
-    FLUX_VERSION=$(flux --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
     FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
     FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 
