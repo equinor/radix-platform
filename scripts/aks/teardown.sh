@@ -103,9 +103,6 @@ if [[ -z "$CLUSTER_NAME" ]]; then
     exit 1
 fi
 
-# Read the cluster config that correnspond to selected environment in the zone config.
-# source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/aks/${CLUSTER_TYPE}.env
-
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -154,10 +151,13 @@ printf "Done.\n"
 #######################################################################################
 ### Check if cluster or network resources are locked and not running
 ###
-POWERSTATE=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "powerState.code" --output tsv)
-if [[ $POWERSTATE != "Stopped" ]]; then
-    printf ""${yel}"Please stop cluster ${CLUSTER_NAME} before teardown."${normal}"\n"
-    exit 0
+CLUSTER_EXIST=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "name" -o tsv 2>/dev/null)
+if [ -n "$CLUSTER_EXIST" ]; then
+    POWERSTATE=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "powerState.code" --output tsv)
+    if [[ $POWERSTATE != "Stopped" ]]; then
+        printf ""${yel}"Please stop cluster ${CLUSTER_NAME} before teardown."${normal}"\n"
+        exit 0
+    fi
 fi
 
 printf "Checking for resource locks..."
@@ -218,22 +218,6 @@ if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
     printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"
     exit 0
 fi
-
-#######################################################################################
-### Check for test cluster public IPs
-###
-
-# CLUSTER_PIP_NAME="pip-radix-ingress-${RADIX_ZONE}-${RADIX_ENVIRONMENT}-${CLUSTER_NAME}"
-# IP_EXISTS=$(az network public-ip list \
-#     --resource-group "${AZ_RESOURCE_GROUP_COMMON}" \
-#     --subscription "${AZ_SUBSCRIPTION_ID}" \
-#     --query "[?name=='${CLUSTER_PIP_NAME}'].{id:id, ipAddress:ipAddress}" \
-#     --only-show-errors)
-
-# if [[ ${IP_EXISTS} ]]; then
-#     TEST_CLUSTER_PUBLIC_IP_ADDRESS=$(echo ${IP_EXISTS} | jq '.[].ipAddress')
-#     TEST_CLUSTER_PUBLIC_IP_ID=$(echo ${IP_EXISTS} | jq -r '.[].id')
-# fi
 
 #######################################################################################
 ### Verify task at hand
