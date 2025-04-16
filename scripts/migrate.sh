@@ -710,7 +710,18 @@ echo ""
 # wait # wait for subshell to finish
 # echo ""
 
+#######################################################################################
+### Final post tasks
+###
+
 printf "\n"
-printf "%sDone.%s\n" "${grn}" "${normal}"
-printf "\n\n\n %sRemember to patch ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) and patch activeClusterName in radix-flux!%s\n\n" "${grn}" "${normal}"
-printf "TODO: Make the activecluster: true trigger a github action"
+printf "%sYou need to do following tasks to activate cluster:%s\n" "${yel}" "${normal}"
+printf "%s► Modify $RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) %s%s\n" "${grn}" "${normal}"
+printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply' %s%s\n" "${grn}" "${normal}"
+printf "%s► Execute: 'git add ${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml' %s%s\n" "${grn}" "${normal}"
+printf "%s► Execute: 'git push & merge branch '${DEST_CLUSTER}' to master' %s%s\n" "${grn}" "${normal}"
+printf "%s► Modify: postBuild.yaml file in radix-flux to reflect 'ACTIVE_CLUSTER: ${DEST_CLUSTER}' and merge %s%s\n" "${grn}" "${normal}"
+echo ""
+printf "Post a slack message about new active cluster in $RADIX_ZONE.\n"
+printf "Done.\n"
+
