@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE          : 
+# - RADIX_ZONE          : dev|playground|prod|c2
 # - CLUSTER_NAME        :
 
 # Optional:
@@ -65,7 +65,7 @@ hash uuidgen 2>/dev/null || {
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.41.0"
 if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
-    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
+    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI."${normal}"\n"
     exit 1
 fi
 
@@ -90,8 +90,11 @@ printf "Done.\n"
 ### Read inputs and configs
 ###
 
-if [[ -z "$RADIX_ZONE" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE" >&2
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
+else
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
     exit 1
 fi
 
@@ -153,7 +156,7 @@ printf "Done.\n"
 ###
 POWERSTATE=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "powerState.code" --output tsv)
 if [[ $POWERSTATE != "Stopped" ]]; then
-    echo "Please stop cluster ${CLUSTER_NAME} before teardown.."
+    printf ""${yel}"Please stop cluster ${CLUSTER_NAME} before teardown."${normal}"\n"
     exit 0
 fi
 
