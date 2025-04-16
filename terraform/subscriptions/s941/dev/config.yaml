@@ -31,10 +31,10 @@ networksets:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"
 clusters:
-  weekly-13:
-    aksversion: "1.30.9"
-    networkset: "networkset2"
-    network_policy: "cilium"
+  # weekly-13:
+  #   aksversion: "1.30.9"
+  #   networkset: "networkset2"
+  #   network_policy: "cilium"
   weekly-14:
     aksversion: "1.31.6"
     networkset: "networkset1"
