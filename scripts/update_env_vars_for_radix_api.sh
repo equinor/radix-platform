@@ -6,10 +6,10 @@
 # - REQUIRE_APP_AD_GROUPS
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-51" ./update_env_vars_for_radix_api.sh
+# RADIX_ZONE=dev CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh)
+# (RADIX_ZONE=dev CLUSTER_NAME="weekly-1" ./update_env_vars_for_radix_api.sh)
 #
 
 # INPUTS:
@@ -82,11 +82,12 @@ EOF
 )
 
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
 RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM=$(yq '.zoneconfig.RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM' <<< "$RADIX_ZONE_YAML")
-
-
+RADIX_API_REQUIRE_APP_AD_GROUPS=$(yq '.zoneconfig.RADIX_API_REQUIRE_APP_AD_GROUPS' <<< "$RADIX_ZONE_YAML")
+CLUSTER_OIDC_ISSUER_URL=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value["'${CLUSTER_NAME}'"]')
 #######################################################################################
 ### Prepare az session
 ###
@@ -114,11 +115,7 @@ printf "...Done.\n"
 ###
 
 verify_cluster_access
-
 ### MAIN
-
-cluster_oidc_issuer_url=$(az aks show --resource-group=$AZ_RESOURCE_GROUP_CLUSTERS --name=$CLUSTER_NAME  --query=oidcIssuerProfile.issuerUrl --output tsv) || exit
-
 
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" STAGING="$STAGING" || exit
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "REQUIRE_APP_CONFIGURATION_ITEM" "${RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM}" STAGING="$STAGING" || exit
@@ -126,11 +123,11 @@ updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "REQUIRE_APP_AD_GROUPS" "${RADIX_API_REQUIRE_APP_AD_GROUPS}" STAGING="$STAGING" || exit
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "REQUIRE_APP_AD_GROUPS" "${RADIX_API_REQUIRE_APP_AD_GROUPS}" STAGING="$STAGING" || exit
 
-updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "OIDC_KUBERNETES_ISSUER" "${cluster_oidc_issuer_url}" STAGING="$STAGING" || exit
-updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "OIDC_KUBERNETES_ISSUER" "${cluster_oidc_issuer_url}" STAGING="$STAGING" || exit
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "OIDC_KUBERNETES_ISSUER" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "OIDC_KUBERNETES_ISSUER" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
 
-updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "OIDC_KUBERNETES_AUDIENCE" "${cluster_oidc_issuer_url}" STAGING="$STAGING" || exit
-updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "OIDC_KUBERNETES_AUDIENCE" "${cluster_oidc_issuer_url}" STAGING="$STAGING" || exit
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "OIDC_KUBERNETES_AUDIENCE" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "OIDC_KUBERNETES_AUDIENCE" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
 
 
 # Restart Radix API deployment
