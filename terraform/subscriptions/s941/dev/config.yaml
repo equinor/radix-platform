@@ -37,7 +37,7 @@ clusters:
     networkset: "networkset2"
     network_policy: "cilium"
     activecluster: true
-  weekly-14:
+  weekly-17:
     aksversion: "1.31.6"
     networkset: "networkset1"
     network_policy: "cilium"
