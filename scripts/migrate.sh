@@ -658,12 +658,27 @@ EOF
 kubectl rollout restart deployment -n radix-web-console-qa web
 kubectl rollout restart deployment -n radix-web-console-prod web
 
-printf "Waiting for radix-networkpolicy-canary environments... "
+printf "Waiting for radix-networkpolicy-canary environments..."
 while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
     printf "."
     sleep 5
 done
-printf "Done.\n"
+echo ""
+
+printf "Waiting for server component in radix-api-qa namespace to get ready.\n"
+printf "If this takes forever, monitor the deployment..."
+while [[ ! $(kubectl get deployments -n radix-api-qa server -o jsonpath={.status.availableReplicas}) ]]; do 
+    printf "."
+    sleep 5
+done
+echo ""
+
+printf "Waiting for server component in radix-api-prod namespace to get ready.\n"
+printf "If this takes forever, monitor the deployment..."
+while [[ ! $(kubectl get deployments -n radix-api-prod server -o jsonpath={.status.availableReplicas}) ]]; do
+    printf "."
+    sleep 5
+done
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
@@ -694,6 +709,8 @@ echo ""
 #######################################################################################
 ### Update Radix API env vars
 ###
+
+
 
 echo ""
 printf "%s► Execute %s%s\n" "${grn}" "$RADIX_API_ENV_VAR_SCRIPT" "${normal}"
