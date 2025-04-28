@@ -48,7 +48,7 @@ data "azurerm_resource_group" "logs" { #TODO Needed by gitrunner
 }
 
 output "az_resource_group_clusters" {
-  value = module.config.cluster_resource_group
+  value = module.resourcegroup_clusters.data.name
 }
 
 output "az_resource_group_common" {
