@@ -12,6 +12,7 @@
 
 # Required:
 # - RADIX_ZONE=prod|c2
+# - SLACK_WEBHOOK_URL
 
 #######################################################################################
 ### Read inputs and configs
@@ -19,6 +20,11 @@
 
 if [[ -z "$RADIX_ZONE" ]]; then
     echo "ERROR: Please provide RADIX_ZONE" >&2
+    exit 1
+fi
+
+if [[ -z "$SLACK_WEBHOOK_URL" ]]; then
+    echo "ERROR: Please provide Slack Webhook URL ./dailytasks.sh" >&2
     exit 1
 fi
 
@@ -40,19 +46,12 @@ EOF
 AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
-echo ""
-echo "$RADIX_RESOURCE_JSON"
 
 #######################################################################################
 ### Start
 ###
-
-SLACK_WEBHOOK_URL="$(az keyvault secret show \
-    --vault-name "${AZ_RESOURCE_KEYVAULT}" \
-    --name "slack-webhook" \
-    --subscription "${AZ_SUBSCRIPTION_ID}" |
-    jq -r .value)"
 CLUSTERS=$(az aks list --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --output json | jq '{k8s:[.[] | {name: .name, resourceGroup: .resourceGroup, id: .id}]}')
+
 createLock() {
     local NAME=$1
     local TYPE=$2
@@ -73,9 +72,14 @@ while read -r CLUSTER; do
     ID=$(jq -n "${CLUSTER}" | jq -r .id)
     CLUSTER_NAME=$(jq -n "${CLUSTER}" | jq -r .name)
     AZ_RESOURCE_GROUP=$(jq -n "${CLUSTER}" | jq -r .resourceGroup)
+    echo "Cluster loop"
+    echo "ID: $ID"
+    echo "CLUSTER_NAME: $CLUSTER_NAME"
+    echo "AZ_RESOURCE_GROUP: $AZ_RESOURCE_GROUP"
+    echo ""
     VNET_ID=$(az network vnet list \
         --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
-        --query "[?name=='vnet-c2-11'].id" \
+        --query "[?name=='vnet-${CLUSTER_NAME}'].id" \
         --output tsv \
         --only-show-errors)
     function checkLock() {
@@ -100,6 +104,5 @@ while read -r CLUSTER; do
         fi
     }
     checkLock "$ID" "$CLUSTER_NAME"
-    checkLock "$VNET_ID" "$VNET_NAME"
-
+    checkLock "$VNET_ID" "vnet-$CLUSTER_NAME"
 done < <(echo "${CLUSTERS}" | jq -c '.k8s[]')
