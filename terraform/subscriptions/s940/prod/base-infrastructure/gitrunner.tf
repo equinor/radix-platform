@@ -56,6 +56,11 @@ module "radix_id_gitrunner" {
       role     = "Managed Identity Contributor"
       scope_id = data.azurerm_resource_group.monitoring.id
     }
+    lock_operator = {
+      role     = "Locks Contributor"
+      scope_id = "${data.azurerm_resource_group.clusters.id}" #TODO
+    }
+    
   }
   federated_credentials = {
     radix-id-gitrunner = {

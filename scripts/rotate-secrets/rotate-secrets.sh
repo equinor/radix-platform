@@ -15,7 +15,7 @@ normal=$(tput sgr0)
 ###
 
 # Required:
-# - RADIX_ZONE_ENV               : Path to *.env file
+# - RADIX_ZONE                   : dev|playground|prod|c2
 # - CLUSTER_NAME                 : Ex: "test-2", "weekly-93"
 
 # Optional:
@@ -28,7 +28,21 @@ normal=$(tput sgr0)
 ###
 
 # NORMAL
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-07 UPDATE_SECRETS=true ./rotate-secrets.sh
+# RADIX_ZONE=dev CLUSTER_NAME=weekly-07 UPDATE_SECRETS=true ./rotate-secrets.sh
+
+#######################################################################################
+### Read inputs and configs
+###
+
+# Required inputs
+
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
+else
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
+fi
 
 #######################################################################################
 ### Check for prerequisites binaries

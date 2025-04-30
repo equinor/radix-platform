@@ -14,7 +14,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev|playground|prod|c2
 # - AAD_APP_NAME        : Name of aad app, example: "radix-rbac-dev"
 # - SECRET              : Name of the secret in Keyvault
 
@@ -25,7 +25,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env AAD_APP_NAME=demo-rbac-dev ./refresh_aad_app_credentials.sh
+# RADIX_ZONE=dev AAD_APP_NAME=demo-rbac-dev ./refresh_aad_app_credentials.sh
 # This makes the JSON look like
 # {
 #   "name": "",
@@ -69,15 +69,12 @@ printf "Done.\n"
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "$AAD_APP_NAME" ]]; then
@@ -102,6 +99,24 @@ if [[ ! -f "$LIB_SERVICE_PRINCIPAL_PATH" ]]; then
 else
     source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
+
+# Source util scripts
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 
 #######################################################################################
 ### Prepare az session

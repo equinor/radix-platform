@@ -35,7 +35,7 @@
 ### 
 
 # Normal usage
-# RADIX_ZONE_ENV=../../../radix-zone/radix_zone_dev.env ACME_ACCOUNT_KID=<kid> ACME_ACCOUNT_HMAC_KEY=<hmac> ACME_ACCOUNT_EMAIL=any@equinor.com ACME_SERVER=https://acme.digicert.com/v2/acme/directory/ ./update_account.sh
+# RADIX_ZONE=dev ACME_ACCOUNT_KID=<kid> ACME_ACCOUNT_HMAC_KEY=<hmac> ACME_ACCOUNT_EMAIL=any@equinor.com ACME_SERVER=https://acme.digicert.com/v2/acme/directory/ ./update_account.sh
 
 
 #######################################################################################
@@ -64,15 +64,12 @@ echo ""
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "$ACME_ACCOUNT_KID" ]]; then

@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV          : Path to *.env file
+# - RADIX_ZONE              : dev|playground|prod|c2
 # - CLUSTER_NAME            : Ex: "test-2", "weekly-93"
 # - GIT_REPO                : Ex: "ssh://git@github.com/equinor/radix-flux"
 # - GIT_BRANCH              : Ex: "master"
@@ -25,10 +25,10 @@
 ###
 
 # Normal usage
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="cilium-26" ./bootstrap.sh
+# RADIX_ZONE=dev CLUSTER_NAME="cilium-26" ./bootstrap.sh
 
 # Configure a dev cluster to use custom configs
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="cilium-26" OVERRIDE_GIT_BRANCH=my-test-configs OVERRIDE_GIT_DIR=my-test-directory ./bootstrap.sh
+# RADIX_ZONE=dev CLUSTER_NAME="cilium-26" OVERRIDE_GIT_BRANCH=my-test-configs OVERRIDE_GIT_DIR=my-test-directory ./bootstrap.sh
 
 #######################################################################################
 ### DOCS
@@ -86,15 +86,12 @@ echo ""
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ ! -z "$OVERRIDE_GIT_BRANCH" ]]; then
@@ -133,7 +130,7 @@ fi
 FLUX_LOCAL="$(flux version -ojson | jq -r .flux)"
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
@@ -148,6 +145,22 @@ FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
 FLUX_PUBLIC_KEY_NAME="flux-github-deploy-key-public"
 FLUX_DEPLOY_KEYS_GENERATED=false
 
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_CONTAINER_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
 #######################################################################################
 ### Prepare az session
 ###

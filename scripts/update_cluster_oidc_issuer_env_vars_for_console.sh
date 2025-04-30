@@ -4,10 +4,10 @@
 # Sets CLUSTER_OIDC_ISSUER_URL environment variable of Radix Web Console with value in oidcIssuerProfile.issuerUrl assigned to the AKS cluster.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_cluster_oidc_issuer_env_vars_for_console.sh
+# RADIX_ZONE=dev CLUSTER_NAME="weekly-1" ./update_cluster_oidc_issuer_env_vars_for_console.sh
 #
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-1" ./update_cluster_oidc_issuer_env_vars_for_console.sh)
+# (RADIX_ZONE=dev CLUSTER_NAME="weekly-1" ./update_cluster_oidc_issuer_env_vars_for_console.sh)
 #
 
 # INPUTS:
@@ -43,15 +43,12 @@ printf "Done.\n"
 ### Read inputs and configs
 ###
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
@@ -60,7 +57,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 
@@ -69,6 +66,22 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_radix_api.sh
 if [[ -z "$STAGING" ]]; then
     STAGING=false
 fi
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
+CLUSTER_OIDC_ISSUER_URL=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value["'${DEST_CLUSTER}'"]')
 
 #######################################################################################
 ### Prepare az session

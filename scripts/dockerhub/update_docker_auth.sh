@@ -33,7 +33,7 @@
 # to get instructions on how to request a new access token.
 
 # Example:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USER_NAME=equinor ACCESS_TOKEN=dckr_pat_abcd ./update_docker_auth.sh
+# RADIX_ZONE=dev USER_NAME=equinor ACCESS_TOKEN=dckr_pat_abcd ./update_docker_auth.sh
 
 #######################################################################################
 ### START
@@ -63,15 +63,12 @@ USER_PROMPT=${USER_PROMPT:=true}
 
 # Validate input
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "$USER_NAME" ]]; then
@@ -84,6 +81,23 @@ if [[ -z "$ACCESS_TOKEN" ]]; then
     exit 1
 fi
 
+# Source util scripts
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 #######################################################################################
 ### Prepare az session
 ###

@@ -20,7 +20,7 @@
 ### 
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev|playground|prod|c2
 # - CLUSTER_NAME        : Ex: "test-2", "weekly-93"
 
 # Optional:
@@ -32,7 +32,7 @@
 ### 
 
 # Normal usage
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME="weekly-2" ./teardown.sh
+# RADIX_ZONE=dev CLUSTER_NAME="weekly-2" ./teardown.sh
 
 
 #######################################################################################
@@ -70,15 +70,12 @@ hash helm 2>/dev/null || {
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
@@ -87,7 +84,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
 fi
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
@@ -96,6 +93,18 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 #######################################################################################
 ### Prepare az session
 ###

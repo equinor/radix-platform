@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev|playground|prod|c2
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
@@ -20,7 +20,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env ./bootstrap_managed_identities.sh
+# RADIX_ZONE=dev ./bootstrap_managed_identities.sh
 
 #######################################################################################
 ### START

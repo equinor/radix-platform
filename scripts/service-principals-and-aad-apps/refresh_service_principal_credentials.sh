@@ -13,7 +13,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev|playground|prod|c2
 # - SP_NAME             : Name of service principal, example: "radix-something-dev"
 
 # Optional:
@@ -23,7 +23,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env SP_NAME=demo-sp-dev ./refresh_service_principal_credentials.sh
+# RADIX_ZONE=dev SP_NAME=demo-sp-dev ./refresh_service_principal_credentials.sh
 
 #######################################################################################
 ### START
@@ -57,15 +57,12 @@ printf "Done.\n"
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "$SP_NAME" ]]; then
@@ -86,6 +83,22 @@ else
     source "$LIB_SERVICE_PRINCIPAL_PATH"
 fi
 
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 #######################################################################################
 ### Prepare az session
 ###
