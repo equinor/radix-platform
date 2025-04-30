@@ -4,7 +4,7 @@
 # Configures the auth proxy for the cluster given the context.
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env DEST_CLUSTER="weekly-50" RADIX_WEB_CONSOLE_ENV="qa" ./update_auth_proxy_secret_for_console.sh
+# RADIX_ZONE=dev DEST_CLUSTER="weekly-50" RADIX_WEB_CONSOLE_ENV="qa" ./update_auth_proxy_secret_for_console.sh
 #
 
 # INPUTS:
@@ -17,15 +17,12 @@ echo "Updating auth-proxy secret for the radix web console"
 
 # Validate mandatory input
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "RADIX_WEB_CONSOLE_ENV" ]]; then
@@ -40,8 +37,22 @@ if [[ -z "$DEST_CLUSTER" ]]; then
 fi
 
 # Source util scripts
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 
 #######################################################################################
 ### Prepare az session
@@ -72,10 +83,7 @@ function updateAuthProxySecret() {
 
     kubectl --context "$DEST_CLUSTER" patch secret "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" \
         --patch "$(kubectl --context "$DEST_CLUSTER" create secret generic "$WEB_CONSOLE_AUTH_SECRET_NAME" --namespace "$WEB_CONSOLE_NAMESPACE" --save-config --from-env-file="$AUTH_SECRET_ENV_FILE" --dry-run=client -o yaml)"
-
-    rm radix-web-console-client-secret.yaml
     rm "$AUTH_SECRET_ENV_FILE"
-
     echo "Auth proxy secret updated"
 }
 

@@ -18,7 +18,7 @@
 ###
 
 # App registrations secrets:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env ./check_appreg_secrets.sh
+# RADIX_ZONE=dev ./check_appreg_secrets.sh
 
 #######################################################################################
 ### Read inputs and configs
@@ -38,15 +38,12 @@ printf "\nApp registrations secrets... "
 
 # Required inputs
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|prod|)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev or prod" >&2
+    exit 1
 fi
 
 # Optional inputs
@@ -69,6 +66,26 @@ hash jq 2>/dev/null || {
     exit 1
 }
 printf "Done.\n"
+
+#######################################################################################
+### Read Zone Config
+###
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+
 
 #######################################################################################
 ### Prepare az session

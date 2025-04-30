@@ -21,11 +21,11 @@ The pre-req resources are normally created by the `install_base_components.sh` s
 # Example: Bootstrap a debug cluster
 
 # Step 1: bootstrap aks
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-cluster-flux ../aks/bootstrap.sh
+RADIX_ZONE=dev CLUSTER_NAME=my-cluster-flux ../aks/bootstrap.sh
 # Step 2: bootstrap helm
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-cluster-flux ../helm/bootstrap.sh
+RADIX_ZONE=dev CLUSTER_NAME=my-cluster-flux ../helm/bootstrap.sh
 # Step 3: bootstrap flux - note the use of GIT_BRANCH to point flux to my dev branch where I want to test deploy of some components that do not depend on any prerequisite radix resources
-RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=my-cluster-flux GIT_BRANCH=my-fluxed-dev-branch ./bootstrap.sh
+RADIX_ZONE=dev CLUSTER_NAME=my-cluster-flux GIT_BRANCH=my-fluxed-dev-branch ./bootstrap.sh
 # Done!
 ```
 

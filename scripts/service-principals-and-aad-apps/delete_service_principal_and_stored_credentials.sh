@@ -15,7 +15,7 @@
 ### 
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev|playground|prod|c2
 # - SP_NAME             : Name of service principal, example: "radix-something-dev"
 
 # Optional:
@@ -26,7 +26,7 @@
 ### HOW TO USE
 ### 
 
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env SP_NAME=demo-sp-dev ./refresh_service_principal_credentials.sh
+# RADIX_ZONE=dev SP_NAME=demo-sp-dev ./refresh_service_principal_credentials.sh
 
 
 #######################################################################################

@@ -23,16 +23,16 @@
 ###
 
 # Example 1:
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh
+# RADIX_ZONE=dev CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh
 
 # Example 2: Using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh)
+# (RADIX_ZONE=dev CLUSTER_NAME=weekly-2 ./update_secret_for_radix_servicenow_proxy.sh)
 
 # Example 1: Use the secondary API key from keyvault
-# RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 USE_SECONDARY_API_KEY=true ./update_secret_for_radix_servicenow_proxy.sh
+# RADIX_ZONE=dev CLUSTER_NAME=weekly-2 USE_SECONDARY_API_KEY=true ./update_secret_for_radix_servicenow_proxy.sh
 
 # Example 2: Use the secondary API key from keyvault, using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./radix-zone/radix_zone_dev.env CLUSTER_NAME=weekly-2 USE_SECONDARY_API_KEY=true ./update_secret_for_radix_servicenow_proxy.sh)
+# (RADIX_ZONE=dev CLUSTER_NAME=weekly-2 USE_SECONDARY_API_KEY=true ./update_secret_for_radix_servicenow_proxy.sh)
 
 
 #######################################################################################
@@ -48,16 +48,13 @@ echo "Updating secret for Radix ServiceNow Proxy"
 
 # Required inputs
 
-# if [[ -z "$RADIX_ZONE_ENV" ]]; then
-#     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-#     exit 1
-# else
-#     if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-#         echo "ERROR_ RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-#         exit 1
-#     fi
-#     source "$RADIX_ZONE_ENV"
-# fi
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
+else
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
+fi
 
 if [[ -z "$RADIX_ZONE" ]]; then
     echo "ERROR: Please provide RADIX_ZONE" >&2

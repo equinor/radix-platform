@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev|playground|prod|c2
 # - CLUSTER_NAME        : Keep name short due to Azure weirdness. Ex: "test-2", "weekly-93".
 
 # Optional:
@@ -23,10 +23,10 @@
 ###
 
 # When creating a test cluster
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=at ./bootstrap.sh
+# RADIX_ZONE=dev CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=at ./bootstrap.sh
 
 # When creating a cluster that will become an active cluster (creating a cluster in advance)
-# RADIX_ZONE_ENV=../radix-zone/radix_zone_dev.env CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=aa ./bootstrap.sh
+# RADIX_ZONE=dev CLUSTER_NAME=beastmode-11 MIGRATION_STRATEGY=aa ./bootstrap.sh
 
 #######################################################################################
 ### START

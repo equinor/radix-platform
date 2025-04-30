@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE_ENV      : Path to *.env file
+# - RADIX_ZONE          : dev|playground|prod|c2
 # - API_KEY             : The API key
 
 # Optional:
@@ -22,16 +22,16 @@
 ###
 
 # Example 1: Update keyvault secret holding primary API key:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env API_KEY=the_key ./refresh_api_key.sh
+# RADIX_ZONE=dev API_KEY=the_key ./refresh_api_key.sh
 
 # Example 2: Update keyvault secret holding primary API key, using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env API_KEY=the_key ./refresh_api_key.sh)
+# (RADIX_ZONE=dev API_KEY=the_key ./refresh_api_key.sh)
 
 # Example 3: Update keyvault secret holding secondary API key:
-# RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USE_SECONDARY_API_KEY=true API_KEY=the_key ./refresh_api_key.sh
+# RADIX_ZONE=dev USE_SECONDARY_API_KEY=true API_KEY=the_key ./refresh_api_key.sh
 
 # Example 4: Update keyvault secret holding secondary API key, using a subshell to avoid polluting parent shell
-# (RADIX_ZONE_ENV=./../radix-zone/radix_zone_dev.env USE_SECONDARY_API_KEY=true API_KEY=the_key ./refresh_api_key.sh)
+# (RADIX_ZONE=dev USE_SECONDARY_API_KEY=true API_KEY=the_key ./refresh_api_key.sh)
 
 #######################################################################################
 ### START
@@ -62,15 +62,12 @@ USE_SECONDARY_API_KEY=${USE_SECONDARY_API_KEY:=false}
 
 # Validate input
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
-    echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-    exit 1
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+then
+    echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-        echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-        exit 1
-    fi
-    source "$RADIX_ZONE_ENV"
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    exit 1
 fi
 
 if [[ -z "$API_KEY" ]]; then
@@ -92,6 +89,22 @@ if [[ $USE_SECONDARY_API_KEY == true ]]; then
     KV_SECRET_SERVICENOW_API_KEY+="-secondary"
 fi
 
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+KV_SECRET_SERVICENOW_API_KEY="servicenow-api-key"
 #######################################################################################
 ### Prepare az session
 ###
