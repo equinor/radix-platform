@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE          : dev|prod
+# - RADIX_ZONE          : dev|playground|prod|c2
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
@@ -33,11 +33,11 @@ printf "\nStarting check keyvault secrets... "
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|prod)$ ]]
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    echo "ERROR: RADIX_ZONE must be either dev or prod" >&2
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
     exit 1
 fi
 
@@ -61,6 +61,7 @@ hash jq 2>/dev/null || {
     exit 1
 }
 printf "Done.\n"
+echo ""
 
 #######################################################################################
 ### Read Zone Config
@@ -80,6 +81,7 @@ $(<$RADIX_ZONE_ENV)
 EOF
 )
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 
 #######################################################################################
 ### Prepare az session
@@ -89,6 +91,7 @@ printf "Logging you in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
 az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
+echo ""
 
 #######################################################################################
 ### Verify task at hand
@@ -109,22 +112,6 @@ echo -e ""
 
 echo ""
 
-if [[ $USER_PROMPT == true ]]; then
-    while true; do
-        read -r -p "Is this correct? (Y/n) " yn
-        case $yn in
-        [Yy]*) break ;;
-        [Nn]*)
-            echo ""
-            echo "Quitting..."
-            exit 0
-            ;;
-        *) echo "Please answer yes or no." ;;
-        esac
-    done
-    echo ""
-fi
-
 #######################################################################################
 ### Start
 ###
@@ -135,7 +122,8 @@ yel=$'\e[1;33m'
 normal=$(tput sgr0)
 fmt="%-55s %-40s %5s\n"
 
-KEY_VAULTS=$(az keyvault list)
+# KEY_VAULTS=$(az keyvault list)
+KEY_VAULTS=$(az keyvault list --query "[?name=='${AZ_RESOURCE_KEYVAULT}']")
 SECRETS_MISSING_EXPIRY_DATE=()
 SECRETS_EXPIRING_SOON=()
 SECRETS_EXPIRED=()
