@@ -41,6 +41,7 @@ module "storageaccount" {
   vault_id                 = module.backupvault.data.backupvault.id
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
   log_analytics_id         = module.config.backend.log_analytics_workspace_id
+  cluster_type             = module.config.cluster_type
 }
 
 resource "azurerm_role_definition" "privatelink_role" {

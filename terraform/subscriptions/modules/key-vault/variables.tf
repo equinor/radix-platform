@@ -3,6 +3,11 @@ variable "tenant_id" {
   type        = string
 }
 
+variable "subscription_id" {
+  description = "The subscription ID"
+  type        = string
+}
+
 variable "vault_name" {
   description = "The name of this Key vault."
   type        = string
@@ -16,6 +21,11 @@ variable "resource_group_name" {
 variable "location" {
   description = "The location to create the resources in."
   type        = string
+}
+
+variable "soft_delete_retention_days" {
+  type    = number
+  default = 90
 }
 
 variable "purge_protection_enabled" {
@@ -48,5 +58,8 @@ variable "public_network_access" {
 variable "ip_rule" {
   type    = list(string)
   default = []
+}
 
+variable "testzone" {
+  default = false
 }

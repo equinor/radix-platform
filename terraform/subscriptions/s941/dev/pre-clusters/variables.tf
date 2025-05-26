@@ -27,51 +27,26 @@ variable "nodepools" {
     os_disk_type = optional(string, "Managed")
   }))
   default = {
-    nc24sv3 = {
-      vm_size    = "Standard_NC24s_v3"
+    memory2v1 = {
+      vm_size    = "Standard_B4as_v2"
       min_count  = 0
       max_count  = 1
       node_count = 0
       node_labels = {
-        "gpu"                  = "nvidia-v100"
-        "gpu-count"            = "4"
-        "radix-node-gpu"       = "nvidia-v100"
-        "radix-node-gpu-count" = "4"
-        "sku"                  = "gpu"
+        "radix-nodetype" = "memory-optimized-2-v1"
       }
-      node_taints  = ["radix-node-gpu-count=4:NoSchedule"]
-      os_disk_type = "Ephemeral"
+      node_taints = ["radix-nodetype=memory-optimized-2-v1:NoSchedule"]
     }
-    nc12sv3 = {
-      vm_size    = "Standard_NC12s_v3"
+    nvidia1v1 = {
+      vm_size    = "Standard_NC4as_T4_v3"
       min_count  = 0
       max_count  = 1
       node_count = 0
       node_labels = {
-        "gpu"                  = "nvidia-v100"
-        "gpu-count"            = "2"
-        "radix-node-gpu"       = "nvidia-v100"
-        "radix-node-gpu-count" = "2"
-        "sku"                  = "gpu"
+        "radix-nodetype" = "gpu-nvidia-1-v1"
       }
-      node_taints  = ["radix-node-gpu-count=2:NoSchedule"]
+      node_taints  = ["radix-nodetype=gpu-nvidia-1-v1:NoSchedule"]
       os_disk_type = "Ephemeral"
-    }
-    nc6sv3 = {
-      vm_size    = "Standard_NC6s_v3"
-      min_count  = 0
-      max_count  = 1
-      node_count = 0
-      node_labels = {
-        "gpu"                  = "nvidia-v100"
-        "gpu-count"            = "1"
-        "radix-node-gpu"       = "nvidia-v100"
-        "radix-node-gpu-count" = "1"
-        "sku"                  = "gpu"
-      }
-      node_taints  = ["radix-node-gpu-count=1:NoSchedule"]
-      os_disk_type = "Ephemeral"
-
     }
     armpipepool = {
       vm_size   = "Standard_B4ps_v2"
@@ -102,8 +77,6 @@ variable "nodepools" {
       vm_size   = "Standard_B4as_v2"
       min_count = 1
       max_count = 4
-
     }
   }
 }
-

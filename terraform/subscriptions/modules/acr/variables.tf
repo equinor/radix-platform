@@ -161,3 +161,16 @@ variable "acr_retension_policy" {
   type    = number
   default = 0
 }
+
+variable "keyvault_name" {
+  type = string
+}
+
+variable "secondary_location" {
+  type = string
+}
+
+variable "testzone" {
+  type    = bool
+  default = false
+}

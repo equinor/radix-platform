@@ -150,7 +150,7 @@ resource "azurerm_private_dns_a_record" "this" {
 resource "azurerm_storage_management_policy" "this" {
   storage_account_id = azurerm_storage_account.storageaccount.id
   dynamic "rule" {
-    for_each = (var.environment == "platform" || var.environment == "c2" || var.environment == "extmon") && strcontains(var.name, "velero") ? [1] : []
+    for_each = (!var.testzone && var.cluster_type == "production" && strcontains(var.name, "velero")) ? [1] : []
     content {
       name    = "Lifecycle Storageaccount"
       enabled = true
@@ -168,7 +168,7 @@ resource "azurerm_storage_management_policy" "this" {
     }
   }
   dynamic "rule" {
-    for_each = (var.environment == "platform" || var.environment == "c2" || var.environment == "extmon") && strcontains(var.name, "log") ? [1] : []
+    for_each = (!var.testzone && var.cluster_type == "production") && strcontains(var.name, "log") ? [1] : []
     content {
       name    = "Lifecycle Storageaccount"
       enabled = true
@@ -187,7 +187,7 @@ resource "azurerm_storage_management_policy" "this" {
     }
   }
   dynamic "rule" {
-    for_each = var.environment == "dev" || var.environment == "playground" ? [1] : []
+    for_each = (var.testzone || var.cluster_type == "development") ? [1] : []
     content {
       name    = "Lifecycle Storageaccount"
       enabled = true

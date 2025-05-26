@@ -12,8 +12,8 @@ resource "azurerm_key_vault" "this" {
   location                      = var.location
   resource_group_name           = var.resource_group_name
   tenant_id                     = var.tenant_id
-  soft_delete_retention_days    = 90
-  purge_protection_enabled      = var.purge_protection_enabled
+  soft_delete_retention_days    = var.testzone ? 7 : 90
+  purge_protection_enabled      = var.testzone ? false : true
   enable_rbac_authorization     = var.enable_rbac_authorization
   public_network_access_enabled = true
   tags = {
@@ -25,13 +25,16 @@ resource "azurerm_key_vault" "this" {
     ip_rules       = var.ip_rule
   }
 
+
   sku_name = "standard"
 }
 
 resource "azurerm_role_assignment" "this" {
-  for_each           = var.enable_rbac_authorization && length(var.kv_secrets_user_id) > 0 ? { "${var.vault_name}" : true } : {}
+  # count      = var.enable_rbac_authorization == true ? 0 : 1
+  # count      = var.testzone ? 0 : 1
+  # for_each           = var.enable_rbac_authorization && length(var.kv_secrets_user_id) > 0 ? { "${var.vault_name}" : true } : {}
   scope              = azurerm_key_vault.this.id
-  role_definition_id = data.azurerm_role_definition.this.role_definition_id
+  role_definition_id = "/subscriptions/${var.subscription_id}${data.azurerm_role_definition.this.role_definition_id}"
   principal_id       = var.kv_secrets_user_id
 }
 
@@ -82,3 +85,7 @@ resource "azurerm_private_dns_a_record" "this" {
   records             = [azurerm_private_endpoint.this.private_service_connection.0.private_ip_address]
 }
 
+output "azurerm_key_vault_id" {
+  value = azurerm_key_vault.this.id
+
+}

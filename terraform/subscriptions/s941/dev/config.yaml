@@ -1,5 +1,4 @@
 environment: "dev"
-radix_environment: "dev"
 flux_folder: "development"
 cluster_type: "development"
 subscription_shortname: "s941"
@@ -10,6 +9,7 @@ zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "radix-ar-networkpolicy-canary"
+  secondary_location: "westeurope"
 backend:
   resource_group_name:   "s941-tfstate"
   storage_account_name:  "s941radixinfra"
@@ -32,13 +32,13 @@ networksets:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"
 clusters:
-  weekly-18:
+  weekly-20:
     aksversion: "1.31.7"
     networkset: "networkset2"
     network_policy: "cilium"
-    # activecluster: true
+    activecluster: true
   weekly-19:
     aksversion: "1.31.7"
     networkset: "networkset1"
     network_policy: "cilium"
-    activecluster: true
+    # activecluster: true

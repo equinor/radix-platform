@@ -19,6 +19,7 @@ variable "sqlserver-operators-group" {
 variable "subscriptions" {
   type = map(string)
   default = {
+    s612 = "939950ec-da7e-4349-8b8d-77d9c278af04"
     s940 = "ded7ca41-37c8-4085-862f-b11d21ab341a"
     s941 = "16ede44b-1f74-40a5-b428-46cca9a5741b"
   }
@@ -26,7 +27,7 @@ variable "subscriptions" {
 
 variable "all_subscriptions" {
   type    = list(string)
-  default = ["/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b"]
+  default = ["/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b", "/subscriptions/939950ec-da7e-4349-8b8d-77d9c278af04"]
 }
 
 
