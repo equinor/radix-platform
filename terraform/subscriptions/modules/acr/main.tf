@@ -1,8 +1,3 @@
-locals {
-  # testzone_toggle = var.testzone == true ? false : true
-
-}
-
 #App ACR
 resource "azurerm_container_registry" "this" {
   name                          = "radix${var.acr}app"
