@@ -20,6 +20,8 @@ module "storageaccount" {
   vnet_resource_group      = module.config.vnet_resource_group
   lifecyclepolicy          = each.value.lifecyclepolicy
   log_analytics_id         = module.loganalytics.workspace_id
+  subscription_shortname   = module.config.subscription_shortname
+  cluster_type             = module.config.cluster_type
 }
 
 output "velero_storage_account" {

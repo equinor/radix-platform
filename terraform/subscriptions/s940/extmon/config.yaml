@@ -1,5 +1,4 @@
 environment: "extmon"
-radix_environment: "prod"
 flux_folder: "monitoring"
 subscription_shortname: "s940"
 location: "northeurope"

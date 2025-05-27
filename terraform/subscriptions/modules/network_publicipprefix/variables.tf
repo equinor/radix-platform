@@ -50,3 +50,8 @@ variable "puplicipstartcounter" {
   type    = number
   default = 1
 }
+
+variable "testzone" {
+  type    = bool
+  default = false
+}

@@ -36,6 +36,7 @@ resource "azurerm_public_ip" "this" {
 }
 
 resource "azurerm_management_lock" "publicipprefix" {
+  count      = var.testzone ? 0 : 1
   name       = "${var.publicipprefixname}-delete-lock"
   scope      = azurerm_public_ip_prefix.publicipprefix.id
   lock_level = "CanNotDelete"

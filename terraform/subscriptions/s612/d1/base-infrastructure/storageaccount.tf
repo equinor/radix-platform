@@ -1,5 +1,5 @@
 data "azurerm_storage_account" "terraform_state" {
-  name                = "${module.config.subscription_shortname}radixinfra"
+  name                = "s612radixinfra"
   resource_group_name = module.config.backend.resource_group_name
 }
 
@@ -28,8 +28,8 @@ module "storageaccount" {
   depends_on               = [module.backupvault]
 }
 
-output "velero_storage_account" {
-  value = module.storageaccount.velero.data.name
-}
+# output "velero_storage_account" {
+#   value = module.storageaccount.velero.data.name
+# }
 
 

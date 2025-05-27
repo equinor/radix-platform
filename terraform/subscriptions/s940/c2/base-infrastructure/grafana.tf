@@ -16,12 +16,13 @@ module "grafana-mi-admin" {
 }
 
 resource "azurerm_mysql_flexible_server" "grafana" {
-  location              = module.config.location
-  name                  = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}-prod" #TODO
-  resource_group_name   = module.config.common_resource_group
-  zone                  = 2
-  backup_retention_days = 35
-  sku_name              = "B_Standard_B2ms"
+  location                     = module.config.location
+  name                         = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}-prod" #TODO
+  resource_group_name          = module.config.common_resource_group
+  zone                         = 2
+  backup_retention_days        = 14
+  geo_redundant_backup_enabled = true
+  sku_name                     = "B_Standard_B2ms"
 
   tags = {
     IaC = "terraform"

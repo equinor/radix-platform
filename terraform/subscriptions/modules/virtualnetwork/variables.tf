@@ -17,3 +17,8 @@ variable "private_dns_zones" {
   description = "Private DNS zones"
   type        = list(string)
 }
+
+variable "testzone" {
+  type    = bool
+  default = false
+}

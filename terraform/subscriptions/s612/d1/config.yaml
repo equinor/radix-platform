@@ -1,0 +1,19 @@
+environment: "d1" # template
+flux_folder: "d1" # template
+cluster_type: "production"
+subscription_shortname: "s612" # template
+location: "norwayeast" # template
+secondary_location: "norwaywest" # template
+developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod
+testzone: true # template
+zoneconfig:
+  RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
+  RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
+  APP_REGISTRATION_NETWORKPOLICY_CANARY: "ar-radix-networkpolicy-canary"
+backend:
+  resource_group_name: "s612-tfstate" # template
+  storage_account_name: "s612radixinfra" # template
+  container_name: "infrastructure"
+  subscription_id: "939950ec-da7e-4349-8b8d-77d9c278af04" # template
+  tenant_id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0" # template
+  terraform_storage_id: "/subscriptions/939950ec-da7e-4349-8b8d-77d9c278af04/resourceGroups/s612-tfstate/providers/Microsoft.Storage/storageAccounts/s612radixinfra" # template

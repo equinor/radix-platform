@@ -7,13 +7,22 @@ data "azurerm_role_definition" "this" {
   name = "Key Vault Secrets User"
 }
 
+data "external" "keyvault_secret" {
+  program = ["python3", "${path.module}/get_secret.py"]
+  query = {
+    vault           = "${var.vault_name}"
+    name            = "kubernetes-api-auth-ip-range"
+    subscription_id = var.subscription_id
+  }
+}
+
 resource "azurerm_key_vault" "this" {
   name                          = var.vault_name
   location                      = var.location
   resource_group_name           = var.resource_group_name
   tenant_id                     = var.tenant_id
-  soft_delete_retention_days    = 90
-  purge_protection_enabled      = var.purge_protection_enabled
+  soft_delete_retention_days    = var.testzone ? 7 : 90
+  purge_protection_enabled      = var.testzone ? false : true
   enable_rbac_authorization     = var.enable_rbac_authorization
   public_network_access_enabled = true
   tags = {
@@ -22,14 +31,14 @@ resource "azurerm_key_vault" "this" {
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"
-    ip_rules       = var.ip_rule
+    ip_rules       = jsondecode(data.external.keyvault_secret.result.value)
   }
+
 
   sku_name = "standard"
 }
 
 resource "azurerm_role_assignment" "this" {
-  for_each           = var.enable_rbac_authorization && length(var.kv_secrets_user_id) > 0 ? { "${var.vault_name}" : true } : {}
   scope              = azurerm_key_vault.this.id
   role_definition_id = data.azurerm_role_definition.this.role_definition_id
   principal_id       = var.kv_secrets_user_id
@@ -82,3 +91,6 @@ resource "azurerm_private_dns_a_record" "this" {
   records             = [azurerm_private_endpoint.this.private_service_connection.0.private_ip_address]
 }
 
+output "azurerm_key_vault_id" {
+  value = azurerm_key_vault.this.id
+}

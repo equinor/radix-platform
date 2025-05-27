@@ -11,15 +11,17 @@ resource "azurerm_container_registry" "this" {
   tags = {
     IaC = "terraform"
   }
+
   lifecycle {
     prevent_destroy = true
   }
+
   network_rule_set {
     default_action = "Deny"
     ip_rule        = []
   }
   georeplications {
-    location                  = var.location == "northeurope" ? "westeurope" : "northeurope"
+    location                  = var.secondary_location
     zone_redundancy_enabled   = false
     regional_endpoint_enabled = false
   }
@@ -41,6 +43,10 @@ resource "azurerm_private_endpoint" "this" {
   }
 }
 
+#####################################################################################
+# It is well known that the records need to be created after initial terrform apply
+# Maybe it can be fixed?
+
 resource "azurerm_private_dns_a_record" "dns_record" {
   for_each = {
     for k, v in azurerm_private_endpoint.this.custom_dns_configs : v.fqdn => v #if length(regexall("\\.", v.fqdn)) >= 3
@@ -57,6 +63,7 @@ resource "azurerm_private_dns_a_record" "dns_record" {
 }
 
 resource "azurerm_management_lock" "this" {
+  count      = var.testzone ? 0 : 1
   name       = "delete-lock"
   scope      = azurerm_container_registry.this.id
   lock_level = "CanNotDelete"
@@ -88,7 +95,7 @@ resource "azurerm_container_registry" "env" {
   }
 
   georeplications {
-    location                  = var.location == "northeurope" ? "westeurope" : "northeurope"
+    location                  = var.secondary_location
     zone_redundancy_enabled   = false
     regional_endpoint_enabled = true
   }
@@ -223,6 +230,10 @@ resource "azurerm_private_endpoint" "env" {
   }
 }
 
+#####################################################################################
+# It is well known that the records need to be created after initial terrform apply
+# Maybe it can be fixed?
+
 resource "azurerm_private_dns_a_record" "env" {
   for_each = {
     for k, v in azurerm_private_endpoint.env.custom_dns_configs : v.fqdn => v
@@ -239,6 +250,7 @@ resource "azurerm_private_dns_a_record" "env" {
 }
 
 resource "azurerm_management_lock" "env" {
+  count      = var.testzone ? 0 : 1
   name       = "delete-lock"
   scope      = azurerm_container_registry.env.id
   lock_level = "CanNotDelete"
@@ -255,15 +267,29 @@ resource "azurerm_container_registry" "cache" {
   tags = {
     IaC = "terraform"
   }
+
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false #prevent_destroy = true
   }
+
   network_rule_set {
     default_action = "Deny"
     ip_rule        = []
   }
 }
 
+resource "azurerm_container_registry_credential_set" "cache" {
+  name                  = "radix-service-account-docker" == "radix-service-account-docker" && !var.testzone ? "radix-service-account-docker" : "radix-service-account-docker-test-${var.location}"
+  container_registry_id = azurerm_container_registry.cache.id
+  login_server          = "docker.io"
+  identity {
+    type = "SystemAssigned"
+  }
+  authentication_credentials {
+    username_secret_id = "https://${var.keyvault_name}.vault.azure.net/secrets/radix-acr-docker-user"
+    password_secret_id = "https://${var.keyvault_name}.vault.azure.net/secrets/radix-acr-docker-token"
+  }
+}
 
 
 resource "azurerm_container_registry_cache_rule" "cache" {
@@ -272,7 +298,7 @@ resource "azurerm_container_registry_cache_rule" "cache" {
   container_registry_id = azurerm_container_registry.cache.id
   target_repo           = each.value.namespace
   source_repo           = "${each.value.repo}/${each.value.library}"
-  credential_set_id     = each.value.repo == "docker.io" ? var.dockercredentials_id : null
+  credential_set_id     = each.value.repo == "docker.io" ? azurerm_container_registry_credential_set.cache.id : null
 }
 
 resource "azurerm_private_endpoint" "cache" {
@@ -291,6 +317,10 @@ resource "azurerm_private_endpoint" "cache" {
   }
 }
 
+#####################################################################################
+# It is well known that the records need to be created after initial terrform apply
+# Maybe it can be fixed?
+
 resource "azurerm_private_dns_a_record" "cache" {
   for_each = {
     for k, v in azurerm_private_endpoint.cache.custom_dns_configs : v.fqdn => v #if length(regexall("\\.", v.fqdn)) >= 3
@@ -307,6 +337,7 @@ resource "azurerm_private_dns_a_record" "cache" {
 }
 
 resource "azurerm_management_lock" "cache" {
+  count      = var.testzone ? 0 : 1
   name       = "delete-lock"
   scope      = azurerm_container_registry.cache.id
   lock_level = "CanNotDelete"
@@ -327,4 +358,8 @@ output "azurerm_container_registry_cache_id" {
 
 output "azurerm_container_registry_app_id" {
   value = azurerm_container_registry.this.id
+}
+
+output "azurerm_container_registry_credential_id" {
+  value = azurerm_container_registry_credential_set.cache.identity[0].principal_id
 }

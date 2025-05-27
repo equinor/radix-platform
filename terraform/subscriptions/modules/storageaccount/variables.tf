@@ -3,6 +3,10 @@ variable "name" {
   type        = string
 }
 
+variable "subscription_shortname" {
+  type = string
+}
+
 variable "resource_group_name" {
   description = "The name of the resource group in which to create the storage account"
   type        = string
@@ -118,4 +122,13 @@ variable "log_analytics_id" {
 variable "public_network_access" {
   type    = bool
   default = false
+}
+
+variable "testzone" {
+  type    = bool
+  default = false
+}
+
+variable "cluster_type" {
+  type = string
 }

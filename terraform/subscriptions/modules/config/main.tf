@@ -15,6 +15,10 @@ output "location" {
   value = local.config.location
 }
 
+output "cluster_type" {
+  value = local.config.cluster_type
+}
+
 output "common_resource_group" {
   value = "common-${local.config.environment}"
 }
@@ -39,6 +43,11 @@ output "log_storageaccount_name" {
 output "backend" {
   value = local.config.backend
 }
+
+output "zoneconfig" {
+  value = local.config.zoneconfig
+}
+
 
 output "subscription" {
   value = local.config.backend.subscription_id
@@ -110,4 +119,12 @@ output "ar-radix-servicenow-proxy-client" {
 
 output "ar-radix-servicenow-proxy-server" {
   value = "a898a8fa-b030-4783-9d5b-5ebcdeebdc59"
+}
+
+output "secondary_location" {
+  value = lookup(local.config, "secondary_location", false)
+}
+
+output "testzone" {
+  value = lookup(local.config, "testzone", false)
 }
