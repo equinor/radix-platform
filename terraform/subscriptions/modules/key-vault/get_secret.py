@@ -21,6 +21,8 @@ def main():
         params = json.load(sys.stdin)
         vault = params.get("vault")
         name = params.get("name")
+        subscription_id = params.get("subscription_id")
+
     except Exception:
         print(format_output(get_fallback_ip()))
         return
@@ -35,6 +37,7 @@ def main():
               "az", "keyvault", "secret", "show",
               "--vault-name", vault,
               "--name", name,
+              "--subscription", subscription_id,
               "--query", "value",
               "-o", "tsv"
           ],

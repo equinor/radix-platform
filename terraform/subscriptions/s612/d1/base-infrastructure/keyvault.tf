@@ -1,7 +1,7 @@
 module "keyvault" {
   source              = "../../../modules/key-vault"
   location            = module.config.location
-  vault_name          = module.config.key_vault_name
+  vault_name          = "radix-keyv-${module.config.environment}"
   resource_group_name = module.config.common_resource_group
   tenant_id           = data.azurerm_subscription.current.tenant_id
   subscription_id     = module.config.backend.subscription_id
