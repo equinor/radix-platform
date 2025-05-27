@@ -40,7 +40,7 @@ module "azurerm_public_ip_prefix_egress" {
 }
 
 output "egress_ips" {
-  value = module.azurerm_public_ip_prefix_egress.data.ip_prefix # template
+  value = "${module.azurerm_public_ip_prefix_egress.data.ip_prefix}" # template
 }
 
 output "public_ip_prefix_names" {

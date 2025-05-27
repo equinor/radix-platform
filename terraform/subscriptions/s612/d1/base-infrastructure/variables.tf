@@ -2,8 +2,8 @@ variable "storageaccounts" {
   description = "Max 15 characters lowercase in the storageaccount name"
   type = map(object({
     name                     = string
-    resource_group_name      = optional(string, "common-d1")  # template
-    location                 = optional(string, "norwayeast") # template
+    resource_group_name      = optional(string, "common-d1") # template
+    location                 = optional(string, "norwayeast")    # template
     account_tier             = optional(string, "Standard")
     account_replication_type = optional(string, "LRS")
     kind                     = optional(string, "StorageV2")
