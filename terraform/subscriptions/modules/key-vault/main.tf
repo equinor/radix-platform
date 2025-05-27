@@ -39,7 +39,7 @@ resource "azurerm_key_vault" "this" {
 
 resource "azurerm_role_assignment" "this" {
   scope              = azurerm_key_vault.this.id
-  role_definition_id = "/subscriptions/${var.subscription_id}${data.azurerm_role_definition.this.role_definition_id}"
+  role_definition_id = data.azurerm_role_definition.this.role_definition_resource_id
   principal_id       = var.kv_secrets_user_id
 }
 
