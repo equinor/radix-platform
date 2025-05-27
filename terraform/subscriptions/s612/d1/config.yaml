@@ -3,13 +3,13 @@ flux_folder: "d1" # template
 cluster_type: "production"
 subscription_shortname: "s612" # template
 location: "norwayeast" # template
+secondary_location: "norwaywest"
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod
+testzone: true
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "ar-radix-networkpolicy-canary"
-  testzone: true
-  secondary_location: "norwaywest"
 backend:
   resource_group_name: "s612-tfstate" # template
   storage_account_name: "s612radixinfra" # template

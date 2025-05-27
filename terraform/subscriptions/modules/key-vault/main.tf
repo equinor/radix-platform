@@ -30,9 +30,6 @@ resource "azurerm_key_vault" "this" {
 }
 
 resource "azurerm_role_assignment" "this" {
-  # count      = var.enable_rbac_authorization == true ? 0 : 1
-  # count      = var.testzone ? 0 : 1
-  # for_each           = var.enable_rbac_authorization && length(var.kv_secrets_user_id) > 0 ? { "${var.vault_name}" : true } : {}
   scope              = azurerm_key_vault.this.id
   role_definition_id = "/subscriptions/${var.subscription_id}${data.azurerm_role_definition.this.role_definition_id}"
   principal_id       = var.kv_secrets_user_id

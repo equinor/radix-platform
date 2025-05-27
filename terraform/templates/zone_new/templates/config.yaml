@@ -3,13 +3,15 @@ flux_folder: "${zone}" # template
 cluster_type: "production"
 subscription_shortname: "${subscription_shortname}" # template
 location: "${location}" # template
+secondary_location: "${secondary_location}" # template
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod
+testzone: ${testzone} # template
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "ar-radix-networkpolicy-canary"
-  testzone: ${testzone}
-  secondary_location: "${secondary_location}"
+  
+  
 backend:
   resource_group_name: "${subscription_shortname}-tfstate" # template
   storage_account_name: "${subscription_shortname}radixinfra" # template
