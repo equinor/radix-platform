@@ -55,11 +55,6 @@ variable "public_network_access" {
   default = false
 }
 
-variable "ip_rule" {
-  type    = list(string)
-  default = []
-}
-
 variable "testzone" {
   default = false
 }

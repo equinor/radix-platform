@@ -7,6 +7,14 @@ data "azurerm_role_definition" "this" {
   name = "Key Vault Secrets User"
 }
 
+data "external" "keyvault_secret" {
+  program = ["python3", "${path.module}/get_secret.py"]
+  query = {
+    vault = "${var.vault_name}"
+    name  = "kubernetes-api-auth-ip-range"
+  }
+}
+
 resource "azurerm_key_vault" "this" {
   name                          = var.vault_name
   location                      = var.location
@@ -22,7 +30,7 @@ resource "azurerm_key_vault" "this" {
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"
-    ip_rules       = var.ip_rule
+    ip_rules       = jsondecode(data.external.keyvault_secret.result.value)
   }
 
 
@@ -84,5 +92,4 @@ resource "azurerm_private_dns_a_record" "this" {
 
 output "azurerm_key_vault_id" {
   value = azurerm_key_vault.this.id
-
 }
