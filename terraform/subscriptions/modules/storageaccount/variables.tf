@@ -125,6 +125,7 @@ variable "public_network_access" {
 }
 
 variable "testzone" {
+  type    = bool
   default = false
 }
 
