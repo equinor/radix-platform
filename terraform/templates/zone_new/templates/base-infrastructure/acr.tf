@@ -8,7 +8,7 @@ module "acr" {
   keyvault_name       = module.keyvault.vault_name
   radix_cr_cicd       = "1ae3ea06-4fd8-47a4-a3ba-75cc8b305dc1"
   secondary_location  = module.config.secondary_location
-  testzone            = module.config.zoneconfig.testzone
+  testzone            = module.config.testzone
   depends_on          = [module.azurerm_virtual_network]
 }
 

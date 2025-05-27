@@ -13,7 +13,7 @@ module "keyvault" {
   vnet_resource_group = module.config.vnet_resource_group
   ip_rule             = ["143.97.110.1/32"]
   kv_secrets_user_id  = module.acr.azurerm_container_registry_credential_id
-  testzone            = module.config.zoneconfig.testzone
+  testzone            = module.config.testzone
   depends_on          = [module.azurerm_virtual_network]
 }
 

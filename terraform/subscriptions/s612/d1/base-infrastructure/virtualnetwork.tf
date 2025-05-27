@@ -5,7 +5,7 @@ module "azurerm_virtual_network" {
   vnet_resource_group = module.resourcegroup_vnet.data.name
   private_dns_zones   = tolist(module.config.private_dns_zones_names)
   depends_on          = [module.resourcegroup_vnet]
-  testzone            = module.config.zoneconfig.testzone
+  testzone            = module.config.testzone
 
 }
 
@@ -21,7 +21,7 @@ module "azurerm_public_ip_prefix_ingress" {
   publicipcounter     = 8
   depends_on          = [module.resourcegroup_clusters]
   # zones               = ["1", "2", "3"]
-  testzone = module.config.zoneconfig.testzone
+  testzone = module.config.testzone
 }
 
 module "azurerm_public_ip_prefix_egress" {
@@ -35,7 +35,7 @@ module "azurerm_public_ip_prefix_egress" {
   prefix_length       = 28
   publicipcounter     = 16
   depends_on          = [module.resourcegroup_clusters]
-  testzone            = module.config.zoneconfig.testzone
+  testzone            = module.config.testzone
 
 }
 

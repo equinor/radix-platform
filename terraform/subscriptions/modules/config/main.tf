@@ -124,3 +124,7 @@ output "ar-radix-servicenow-proxy-server" {
 output "secondary_location" {
   value = lookup(local.config, "secondary_location", false)
 }
+
+output "testzone" {
+  value = lookup(local.config, "testzone", false)
+}

@@ -11,9 +11,9 @@ terraform {
   }
 
   backend "azurerm" {
-    tenant_id            = tenant_id                             # template
-    subscription_id      = subscription_id                       # template
-    resource_group_name  = "${subscription_shortname}-tfstate"   # template
+    tenant_id            = "${tenant_id}" # template
+    subscription_id      = "${subscription_id}" # template
+    resource_group_name  = "${subscription_shortname}-tfstate" # template
     storage_account_name = "${subscription_shortname}radixinfra" # template
     container_name       = "tfstate"
     key                  = "${zone}/base/terraform.tfstate" # template
@@ -22,7 +22,7 @@ terraform {
 }
 
 provider "azurerm" {
-  subscription_id     = subscription_id # template
+  subscription_id     = "${subscription_id}" # template
   storage_use_azuread = true            # This enables RBAC instead of access keys
   features {}
 }
