@@ -146,3 +146,7 @@ variable "active_cluster" {
   default = false
 }
 
+variable "os_sku" {
+  type    = string
+  default = "Ubuntu"
+}

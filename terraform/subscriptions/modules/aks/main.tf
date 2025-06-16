@@ -44,6 +44,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     # host_encryption_enabled      = false
     min_count = var.systempool.min_nodes
     max_count = var.systempool.max_nodes
+    os_sku    = var.os_sku
     node_labels = {
       "app"           = "system-apps"
       "nodepool-type" = "system"
@@ -141,6 +142,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   # node_public_ip_enabled  = false
   node_taints      = each.value.node_taints
   os_disk_type     = each.value.os_disk_type
+  os_sku           = var.os_sku
   vnet_subnet_id   = azurerm_subnet.this.id
   workload_runtime = "OCIContainer"
   tags             = {}
