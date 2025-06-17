@@ -167,7 +167,7 @@ echo "Installing flux with your flux version: v$FLUX_VERSION"
 flux bootstrap git \
 --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
 --url="ssh://git@github.com/equinor/radix-flux" \
---branch="dr1" \
+--branch="master" \
 --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
 --components-extra=image-reflector-controller,image-automation-controller \
 --version="v$FLUX_VERSION" \
