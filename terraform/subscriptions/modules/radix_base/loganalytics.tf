@@ -1,6 +1,6 @@
 module "loganalytics" {
-  source                        = "../../../modules/log-analytics"
-  workspace_name                = "radix-logs-${module.config.environment}"
+  source                        = "../../modules/log-analytics"
+  workspace_name                = "radix-logs-${var.environment}"
   resource_group_name           = module.resourcegroup_common.data.name
   location                      = module.resourcegroup_common.data.location
   retention_in_days             = 30
@@ -8,8 +8,8 @@ module "loganalytics" {
 }
 
 module "loganalytics_containers" {
-  source                        = "../../../modules/log-analytics"
-  workspace_name                = "radix-container-logs-${module.config.environment}"
+  source                        = "../../modules/log-analytics"
+  workspace_name                = "radix-container-logs-${var.environment}"
   resource_group_name           = module.resourcegroup_common.data.name
   location                      = module.resourcegroup_common.data.location
   retention_in_days             = 30

@@ -16,7 +16,7 @@ terraform {
     resource_group_name  = "s612-tfstate" # template
     storage_account_name = "s612radixinfra" # template
     container_name       = "tfstate"
-    key                  = "d1/base/terraform.tfstate" # template
+    key                  = "d1/pre-clusters/terraform.tfstate" # template
     use_azuread_auth     = true # This enables RBAC instead of access keys
   }
 }

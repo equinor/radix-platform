@@ -5,6 +5,32 @@ grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
+function dr_zone_message() {
+  local env="$1"
+  echo "As MODE=DR is requested, you need to temporarily alter some code."
+  echo "Please examine the functions config_path() and environment_json() in util.sh."
+  echo "Prepare these functions for an alternate zone and/or subscription."
+  echo ""
+  echo "\$env must be set to $env, and you need to specify the subscription (e.g., s612)."
+  echo ""
+  
+  while true; do
+    read -r -p "If this is already done, press Yes (Y/n): " yn
+    case $yn in
+      [Yy]*) break ;;
+      [Nn]*)
+        echo ""
+        echo "Quitting."
+        exit 0
+        ;;
+      *) echo "Please answer yes or no." ;;
+    esac
+  done
+  
+  echo ""
+}
+
+
 function config_path() {
   local env="$1"
   RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)

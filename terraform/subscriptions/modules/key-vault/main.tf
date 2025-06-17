@@ -1,3 +1,5 @@
+data "azurerm_client_config" "current" {}
+
 data "azuread_group" "this" {
   display_name     = "Radix Platform Operators"
   security_enabled = true
@@ -12,7 +14,7 @@ data "external" "keyvault_secret" {
   query = {
     vault           = "${var.vault_name}"
     name            = "kubernetes-api-auth-ip-range"
-    subscription_id = var.subscription_id
+    subscription_id = data.azurerm_client_config.current.subscription_id
   }
 }
 
@@ -20,7 +22,7 @@ resource "azurerm_key_vault" "this" {
   name                          = var.vault_name
   location                      = var.location
   resource_group_name           = var.resource_group_name
-  tenant_id                     = var.tenant_id
+  tenant_id                     = data.azurerm_client_config.current.tenant_id
   soft_delete_retention_days    = var.testzone ? 7 : 90
   purge_protection_enabled      = var.testzone ? false : true
   enable_rbac_authorization     = var.enable_rbac_authorization
@@ -40,7 +42,7 @@ resource "azurerm_key_vault" "this" {
 
 resource "azurerm_role_assignment" "this" {
   scope              = azurerm_key_vault.this.id
-  role_definition_id = data.azurerm_role_definition.this.role_definition_id
+  role_definition_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}${data.azurerm_role_definition.this.role_definition_id}"
   principal_id       = var.kv_secrets_user_id
 }
 
@@ -53,7 +55,7 @@ data "azurerm_subnet" "subnet" {
 resource "azurerm_key_vault_access_policy" "this" {
   for_each     = var.enable_rbac_authorization == false ? { "${var.vault_name}" : true } : {}
   key_vault_id = azurerm_key_vault.this.id
-  tenant_id    = var.tenant_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = data.azuread_group.this.object_id
   certificate_permissions = [
     "Get", "List", "Update", "Create", "Import", "Delete", "Recover", "Backup", "Restore", "ManageContacts", "ManageIssuers", "GetIssuers", "ListIssuers", "SetIssuers", "DeleteIssuers"

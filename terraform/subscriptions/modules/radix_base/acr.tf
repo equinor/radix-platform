@@ -1,22 +1,22 @@
 module "acr" {
-  source              = "../../../modules/acr"
-  location            = module.config.location
+  source              = "../../modules/acr"
+  location            = var.location
   resource_group_name = module.resourcegroup_common.data.name
-  acr                 = module.config.environment
+  acr                 = var.environment
   vnet_resource_group = module.azurerm_virtual_network.data.vnet_hub.resource_group_name
   subnet_id           = module.azurerm_virtual_network.data.vnet_subnet.id
   keyvault_name       = module.keyvault.vault_name
-  radix_cr_cicd       = "1ae3ea06-4fd8-47a4-a3ba-75cc8b305dc1"
-  secondary_location  = module.config.secondary_location
-  testzone            = module.config.testzone
+  radix_cr_cicd       = var.radix_cr_cicd
+  secondary_location  = var.secondary_location
+  testzone            = var.testzone
   depends_on          = [module.azurerm_virtual_network]
 }
 
 module "radix-id-acr-workflows" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-acr-workflows-${module.config.environment}"
-  resource_group_name = module.config.common_resource_group
-  location            = module.config.location
+  source              = "../../modules/userassignedidentity"
+  name                = "radix-id-acr-workflows-${var.environment}"
+  resource_group_name = var.common_resource_group
+  location            = var.location
   roleassignments = {
     contributor = {
       role     = "Contributor" # Needed to open firewall

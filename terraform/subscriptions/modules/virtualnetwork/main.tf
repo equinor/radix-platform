@@ -19,6 +19,7 @@ resource "azurerm_subnet" "this" {
   address_prefixes                  = ["10.0.0.0/18"]
   service_endpoints                 = ["Microsoft.Storage"] #"["Microsoft.Storage","Microsoft.ContainerRegistry","Microsoft.KeyVault","Microsoft.Sql","Microsoft.Storage"]
   private_endpoint_network_policies = "Disabled"
+  depends_on = [ azurerm_virtual_network.vnet-hub ]
 }
 
 resource "azurerm_private_dns_zone" "this" {

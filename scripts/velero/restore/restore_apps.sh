@@ -30,10 +30,13 @@
 ###
 
 # Example: Restore into same cluster from where the backup was done
-# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-44 BACKUP_NAME=all-hourly-20241030060001 ./restore_apps.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-44 BACKUP_NAME=all-hourly-20251030060001 ./restore_apps.sh
 
 # Example: Restore into different cluster from where the backup was done
-# # RADIX_ZONE=dev  SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20190703064411 ./restore_apps.sh
+# RADIX_ZONE=dev  SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20250703064411 ./restore_apps.sh
+
+# Example: Disaster recovery scenario. BACKUP_NAME must be available in SOURCE_CLUSTER(ie the cluster you are restoring to)
+# RADIX_ZONE=d1 MODE=DR SOURCE_CLUSTER=disaster-22 BACKUP_NAME=all-hourly-20250605100053 ./restore_apps.sh
 
 #######################################################################################
 ### DEVELOPMENT
@@ -97,14 +100,15 @@ echo ""
 ###
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 #######################################################################################
 ### Read inputs and configs
 ###
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]] || [[ $MODE=DR ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -112,16 +116,9 @@ else
     exit 1
 fi
 
-# if [[ -z "$RADIX_ZONE_ENV" ]]; then
-#   echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
-#   exit 1
-# else
-#   if [[ ! -f "$RADIX_ZONE_ENV" ]]; then
-#     echo "ERROR: RADIX_ZONE_ENV=$RADIX_ZONE_ENV is invalid, the file does not exist." >&2
-#     exit 1
-#   fi
-#   source "$RADIX_ZONE_ENV"
-# fi
+if [[ $MODE == "DR" ]]; then
+  dr_zone_message $RADIX_ZONE
+fi
 
 if [[ -z "$SOURCE_CLUSTER" ]]; then
   echo "ERROR: Please provide SOURCE_CLUSTER." >&2
@@ -132,12 +129,6 @@ if [[ -z "$BACKUP_NAME" ]]; then
   echo "ERROR: Please provide BACKUP_NAME." >&2
   exit 1
 fi
-
-# Source util scripts
-
-# echo "source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
-RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
 
@@ -212,6 +203,8 @@ if [[ $USER_PROMPT == true ]]; then
   done
   echo ""
 fi
+
+
 
 #######################################################################################
 ### Support funcs
