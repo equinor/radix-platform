@@ -1,7 +1,7 @@
 module "radix_id_akskubelet_mi" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-akskubelet-${module.config.environment}" # template
-  location            = module.config.location
+  source              = "../../modules/userassignedidentity"
+  name                = "radix-id-akskubelet-${var.environment}" # template
+  location            = var.location
   resource_group_name = module.resourcegroup_common.data.name
   roleassignments = {
     arcpull = {
@@ -16,9 +16,9 @@ module "radix_id_akskubelet_mi" {
 }
 
 module "radix_id_aks_mi" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-aks-${module.config.environment}" # template
-  location            = module.config.location
+  source              = "../../modules/userassignedidentity"
+  name                = "radix-id-aks-${var.environment}" # template
+  location            = var.location
   resource_group_name = module.resourcegroup_common.data.name
   roleassignments = {
     mi_operator = {

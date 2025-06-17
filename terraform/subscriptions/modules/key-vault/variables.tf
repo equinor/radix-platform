@@ -1,12 +1,12 @@
-variable "tenant_id" {
-  description = "Tenant ID"
-  type        = string
-}
+# variable "tenant_id" {
+#   description = "Tenant ID"
+#   type        = string
+# }
 
-variable "subscription_id" {
-  description = "The subscription ID"
-  type        = string
-}
+# variable "subscription_id" {
+#   description = "The subscription ID"
+#   type        = string
+# }
 
 variable "vault_name" {
   description = "The name of this Key vault."
