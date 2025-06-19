@@ -18,7 +18,7 @@
 #######################################################################################
 ### HOW TO USE
 ###
-# RADIX_ZONE=d1 DEST_CLUSTER=disaster-22 AZ_SUBSCRIPTION_NAME=s612 ./zone_new.sh
+# RADIX_ZONE=d1 DEST_CLUSTER=disaster-22 AZ_SUBSCRIPTION_NAME=s612 MODE=DR ./zone_new.sh
 
 if [[ -z "$RADIX_ZONE" ]]; then
     echo "ERROR: Please provide RADIX_ZONE" >&2
@@ -42,10 +42,7 @@ grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 normal=$(tput sgr0)
 printf "Checkout follwing tasks to populate new zone:\n"
-printf "%s◄ Populate following terraform folder: %s%s\n" "${yel}" "$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE from template in $RADIX_PLATFORM_REPOSITORY_PATH/terraform/templates/zone_new" "${normal}"
-printf "%s► Execute: %s%s\n" "${yel}" "terraform -chdir=$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters init" "${normal}"
-printf "%s► Execute: %s%s\n" "${yel}" "terraform -chdir=$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters apply" "${normal}"
-printf "%s► Populate Keyvault %s%s\n" "${yel}" "radix-keyv-$RADIX_ZONE with items found in the readme.md ($RADIX_PLATFORM_REPOSITORY_PATH/terraform/templates/zone_new/README.md)" "${normal}"
+printf "%s► Read and execute instructions in 'new_zone.md' document in %s%s\n" "${yel}" "/radix-private/infrastructure/" "${normal}"
 
 REQ_FLUX_VERSION="2.5.1"
 FLUX_VERSION=$(flux --version | awk '{print $3'})
@@ -56,7 +53,7 @@ fi
 
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
-RADIX_ZONE="d1"
+dr_zone_message $MODE
 printf "\n%s► Read YAML configfile $RADIX_ZONE"
 RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
 printf "\n%s► Read terraform variables and configuration"
