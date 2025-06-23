@@ -135,7 +135,6 @@ EOF
 AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
-RADIX_ENVIRONMENT=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
 AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
 echo ""
 
@@ -230,7 +229,6 @@ echo -e "   > WHERE:"
 echo -e "   ------------------------------------------------------------------"
 echo -e "   -  RADIX_ZONE                       : $RADIX_ZONE"
 echo -e "   -  AZ_RADIX_ZONE_LOCATION           : $AZ_RADIX_ZONE_LOCATION"
-echo -e "   -  RADIX_ENVIRONMENT                : $RADIX_ENVIRONMENT"
 echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
