@@ -96,3 +96,37 @@ resource "azurerm_private_dns_a_record" "this" {
 output "azurerm_key_vault_id" {
   value = azurerm_key_vault.this.id
 }
+
+##  Azure App Configuration
+
+resource "azurerm_user_assigned_identity" "app_config" {
+  name                = "radix-id-appconfig-${var.environment}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags = {
+    IaC = "terraform"
+  }
+}
+
+resource "azurerm_app_configuration" "this" {
+  name                                 = "radix-appconfig-${var.environment}"
+  resource_group_name                  = var.resource_group_name
+  location                             = var.location
+  sku                                  = var.appconfig_sku
+  local_auth_enabled                   = true
+  public_network_access                = "Enabled"
+  purge_protection_enabled             = var.appconfig_sku == "developer" ? false : true # This field only works for standard sku
+  data_plane_proxy_authentication_mode = "Pass-through"
+  # soft_delete_retention_days  = var.appconfig_sku == "developer" ? null : 7
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.app_config.id,
+    ]
+  }
+}
+
+output "azurerm_app_configuration_id" {
+  value = azurerm_app_configuration.this.id
+}

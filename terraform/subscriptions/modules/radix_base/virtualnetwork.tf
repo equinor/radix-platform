@@ -3,7 +3,7 @@ module "azurerm_virtual_network" {
   location            = var.location
   enviroment          = var.environment
   vnet_resource_group = module.resourcegroup_vnet.data.name
-  private_dns_zones = var.private_dns_zones_names
+  private_dns_zones   = var.private_dns_zones_names
   depends_on          = [module.resourcegroup_vnet]
   testzone            = var.testzone
 

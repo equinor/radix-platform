@@ -1,6 +1,11 @@
-data "azurerm_key_vault_secret" "api_ip" {
-  name         = "kubernetes-api-auth-ip-range"
-  key_vault_id = data.azurerm_key_vault.this.id
+data "azurerm_app_configuration" "this" {
+  name                = "radix-appconfig-${module.config.environment}"
+  resource_group_name = module.config.common_resource_group
+}
+
+data "azurerm_app_configuration_key" "ip_range" {
+  configuration_store_id = data.azurerm_app_configuration.this.id
+  key                    = "kubernetes-api-auth-ip-range"
 }
 
 data "azurerm_user_assigned_identity" "aks" {
@@ -40,7 +45,7 @@ module "aks" {
   address_space               = module.config.networksets[each.value.networkset].vnet
   enviroment                  = module.config.environment
   aks_version                 = each.value.aksversion
-  authorized_ip_ranges        = split(",", nonsensitive(data.azurerm_key_vault_secret.api_ip.value))
+  authorized_ip_ranges        = split(",", data.azurerm_app_configuration_key.ip_range.value)
   nodepools                   = var.nodepools
   systempool                  = var.systempool
   identity_aks                = data.azurerm_user_assigned_identity.aks.id

@@ -36,9 +36,9 @@ module "radix_id_gitrunner" {
       role     = "Contributor"
       scope_id = data.azurerm_resource_group.networkwatcher.id
     }
-    keyvault_contributor = {
-      role     = "Key Vault Secrets User" # Needed to read secrets
-      scope_id = module.keyvault.vault_id
+    app_configuration_reader = {
+      role     = "App Configuration Data Reader"
+      scope_id = module.keyvault.azurerm_app_configuration_id
     }
     vnet_contributor = {
       role     = "Contributor"
