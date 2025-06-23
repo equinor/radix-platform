@@ -30,7 +30,7 @@ variable "nodepools" {
     memory2v1 = {
       vm_size    = "Standard_M96s_2_v3"
       min_count  = 0
-      max_count  = 2
+      max_count  = 4
       node_count = 0
       node_labels = {
         "radix-nodetype" = "memory-optimized-2-v1"

@@ -17,7 +17,7 @@ variable "environment" {
 
 variable "developers" {
   type = list(string)
-  
+
 }
 
 variable "subscription" {
@@ -26,7 +26,7 @@ variable "subscription" {
 
 variable "private_dns_zones_names" {
   type = list(string)
-  
+
 }
 
 variable "cluster_name" {
@@ -35,7 +35,7 @@ variable "cluster_name" {
 
 variable "cluster_resource_group" {
   type = string
-  
+
 }
 
 variable "dns_prefix" {
@@ -55,7 +55,7 @@ variable "aks_version" {
 }
 
 variable "network_policy" {
-  type = string
+  type    = string
   default = "cilium"
 }
 

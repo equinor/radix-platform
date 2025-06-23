@@ -54,12 +54,6 @@ jobs:
             --resource-group "${{ matrix.target.subscription }}-tfstate" \
             --account-name "${{ matrix.target.subscription }}radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
-      - name: Add GitHub IP to KeyVault
-        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply }}
-        run: |
-          az keyvault network-rule add --name "radix-keyv-${{ matrix.target.name }}" \
-            --resource-group "common-${{ matrix.target.name }}" \
-            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
       - name: Lets sleep for 30 seconds for FW rule to complete
         if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply }}
         run: sleep 30s
@@ -84,10 +78,4 @@ jobs:
           az storage account network-rule remove \
             --resource-group "${{ matrix.target.subscription }}-tfstate" \
             --account-name "${{ matrix.target.subscription }}radixinfra" \
-            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
-      - name: Revoke GitHub IP on KeyVault
-        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply }}
-        run: |
-          az keyvault network-rule remove --name "radix-keyv-${{ matrix.target.name }}" \
-            --resource-group "common-${{ matrix.target.name }}" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null

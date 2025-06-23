@@ -33,7 +33,7 @@ variable "testzone" {
 
 variable "private_dns_zones_names" {
   type = list(string)
-  
+
 }
 
 variable "secondary_location" {

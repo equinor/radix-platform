@@ -59,3 +59,12 @@ variable "testzone" {
   type    = bool
   default = false
 }
+
+variable "environment" {
+  type = string
+}
+
+variable "appconfig_sku" {
+  type    = string
+  default = "developer"
+}
