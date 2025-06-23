@@ -44,6 +44,7 @@ This scripts takes care of bootstrapping new cluster (if it hasn't been created 
 
 - PIM yourself to 'AZ PIM OMNIA RADIX Cluster Admin - `dev or prod`'
 - Check that you can list secrets in current cluster (where you are migrating from)
+- Optionally Teardown: Modify `config.yaml` and comment out the cluster to be removed, then run `teardown.sh` in `scripts/aks/teardown.sh`
 - Run script by the [migrate.sh](./migrate.sh). See file header in for usage
 - Follow the procedure from the script.
 - After cluster is created from the Github Action, verify the cluster in Azure

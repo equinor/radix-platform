@@ -25,7 +25,7 @@
 # RADIX_ZONE=dev SOURCE_CLUSTER=weekly-26 DEST_CLUSTER=cilium-26 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 # or without log:
-# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-50 DEST_CLUSTER=weekly-51 ./migrate.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-25 DEST_CLUSTER=weekly-26 ./migrate.sh
 
 
 # DISASTER RECOVERY:
