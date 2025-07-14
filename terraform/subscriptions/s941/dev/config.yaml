@@ -37,11 +37,9 @@ clusters:
     aksversion: "1.32.5"
     networkset: "networkset2"
     network_policy: "cilium"
-    os_sku: "AzureLinux"
     activecluster: true
   weekly-26:
     aksversion: "1.32.4"
     networkset: "networkset1"
     network_policy: "cilium"
-    os_sku: "AzureLinux"
     # activecluster: true

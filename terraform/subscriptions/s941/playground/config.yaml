@@ -51,4 +51,3 @@ clusters:
     network_policy: "cilium"
     dns_prefix: "playground-clusters-playgro-16ede4"
     activecluster: true
-    os_sku: "AzureLinux"
