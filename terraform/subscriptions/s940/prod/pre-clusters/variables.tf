@@ -18,13 +18,14 @@ variable "systempool" {
 
 variable "nodepools" {
   type = map(object({
-    vm_size      = string
-    min_count    = number
-    max_count    = number
-    node_count   = optional(number, 1)
-    node_labels  = optional(map(string))
-    node_taints  = optional(list(string), [])
-    os_disk_type = optional(string, "Managed")
+    vm_size         = string
+    min_count       = number
+    max_count       = number
+    node_count      = optional(number, 1)
+    node_labels     = optional(map(string))
+    node_taints     = optional(list(string), [])
+    os_disk_type    = optional(string, "Managed")
+    nodepool_os_sku = optional(string, "Ubuntu")
   }))
   default = {
     memory2v1 = {
@@ -75,7 +76,7 @@ variable "nodepools" {
     armuserpool = {
       vm_size   = "Standard_E16ps_v5"
       min_count = 1
-      max_count = 17
+      max_count = 16
 
     }
     x86pipepool = {

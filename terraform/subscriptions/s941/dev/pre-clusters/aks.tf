@@ -63,8 +63,6 @@ module "aks" {
   cluster_vnet_resourcegroup  = data.azurerm_virtual_network.hub.resource_group_name
   common_resource_group       = module.config.common_resource_group
   active_cluster              = lookup(module.config.cluster[each.key], "activecluster", false)
-  os_sku                      = lookup(module.config.cluster[each.key], "os_sku", "Ubuntu")
-
 }
 
 locals {

@@ -4,6 +4,7 @@ variable "systempool" {
     tags      = optional(map(string))
     min_nodes = number
     max_nodes = number
+    os_sku    = optional(string, "AzureLinux")
   })
 
   default = {
@@ -18,13 +19,14 @@ variable "systempool" {
 
 variable "nodepools" {
   type = map(object({
-    vm_size      = string
-    min_count    = number
-    max_count    = number
-    node_count   = optional(number, 1)
-    node_labels  = optional(map(string))
-    node_taints  = optional(list(string), [])
-    os_disk_type = optional(string, "Managed")
+    vm_size         = string
+    min_count       = number
+    max_count       = number
+    node_count      = optional(number, 1)
+    node_labels     = optional(map(string))
+    node_taints     = optional(list(string), [])
+    os_disk_type    = optional(string, "Managed")
+    nodepool_os_sku = optional(string, "AzureLinux")
   }))
   default = {
     memory2v1 = {
