@@ -46,7 +46,7 @@ networksets:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-012"
 clusters:
   playground-29:
-    aksversion: "1.30.9"
+    aksversion: "1.32.5"
     networkset: "networkset1"
     network_policy: "cilium"
     dns_prefix: "playground-clusters-playgro-16ede4"
