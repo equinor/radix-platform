@@ -31,10 +31,6 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-006"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-007"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-008"
-  networkset2:
-    vnet: "10.9.0.0"
-    ingressIP: "20.223.115.58"
-    egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-001"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-002"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-003"
@@ -43,10 +39,6 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-006"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-007"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-008"
-  networkset3:
-    vnet: "10.10.0.0"
-    ingressIP: "20.223.115.57"
-    egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-009"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-010"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-011"
@@ -55,6 +47,46 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-014"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-015"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-016"
+  networkset2:
+    vnet: "10.9.0.0"
+    ingressIP: "20.223.115.58"
+    egress:
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-017"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-018"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-019"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-020"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-021"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-022"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-023"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-024"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-025"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-026"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-027"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-028"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-029"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-030"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-031"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-032"
+  networkset3:
+    vnet: "10.10.0.0"
+    ingressIP: "20.223.115.57"
+    egress:
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-033"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-034"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-035"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-036"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-037"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-038"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-039"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-040"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-041"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-042"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-043"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-044"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-045"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-046"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-047"
+      - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-048"
 clusters:
   eu-18:
     aksversion: "1.32.5"

@@ -40,7 +40,7 @@ variable "nodepools" {
       node_taints = ["radix-nodetype=memory-optimized-2-v1:NoSchedule"]
     }
     nvidia1v1 = {
-      vm_size    = "Standard_NC6s_v3"
+      vm_size    = "Standard_NV12ads_A10_v5"
       min_count  = 0
       max_count  = 1
       node_count = 0
@@ -51,7 +51,7 @@ variable "nodepools" {
       os_disk_type = "Ephemeral"
     }
     nc6sv3 = {
-      vm_size    = "Standard_NC6s_v3"
+      vm_size    = "Standard_NV12ads_A10_v5"
       min_count  = 0
       max_count  = 1
       node_count = 0

@@ -264,6 +264,19 @@ az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
 printf "Done.\n"
 
 #######################################################################################
+### Verifying Data Contributor on scope of subscription is activated
+###
+
+printf "Verifying that logged in AAD user has Radix Confidential Data Contributor on scope of ${AZ_SUBSCRIPTION_ID}... "
+az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Radix Confidential Data Contributor\$"
+if [[ "$?" != "0" ]]; then
+  echo -e "ERROR: Logged in user is not Radix Confidential Data Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is Azure resource activated?" >&2
+  exit 1
+fi
+printf "Done.\n"
+
+
+#######################################################################################
 ### Verify task at hand
 ###
 
