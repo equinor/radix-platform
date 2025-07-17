@@ -119,8 +119,6 @@ resource "azurerm_role_definition" "radix_confidential_data_contributor" {
   assignable_scopes = var.all_subscriptions
 }
 
-
-
 module "app_application_registration" {
   source                             = "../../subscriptions/modules/app_application_registration"
   for_each                           = var.appregistrations
