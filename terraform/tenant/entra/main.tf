@@ -89,6 +89,38 @@ resource "azurerm_role_definition" "dns_txt_contributor" {
   assignable_scopes = var.all_subscriptions
 }
 
+resource "azurerm_role_definition" "radix_confidential_data_contributor" {
+  name        = "Radix Confidential Data Contributor"
+  description = "Role definition to access and update KV,SA and ACR"
+  scope       = data.azurerm_subscription.current.id
+  permissions {
+    actions = [
+      "Microsoft.ContainerRegistry/registries/read",
+      "Microsoft.ContainerRegistry/registries/artifacts/delete",
+      "Microsoft.ContainerRegistry/registries/pull/read",
+      "Microsoft.ContainerRegistry/registries/push/write",
+      "Microsoft.KeyVault/vaults/read",
+      "Microsoft.KeyVault/vaults/write",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/delete",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/write",
+      "Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action"
+      ]
+      data_actions = [
+        "Microsoft.KeyVault/vaults/secrets/*",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/move/action",
+        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action"
+      ]
+    not_actions = []
+  }
+  assignable_scopes = var.all_subscriptions
+}
+
+
+
 module "app_application_registration" {
   source                             = "../../subscriptions/modules/app_application_registration"
   for_each                           = var.appregistrations
