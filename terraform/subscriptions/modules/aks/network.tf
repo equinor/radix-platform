@@ -26,24 +26,35 @@ data "azurerm_network_watcher" "this" {
   resource_group_name = "NetworkWatcherRG"
 }
 
-
-resource "azurerm_network_watcher_flow_log" "this" {
-  network_watcher_name = data.azurerm_network_watcher.this.name
-  resource_group_name  = data.azurerm_network_watcher.this.resource_group_name
-  name                 = "nsg-${var.cluster_name}-flow-log"
-
-  network_security_group_id = azurerm_network_security_group.this.id
-  storage_account_id        = var.storageaccount_id
-  enabled                   = true
-
-  retention_policy {
-    enabled = true
-    days    = 90
-  }
+resource "azapi_resource" "vnet_flow_logs" {
+  type      = "Microsoft.Network/networkWatchers/flowLogs@2023-11-01"
+  name      = "${azurerm_virtual_network.this.name}-logs"
+  location  = data.azurerm_network_watcher.this.location
+  parent_id = data.azurerm_network_watcher.this.id
   tags = {
     IaC = "terraform"
   }
-  depends_on = [azurerm_network_security_group.this]
+
+  body = {
+    properties = {
+      enabled = true
+      flowAnalyticsConfiguration = {
+        networkWatcherFlowAnalyticsConfiguration = {
+          enabled = false
+        }
+      }
+      format = {
+        type    = "JSON"
+        version = 2
+      }
+      retentionPolicy = {
+        days    = 90
+        enabled = true
+      }
+      storageId        = var.storageaccount_id
+      targetResourceId = azurerm_virtual_network.this.id
+    }
+  }
 }
 
 resource "azurerm_virtual_network" "this" {
