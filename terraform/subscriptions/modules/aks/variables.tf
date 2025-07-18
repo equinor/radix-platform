@@ -148,3 +148,9 @@ variable "active_cluster" {
   type    = bool
   default = false
 }
+
+variable "hostencryption" {
+  type    = bool
+  default = false
+
+}
