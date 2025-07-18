@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = ">=2.0"
+    }
+  }
+}
+
 resource "azurerm_kubernetes_cluster" "this" {
   name                             = var.cluster_name
   resource_group_name              = var.resource_group
