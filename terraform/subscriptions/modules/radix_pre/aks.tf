@@ -67,6 +67,7 @@ module "aks" {
   cluster_vnet_resourcegroup  = data.azurerm_virtual_network.hub.resource_group_name
   common_resource_group       = var.common_resource_group
   # active_cluster              = lookup(module.config.cluster[each.key], "activecluster", false)
+  hostencryption = lookup(module.config.cluster[each.key], "hostencryption", false)
 }
 
 # locals {
