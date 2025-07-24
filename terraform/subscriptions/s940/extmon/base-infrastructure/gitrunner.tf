@@ -4,41 +4,50 @@ module "radix_id_gitrunner" {
   resource_group_name = module.config.common_resource_group
   location            = module.config.location
   roleassignments = {
-    privatelink-contributor = {
-      role     = "Radix Privatelink rbac-${module.config.subscription_shortname}"
-      scope_id = "/subscriptions/${module.config.subscription}"
-    }
-    blob_contributor = {
-      role     = "Contributor" # Needed to open firewall
+    # Storage and Blob Access
+    storage_account_contributor = {
+      role     = "Storage Account Contributor" # Needed to manage Storage Account firewall and settings
       scope_id = data.azurerm_storage_account.terraform_state.id
     }
-    storage_blob_contributor = {
-      role     = "Storage Blob Data Contributor" # Needed to read blobdata
+    storage_blob_data_contributor = {
+      role     = "Storage Blob Data Contributor" # Needed to manage blobs and containers (read/write/delete data)
       scope_id = data.azurerm_storage_account.terraform_state.id
     }
-    common_contributor = {
-      role     = "Contributor" # Needed to open firewall
-      scope_id = module.resourcegroup_common.data.id
+    # Infrastructure: Networking
+    vnet_contributor = {
+      role     = "Network Contributor" # Manage virtual networks, subnets, peerings, NSGs
+      scope_id = module.resourcegroup_vnet.data.id
     }
-    logs_contributor = {
-      role     = "Contributor"
-      scope_id = "${data.azurerm_resource_group.logs.id}"
-    }
-    clusters_contributor = {
-      role     = "Contributor"
+    networking_contributor = {
+      role     = "Network Contributor" # Same role, used in cluster RG
       scope_id = module.resourcegroup_clusters.data.id
     }
     networkwatcher_contributor = {
-      role     = "Contributor"
+      role     = "Contributor" # Needed to manage flow logs in Network Watcher
       scope_id = data.azurerm_resource_group.networkwatcher.id
     }
-    keyvault_contributor = {
-      role     = "Key Vault Secrets User" # Needed to read secrets
-      scope_id = module.keyvault.vault_id
+    #  Monitoring & Logging
+    log_analytics_contributor = {
+      role     = "Log Analytics Contributor" # Manage workspaces and access shared keys
+      scope_id = module.resourcegroup_common.data.id
     }
-    vnet_contributor = {
-      role     = "Contributor"
-      scope_id = module.resourcegroup_vnet.data.id
+    monitoring_contributor = {
+      role     = "Monitoring Contributor" # Manage alerts, metric rules, diagnostic settings, DCRs
+      scope_id = module.resourcegroup_clusters.data.id
+    }
+    # Kubernetes & DNS
+    kubernetes_contributor = {
+      role     = "Azure Kubernetes Service Contributor Role" # Manage AKS clusters (not cluster RBAC)
+      scope_id = module.resourcegroup_clusters.data.id
+    }
+    dns_zone_contributor = {
+      role     = "DNS Zone Contributor" # Needed to manage DNS records
+      scope_id = module.resourcegroup_common.data.id
+    }
+    # Custom Roles
+    privatelink-contributor = {
+      role     = "Radix Privatelink rbac-${module.config.subscription_shortname}"
+      scope_id = "/subscriptions/${module.config.subscription}"
     }
   }
   federated_credentials = {
