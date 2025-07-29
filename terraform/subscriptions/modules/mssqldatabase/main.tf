@@ -1,14 +1,15 @@
 
 resource "azurerm_mssql_server" "sqlserver" {
-  administrator_login           = var.administrator_login
-  administrator_login_password  = var.administrator_password
-  location                      = var.location
-  minimum_tls_version           = var.minimum_tls_version
-  name                          = var.server_name
-  resource_group_name           = var.rg_name
-  tags                          = var.tags
-  version                       = var.server_version
-  public_network_access_enabled = var.public_network_access_enabled
+  administrator_login                      = var.administrator_login
+  administrator_login_password             = var.administrator_password
+  location                                 = var.location
+  minimum_tls_version                      = var.minimum_tls_version
+  name                                     = var.server_name
+  resource_group_name                      = var.rg_name
+  tags                                     = var.tags
+  version                                  = var.server_version
+  public_network_access_enabled            = var.public_network_access_enabled
+  express_vulnerability_assessment_enabled = true
 
   azuread_administrator {
     login_username              = data.azuread_group.admin.display_name

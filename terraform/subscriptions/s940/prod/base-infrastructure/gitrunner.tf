@@ -13,7 +13,12 @@ module "radix_id_gitrunner" {
       role     = "Storage Blob Data Contributor" # Needed to manage blobs and containers (read/write/delete data)
       scope_id = data.azurerm_storage_account.terraform_state.id
     }
-    #  Infrastructure: Networking
+    # Container Registry
+    container_registry_app = {
+      role     = "Contributor"
+      scope_id = module.acr.azurerm_container_registry_app_id
+    }
+    # Infrastructure: Networking
     vnet_contributor = {
       role     = "Network Contributor" # Manage virtual networks, subnets, peerings, NSGs
       scope_id = module.resourcegroup_vnet.data.id
