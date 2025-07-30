@@ -20,9 +20,9 @@ jobs:
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          client-id: "94ad7918-e504-4132-9916-0293689cd140"
+          tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+          subscription-id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
 
       - name: Start clusters
         run: RADIX_ZONE=dev SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} TASK=start .github/workflows/scripts/dailytasks.sh
