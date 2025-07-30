@@ -1,13 +1,6 @@
 name: AKS Apply
 on:
-  workflow_call:
-  # workflow_dispatch:
-  #   inputs:
-  #     terraformapply:
-  #       description: 'Terraform apply'
-  #       type: boolean
-  #       required: true
-  #       default: false
+  workflow_dispatch:
 jobs:
   terraform-apply:
     name: Terraform apply

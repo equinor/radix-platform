@@ -1,10 +1,6 @@
 name: AKS Plan
 on:
-  workflow_call:
-  # pull_request:
-  #   paths:
-  #   - terraform/subscriptions/**
-  # workflow_dispatch:
+  workflow_dispatch:
 jobs:
   terraform-plan:
     name: Terraform plan
