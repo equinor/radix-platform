@@ -341,35 +341,34 @@ fi
 echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
 CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
 echo ""
-echo "You need to create a pull request to make ready for new cluster"
-printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
-git checkout -b $DEST_CLUSTER &> /dev/null
+# echo "You need to create a pull request to make ready for new cluster"
+# printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
+# git checkout -b $DEST_CLUSTER &> /dev/null
 printf "%s► Modify %s%s\n" "${grn}" "${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
 echo "DO NOT alter the 'activecluster' value yet.."
 echo "Press 'space' to continue"
 read -r -s -d ' '
-printf "%s► Adding file context to index\n"
-git add ${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml &> /dev/null
-printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
-git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
-printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
-git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
-echo "- Create a pull request to master"
-echo "- Monitor the github action and the result"
-echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
-echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
-echo "Press 'space' to continue"
-read -r -s -d ' '
-
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
-
+# printf "%s► Adding file context to index\n"
+# git add ${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml &> /dev/null
+# printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
+# git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
+# printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
+# git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
+# echo "- Create a pull request to master"
+# echo "- Monitor the github action and the result"
+# echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
+# echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
+# echo "Press 'space' to continue"
+# read -r -s -d ' '
 printf "Do some terraform tasks..."
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
+terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply
 
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 
 install_base_components=true
 

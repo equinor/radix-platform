@@ -1,8 +1,5 @@
 name: AKS Plan
 on:
-  pull_request:
-    paths:
-    - terraform/subscriptions/**
   workflow_dispatch:
 jobs:
   terraform-plan:
