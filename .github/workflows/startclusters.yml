@@ -10,10 +10,7 @@ permissions:
 jobs:
   start-dev-clusters:
     runs-on: ubuntu-latest
-    environment: dev
-    env:
-      KV_GROUP: common-dev
-      ENVIROMENT: dev
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4 #Clone Repo
 
