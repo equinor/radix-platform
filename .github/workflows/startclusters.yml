@@ -24,6 +24,22 @@ jobs:
           client-id: "94ad7918-e504-4132-9916-0293689cd140"
           tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
           subscription-id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
-
+      - name: Get GitHub Public IP
+        id: github_public_ip
+        run: echo "ipv4=$(curl 'https:///ifconfig.me/ip')" >> $GITHUB_OUTPUT
+      - name: Add GitHub IP to StorageAccount
+        run: |
+          az storage account network-rule add \
+            --resource-group "s941-tfstate" \
+            --account-name "s941radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+      - name: Lets sleep for 30 seconds for FW rule to complete
+        run: sleep 30s
       - name: Start clusters
         run: RADIX_ZONE=dev SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} TASK=start .github/workflows/scripts/dailytasks.sh
+      - name: Revoke GitHub IP on StorageAccount
+        run: |
+          az storage account network-rule remove \
+            --resource-group "s941-tfstate" \
+            --account-name "s941radixinfra" \
+            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
