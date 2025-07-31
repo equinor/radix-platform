@@ -12,20 +12,27 @@ permissions:
 jobs:
   purge:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false
       matrix:
         target:
           - name: "dev"
             registry: "radixdevapp"
+            subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
+            client_id: "94ad7918-e504-4132-9916-0293689cd140"
           - name: "playground"
             registry: "radixplaygroundapp"
+            subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
+            client_id: "cba1287a-42e8-4e1d-ba1f-d5a86021aa17"
           - name: "platform"
             registry: "radixprodapp"
+            subscription_id: ded7ca41-37c8-4085-862f-b11d21ab341a
+            client_id: "5b6da3d2-84f9-4703-b253-f6b7a528b080"
           - name: "c2"
             registry: "radixc2app"
-    environment: ${{matrix.target.name }}
-
+            subscription_id: ded7ca41-37c8-4085-862f-b11d21ab341a
+            client_id: "fa0fa160-648d-46f0-93ce-65fe0838a075"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,14 +46,14 @@ jobs:
 
       - name: Get GitHub Public IP
         id: github_public_ip
-        run: echo "ipv4=$(curl 'https://ipinfo.io/ip')" >> $GITHUB_OUTPUT
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
 
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ matrix.target.client_id }}
+          tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+          subscription-id: ${{ matrix.target.subscription_id }}
 
       - name: Enable Public Access to ACR
         id: enable_publicaccess
