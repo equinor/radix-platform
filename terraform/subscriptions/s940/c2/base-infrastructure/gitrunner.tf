@@ -97,12 +97,12 @@ module "radix_id_gitrunner" {
     radix-id-gitrunner = {
       name    = "radix-id-gitrunner-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix:environment:${module.config.environment}"
+      subject = "repo:equinor/radix:ref:refs/heads/main"
     },
     github_radix-platform = {
       name    = "radix-platform-env-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-platform:environment:${module.config.environment}"
+      subject = "repo:equinor/radix-platform:ref:refs/heads/master"
     }
   }
 }
