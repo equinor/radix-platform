@@ -342,8 +342,8 @@ echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORA
 CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
 echo ""
 # echo "You need to create a pull request to make ready for new cluster"
-# printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
-# git checkout -b $DEST_CLUSTER &> /dev/null
+printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
+git checkout -b $DEST_CLUSTER &> /dev/null
 printf "%s► Modify %s%s\n" "${grn}" "${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
 echo "DO NOT alter the 'activecluster' value yet.."
 echo "Press 'space' to continue"
@@ -747,7 +747,6 @@ printf "\n"
 printf "%sYou need to do following tasks to activate cluster:%s\n" "${yel}" "${normal}"
 printf "%s► Modify $RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) %s%s\n" "${grn}" "${normal}"
 printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply' %s%s\n" "${grn}" "${normal}"
-printf "%s► Execute: 'git add ${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml' %s%s\n" "${grn}" "${normal}"
 printf "%s► Execute: 'git push & merge branch '${DEST_CLUSTER}' to master' %s%s\n" "${grn}" "${normal}"
 printf "%s► Modify: postBuild.yaml file in radix-flux to reflect 'ACTIVE_CLUSTER: ${DEST_CLUSTER}' and merge %s%s\n" "${grn}" "${normal}"
 echo ""
