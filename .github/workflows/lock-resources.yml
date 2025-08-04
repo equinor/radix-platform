@@ -8,10 +8,10 @@ on:
 permissions:
   id-token: write
   contents: read
-
 jobs:
   lock-clusters:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false
       matrix:
@@ -19,14 +19,11 @@ jobs:
           - name: "platform"
             zoneFile: "prod"
             subscription: "s940"
+            client_id: "5b6da3d2-84f9-4703-b253-f6b7a528b080"
           - name: "c2"
             zoneFile: "c2"
             subscription: "s940"
-    environment: ${{matrix.target.name }}
-    env:
-      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+            client_id: "fa0fa160-648d-46f0-93ce-65fe0838a075"
     permissions:
       id-token: write
       contents: read
@@ -39,9 +36,9 @@ jobs:
       - name: 'Az login'
         uses: azure/login@v2
         with:
-          client-id: ${{ env.ARM_CLIENT_ID }}
-          tenant-id: ${{ env.ARM_TENANT_ID }}
-          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+          client-id: ${{ matrix.target.client_id }}
+          tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+          subscription-id: "ded7ca41-37c8-4085-862f-b11d21ab341a"
 
       - name: Get GitHub Public IP
         id: github_public_ip
