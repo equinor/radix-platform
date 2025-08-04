@@ -3,15 +3,14 @@ on:
   schedule:
     - cron: '0 18 * * *'
   workflow_dispatch:
-  pull_request:
 
 permissions:
   id-token: write
   contents: read
-
 jobs:
   lock-clusters:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false
       matrix:
@@ -19,14 +18,11 @@ jobs:
           - name: "platform"
             zoneFile: "prod"
             subscription: "s940"
+            client_id: "5b6da3d2-84f9-4703-b253-f6b7a528b080"
           - name: "c2"
             zoneFile: "c2"
             subscription: "s940"
-    environment: ${{matrix.target.name }}
-    env:
-      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+            client_id: "fa0fa160-648d-46f0-93ce-65fe0838a075"
     permissions:
       id-token: write
       contents: read
@@ -39,19 +35,19 @@ jobs:
       - name: 'Az login'
         uses: azure/login@v2
         with:
-          client-id: ${{ env.ARM_CLIENT_ID }}
-          tenant-id: ${{ env.ARM_TENANT_ID }}
-          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+          client-id: ${{ matrix.target.client_id }}
+          tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+          subscription-id: "ded7ca41-37c8-4085-862f-b11d21ab341a"
 
       - name: Get GitHub Public IP
         id: github_public_ip
-        run: echo "ipv4=$(curl 'https://ipinfo.io/ip')" >> $GITHUB_OUTPUT
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
 
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add \
-            --resource-group "${{ matrix.target.subscription }}-tfstate" \
-            --account-name "${{ matrix.target.subscription }}radixinfra" \
+            --resource-group "s940-tfstate" \
+            --account-name "s940radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
       - name: Lets sleep for 30 seconds for FW rule to complete
@@ -70,6 +66,6 @@ jobs:
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
           az storage account network-rule remove \
-            --resource-group "${{ matrix.target.subscription }}-tfstate" \
-            --account-name "${{ matrix.target.subscription }}radixinfra" \
+            --resource-group "s940-tfstate" \
+            --account-name "s940radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
