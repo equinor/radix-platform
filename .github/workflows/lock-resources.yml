@@ -42,13 +42,13 @@ jobs:
 
       - name: Get GitHub Public IP
         id: github_public_ip
-        run: echo "ipv4=$(curl 'https://ipinfo.io/ip')" >> $GITHUB_OUTPUT
+        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
 
       - name: Add GitHub IP to StorageAccount
         run: |
           az storage account network-rule add \
-            --resource-group "${{ matrix.target.subscription }}-tfstate" \
-            --account-name "${{ matrix.target.subscription }}radixinfra" \
+            --resource-group "s940-tfstate" \
+            --account-name "s940radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
 
       - name: Lets sleep for 30 seconds for FW rule to complete
@@ -67,6 +67,6 @@ jobs:
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: |
           az storage account network-rule remove \
-            --resource-group "${{ matrix.target.subscription }}-tfstate" \
-            --account-name "${{ matrix.target.subscription }}radixinfra" \
+            --resource-group "s940-tfstate" \
+            --account-name "s940radixinfra" \
             --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
