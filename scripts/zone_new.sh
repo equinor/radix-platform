@@ -44,7 +44,7 @@ normal=$(tput sgr0)
 printf "Checkout follwing tasks to populate new zone:\n"
 printf "%s► Read and execute instructions in 'new_zone.md' document in %s%s\n" "${yel}" "/radix-private/infrastructure/" "${normal}"
 
-REQ_FLUX_VERSION="2.5.1"
+REQ_FLUX_VERSION="2.6.4"
 FLUX_VERSION=$(flux --version | awk '{print $3'})
 if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
     printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
