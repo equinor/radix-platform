@@ -60,6 +60,11 @@ module "radix_id_gitrunner" {
       name    = "radix-platform-env-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-platform:ref:refs/heads/master"
+    },
+    radix-id-gitrunner-radix_pull = {
+      name    = "radix-id-gitrunner-${module.config.environment}-radix_pull"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix:pull_request"
     }
   }
 }
