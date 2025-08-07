@@ -271,6 +271,7 @@ printf "Verifying that logged in AAD user has Radix Confidential Data Contributo
 az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Radix Confidential Data Contributor\$"
 if [[ "$?" != "0" ]]; then
   echo -e "ERROR: Logged in user is not Radix Confidential Data Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is Azure resource activated?" >&2
+  echo -e "Make sure you have enabled AZ PIM OMNIA RADIX Cluster Admin - ${RADIX_ENVIRONMENT} role" >&2
   exit 1
 fi
 printf "Done.\n"

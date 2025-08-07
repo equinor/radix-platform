@@ -22,6 +22,10 @@ module "radix_id_gitrunner" {
     k8s_command_runner = {
       role     = "Radix Azure Kubernetes Service Command Runner"
       scope_id = module.resourcegroup_clusters.data.id
+    },
+    cluster_vnet_hub = {
+      role     = "Private DNS Zone Contributor"
+      scope_id = module.resourcegroup_vnet.data.id
     }
     # vnet_contributor = {
     #   role     = "Network Contributor" # Manage virtual networks, subnets, peerings, NSGs
@@ -103,6 +107,11 @@ module "radix_id_gitrunner" {
       name    = "radix-platform-env-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-platform:ref:refs/heads/master"
+    },
+    radix-id-gitrunner-radix_pull = {
+      name    = "radix-id-gitrunner-${module.config.environment}-radix_pull"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix:pull_request"
     }
   }
 }
