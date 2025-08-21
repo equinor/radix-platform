@@ -144,6 +144,11 @@ variable "cacheregistry" {
       library   = "prometheus-operator/prometheus-operator"
       repo      = "quay.io"
     }
+    redis = {
+      namespace = "library/redis"
+      library   = "library/redis"
+      repo      = "docker.io"
+    }
   }
 }
 

@@ -8,6 +8,7 @@ module "app_application_registration" {
   permissions                        = each.value.permissions
   implicit_id_token_issuance_enabled = each.value.implicit_id_token_issuance_enabled
   app_role_assignment_required       = each.value.app_role_assignment_required
+  grafana_role_assignments           = var.grafana_role_assignments
 }
 
 output "app_webconsole_client_id" {
