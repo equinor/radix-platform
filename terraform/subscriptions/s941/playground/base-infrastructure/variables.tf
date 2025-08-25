@@ -93,16 +93,6 @@ variable "appregistrations" {
   }
 }
 
-# variable "resource_groups_common_legacy" {
-#   type    = string
-#   default = "common"
-# }
-
-# variable "enviroment_temporary" {
-#   type    = string
-#   default = "development"
-# }
-
 variable "resource_groups_common_temporary" {
   type    = string
   default = "common"
@@ -111,4 +101,25 @@ variable "resource_groups_common_temporary" {
 variable "admin-adgroup" {
   type    = string
   default = "Radix SQL server admin - playground"
+}
+
+variable "grafana_role_assignments" {
+  type = map(object({
+    principal_object_id = string
+    role_key            = string
+  }))
+  default = {
+    radix_platform_operators = {
+      principal_object_id = "be5526de-1b7d-4389-b1ab-a36a99ef5cc5"
+      role_key            = "admins"
+    }
+    radix = {
+      principal_object_id = "ec8c30af-ffb6-4928-9c5c-4abf6ae6f82e"
+      role_key            = "editors"
+    }
+    radix_playground = {
+      principal_object_id = "4b8ec60e-714c-4a9d-8e0a-3e4cfb3c3d31"
+      role_key            = "editors"
+    }
+  }
 }
