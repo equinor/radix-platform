@@ -37,6 +37,16 @@ variable "appregistrations" {
       id        = string
       scope_ids = list(string)
     })))
+    app_roles = optional(map(object({
+      Displayname = string
+      Membertype  = string
+      Value       = string
+      Description = string
+    })))
+    role_assignments = optional(map(object({
+      principal_object_id = string
+      role_key            = string
+    })))
   }))
   default = {
     webconsole = {
@@ -80,6 +90,40 @@ variable "appregistrations" {
           scope_ids = [
             "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
           ]
+        }
+      }
+      app_roles = {
+        admins = {
+          Displayname = "Radix Grafana Admins"
+          Membertype  = "User"
+          Value       = "Admin"
+          Description = "Grafana App Admins"
+        }
+        editors = {
+          Displayname = "Radix Grafana Editors"
+          Membertype  = "User"
+          Value       = "Editor"
+          Description = "Grafana App Editors"
+        }
+        viewers = {
+          Displayname = "Radix Grafana Viewers"
+          Membertype  = "User"
+          Value       = "Viewer"
+          Description = "Grafana App Viewers"
+        }
+      }
+      role_assignments = {
+        radix_platform_operators = {
+          principal_object_id = "be5526de-1b7d-4389-b1ab-a36a99ef5cc5"
+          role_key            = "admins"
+        }
+        radix = {
+          principal_object_id = "ec8c30af-ffb6-4928-9c5c-4abf6ae6f82e"
+          role_key            = "editors"
+        }
+        radix_playground = {
+          principal_object_id = "4b8ec60e-714c-4a9d-8e0a-3e4cfb3c3d31"
+          role_key            = "editors"
         }
       }
     }

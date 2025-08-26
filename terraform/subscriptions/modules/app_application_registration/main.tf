@@ -8,8 +8,8 @@ resource "azuread_application_registration" "this" {
 
 }
 
-resource "azuread_application_app_role" "grafana_roles" {
-  for_each             = can(regex("radix-ar-grafana", azuread_application_registration.this.display_name)) ? var.grafana_app_roles : {}
+resource "azuread_application_app_role" "this" {
+  for_each             = var.app_roles != null ? (length(var.app_roles) > 0 ? var.app_roles : {}) : {}
   display_name         = each.value.Displayname
   description          = each.value.Description
   application_id       = azuread_application_registration.this.id
@@ -18,12 +18,13 @@ resource "azuread_application_app_role" "grafana_roles" {
   value                = each.value.Value
 }
 
-resource "azuread_app_role_assignment" "grafana_assignments" {
-  for_each            = can(regex("radix-ar-grafana", azuread_application_registration.this.display_name)) ? var.grafana_role_assignments : {}
+resource "azuread_app_role_assignment" "this" {
+  for_each            = var.role_assignments != null ? (length(var.role_assignments) > 0 ? var.role_assignments : {}) : {}
   principal_object_id = each.value.principal_object_id
   resource_object_id  = azuread_service_principal.this.id
-  app_role_id         = azuread_application_app_role.grafana_roles[each.value.role_key].role_id
+  app_role_id         = azuread_application_app_role.this[each.value.role_key].role_id
 }
+
 
 resource "azuread_application_owner" "this" {
   for_each        = toset(var.radixowners)
