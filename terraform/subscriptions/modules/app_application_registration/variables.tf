@@ -42,3 +42,21 @@ variable "token_version" {
   type    = number
   default = 1
 }
+
+variable "app_roles" {
+  type = map(object({
+    Displayname = string
+    Membertype  = string
+    Value       = string
+    Description = string
+  }))
+  default = {}
+}
+
+variable "role_assignments" {
+  type = map(object({
+    principal_object_id = string
+    role_key            = string
+  }))
+  default = {}
+}
