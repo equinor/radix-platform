@@ -37,16 +37,16 @@ variable "appregistrations" {
       id        = string
       scope_ids = list(string)
     })))
-    app_roles = optional(map(object({
+    app_roles = map(object({
       Displayname = string
       Membertype  = string
       Value       = string
       Description = string
-    })))
-    role_assignments = optional(map(object({
+    }))
+    role_assignments = map(object({
       principal_object_id = string
       role_key            = string
-    })))
+    }))
   }))
   default = {
     # webconsole = {

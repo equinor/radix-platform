@@ -42,16 +42,16 @@ variable "appregistrations" {
       id        = string
       scope_ids = list(string)
     })))
-    app_roles = optional(map(object({
+    app_roles = map(object({
       Displayname = string
       Membertype  = string
       Value       = string
       Description = string
-    })))
-    role_assignments = optional(map(object({
+    }))
+    role_assignments = map(object({
       principal_object_id = string
       role_key            = string
-    })))
+    }))
   }))
   default = {
     webconsole = {
@@ -84,6 +84,8 @@ variable "appregistrations" {
           ]
         }
       }
+      app_roles        = {}
+      role_assignments = {}
     }
     grafana = {
       display_name                 = "radix-ar-grafana-c2"
@@ -128,27 +130,8 @@ variable "appregistrations" {
       notes                              = "Used by radix-image-builder"
       implicit_id_token_issuance_enabled = true
       permissions                        = {}
-    }
-  }
-}
-
-variable "grafana_role_assignments" {
-  type = map(object({
-    principal_object_id = string
-    role_key            = string
-  }))
-  default = {
-    radix_platform_operators = {
-      principal_object_id = "be5526de-1b7d-4389-b1ab-a36a99ef5cc5"
-      role_key            = "admins"
-    }
-    radix = {
-      principal_object_id = "ec8c30af-ffb6-4928-9c5c-4abf6ae6f82e"
-      role_key            = "editors"
-    }
-    radix_platform = {
-      principal_object_id = "64b28659-4fe4-4222-8497-85dd7e43e25b"
-      role_key            = "editors"
+      app_roles                          = {}
+      role_assignments                   = {}
     }
   }
 }
