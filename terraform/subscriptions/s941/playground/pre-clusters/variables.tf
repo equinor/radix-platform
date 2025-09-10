@@ -48,7 +48,7 @@ variable "nodepools" {
         "radix-nodetype" = "gpu-nvidia-1-v1"
       }
       node_taints  = ["radix-nodetype=gpu-nvidia-1-v1:NoSchedule"]
-      os_disk_type = "Ephemeral"
+      os_disk_type = "Managed" # Standard_NC40ads_H100_v5 fail to boot if disk type is Ephemeral
     }
     nc6sv3 = {
       vm_size    = "Standard_NC40ads_H100_v5"
@@ -63,7 +63,7 @@ variable "nodepools" {
         "sku"                  = "gpu"
       }
       node_taints  = ["radix-node-gpu-count=1:NoSchedule"]
-      os_disk_type = "Ephemeral"
+      os_disk_type = "Managed" # Standard_NC40ads_H100_v5 fail to boot if disk type is Ephemeral
     }
     armpipepool = {
       vm_size   = "Standard_B8ps_v2"
