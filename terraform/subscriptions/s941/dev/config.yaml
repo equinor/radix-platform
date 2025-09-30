@@ -38,10 +38,10 @@ clusters:
     networkset: "networkset1"
     network_policy: "cilium"
     hostencryption: true
-    activecluster: true
-  weekly-38:
+    #activecluster: true
+  weekly-40:
     aksversion: "1.32.5"
     networkset: "networkset2"
     network_policy: "cilium"
     hostencryption: true
-    #activecluster: true
+    activecluster: true
