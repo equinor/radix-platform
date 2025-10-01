@@ -10,6 +10,7 @@ module "app_application_registration" {
   app_role_assignment_required       = each.value.app_role_assignment_required
   role_assignments                   = each.value.role_assignments
   app_roles                          = each.value.app_roles
+  optional_id_token_claims           = each.value.optional_id_token_claims
 }
 
 output "app_webconsole_client_id" {

@@ -5,7 +5,6 @@ resource "azuread_application_registration" "this" {
   notes                              = var.internal_notes
   requested_access_token_version     = var.token_version
   implicit_id_token_issuance_enabled = var.implicit_id_token_issuance_enabled
-
 }
 
 resource "azuread_application_app_role" "this" {
@@ -30,6 +29,19 @@ resource "azuread_application_owner" "this" {
   for_each        = toset(var.radixowners)
   application_id  = azuread_application_registration.this.id
   owner_object_id = each.value
+}
+
+resource "azuread_application_optional_claims" "this" {
+  count = length(var.optional_id_token_claims) > 0 ? 1 : 0
+  
+  application_id = azuread_application_registration.this.id
+  dynamic "id_token" {
+    for_each = toset(var.optional_id_token_claims)
+    content {
+      name = id_token.value
+    }
+  }
+
 }
 
 resource "azuread_application_api_access" "this" {

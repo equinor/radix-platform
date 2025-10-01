@@ -46,6 +46,7 @@ variable "appregistrations" {
       principal_object_id = string
       role_key            = string
     }))
+    optional_id_token_claims = list(string)
   }))
   default = {
     webconsole = {
@@ -80,6 +81,7 @@ variable "appregistrations" {
       }
       app_roles        = {}
       role_assignments = {}
+      optional_id_token_claims = [ "login_hint" ]
     }
     grafana = {
       display_name                 = "radix-ar-grafana-dev"
@@ -117,6 +119,7 @@ variable "appregistrations" {
           role_key            = "editors"
         }
       }
+      optional_id_token_claims = []
     }
     cr_cicd = {
       display_name                       = "radix-cr-cicd-dev"
@@ -126,6 +129,7 @@ variable "appregistrations" {
       permissions                        = {}
       app_roles                          = {}
       role_assignments                   = {}
+      optional_id_token_claims           = []
     }
   }
 }
