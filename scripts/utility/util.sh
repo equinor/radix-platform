@@ -68,7 +68,6 @@ function environment_json() {
   local imageRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw imageRegistry)
   local ip_prefix_egress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .egress)
   local ip_prefix_ingress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .ingress)
-  local ip_prefix_egress_ips=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json egress_ips | jq -r .egress)
   local json=$(cat <<EOF
   {
     "cluster_rg": "$az_resource_group_clusters",
@@ -78,8 +77,7 @@ function environment_json() {
     "dnz_zone": "$dns_zone_name",
     "acr": "$imageRegistry",
     "egress_prefix": "$ip_prefix_egress",
-    "ingress_prefix": "$ip_prefix_ingress",
-    "ip_prefix_egress_ips": "$ip_prefix_egress_ips"
+    "ingress_prefix": "$ip_prefix_ingress"
   }
 EOF
 )
