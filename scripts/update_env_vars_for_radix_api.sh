@@ -129,6 +129,8 @@ updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "OIDC_KUBERNETES_AUDIENCE" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "OIDC_KUBERNETES_AUDIENCE" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
 
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "CLUSTER_OIDC_ISSUERS" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "CLUSTER_OIDC_ISSUERS" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
 
 # Restart Radix API deployment
 printf "Restarting Radix API...\n"
