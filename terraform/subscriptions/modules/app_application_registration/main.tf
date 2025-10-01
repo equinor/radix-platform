@@ -33,7 +33,6 @@ resource "azuread_application_owner" "this" {
 
 resource "azuread_application_optional_claims" "this" {
   count = length(var.optional_id_token_claims) > 0 ? 1 : 0
-  
   application_id = azuread_application_registration.this.id
   dynamic "id_token" {
     for_each = toset(var.optional_id_token_claims)
@@ -41,7 +40,6 @@ resource "azuread_application_optional_claims" "this" {
       name = id_token.value
     }
   }
-
 }
 
 resource "azuread_application_api_access" "this" {
