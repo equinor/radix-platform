@@ -85,6 +85,7 @@ AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
+RADIX_CLUSTER_EGRESS_IPS=$(jq -r .ip_prefix_egress_ips <<< "$RADIX_RESOURCE_JSON")
 RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM=$(yq '.zoneconfig.RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM' <<< "$RADIX_ZONE_YAML")
 RADIX_API_REQUIRE_APP_AD_GROUPS=$(yq '.zoneconfig.RADIX_API_REQUIRE_APP_AD_GROUPS' <<< "$RADIX_ZONE_YAML")
 CLUSTER_OIDC_ISSUER_URL=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value["'${CLUSTER_NAME}'"]')
@@ -128,6 +129,9 @@ updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}"
 
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "OIDC_KUBERNETES_AUDIENCE" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "OIDC_KUBERNETES_AUDIENCE" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
+
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "CLUSTER_EGRESS_IPS" "${RADIX_CLUSTER_EGRESS_IPS}" STAGING="$STAGING" || exit
+updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "CLUSTER_EGRESS_IPS" "${RADIX_CLUSTER_EGRESS_IPS}" STAGING="$STAGING" || exit
 
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "qa" "server" "CLUSTER_OIDC_ISSUERS" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
 updateComponentEnvVar "server-radix-api-prod.${CLUSTER_NAME}.${AZ_RESOURCE_DNS}" "radix-api" "prod" "server" "CLUSTER_OIDC_ISSUERS" "${CLUSTER_OIDC_ISSUER_URL}" STAGING="$STAGING" || exit
