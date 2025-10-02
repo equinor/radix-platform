@@ -60,3 +60,8 @@ variable "role_assignments" {
   }))
   default = {}
 }
+
+variable "optional_id_token_claims" {
+  type = list(string)
+  default = []
+}
