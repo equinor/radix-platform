@@ -41,6 +41,7 @@ resource "azurerm_key_vault" "this" {
 }
 
 resource "azurerm_role_assignment" "this" {
+  count              = var.kv_secrets_user_id != "" ? 1 : 0
   scope              = azurerm_key_vault.this.id
   role_definition_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}${data.azurerm_role_definition.this.role_definition_id}"
   principal_id       = var.kv_secrets_user_id

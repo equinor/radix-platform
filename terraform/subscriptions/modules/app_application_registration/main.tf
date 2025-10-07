@@ -32,7 +32,7 @@ resource "azuread_application_owner" "this" {
 }
 
 resource "azuread_application_optional_claims" "this" {
-  count = length(var.optional_id_token_claims) > 0 ? 1 : 0
+  count          = length(var.optional_id_token_claims) > 0 ? 1 : 0
   application_id = azuread_application_registration.this.id
   dynamic "id_token" {
     for_each = toset(var.optional_id_token_claims)

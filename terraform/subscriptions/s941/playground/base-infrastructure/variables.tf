@@ -80,9 +80,9 @@ variable "appregistrations" {
           ]
         }
       }
-      app_roles        = {}
-      role_assignments = {}
-      optional_id_token_claims = [ "login_hint" ]
+      app_roles                = {}
+      role_assignments         = {}
+      optional_id_token_claims = ["login_hint"]
     }
     grafana = {
       display_name                 = "radix-ar-grafana-playground"
@@ -140,7 +140,7 @@ variable "appregistrations" {
       permissions                        = {}
       app_roles                          = {}
       role_assignments                   = {}
-      optional_id_token_claims = []
+      optional_id_token_claims           = []
     }
   }
 }

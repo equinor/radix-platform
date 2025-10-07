@@ -12,6 +12,6 @@ module "app_application_registration" {
   app_roles                          = each.value.app_roles
 }
 
-output "app_webconsole_client_id" {
-  value = module.app_application_registration.webconsole.azuread_application_client_id
-}
+# output "app_webconsole_client_id" {
+#   value = module.app_application_registration.webconsole.azuread_application_client_id
+# }
