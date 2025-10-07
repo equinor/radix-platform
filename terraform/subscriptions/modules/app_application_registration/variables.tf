@@ -62,6 +62,6 @@ variable "role_assignments" {
 }
 
 variable "optional_id_token_claims" {
-  type = list(string)
+  type    = list(string)
   default = []
 }
