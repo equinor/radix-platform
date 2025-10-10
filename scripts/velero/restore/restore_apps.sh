@@ -208,46 +208,6 @@ fi
 ### Support funcs
 ###
 
-# RRs are synced when there is a corresponding app namespace
-# for every RR
-function please_wait_until_rr_synced() {
-  local resource="rr"
-  local allCmd="kubectl get rr -o custom-columns=':metadata.name' --no-headers"
-  local currentCmd="kubectl get ns -o custom-columns=':metadata.name'"
-  local condition="grep '\-app'"
-
-  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
-}
-
-# RAs are synced when number of environments = number of environment namespaces
-function please_wait_until_ra_synced() {
-  local resource="ra"
-  local allCmd="kubectl get ra --all-namespaces -o custom-columns=':spec.environments[*].name' | tr ',' '\n'"
-  local currentCmd="kubectl get ns --selector=radix-wildcard-sync=radix-wildcard-tls-cert"
-  # No condition
-  local condition="grep ''"
-
-  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
-}
-
-function please_wait_until_ral_synced() {
-  local resource="ral"
-  local allCmd="kubectl get $resource --all-namespaces"
-  local currentCmd="kubectl get $resource --all-namespaces -o custom-columns=':status.reconciled'"
-  local condition="grep -v '<none>'"
-
-  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
-}
-
-function please_wait_until_rb_synced() {
-  local resource="rb"
-  local allCmd="kubectl get $resource --all-namespaces"
-  local currentCmd="kubectl get $resource --all-namespaces -o custom-columns=':status'"
-  local condition="grep -v '<none>'"
-
-  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
-}
-
 function please_wait() {
   # Loop for $1 iterations.
   # For every iteration, sleep 1s and print $2 delimiter.
@@ -264,144 +224,28 @@ function please_wait() {
   echo "Done."
 }
 
-# Common function for reconciling resources that have a status.condition field. When all have
-# a status.condition != <none> they can be considered reconciled
-function please_wait_for_reconciling() {
-  local resource="${1}"
-  local allCmd="kubectl get $resource --all-namespaces"
-  local currentCmd="kubectl get $resource --all-namespaces -o custom-columns=':status.condition'"
-  local condition="grep -v '<none>'"
-
-  please_wait_for_reconciling_withcondition "$resource" "$allCmd" "$currentCmd" "$condition"
-}
-
-# Common function for reconciling resources
-function please_wait_for_reconciling_withcondition() {
-  local resource="${1}"
-  local allCmd="${2}"
-  local currentCmd="${3}"
-  local condition="${4}"
-
-  # Sometimes reconciling gets stuck
-  local treshholdPercentage=98
-  local treshholdBroken=0
-
-  please_wait_for_restore_to_be_completed "$resource"
-
-  local all="$(bash -c "$allCmd" | wc -l | xargs)"
-  local current="$(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs)"
-
-  while [[ "$current" -lt "$all" ]]; do
-    percentage=$((current * 100 / all))
-    showProgress $percentage
-    sleep 5
-
-    if [[ "$treshholdBroken" == '10' ]]; then
-      break
-    fi
-
-    if [[ "$percentage" -gt "$treshholdPercentage" ]]; then
-      treshholdBroken="$((treshholdBroken + 1))"
-    fi
-
-    current=($(bash -c "$currentCmd" | bash -c "$condition" | wc -l | xargs))
-  done
-
-  showProgress 100
-}
-
 # It takes a little while before the velero restore object has state "phase: Completed".
 function please_wait_for_restore_to_be_completed() {
   local resource="${1}"
+  local command="kubectl get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status}"
 
-  ready=($(kubectl get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
+  while : ; do
+    status=$($command 2>/dev/null)
 
-  while [[ $ready != 'Completed' ]]; do
-    printf "$iterator"
-    sleep 5
-    ready=($(kubectl get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status.phase} -o jsonpath={.status.phase} 2>/dev/null))
-  done
-
-  please_wait_for_all_resources "$resource"
-}
-
-function please_wait_for_all_resources() {
-  local resource="${1}"
-  local command="kubectl get $resource --all-namespaces"
-
-  # Sometimes it takes a bit of time before all resources
-  # are visible in the cluster
-  first=($($command 2>/dev/null | wc -l | xargs))
-
-  sleep 5
-  second=($($command 2>/dev/null | wc -l | xargs))
-
-  # The resources stop growing, we
-  # can assume all are visible
-  while [[ $((second - first)) != 0 ]]; do
-    first=($($command 2>/dev/null | wc -l | xargs))
-    printf "%s" "$iterator"
-    sleep 5
-    second=($($command 2>/dev/null | wc -l | xargs))
+    itemsRestored=$(jq .progress.itemsRestored -r <(echo "$status"))
+    if [[ $itemsRestored != 'null' ]]; then
+      totalItems=$(jq .progress.totalItems -r <(echo "$status"))
+      progress="Progress: $itemsRestored of $totalItems items\r"
+      echo -ne $progress
+    fi
+    
+    phase=$(jq .phase -r <(echo "$status"))
+    if [[ $phase == 'Completed' ]]; then
+      break
+    fi
+    sleep 2
   done
 }
-
-function showProgress() {
-  local percentage="${1:-5}"
-
-  if [[ $percentage -lt 0 ]]; then
-    percentage=0
-  fi
-
-  local progress=""
-  local iterator=$percentage
-
-  while [[ "$iterator" -gt 0 ]]; do
-    iterator="$((iterator - 1))"
-    progress="$progress#"
-  done
-
-  progress="$progress  ($percentage%)\r"
-  echo -ne $progress
-}
-
-#######################################################################################
-### Connect kubectl
-###
-
-# Exit if cluster does not exist
-echo "Connecting kubectl to velero-destination..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
-  # Send message to stderr
-  echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
-  exit 0
-}
-
-#######################################################################################
-### Verify cluster access
-###
-verify_cluster_access
-
-#######################################################################################
-### Configure velero for restore in destinaton
-###
-
-echo ""
-echo "Configure velero for restore in destination cluster \"$DEST_CLUSTER\"..."
-
-# Set velero in destination to read source backup location
-PATCH_JSON="$(
-  cat <<END
-{
-    "spec": {
-       "accessMode":"ReadOnly",
-       "objectStorage": {
-            "bucket": "$SOURCE_CLUSTER"
-       }
-    }
- }
-END
-)"
 
 wait_for_velero() {
   local resource="${1}"
@@ -442,6 +286,44 @@ start_radix_operator() {
   printf " Done.\n"
 }
 
+#######################################################################################
+### Connect kubectl
+###
+
+# Exit if cluster does not exist
+echo "Connecting kubectl to velero-destination..."
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
+  # Send message to stderr
+  echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
+  exit 0
+}
+
+#######################################################################################
+### Verify cluster access
+###
+verify_cluster_access
+
+#######################################################################################
+### Configure velero for restore in destinaton
+###
+
+echo ""
+echo "Configure velero for restore in destination cluster \"$DEST_CLUSTER\"..."
+
+# Set velero in destination to read source backup location
+PATCH_JSON="$(
+  cat <<END
+{
+    "spec": {
+       "accessMode":"ReadOnly",
+       "objectStorage": {
+            "bucket": "$SOURCE_CLUSTER"
+       }
+    }
+ }
+END
+)"
+
 flux suspend ks -n flux-system velero
 wait_for_velero "BackupStorageLocation default"
 kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
@@ -455,23 +337,10 @@ done
 printf " Done.\n"
 
 #######################################################################################
-### Stop operator to avoid radix-applications to be restored with not existing secrets and config-maps
+### Stop operator to avoid reconciliation conflicts while restoring
 ###
 
 stop_radix_operator
-
-#######################################################################################
-### Restore Radix registrations
-###
-
-echo ""
-echo "Restore app registrations..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rr.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-echo ""
-echo "Wait for app registration to be restored..."
-please_wait_for_restore_to_be_completed "rr"
 
 #######################################################################################
 ### Restore secrets
@@ -500,71 +369,22 @@ echo "Wait for configmaps to be restored..."
 please_wait_for_restore_to_be_completed "configmaps"
 
 #######################################################################################
-### Start operator to sync radix-applications from rr
+### Restore Radix resources
+###
+
+echo ""
+echo "Restore Radix resources..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_radix.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+echo ""
+echo "Wait for Radix resources to be restored..."
+please_wait_for_restore_to_be_completed "radix"
+
+#######################################################################################
+### Start operator to reconcile Radix resources
 ###
 start_radix_operator
-
-#######################################################################################
-### Restore apps
-###
-
-echo ""
-echo "Wait for registrations to be picked up by radix-operator..."
-please_wait_until_rr_synced
-
-echo ""
-echo "Restore app config..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_ra.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-# TODO: Is the current mechansim sufficient?
-echo ""
-echo "Wait for app config to be picked up by radix-operator..."
-please_wait_until_ra_synced
-
-echo ""
-echo "Restore deployments..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rd.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-echo "Wait for deployments to be picked up by radix-operator..."
-please_wait_for_reconciling "rd"
-
-#######################################################################################
-### Restore jobs
-###
-
-echo ""
-echo "Restore jobs..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rj.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-echo "Wait for jobs to be picked up by radix-operator..."
-please_wait_for_reconciling "rj"
-
-#######################################################################################
-### Restore alerts
-###
-
-echo ""
-echo "Restore alerts..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_ral.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-echo "Wait for alerts to be picked up by radix-operator..."
-please_wait_until_ral_synced
-
-#######################################################################################
-### Restore batches
-###
-
-echo ""
-echo "Restore batches..."
-RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_rb.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
-
-echo "Wait for batches to be picked up by radix-operator..."
-please_wait_until_rb_synced
 
 #######################################################################################
 ### Configure velero back to normal operation in destination

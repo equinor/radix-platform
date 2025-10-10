@@ -1,0 +1,27 @@
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: ${BACKUP_NAME}-radix
+  namespace: velero
+spec:
+  backupName: ${BACKUP_NAME}
+  includedNamespaces:
+  - '*'
+  includedResources:
+  - radixregistrations.radix.equinor.com
+  - radixapplications.radix.equinor.com
+  - radixalerts.radix.equinor.com
+  - radixbatches.radix.equinor.com
+  - radixdeployments.radix.equinor.com
+  - radixdnsaliases.radix.equinor.com
+  - radixenvironments.radix.equinor.com
+  - radixjobs.radix.equinor.com
+  restoreStatus:
+    includedResources:
+    - radixregistrations.radix.equinor.com
+    - radixalerts.radix.equinor.com
+    - radixbatches.radix.equinor.com
+    - radixdeployments.radix.equinor.com
+    - radixdnsaliases.radix.equinor.com
+    - radixenvironments.radix.equinor.com
+    - radixjobs.radix.equinor.com
