@@ -35,26 +35,6 @@
 #   }
 # }
 
-# module "github-workload-id" {
-#   source              = "../../modules/userassignedidentity"
-#   name                = "radix-id-cost-allocation-github-${var.environment}"
-#   resource_group_name = module.resourcegroup_cost_allocation.data.name
-#   location            = module.resourcegroup_cost_allocation.data.location
-#   roleassignments = {
-#     contributor = {
-#       role     = "Contributor" # Needed to open firewall
-#       scope_id = module.acr.azurerm_container_registry_id
-#     },
-#   }
-#   federated_credentials = {
-#     github-main = {
-#       name    = "gh-radix-cost-allocation-acr-main-${var.environment}"
-#       issuer  = "https://token.actions.githubusercontent.com"
-#       subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
-#     }
-#   }
-# }
-
 module "mi-writer" {
   source              = "../../modules/userassignedidentity"
   name                = "radix-id-cost-allocation-writer-${var.environment}"
