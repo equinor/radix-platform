@@ -42,26 +42,6 @@ module "mssql-database" {
 #   resource_group_name = "common"    # TODO: Fix module.config.common_resource_group
 # }
 
-module "github-workload-id" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-cost-allocation-github-${module.config.environment}"
-  resource_group_name = module.resourcegroup_cost_allocation.data.name
-  location            = module.resourcegroup_cost_allocation.data.location
-  roleassignments = {
-    contributor = {
-      role     = "Contributor" # Needed to open firewall
-      scope_id = module.acr.azurerm_container_registry_id
-    },
-  }
-  federated_credentials = {
-    github-release = {
-      name    = "gh-radix-cost-allocation-acr-main-${module.config.environment}"
-      issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-cost-allocation:ref:refs/heads/release"
-    }
-  }
-}
-
 module "mi-writer" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-cost-allocation-writer-${module.config.environment}"
@@ -79,12 +59,7 @@ module "mi-reader" {
 output "mi-client-id" {
   value = module.mssql-database.mi-admin
 }
-output "github-buildpush-workflow" {
-  value = {
-    client-id = module.github-workload-id.client-id
-    name      = module.github-workload-id.name
-  }
-}
+
 output "mi-writer" {
   value = {
     client-id = module.mi-writer.client-id,
