@@ -52,12 +52,7 @@ module "mi-reader" {
 output "mi-client-id" {
   value = module.mssql-database.mi-admin
 }
-output "github-buildpush-workflow" {
-  value = {
-    client-id = module.github-workload-id.client-id
-    name      = module.github-workload-id.name
-  }
-}
+
 output "mi-writer" {
   value = {
     client-id = module.mi-writer.client-id,
