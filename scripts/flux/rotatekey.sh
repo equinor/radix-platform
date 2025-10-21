@@ -51,7 +51,7 @@ hash yq 2>/dev/null || {
 REQ_FLUX_VERSION="2.6.4"
 FLUX_VERSION=$(flux --version | awk '{print $3'})
 if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
-    printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
+    printf "${yel}Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
     exit 1
 fi
 #######################################################################################
