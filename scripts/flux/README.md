@@ -2,6 +2,9 @@
 
 Please see [radix-flux](https://github.com/equinor/radix-flux/) for what, why and how we use flux.
 
+## Rotate Flux Deploy key
+Run script [`./rotatekey.sh`](./rotatekey.sh), see script header for more how. 
+
 ## Bootstrap
 
 Run script [`./bootstrap.sh`](./bootstrap.sh), see script header for more how.  
