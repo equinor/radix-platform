@@ -425,26 +425,6 @@ if [[ $install_base_components == true ]]; then
 
     echo "Creating \"radix-flux-config\"..."
 
-    # list of public ips assigned to the cluster
-    printf "\nGetting list of public ips assigned to $CLUSTER_NAME..."
-    ASSIGNED_IPS="$(az network public-ip list \
-        --query "[?ipConfiguration.resourceGroup=='MC_${AZ_RESOURCE_GROUP_CLUSTERS}_${CLUSTER_NAME}_${AZ_RADIX_ZONE_LOCATION}'].ipAddress" \
-        --output json)"
-
-    if [[ "$ASSIGNED_IPS" == "[]" ]]; then
-        echo "ERROR: Could not find Public IP of cluster." >&2
-    else
-        # Loop through list of IPs and create a comma separated string.
-        for ipaddress in $(echo $ASSIGNED_IPS | jq -cr '.[]'); do
-            if [[ -z $IP_LIST ]]; then
-                IP_LIST=$(echo $ipaddress)
-            else
-                IP_LIST="$IP_LIST,$(echo $ipaddress)"
-            fi
-        done
-        printf "...Done\n"
-    fi
-
     printf "\nGetting Slack Webhook URL..."
     SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook | jq -r .value)"
     printf "...Done\n"
@@ -464,7 +444,6 @@ if [[ $install_base_components == true ]]; then
         --from-literal=imageRegistry="$IMAGE_REGISTRY" \
         --from-literal=clusterName="$CLUSTER_NAME" \
         --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
-        --from-literal=activeClusterIPs="$IP_LIST" \
         --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL"
     printf "...Done.\n"
 
