@@ -24,8 +24,29 @@ data "azuread_group" "radix-platform-operators" {
   security_enabled = true
 }
 
-resource "azurerm_role_assignment" "terraform-contributor" {
-  principal_id       = data.azuread_group.radix-platform-operators.object_id
-  scope              = data.azurerm_storage_account.infra.id
-  role_definition_id = azurerm_role_definition.terraform-state-contributor.role_definition_resource_id
+# resource "azurerm_role_assignment" "terraform-contributor" {
+#   principal_id       = data.azuread_group.radix-platform-operators.object_id
+#   scope              = data.azurerm_storage_account.infra.id
+#   role_definition_id = azurerm_role_definition.terraform-state-contributor.role_definition_resource_id
+# }
+
+data "azuread_group" "azappl_developers" {
+  display_name = "AZAPPL ${module.config.environment} - Contributor"
+  security_enabled = true
 }
+
+data "azurerm_role_definition" "azappl_confidential_data_contributor" {
+  name  = "Radix Confidential Data Contributor"
+  scope = "/subscriptions/${module.config.subscription}"
+}
+resource "azurerm_pim_eligible_role_assignment" "azappl_contributor" {
+  principal_id       = data.azuread_group.azappl_developers.object_id
+  role_definition_id = data.azurerm_role_definition.azappl_confidential_data_contributor.id
+  scope              = "/subscriptions/${module.config.subscription}"
+  schedule {
+    expiration {
+      duration_hours = 4
+    }
+  }
+}
+

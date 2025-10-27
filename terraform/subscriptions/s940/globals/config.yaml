@@ -1,6 +1,8 @@
 environment: "s940"
+cluster_type: ""
 subscription_shortname: "s940"
 location: "northeurope"
+zoneconfig: {}
 backend:
   resource_group_name:   "s940-tfstate"
   storage_account_name:  "s940radixinfra"
@@ -9,3 +11,4 @@ backend:
   tenant_id:             "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
   ip_key_vault_id:       "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-platform/providers/Microsoft.KeyVault/vaults/radix-keyv-platform"
   log_analytics_workspace_id: "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/common-platform/providers/Microsoft.OperationalInsights/workspaces/radix-logs-platform"
+clusters: {}
