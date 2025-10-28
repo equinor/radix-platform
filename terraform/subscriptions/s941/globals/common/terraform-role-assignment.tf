@@ -24,8 +24,27 @@ data "azuread_group" "radix-platform-developers" {
   security_enabled = true
 }
 
-resource "azurerm_role_assignment" "terraform-contributor" {
-  principal_id       = data.azuread_group.radix-platform-developers.object_id
-  scope              = data.azurerm_storage_account.infra.id
-  role_definition_id = azurerm_role_definition.terraform-state-contributor.role_definition_resource_id
+data "azuread_group" "azappl_developers" {
+  display_name = "AZAPPL ${module.config.environment} - Contributor"
+  security_enabled = true
+}
+
+data "azurerm_role_definition" "azappl_confidential_data_contributor" {
+  name  = "Radix Confidential Data Contributor"
+  scope = "/subscriptions/${module.config.subscription}"
+}
+# NOTE: The previous 'terraform-contributor' role assignment resource was removed.
+# It was replaced by the 'azappl_confidential_data_contributor' role assignment below.
+# This change was made because the previous role assignment is no longer needed for current access patterns.
+# All necessary permissions have been migrated to the new role assignment.
+# If you need the old role assignment, please review access requirements and update accordingly.
+resource "azurerm_pim_eligible_role_assignment" "azappl_developers" {
+  principal_id       = data.azuread_group.azappl_developers.object_id
+  role_definition_id = data.azurerm_role_definition.azappl_confidential_data_contributor.id
+  scope              = "/subscriptions/${module.config.subscription}"
+  schedule {
+    expiration {
+      duration_days = 365
+    }
+  }
 }

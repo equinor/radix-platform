@@ -14,7 +14,6 @@ resource "azurerm_storage_account" "storageaccount" {
   shared_access_key_enabled       = var.shared_access_key_enabled
   network_rules {
     default_action = "Deny"
-    ip_rules       = [var.ip_rule]
   }
 
   dynamic "blob_properties" {
