@@ -39,7 +39,7 @@ resource "azurerm_pim_eligible_role_assignment" "azappl_developers" {
   scope              = "/subscriptions/${module.config.subscription}"
   schedule {
     expiration {
-      duration_hours = 8
+      duration_days = 365
     }
   }
 }
