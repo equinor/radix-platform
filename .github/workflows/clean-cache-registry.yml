@@ -63,6 +63,9 @@ jobs:
         id: update_firewall
         run: az acr network-rule add --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
 
+      - name: Lets sleep for 60 seconds for FW rule to complete
+        run: sleep 60s
+
       - name: Create ACR Token
         run: echo "token=$(az acr login --name=${{ matrix.target.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
         id: token
@@ -73,6 +76,9 @@ jobs:
       - name: Revoke GitHub IP on ACR
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: az acr network-rule remove --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
+
+      - name: Lets sleep for 60 seconds for FW rule to complete
+        run: sleep 60s
 
       - name: Disable Public Access to ACR
         id: disable_publicaccess
