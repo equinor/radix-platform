@@ -82,7 +82,6 @@ jobs:
       - name: Azure Login with Managed Identity
         if: ${{ matrix.target.abac == true }}
         run: az login --identity --client-id ${{ matrix.target.client_id }}
-        id: token_abac
       
       - name: Purge old cache with abac
         if: ${{ matrix.target.abac == true }}
