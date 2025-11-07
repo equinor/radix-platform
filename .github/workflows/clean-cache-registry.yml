@@ -12,7 +12,7 @@ permissions:
 jobs:
   purge:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false
       matrix:
@@ -75,13 +75,13 @@ jobs:
         run: echo "token=$(az acr login --name=${{ matrix.target.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
         id: token
 
-      - name: Purge old cache with rbac
+      - name: Purge old cache (RBAC mode)
         if: ${{ matrix.target.abac == false }}
         run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
 
-      - name: Purge old cache with abac
+      - name: Purge old cache (RBAC + ABAC mode)
         if: ${{ matrix.target.abac == true }}
-        run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --filter='*/cache:.*' --ago=7d --untagged
+        run: az acr run --registry ${{ matrix.target.registry }} --cmd "acr purge --filter='*/cache:.*' --ago=7d --untagged" /dev/null
 
       - name: Revoke GitHub IP on ACR
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
