@@ -78,11 +78,7 @@ jobs:
       - name: Purge old cache with rbac
         if: ${{ matrix.target.abac == false }}
         run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
-      
-      - name: Azure Login with Managed Identity
-        if: ${{ matrix.target.abac == true }}
-        run: az login --identity
-      
+        
       - name: Purge old cache with abac
         if: ${{ matrix.target.abac == true }}
         run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --filter='*/cache:.*' --ago=7d --untagged
