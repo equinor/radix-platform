@@ -21,7 +21,7 @@ jobs:
             registry: "radixdevapp"
             subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
             client_id: "94ad7918-e504-4132-9916-0293689cd140"
-            abac: true
+            abac: false
           - name: "playground"
             registry: "radixplaygroundapp"
             subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
