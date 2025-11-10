@@ -81,7 +81,7 @@ jobs:
 
       - name: Purge old cache (RBAC + ABAC mode)
         if: ${{ matrix.target.abac == true }}
-        run: az acr run --registry ${{ matrix.target.registry }} --cmd "acr purge --filter='*/cache:.*' --ago=7d --untagged" /dev/null
+        run: az acr run --registry ${{ matrix.target.registry }}.azurecr.io --cmd "acr purge --filter='*/cache:.*' --ago=7d --untagged" /dev/null
 
       - name: Revoke GitHub IP on ACR
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
