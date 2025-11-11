@@ -92,6 +92,13 @@ jobs:
           az acr login --name $REGISTRY
           for repo in $(az acr repository list --name $REGISTRY --output tsv | grep '/cache'); do
             echo "Processing repository: $repo"
+            for tag in $(az acr repository show-tags --name $REGISTRY --repository $repo --output tsv); do
+              created=$(az acr repository show-manifests \
+                --name $REGISTRY \
+                --repository $repo \
+                --query "[?contains(tags,'$tag')].createdTime" \
+                --output tsv)
+            done
           done
       - name: Revoke GitHub IP on ACR
         if: ${{ matrix.target.abac == false && steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
