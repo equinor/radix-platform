@@ -85,11 +85,49 @@ jobs:
       - name: Purge old cache (RBAC + ABAC mode)
         if: ${{ matrix.target.abac == true }}
         run: |
-          az acr run \
-            --registry ${{ matrix.target.registry }} \
-            --cmd "mcr.microsoft.com/acr/acr-cli:0.8 purge --filter '*/cache:.*' --ago 7d --untagged" \
-            /dev/null
+          echo "Running purge using Azure CLI (ABAC-safe)..."
+          set -e
+          REGISTRY="${{ matrix.target.registry }}"
+          DAYS_AGO=$(date -d '7 days ago' +%s)
 
+          # Loop through all repositories matching */cache
+          for repo in $(az acr repository list --name $REGISTRY --output tsv | grep '/cache'); do
+            echo "Processing repository: $repo"
+            
+            # Delete old tags
+            for tag in $(az acr repository show-tags --name $REGISTRY --repository $repo --output tsv); do
+              created=$(az acr repository show-manifests \
+                --name $REGISTRY \
+                --repository $repo \
+                --query "[?contains(tags,'$tag')].createdTime" \
+                --output tsv)
+
+              if [[ -n "$created" ]]; then
+                created_ts=$(date -d "$created" +%s)
+                if [[ $created_ts -lt $DAYS_AGO ]]; then
+                  echo "Deleting $repo:$tag (created $created)..."
+                  az acr repository delete \
+                    --name $REGISTRY \
+                    --image $repo:$tag \
+                    --yes
+                fi
+              fi
+            done
+
+            # Delete untagged manifests
+            for digest in $(az acr repository show-manifests \
+              --name $REGISTRY \
+              --repository $repo \
+              --query "[?tags==null].digest" \
+              --output tsv); do
+              echo "Deleting untagged manifest $digest..."
+              az acr repository delete \
+                --name $REGISTRY \
+                --repository $repo \
+                --manifest $digest \
+                --yes
+            done
+          done
       - name: Revoke GitHub IP on ACR
         if: ${{ matrix.target.abac == false && steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: az acr network-rule remove --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
