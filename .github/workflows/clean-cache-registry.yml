@@ -60,17 +60,21 @@ jobs:
           subscription-id: ${{ matrix.target.subscription_id }}
 
       - name: Enable Public Access to ACR
+        if: ${{ matrix.target.abac == false }}
         id: enable_publicaccess
         run: az acr update --name ${{ matrix.target.registry }} --public-network-enabled true --query provisioningState
 
       - name: Add GitHub IP to ACR
+        if: ${{ matrix.target.abac == false }}
         id: update_firewall
         run: az acr network-rule add --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
 
       - name: Lets sleep for 60 seconds for FW rule to complete
+        if: ${{ matrix.target.abac == false }}
         run: sleep 60s
 
       - name: Create ACR Token
+        if: ${{ matrix.target.abac == false }}
         run: echo "token=$(az acr login --name=${{ matrix.target.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
         id: token
 
@@ -80,16 +84,21 @@ jobs:
 
       - name: Purge old cache (RBAC + ABAC mode)
         if: ${{ matrix.target.abac == true }}
-        run: az acr run --registry ${{ matrix.target.registry }} --cmd "acr purge --filter='*/cache:.*' --ago=7d --untagged" /dev/null
+        run: |
+          az acr run \
+            --registry ${{ matrix.target.registry }} \
+            --cmd "mcr.microsoft.com/acr/acr-cli:0.8 acr purge --filter '*/cache:.*' --ago 7d --untagged" \
+            /dev/null
 
       - name: Revoke GitHub IP on ACR
-        if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        if: ${{ matrix.target.abac == false && steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: az acr network-rule remove --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
 
       - name: Lets sleep for 60 seconds for FW rule to complete
+        if: ${{ matrix.target.abac == false }}
         run: sleep 60s
 
       - name: Disable Public Access to ACR
         id: disable_publicaccess
-        if: ${{ steps.enable_publicaccess.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
+        if: ${{ matrix.target.abac == false && steps.enable_publicaccess.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: az acr update --name ${{ matrix.target.registry }} --public-network-enabled false --query provisioningState
