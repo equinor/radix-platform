@@ -21,18 +21,22 @@ jobs:
             registry: "radixdevapp"
             subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
             client_id: "94ad7918-e504-4132-9916-0293689cd140"
+            rbac: false
           - name: "playground"
             registry: "radixplaygroundapp"
             subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
             client_id: "cba1287a-42e8-4e1d-ba1f-d5a86021aa17"
+            rbac: false
           - name: "platform"
             registry: "radixprodapp"
             subscription_id: ded7ca41-37c8-4085-862f-b11d21ab341a
             client_id: "5b6da3d2-84f9-4703-b253-f6b7a528b080"
+            rbac: false
           - name: "c2"
             registry: "radixc2app"
             subscription_id: ded7ca41-37c8-4085-862f-b11d21ab341a
             client_id: "fa0fa160-648d-46f0-93ce-65fe0838a075"
+            rbac: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -72,7 +76,7 @@ jobs:
 
       - name: Purge old cache
         # if: ${{ matrix.target.abac == false }}
-        run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
+        run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --filter='*/cache:.*' --ago=7d --untagged
 
       # - name: Purge old cache (RBAC + ABAC mode)
       #   if: ${{ matrix.target.abac == true }}
