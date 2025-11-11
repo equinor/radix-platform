@@ -12,7 +12,7 @@ permissions:
 jobs:
   purge:
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false
       matrix:
@@ -39,13 +39,15 @@ jobs:
             abac: false
     steps:
       - uses: actions/checkout@v4
+        if: ${{ matrix.target.abac == false }}
         with:
           repository: Azure/acr-cli
-          ref: v0.8
+          ref: v0.17
 
       - uses: actions/setup-go@v5
-
+        if: ${{ matrix.target.abac == false }}
       - name: Compile ACR binary
+        if: ${{ matrix.target.abac == false }}
         run: make binaries
 
       - name: Get GitHub Public IP
@@ -77,12 +79,53 @@ jobs:
 
       - name: Purge old cache (RBAC mode)
         if: ${{ matrix.target.abac == false }}
-        run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --username= --filter='*/cache:.*' --ago=7d --untagged
+        run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --filter='*/cache:.*' --ago=7d --untagged
 
+        # https://github.com/Azure/acr-cli/issues/501
       - name: Purge old cache (RBAC + ABAC mode)
         if: ${{ matrix.target.abac == true }}
-        run: az acr run --registry ${{ matrix.target.registry }} --cmd "acr purge --filter='*/cache:.*' --ago=7d --untagged" /dev/null
+        run: |
+          set -e
+          DAYS_AGO=$(date -d '7 days ago' +%s)
+          az acr login --name ${{ matrix.target.registry }}
+          for repo in $(az acr repository list --name ${{ matrix.target.registry }} --output tsv | grep '/cache'); do
+            echo "Processing repository: $repo"
+            for tag in $(az acr repository show-tags --name ${{ matrix.target.registry }} --repository $repo --output tsv); do
+              created=$(az acr manifest list-metadata \
+              --registry ${{ matrix.target.registry }} \
+              --name $repo \
+              --query "[?contains(tags,'$tag')].createdTime" \
+              --only-show-errors \
+              --output tsv)
 
+              if [[ -n "$created" ]]; then
+                created_ts=$(date -d "$created" +%s)
+                if [[ $created_ts -lt $DAYS_AGO ]]; then
+                  echo "Deleting $repo:$tag (created $created)..."
+                  az acr repository delete \
+                    --name ${{ matrix.target.registry }} \
+                    --image $repo:$tag \
+                    --yes
+                fi
+              fi
+            done
+
+            # Delete untagged manifests
+            for digest in $(az acr manifest list-metadata \
+              --registry ${{ matrix.target.registry }} \
+              --name $repo \
+              --query "[?tags==null].digest" \
+              --only-show-errors \
+              --output tsv); do
+              echo "Deleting untagged manifest $digest..."
+              az acr repository delete \
+                --name ${{ matrix.target.registry }} \
+                --repository $repo \
+                --manifest $digest \
+                --yes
+            done
+
+          done
       - name: Revoke GitHub IP on ACR
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
         run: az acr network-rule remove --name ${{ matrix.target.registry }} --ip-address  ${{ steps.github_public_ip.outputs.ipv4 }} --query provisioningState
