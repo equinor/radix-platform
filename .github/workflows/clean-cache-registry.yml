@@ -93,11 +93,23 @@ jobs:
           for repo in $(az acr repository list --name $REGISTRY --output tsv | grep '/cache'); do
             echo "Processing repository: $repo"
             for tag in $(az acr repository show-tags --name $REGISTRY --repository $repo --output tsv); do
-              created=$(az acr repository show-manifests \
-                --name $REGISTRY \
-                --repository $repo \
-                --query "[?contains(tags,'$tag')].createdTime" \
-                --output tsv)
+              created=$(az acr manifest list-metadata \
+              --name $REGISTRY \
+              --repository $repo \
+              --query "[?contains(tags,'$tag')].createdTime" \
+              --output tsv)
+              
+              if [[ -n "$created" ]]; then
+                created_ts=$(date -d "$created" +%s)
+                if [[ $created_ts -lt $DAYS_AGO ]]; then
+                  echo "Deleting $repo:$tag (created $created)..."
+                  az acr repository delete \
+                    --name $REGISTRY \
+                    --image $repo:$tag \
+                    --yes
+                fi
+              fi
+              
             done
           done
       - name: Revoke GitHub IP on ACR
