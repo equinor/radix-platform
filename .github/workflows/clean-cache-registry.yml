@@ -74,7 +74,7 @@ jobs:
         run: sleep 60s
 
       - name: Create ACR Token
-        if: ${{ matrix.target.abac == false }}
+        # if: ${{ matrix.target.abac == false }}
         run: echo "token=$(az acr login --name=${{ matrix.target.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
         id: token
 
@@ -87,6 +87,7 @@ jobs:
         run: |
           az acr run \
             --registry ${{ matrix.target.registry }} \
+            --password=${{steps.token.outputs.token}} \
             --cmd "mcr.microsoft.com/acr/acr-cli:0.8 purge --filter '*/cache:.*' --ago 7d --untagged" \
             /dev/null
 
