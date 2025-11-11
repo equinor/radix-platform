@@ -87,7 +87,7 @@ jobs:
         run: |
           az acr run \
             --registry ${{ matrix.target.registry }} \
-            --cmd "mcr.microsoft.com/acr/acr-cli:0.8 acr purge --filter '*/cache:.*' --ago 7d --untagged" \
+            --cmd "mcr.microsoft.com/acr/acr-cli:0.8 purge --filter '*/cache:.*' --ago 7d --untagged" \
             /dev/null
 
       - name: Revoke GitHub IP on ACR
