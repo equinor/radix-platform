@@ -21,7 +21,7 @@ jobs:
             registry: "radixdevapp"
             subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
             client_id: "94ad7918-e504-4132-9916-0293689cd140"
-            abac: false
+            abac: true
           - name: "playground"
             registry: "radixplaygroundapp"
             subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
@@ -74,13 +74,13 @@ jobs:
         run: echo "token=$(az acr login --name=${{ matrix.target.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
         id: token
 
-      - name: Purge old cache
-        # if: ${{ matrix.target.abac == false }}
+      - name: Purge old cache (RBAC mode)
+        if: ${{ matrix.target.abac == false }}
         run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --filter='*/cache:.*' --ago=7d --untagged
 
-      # - name: Purge old cache (RBAC + ABAC mode)
-      #   if: ${{ matrix.target.abac == true }}
-      #   run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --filter='*/cache:.*' --ago=7d --untagged
+      - name: Purge old cache (RBAC + ABAC mode)
+        if: ${{ matrix.target.abac == true }}
+        run: az acr run --registry ${{ matrix.target.registry }} --cmd "acr purge --filter='*/cache:.*' --ago=7d --untagged" /dev/null
 
       - name: Revoke GitHub IP on ACR
         if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
