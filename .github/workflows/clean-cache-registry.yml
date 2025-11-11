@@ -12,7 +12,7 @@ permissions:
 jobs:
   purge:
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false
       matrix:
@@ -39,13 +39,15 @@ jobs:
             abac: false
     steps:
       - uses: actions/checkout@v4
+        if: ${{ matrix.target.abac == false }}
         with:
           repository: Azure/acr-cli
           ref: v0.17
 
       - uses: actions/setup-go@v5
-
+        if: ${{ matrix.target.abac == false }}
       - name: Compile ACR binary
+        if: ${{ matrix.target.abac == false }}
         run: make binaries
 
       - name: Get GitHub Public IP
@@ -71,6 +73,7 @@ jobs:
         run: sleep 60s
 
       - name: Create ACR Token
+        if: ${{ matrix.target.abac == false }}
         run: echo "token=$(az acr login --name=${{ matrix.target.registry }} --expose-token | jq -r '.accessToken')" >> $GITHUB_OUTPUT
         id: token
 
