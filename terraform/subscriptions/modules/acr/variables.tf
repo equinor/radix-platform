@@ -157,6 +157,11 @@ variable "radix_cr_cicd" {
   description = "ID of radix-cr Contributor"
 }
 
+variable "radix_gitrunner" {
+  type        = string
+  description = "ID of radix-cr GitRunner"
+}
+
 variable "public_network_access" {
   type    = bool
   default = false
@@ -179,3 +184,19 @@ variable "testzone" {
   type    = bool
   default = false
 }
+
+variable "abac_this" {
+  type = bool
+  default = false
+}
+
+variable "abac_env" {
+  type    = bool
+  default = false
+}
+
+variable "abac_cache" {
+  type    = bool
+  default = false
+}
+
