@@ -334,7 +334,7 @@ resource "azapi_update_resource" "cache_abac_mode" {
 
   body = {
     properties = {
-      roleAssignmentMode = var.abac_cache == true ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
+      roleAssignmentMode = var.abac_cache ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
     }
   }
 }
