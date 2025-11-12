@@ -128,7 +128,7 @@ resource "azapi_update_resource" "env_abac_mode" {
 
   body = {
     properties = {
-      roleAssignmentMode = var.abac_env == true ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
+      roleAssignmentMode = var.abac_env ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
     }
   }
 }
