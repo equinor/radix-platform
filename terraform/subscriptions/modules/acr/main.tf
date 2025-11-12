@@ -340,7 +340,7 @@ resource "azapi_update_resource" "cache_abac_mode" {
 }
 
 resource "azurerm_container_registry_credential_set" "cache" {
-  name                  = "radix-service-account-docker" == "radix-service-account-docker" && !var.testzone ? "radix-service-account-docker" : "radix-service-account-docker-test-${var.location}"
+  name                  = !var.testzone ? "radix-service-account-docker" : "radix-service-account-docker-test-${var.location}"
   container_registry_id = azurerm_container_registry.cache.id
   login_server          = "docker.io"
   identity {
