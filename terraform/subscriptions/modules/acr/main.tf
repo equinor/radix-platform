@@ -42,7 +42,7 @@ resource "azapi_update_resource" "this_abac_mode" {
 
   body = {
     properties = {
-      roleAssignmentMode = var.abac_this == true ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
+      roleAssignmentMode = var.abac_this ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
     }
   }
 }
