@@ -20,16 +20,3 @@ resource "azurerm_role_definition" "aso_role" {
     ]
   }
 }
-
-module "aso_mi" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-azure-service-operator-${module.config.environment}"
-  resource_group_name = module.config.common_resource_group
-  location            = module.config.location
-}
-
-resource "azurerm_role_assignment" "aso" {
-  scope              = module.resourcegroup_vnet.data.id
-  role_definition_id = azurerm_role_definition.aso_role.role_definition_resource_id
-  principal_id       = module.aso_mi.principal_id
-}
