@@ -18,6 +18,14 @@ module "radix_id_gitrunner" {
       role     = "Contributor"
       scope_id = module.acr.azurerm_container_registry_app_id
     }
+    container_registry_app_abac_contributor = {
+      role     = "Container Registry Repository Contributor"
+      scope_id = module.acr.azurerm_container_registry_app_id
+    }
+    container_registry_app_abac_lister = {
+      role     = "Container Registry Repository Catalog Lister"
+      scope_id = module.acr.azurerm_container_registry_app_id
+    }
     # Infrastructure: Networking
     k8s_command_runner = {
       role     = "Radix Azure Kubernetes Service Command Runner"

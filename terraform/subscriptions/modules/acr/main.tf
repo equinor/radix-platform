@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = ">= 2.7.0"
+    }
+  }
+}
+
 #App ACR
 resource "azurerm_container_registry" "this" {
   name                          = "radix${var.acr}app"
@@ -24,6 +33,17 @@ resource "azurerm_container_registry" "this" {
     location                  = var.secondary_location
     zone_redundancy_enabled   = false
     regional_endpoint_enabled = false
+  }
+}
+
+resource "azapi_update_resource" "this_abac_mode" {
+  type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
+  resource_id = azurerm_container_registry.this.id
+
+  body = {
+    properties = {
+      roleAssignmentMode = var.abac_this ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
+    }
   }
 }
 
@@ -81,6 +101,7 @@ resource "azurerm_container_registry" "env" {
   anonymous_pull_enabled        = false
   public_network_access_enabled = true
   retention_policy_in_days      = var.acr_retension_policy
+
   tags = {
     IaC = "terraform"
   }
@@ -98,6 +119,17 @@ resource "azurerm_container_registry" "env" {
     location                  = var.secondary_location
     zone_redundancy_enabled   = false
     regional_endpoint_enabled = true
+  }
+}
+
+resource "azapi_update_resource" "env_abac_mode" {
+  type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
+  resource_id = azurerm_container_registry.env.id
+
+  body = {
+    properties = {
+      roleAssignmentMode = var.abac_env ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
+    }
   }
 }
 
@@ -159,6 +191,12 @@ resource "azurerm_role_assignment" "build_push" {
   principal_id         = azurerm_container_registry_task.build_push.identity[0].principal_id
 }
 
+resource "azurerm_role_assignment" "build_abac" {
+  scope                = azurerm_container_registry.env.id
+  role_definition_name = "Container Registry Repository Writer"
+  principal_id         = azurerm_container_registry_task.build_push.identity[0].principal_id
+}
+
 resource "azurerm_container_registry_task" "build" {
   name                  = "radix-image-builder-build-only-${var.acr}"
   container_registry_id = azurerm_container_registry.env.id
@@ -211,6 +249,18 @@ resource "azurerm_container_registry_task" "build" {
 resource "azurerm_role_assignment" "env" {
   scope                = azurerm_container_registry.env.id
   role_definition_name = "Contributor"
+  principal_id         = var.radix_cr_cicd
+}
+
+# Need both List and Contributor roles for ABAC to work properly
+resource "azurerm_role_assignment" "env_abac_list" {
+  scope                = azurerm_container_registry.env.id
+  role_definition_name = "Container Registry Repository Catalog Lister"
+  principal_id         = var.radix_cr_cicd
+}
+resource "azurerm_role_assignment" "env_abac_contributor" {
+  scope                = azurerm_container_registry.env.id
+  role_definition_name = "Container Registry Repository Contributor"
   principal_id         = var.radix_cr_cicd
 }
 
@@ -278,8 +328,19 @@ resource "azurerm_container_registry" "cache" {
   }
 }
 
+resource "azapi_update_resource" "cache_abac_mode" {
+  type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
+  resource_id = azurerm_container_registry.cache.id
+
+  body = {
+    properties = {
+      roleAssignmentMode = var.abac_cache ? "AbacRepositoryPermissions" : "LegacyRegistryPermissions"
+    }
+  }
+}
+
 resource "azurerm_container_registry_credential_set" "cache" {
-  name                  = "radix-service-account-docker" == "radix-service-account-docker" && !var.testzone ? "radix-service-account-docker" : "radix-service-account-docker-test-${var.location}"
+  name                  = !var.testzone ? "radix-service-account-docker" : "radix-service-account-docker-test-${var.location}"
   container_registry_id = azurerm_container_registry.cache.id
   login_server          = "docker.io"
   identity {

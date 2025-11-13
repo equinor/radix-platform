@@ -8,10 +8,19 @@ module "radix_id_akskubelet_mi" {
       role     = "AcrPull"
       scope_id = module.acr.azurerm_container_registry_id
     }
+    repository_reader_env = {
+      role     = "Container Registry Repository Reader"
+      scope_id = module.acr.azurerm_container_registry_id
+    }
+    repository_reader_cache = {
+      role     = "Container Registry Repository Reader"
+      scope_id = module.acr.azurerm_container_registry_cache_id
+    }
     arccache = {
       role     = "AcrPull"
       scope_id = module.acr.azurerm_container_registry_cache_id
     }
+
   }
 }
 
