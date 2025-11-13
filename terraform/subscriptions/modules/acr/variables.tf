@@ -157,11 +157,6 @@ variable "radix_cr_cicd" {
   description = "ID of radix-cr Contributor"
 }
 
-variable "radix_gitrunner" {
-  type        = string
-  description = "ID of radix-cr GitRunner"
-}
-
 variable "public_network_access" {
   type    = bool
   default = false
