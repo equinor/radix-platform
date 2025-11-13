@@ -187,7 +187,7 @@ variable "abac_this" {
 }
 
 variable "abac_env" {
-  description = "Enable ABAC repository permissions mode for the environment container registry instead of legacy registry permissions."
+  description = "Enable ABAC repository permissions mode for the main container container registry instead of legacy registry permissions."
   type    = bool
   default = false
 }
