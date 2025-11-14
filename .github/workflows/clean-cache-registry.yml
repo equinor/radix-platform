@@ -41,10 +41,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
+
+      - name: Install ACR binary
         if: ${{ matrix.target.abac == false }}
-      - name: Compile ACR binary
-        if: ${{ matrix.target.abac == false }}
-        run: make binaries
+        run: go install github.com/Azure/acr-cli/cmd/acr@775a0377e03bcd4e62ea654aab5ebe340e87f5d2 # v0.17
 
       - name: Get GitHub Public IP
         id: github_public_ip
