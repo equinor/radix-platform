@@ -87,23 +87,23 @@ jobs:
         run: |
           set -e
           DAYS_AGO=$(date -d '7 days ago' +%s)
-          az acr login --name $REGISTRY
-          for repo in $(az acr repository list --name $REGISTRY --output tsv | grep '/cache'); do
+          az acr login --name ${{ matrix.target.registry }}
+          for repo in $(az acr repository list --name ${{ matrix.target.registry }} --output tsv | grep '/cache'); do
             echo "Processing repository: $repo"
-            for tag in $(az acr repository show-tags --name $REGISTRY --repository $repo --output tsv); do
+            for tag in $(az acr repository show-tags --name ${{ matrix.target.registry }} --repository $repo --output tsv); do
               created=$(az acr manifest list-metadata \
-              --registry $REGISTRY \
+              --registry ${{ matrix.target.registry }} \
               --name $repo \
               --query "[?tags && contains(tags,'$tag')].createdTime | [0]" \
               --only-show-errors \
               --output tsv)
-            
+
               if [[ -n "$created" ]]; then
                 created_ts=$(date -d "$created" +%s)
                 if [[ $created_ts -lt $DAYS_AGO ]]; then
                   echo "Deleting $repo:$tag (created $created)..."
                   az acr repository delete \
-                    --name $REGISTRY \
+                    --name ${{ matrix.target.registry }} \
                     --image $repo:$tag \
                     --yes
                 fi
@@ -112,14 +112,14 @@ jobs:
 
             # Delete untagged manifests
             for digest in $(az acr manifest list-metadata \
-              --registry $REGISTRY \
+              --registry ${{ matrix.target.registry }} \
               --name $repo \
               --query "[?tags==null && lastUpdateTime < '$(date -u -d '7 days ago' --iso-8601=seconds)' && !deleteEnabled].digest" \
               --only-show-errors \
               --output tsv); do
               echo "Deleting untagged manifest $digest..."
               az acr repository delete \
-                --name $REGISTRY \
+                --name ${{ matrix.target.registry }} \
                 --image $repo@$digest \
                 --yes
             done
