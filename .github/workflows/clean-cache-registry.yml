@@ -39,10 +39,6 @@ jobs:
             abac: false
     steps:
       - uses: actions/checkout@v4
-        if: ${{ matrix.target.abac == false }}
-        with:
-          repository: Azure/acr-cli
-          ref: v0.17
 
       - uses: actions/setup-go@v5
         if: ${{ matrix.target.abac == false }}
