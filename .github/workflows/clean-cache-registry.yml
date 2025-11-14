@@ -105,6 +105,7 @@ jobs:
                   az acr repository delete \
                     --name ${{ matrix.target.registry }} \
                     --image $repo:$tag \
+                    --only-show-errors \
                     --yes
                 fi
               fi
@@ -114,13 +115,14 @@ jobs:
             for digest in $(az acr manifest list-metadata \
               --registry ${{ matrix.target.registry }} \
               --name $repo \
-              --query "[?tags==null && lastUpdateTime < '$(date -u -d '7 days ago' --iso-8601=seconds)' && !deleteEnabled].digest" \
+              --query "[?tags==null && !deleteEnabled].digest" \
               --only-show-errors \
               --output tsv); do
               echo "Deleting untagged manifest $digest..."
               az acr repository delete \
                 --name ${{ matrix.target.registry }} \
                 --image $repo@$digest \
+                --only-show-errors \
                 --yes
             done
 
