@@ -196,18 +196,6 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
-WEB_CONSOLE_EGRESS_IP_SCRIPT="$WORKDIR_PATH/update_ips_env_vars_for_console.sh"
-if ! [[ -x "$WEB_CONSOLE_EGRESS_IP_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The web console egress ip script is not found or it is not executable in path $WEB_CONSOLE_EGRESS_IP_SCRIPT" >&2
-fi
-
-WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT="$WORKDIR_PATH/update_cluster_oidc_issuer_env_vars_for_console.sh"
-if ! [[ -x "$WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The web console cluster oidc issuer script is not found or it is not executable in path $WEB_CONSOLE_CLUSTER_OIDC_ISSUER_SCRIPT" >&2
-fi
-
 UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT="$WORKDIR_PATH/cicd-canary/update_secret_for_networkpolicy_canary.sh"
 if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
     # Print to stderror
@@ -605,24 +593,11 @@ if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
 fi
 
-# Define web console variables
-RADIX_WEB_CONSOLE_ENV="prod"
-if [[ $CLUSTER_TYPE == "development" ]]; then
-    # Development cluster uses QA web-console
-    RADIX_WEB_CONSOLE_ENV="qa"
-fi
-
-# Update web console web component with list of all IPs assigned to the cluster type (development|playground|production)
-CLUSTER_EGRESS_IPS=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw egress_ips)
-CLUSTER_OIDC_ISSUER_URL=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value["'${DEST_CLUSTER}'"]')
 OAUTH2_CLIENT_ID=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw app_webconsole_client_id)
 
 kubectl patch configmap env-vars-web --namespace radix-web-console-qa --type merge --patch "$(cat <<EOF
 {
   "data": {
-    "CLUSTER_EGRESS_IPS": "${CLUSTER_EGRESS_IPS}",
-    "CLUSTER_INGRESS_IPS": "${SELECTED_INGRESS_IP_RAW_ADDRESS}",
-    "CLUSTER_OIDC_ISSUER_URL": "${CLUSTER_OIDC_ISSUER_URL}",
     "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
     "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
     "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
@@ -635,9 +610,6 @@ EOF
 kubectl patch configmap env-vars-web --namespace radix-web-console-prod --type merge --patch "$(cat <<EOF
 {
   "data": {
-    "CLUSTER_EGRESS_IPS": "${CLUSTER_EGRESS_IPS}",
-    "CLUSTER_INGRESS_IPS": "${SELECTED_INGRESS_IP_RAW_ADDRESS}",
-    "CLUSTER_OIDC_ISSUER_URL": "${CLUSTER_OIDC_ISSUER_URL}",
     "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
     "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
     "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
