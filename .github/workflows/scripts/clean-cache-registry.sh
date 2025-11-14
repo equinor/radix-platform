@@ -11,8 +11,16 @@
 #######################################################################################
 ### Read inputs and configs
 ###
-if [[ -z "$REGISTRY" ]]; then
-    echo "ERROR: Please provide REGISTRY" >&2
+# if [[ -z "$REGISTRY" ]]; then
+#     echo "ERROR: Please provide REGISTRY" >&2
+#     exit 1
+# fi
+
+if [[ $REGISTRY =~ ^(radixdevapp|radixplaygroundapp|radixprodapp|radixc2app)$ ]]
+then
+    echo "REGISTRY: $REGISTRY"    
+else
+    echo "ERROR: REGISTRY must be either radixdevapp|radixplaygroundapp|radixprodapp|radixc2app" >&2
     exit 1
 fi
 
@@ -29,15 +37,15 @@ for repo in $(az acr repository list --name $REGISTRY --output tsv | grep '/cach
     --query "[?tags && contains(tags,'$tag')].createdTime | [0]" \
     --only-show-errors \
     --output tsv)
-  
+
     if [[ -n "$created" ]]; then
-      # echo "Tag: $tag, Created: $created"
       created_ts=$(date -d "$created" +%s)
       if [[ $created_ts -lt $DAYS_AGO ]]; then
         echo "Deleting $repo:$tag (created $created)..."
         az acr repository delete \
           --name $REGISTRY \
           --image $repo:$tag \
+          --only-show-errors \
           --yes
       fi
     fi
@@ -47,13 +55,14 @@ for repo in $(az acr repository list --name $REGISTRY --output tsv | grep '/cach
   for digest in $(az acr manifest list-metadata \
     --registry $REGISTRY \
     --name $repo \
-    --query "[?tags==null && lastUpdateTime < '$(date -u -d '7 days ago' --iso-8601=seconds)' && !deleteEnabled].digest" \
+    --query "[?tags==null && !deleteEnabled].digest" \
     --only-show-errors \
     --output tsv); do
     echo "Deleting untagged manifest $digest..."
     az acr repository delete \
       --name $REGISTRY \
       --image $repo@$digest \
+      --only-show-errors \
       --yes
   done
 
