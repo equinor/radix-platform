@@ -75,7 +75,7 @@ jobs:
 
       - name: Purge old cache (RBAC mode)
         if: ${{ matrix.target.abac == false }}
-        run: ./bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --filter='*/cache:.*' --ago=7d --untagged
+        run: ~/go/bin/acr purge --registry=${{ matrix.target.registry }}.azurecr.io --password=${{steps.token.outputs.token}} --filter='*/cache:.*' --ago=7d --untagged
 
         # https://github.com/Azure/acr-cli/issues/501
       - name: Purge old cache (RBAC + ABAC mode)
