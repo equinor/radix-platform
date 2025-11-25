@@ -2,8 +2,8 @@ resource "azurerm_network_security_group" "this" {
   name                = "nsg-${var.cluster_name}"
   location            = var.location
   resource_group_name = var.resource_group
+  
   security_rule {
-
     access                     = "Allow"
     destination_address_prefix = var.ingressIP
     destination_port_ranges    = ["80", "443"]
@@ -13,7 +13,18 @@ resource "azurerm_network_security_group" "this" {
     protocol                   = "Tcp"
     source_address_prefix      = "*"
     source_port_range          = "*"
+  }
 
+  security_rule {
+    access                     = "Allow"
+    destination_address_prefix = var.istioIP
+    destination_port_ranges    = ["80", "443"]
+    direction                  = "Inbound"
+    name                       = "nsg-${var.cluster_name}-istio-rule"
+    priority                   = 101
+    protocol                   = "Tcp"
+    source_address_prefix      = "*"
+    source_port_range          = "*"
   }
 
   tags = {

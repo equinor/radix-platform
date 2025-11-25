@@ -154,3 +154,6 @@ variable "hostencryption" {
   default = false
 
 }
+variable "istioIP" {
+  type = string
+}
