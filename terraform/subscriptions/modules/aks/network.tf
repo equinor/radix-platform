@@ -8,7 +8,7 @@ resource "azurerm_network_security_group" "this" {
     destination_address_prefix = var.ingressIP
     destination_port_ranges    = ["80", "443"]
     direction                  = "Inbound"
-    name                       = "nsg-${var.cluster_name}-rule"
+    name                       = "nsg-${var.cluster_name}-nginx-LB"
     priority                   = 100
     protocol                   = "Tcp"
     source_address_prefix      = "*"
@@ -20,8 +20,20 @@ resource "azurerm_network_security_group" "this" {
     destination_address_prefix = var.istioIP
     destination_port_ranges    = ["80", "443"]
     direction                  = "Inbound"
-    name                       = "nsg-${var.cluster_name}-istio-rule"
+    name                       = "nsg-${var.cluster_name}-istio-LB"
     priority                   = 101
+    protocol                   = "Tcp"
+    source_address_prefix      = "*"
+    source_port_range          = "*"
+  }
+
+  security_rule {
+    access                     = "Deny"
+    destination_address_prefix = "*"
+    destination_port_ranges    = ["22"]
+    direction                  = "Inbound"
+    name                       = "Deny-ssh"
+    priority                   = 110
     protocol                   = "Tcp"
     source_address_prefix      = "*"
     source_port_range          = "*"
