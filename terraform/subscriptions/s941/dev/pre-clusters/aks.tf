@@ -57,6 +57,7 @@ module "aks" {
   network_policy              = each.value.network_policy
   developers                  = module.config.developers
   ingressIP                   = module.config.networksets[each.value.networkset].ingressIP
+  istioIP                     = module.config.networksets[each.value.networkset].istioIP
   subscription                = module.config.subscription
   vnethub_id                  = data.azurerm_virtual_network.hub.id
   dnszones                    = module.config.private_dns_zones_names
