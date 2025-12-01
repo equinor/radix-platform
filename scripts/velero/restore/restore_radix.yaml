@@ -8,7 +8,6 @@ spec:
   includedNamespaces:
   - '*'
   includedResources:
-  - radixregistrations.radix.equinor.com
   - radixapplications.radix.equinor.com
   - radixalerts.radix.equinor.com
   - radixbatches.radix.equinor.com
@@ -18,7 +17,6 @@ spec:
   - radixjobs.radix.equinor.com
   restoreStatus:
     includedResources:
-    - radixregistrations.radix.equinor.com
     - radixalerts.radix.equinor.com
     - radixbatches.radix.equinor.com
     - radixdeployments.radix.equinor.com

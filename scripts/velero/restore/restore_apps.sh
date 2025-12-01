@@ -369,16 +369,29 @@ echo "Wait for configmaps to be restored..."
 please_wait_for_restore_to_be_completed "configmaps"
 
 #######################################################################################
-### Restore Radix resources
+### Restore Radix Registration resources
 ###
 
 echo ""
-echo "Restore Radix resources..."
+echo "Restore Radix Registration resources..."
+RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_radix_rr.yaml)"
+echo "$RESTORE_YAML" | kubectl apply -f -
+
+echo ""
+echo "Wait for Radix registration resources to be restored..."
+please_wait_for_restore_to_be_completed "radix-rr"
+
+#######################################################################################
+### Restore remaining Radix resources
+###
+
+echo ""
+echo "Restore remaining Radix resources..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_radix.yaml)"
 echo "$RESTORE_YAML" | kubectl apply -f -
 
 echo ""
-echo "Wait for Radix resources to be restored..."
+echo "Wait for remaining Radix resources to be restored..."
 please_wait_for_restore_to_be_completed "radix"
 
 #######################################################################################
