@@ -411,17 +411,19 @@ if [[ $install_base_components == true ]]; then
     SELECTED_ISTIO_IP_ADDRESS=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster=="'${DEST_CLUSTER}'") | .istioIP')
     kubectl create namespace istio-system --dry-run=client -o yaml |
     kubectl apply -f -
-
-    echo "service:
-        loadBalancerIP: $SELECTED_ISTIO_IP_ADDRESS" > config
-
-    kubectl create secret generic ingress-istio-ip \
-        --namespace istio-system \
-        --from-file=./config \
-        --dry-run=client -o yaml |
-        kubectl apply -f -
-
-    rm config
+    
+    kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-gateway-config
+  namespace: istio-system
+data:
+  service: |
+    spec:
+      loadBalancerIP: $SELECTED_ISTIO_IP_ADDRESS
+      externalTrafficPolicy: Local
+EOF
     printf "Done.\n"
     #######################################################################################
     ### Install Flux
