@@ -47,7 +47,7 @@ resource "azurerm_mysql_flexible_database" "grafana" {
   name        = "grafana"
   charset     = "latin1"
   collation   = "latin1_swedish_ci"
-  server_name = "s940-radix-grafana-c2-prod" # TODO azurerm_mysql_flexible_server.grafana.name
+  server_name = "s940-radix-grafana-c3-prod" # TODO azurerm_mysql_flexible_server.grafana.name
 }
 
 resource "azurerm_mysql_flexible_server_active_directory_administrator" "grafana" {
