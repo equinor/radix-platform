@@ -25,7 +25,7 @@ data "azuread_group" "radix-platform-developers" {
 }
 
 data "azuread_group" "azappl_developers" {
-  display_name = "AZAPPL ${module.config.environment} - Contributor"
+  display_name     = "AZAPPL ${module.config.environment} - Contributor"
   security_enabled = true
 }
 

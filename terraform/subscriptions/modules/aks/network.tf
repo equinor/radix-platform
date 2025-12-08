@@ -2,7 +2,7 @@ resource "azurerm_network_security_group" "this" {
   name                = "nsg-${var.cluster_name}"
   location            = var.location
   resource_group_name = var.resource_group
-  
+
   security_rule {
     access                     = "Allow"
     destination_address_prefix = var.ingressIP
