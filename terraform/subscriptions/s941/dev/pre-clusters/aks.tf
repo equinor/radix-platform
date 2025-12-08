@@ -81,6 +81,7 @@ locals {
     for key, value in module.config.cluster : key => {
       cluster   = key
       ingressIp = module.config.networksets[module.config.cluster[key].networkset].ingressIP
+      istioIp   = module.config.networksets[module.config.cluster[key].networkset].istioIP
     }
   }
 }
