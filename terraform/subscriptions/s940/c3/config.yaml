@@ -82,4 +82,4 @@ clusters:
     aksversion: "1.33.5"
     networkset: "networkset1"
     network_policy: "cilium"
-    activecluster: false
+    activecluster: true
