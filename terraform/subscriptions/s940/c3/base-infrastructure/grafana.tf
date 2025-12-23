@@ -19,7 +19,7 @@ module "grafana" {
   source                       = "../../../modules/mysql_flexible"
   administrator_login          = "radixadmin"
   location                     = module.config.location
-  server_name                  = "radix-grafana-${module.config.environment}" #TODO
+  server_name                  = "radix-grafana-${module.config.environment}"
   resource_group_name          = module.config.common_resource_group
   geo_redundant_backup_enabled = false # Disabled geo-redundant backup since it's not supported in the swedencentral region.
   sku_name                     = "B_Standard_B2ms"
