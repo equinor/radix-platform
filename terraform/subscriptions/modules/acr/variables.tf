@@ -182,19 +182,19 @@ variable "testzone" {
 
 variable "abac_this" {
   description = "Enable ABAC repository permissions on APP container registry instead of legacy registry permissions."
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "abac_env" {
   description = "Enable ABAC repository permissions mode for the main container container registry instead of legacy registry permissions."
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "abac_cache" {
   description = "Enable ABAC repository permissions mode for the cache container registry instead of legacy registry permissions."
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
 }
 

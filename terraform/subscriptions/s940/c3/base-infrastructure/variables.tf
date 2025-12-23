@@ -2,8 +2,8 @@ variable "storageaccounts" {
   description = "Max 15 characters lowercase in the storageaccount name"
   type = map(object({
     name                     = string
-    resource_group_name      = optional(string, "common-c2")
-    location                 = optional(string, "westeurope")
+    resource_group_name      = optional(string, "common-c3")
+    location                 = optional(string, "swedencentral")
     account_tier             = optional(string, "Standard")
     account_replication_type = optional(string, "LRS")
     kind                     = optional(string, "StorageV2")
@@ -56,9 +56,9 @@ variable "appregistrations" {
   }))
   default = {
     webconsole = {
-      display_name                 = "Omnia Radix Web Console - C2"
+      display_name                 = "Omnia Radix Web Console - C3"
       service_management_reference = "110327"
-      notes                        = "Omnia Radix Web Console - C2"
+      notes                        = "Omnia Radix Web Console - C3"
       app_role_assignment_required = true
       permissions = {
         msgraph = {
@@ -90,7 +90,7 @@ variable "appregistrations" {
       optional_id_token_claims = ["login_hint"]
     }
     grafana = {
-      display_name                 = "radix-ar-grafana-c2"
+      display_name                 = "radix-ar-grafana-c3"
       service_management_reference = "110327"
       notes                        = "Grafana Oauth, main app for user authentication to Grafana"
       permissions = {
@@ -128,7 +128,7 @@ variable "appregistrations" {
       optional_id_token_claims = []
     }
     cr_cicd = {
-      display_name                       = "radix-cr-cicd-c2"
+      display_name                       = "radix-cr-cicd-c3"
       service_management_reference       = "110327"
       notes                              = "Used by radix-image-builder"
       implicit_id_token_issuance_enabled = true

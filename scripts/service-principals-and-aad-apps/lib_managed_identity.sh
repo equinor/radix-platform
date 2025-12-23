@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE          : dev|playground|prod|c2
+# - RADIX_ZONE          : dev|playground|prod|c2|c3
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.

@@ -24,7 +24,7 @@ data "azurerm_log_analytics_workspace" "defender" {
 }
 
 data "azurerm_log_analytics_workspace" "containers" {
-  name                = "radix-container-logs-c2-prod"
+  name                = "radix-container-logs-${module.config.environment}"
   resource_group_name = module.config.common_resource_group
 }
 

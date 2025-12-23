@@ -108,11 +108,11 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]] || [[ $MODE=DR ]]
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]] || [[ $MODE=DR ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
     exit 1
 fi
 

@@ -15,7 +15,7 @@
 ### 
 
 # Required:
-# - RADIX_ZONE          : dev|playground|prod|c2
+# - RADIX_ZONE          : dev|playground|prod|c2|c3
 # - SP_NAME             : Name of service principal, example: "radix-something-dev"
 
 # Optional:

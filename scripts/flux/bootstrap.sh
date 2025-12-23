@@ -86,16 +86,16 @@ echo ""
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
     exit 1
 fi
 
 if [[ ! -z "$OVERRIDE_GIT_BRANCH" ]]; then
-    GIT_BRANCH="$OVERRIDE_GIT_BRANCH"
+    GIT_BRANCH="master"
 fi
 
 if [[ ! -z "$OVERRIDE_GIT_DIR" ]]; then
@@ -241,108 +241,51 @@ fi
 printf "...Done"
 
 #######################################################################################
-### CREDENTIALS
-###
-
+### Install Flux
+echo ""
+echo "Install Flux v2"
+echo ""
+FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
 FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
-# FLUX_PUBLIC_KEY="$(az keyvault secret show --name "$FLUX_PUBLIC_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 
-# printf "\nLooking for flux deploy keys for GitHub in keyvault \"${AZ_RESOURCE_KEYVAULT}\"..."
-# if [[ -z "$FLUX_PRIVATE_KEY" ]] || [[ -z "$FLUX_PUBLIC_KEY" ]]; then
-#     EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME")
-#     printf "\nNo keys found. Start generating flux private and public keys and upload them to keyvault..."
-#     ssh-keygen -t ed25519 -N "" -C "radix@statoilsrm.onmicrosoft.com" -f id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
-#     az keyvault secret set \
-#         --file=./id_ed25519."$RADIX_ENVIRONMENT" \
-#         --name="$FLUX_PRIVATE_KEY_NAME" \
-#         --vault-name="$AZ_RESOURCE_KEYVAULT" \
-#         --expires "${EXPIRY_DATE}" 2>&1 >/dev/null
-#     az keyvault secret set \
-#         --file=./id_ed25519."$RADIX_ENVIRONMENT".pub \
-#         --name="$FLUX_PUBLIC_KEY_NAME" \
-#         --vault-name="$AZ_RESOURCE_KEYVAULT" \
-#         --expires "${EXPIRY_DATE}" 2>&1 >/dev/null
-#     rm id_ed25519."$RADIX_ENVIRONMENT" 2>&1 >/dev/null
-#     rm id_ed25519."$RADIX_ENVIRONMENT".pub 2>&1 >/dev/null
-#     FLUX_DEPLOY_KEYS_GENERATED=true
-#     printf "...Done\n"
-# else
-#     printf "...Keys found."
-# fi
-
-az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "$FLUX_PRIVATE_KEY_NAME" \
-    --file "$FLUX_PRIVATE_KEY_NAME" \
-    2>&1 >/dev/null
-
-printf "...Done\n"
-
-# Create secret for Flux v2 to use to authenticate with ACR.
-printf "\nCreating k8s secret \"radix-docker\"..."
-az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
-    --name "radix-cr-cicd" \
-    --file sp_credentials.json \
-    2>&1 >/dev/null
-
-kubectl create secret docker-registry radix-docker \
-    --namespace="flux-system" \
-    --docker-server="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io" \
-    --docker-username="$(jq -r '.id' sp_credentials.json)" \
-    --docker-password="$(jq -r '.password' sp_credentials.json)" \
-    --docker-email=radix@statoilsrm.onmicrosoft.com \
-    --dry-run=client -o yaml |
-    kubectl apply -f - \
-        2>&1 >/dev/null
-rm -f sp_credentials.json
-printf "...Done\n"
-
-# Create ConfigMap radix-flux-config which will provide values for flux deployments
 echo "Creating \"radix-flux-config\"..."
 
 printf "\nGetting Slack Webhook URL..."
 SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook | jq -r .value)"
 printf "...Done\n"
 
-IMAGE_REGISTRY="${AZ_RESOURCE_CONTAINER_REGISTRY}.azurecr.io"
+printf "\nWorking on namespace flux-system"
+if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
+    kubectl create ns flux-system 2>&1 >/dev/null
+fi
+printf "...Done"
 
 # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
 printf "Deploy \"radix-flux-config\" configmap in flux-system namespace..."
-cat <<EOF >radix-flux-config.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: radix-flux-config
-  namespace: flux-system
-data:
-  dnsZone: "$AZ_RESOURCE_DNS"
-  appAliasBaseURL: "app.$AZ_RESOURCE_DNS"
-  prometheusName: radix-stage1
-  imageRegistry: "$IMAGE_REGISTRY"
-  clusterName: "$CLUSTER_NAME"
-  clusterType: "$CLUSTER_TYPE"
-  slackWebhookURL: "$SLACK_WEBHOOK_URL"
-EOF
-
-kubectl apply -f radix-flux-config.yaml 2>&1 >/dev/null
-rm radix-flux-config.yaml
+kubectl create configmap radix-flux-config -n flux-system \
+    --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
+    --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
+    --from-literal=prometheusName="radix-stage1" \
+    --from-literal=imageRegistry="$IMAGE_REGISTRY" \
+    --from-literal=clusterName="$CLUSTER_NAME" \
+    --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
+    --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL"
 printf "...Done.\n"
 
-#######################################################################################
-### INSTALLATION
+az keyvault secret download \
+--vault-name "$AZ_RESOURCE_KEYVAULT" \
+--name "$FLUX_PRIVATE_KEY_NAME" \
+--file "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
 
-echo ""
-printf "Starting installation of Flux...\n"
-
+echo "Installing flux with your flux version: v$FLUX_VERSION"
 flux bootstrap git \
-    --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
-    --url="$GIT_REPO" \
-    --branch="$GIT_BRANCH" \
-    --path="$GIT_DIR" \
-    --components-extra=image-reflector-controller,image-automation-controller \
-    --version="$FLUX_VERSION" \
-    --silent
+--private-key-file="$FLUX_PRIVATE_KEY_NAME" \
+--url="ssh://git@github.com/equinor/radix-flux" \
+--branch="$OVERRIDE_GIT_BRANCH" \
+--path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
+--components-extra=image-reflector-controller,image-automation-controller \
+--version="v$FLUX_VERSION" \
+--silent
 if [[ "$?" != "0" ]]; then
     printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
     rm "$FLUX_PRIVATE_KEY_NAME"
@@ -355,12 +298,6 @@ fi
 echo -e ""
 echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
 
-# if [ "$FLUX_DEPLOY_KEYS_GENERATED" = true ]; then
-#     FLUX_DEPLOY_KEY_NOTIFICATION="*** IMPORTANT ***\nPlease add a new deploy key in the radix-flux repository (https://github.com/equinor/radix-flux/settings/keys) with the value from $FLUX_PUBLIC_KEY_NAME secret in $AZ_RESOURCE_KEYVAULT Azure keyvault."
-#     echo ""
-#     echo -e "${__style_yellow}$FLUX_DEPLOY_KEY_NOTIFICATION${__style_end}"
-#     echo ""
-# fi
 
 #######################################################################################
 ### END

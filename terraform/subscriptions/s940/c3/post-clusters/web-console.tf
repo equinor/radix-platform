@@ -26,7 +26,7 @@ locals {
 }
 
 data "azuread_application" "webconsole" {
-  display_name = "Omnia Radix Web Console - C2"
+  display_name = "Omnia Radix Web Console - C3"
 }
 
 module "webconsole_redirect_uris" {

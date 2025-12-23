@@ -18,13 +18,6 @@ module "resourcegroup_clusters" {
   location = var.location
 }
 
-module "resourcegroup_logs" {
-  source   = "../../modules/resourcegroups"
-  name     = "logs-${var.environment}"
-  location = var.location
-}
-
-
 module "resourcegroup_cost_allocation" {
   source   = "../../modules/resourcegroups"
   name     = "cost-allocation-${var.environment}"
