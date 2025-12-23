@@ -29,7 +29,7 @@
 
 
 # DISASTER RECOVERY:
-# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c FLUX_BRANCHE=mybranche ./migrate.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c FLUX_BRANCH=mybranch ./migrate.sh
 
 
 
