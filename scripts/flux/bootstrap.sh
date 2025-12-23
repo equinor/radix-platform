@@ -95,7 +95,7 @@ else
 fi
 
 if [[ ! -z "$OVERRIDE_GIT_BRANCH" ]]; then
-    GIT_BRANCH="master"
+    GIT_BRANCH="$OVERRIDE_GIT_BRANCH"
 fi
 
 if [[ ! -z "$OVERRIDE_GIT_DIR" ]]; then
