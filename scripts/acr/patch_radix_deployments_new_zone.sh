@@ -3,7 +3,7 @@
 #######################################################################################
 ### PURPOSE
 ###
-# - Patch all RadixDeployments to use the new zone after Velero Restore
+# - Patch all RadixDeployments to use the new Azuer Container Registry after Velero Restore
 
 #######################################################################################
 ### INPUTS
