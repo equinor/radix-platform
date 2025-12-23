@@ -525,7 +525,7 @@ EOF
     flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
     --url="ssh://git@github.com/equinor/radix-flux" \
-    --branch="$FLUX_BRANCHE" \
+    --branch="$FLUX_BRANCH" \
     --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
     --components-extra=image-reflector-controller,image-automation-controller \
     --version="v$FLUX_VERSION" \
