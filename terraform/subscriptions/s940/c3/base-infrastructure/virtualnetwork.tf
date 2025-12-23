@@ -12,7 +12,7 @@ module "azurerm_public_ip_prefix_ingress" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
   resource_group_name = module.resourcegroup_clusters.data.name
-  publicipprefixname  = "ippre-ingress-radix-aks-${module.config.environment}-${module.config.location}-001" #TODO
+  publicipprefixname  = "ippre-ingress-radix-aks-${module.config.environment}-${module.config.location}-001"
   pipprefix           = "ingress-radix-aks"
   pippostfix          = module.config.location
   enviroment          = "c3"
