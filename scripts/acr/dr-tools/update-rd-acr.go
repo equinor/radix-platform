@@ -17,7 +17,7 @@ const (
 
 func main() {
 	ctx := context.Background()
-	_, radixclient, _, _ := utils.GetKubernetesClient()
+	_, radixclient, _, _, _, _, _ := utils.GetKubernetesClient(ctx)
 
 	rds, err := radixclient.RadixV1().RadixDeployments("").List(ctx, metav1.ListOptions{})
 	if err != nil {
