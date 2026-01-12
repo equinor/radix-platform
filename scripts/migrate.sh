@@ -421,7 +421,6 @@ metadata:
 data:
   service: |
     spec:
-      loadBalancerIP: $SELECTED_ISTIO_IP_ADDRESS
       externalTrafficPolicy: Local
 EOF
     printf "Done.\n"
@@ -452,9 +451,12 @@ EOF
         --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
         --from-literal=prometheusName="radix-stage1" \
         --from-literal=imageRegistry="$IMAGE_REGISTRY" \
+        --from-literal=pipGatewayIp="$(cat $(config_path $RADIX_ZONE) | yq .networksets.$(cat $(config_path $RADIX_ZONE) | yq .clusters.$DEST_CLUSTER.networkset).gatewayPIP)" \
         --from-literal=clusterName="$CLUSTER_NAME" \
         --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
-        --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL"
+        --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL" \
+        --from-literal=zone="$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
+        
     printf "...Done.\n"
 
     az keyvault secret download \
