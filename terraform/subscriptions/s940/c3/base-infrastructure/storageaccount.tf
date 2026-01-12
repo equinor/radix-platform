@@ -9,7 +9,7 @@ module "storageaccount" {
   name                     = "radix${each.key}${module.config.environment}"
   tier                     = each.value.account_tier
   account_replication_type = each.value.account_replication_type
-  resource_group_name      = each.value.resource_group_name
+  resource_group_name      = module.config.common_resource_group
   location                 = module.config.location
   environment              = module.config.environment
   kind                     = each.value.kind
