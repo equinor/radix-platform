@@ -1,14 +1,19 @@
 # MS SQL Server
+
+data "azurerm_key_vault_secret" "cost_allocation" {
+  name         = "radix-cost-allocation-pw"
+  key_vault_id = module.keyvault.vault_id
+}
 module "mssql-database" {
   source                        = "../../../modules/mssqldatabase"
   env                           = module.config.environment
   database_name                 = "sqldb-radix-cost-allocation"
   server_name                   = "sql-radix-cost-allocation-${module.config.environment}"
   managed_identity_admin_name   = "radix-id-cost-allocation-admin-${module.config.environment}"
+  administrator_password        = data.azurerm_key_vault_secret.cost_allocation.value
   audit_storageaccount_name     = module.config.log_storageaccount_name
   admin_adgroup                 = data.azuread_group.sql_admin.display_name
   azuread_authentication_only   = true
-  administrator_login           = "radix"
   rg_name                       = module.resourcegroup_cost_allocation.data.name
   vnet_resource_group           = module.config.vnet_resource_group
   common_resource_group         = module.config.common_resource_group

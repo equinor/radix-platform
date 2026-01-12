@@ -21,12 +21,6 @@ module "resourcegroup_clusters" { #ok
   location = module.config.location
 }
 
-module "resourcegroup_logs" {
-  source   = "../../../modules/resourcegroups"
-  name     = "logs-${module.config.environment}"
-  location = module.config.location
-}
-
 module "resourcegroup_vnet" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.vnet_resource_group

@@ -1,5 +1,5 @@
 # This MI must not be deleted, has been given Directory Reader role by Equnior AAD Team!
-data "azurerm_client_config" "current" {}
+# data "azurerm_client_config" "current" {}
 
 module "grafana-mi-server" {
   source              = "../../../modules/userassignedidentity"
@@ -15,50 +15,22 @@ module "grafana-mi-admin" {
   location            = module.config.location
 }
 
-resource "azurerm_mysql_flexible_server" "grafana" {
+module "grafana" {
+  source                       = "../../../modules/mysql_flexible"
+  administrator_login          = "radixadmin"
   location                     = module.config.location
-  name                         = "${module.config.subscription_shortname}-radix-grafana-${module.config.environment}-prod" #TODO
+  server_name                  = "radix-grafana-${module.config.environment}"
   resource_group_name          = module.config.common_resource_group
-  zone                         = 2
-  backup_retention_days        = 14
-  geo_redundant_backup_enabled = true
+  geo_redundant_backup_enabled = false # Disabled geo-redundant backup since it's not supported in the swedencentral region.
   sku_name                     = "B_Standard_B2ms"
+  mysql_version                = 8.4
+  identity_ids                 = module.grafana-mi-server.id
+  sql_admin_display_name       = "Radix SQL server admin - c2"
+  database_name                = "grafana"
+  vnet_resource_group          = module.config.vnet_resource_group
 
-  tags = {
-    IaC = "terraform"
-  }
 
-  storage {
-    auto_grow_enabled  = true
-    io_scaling_enabled = false
-    iops               = 360
-    size_gb            = 20
-  }
-
-  identity {
-    identity_ids = [module.grafana-mi-server.id]
-    type         = "UserAssigned"
-  }
 }
-
-resource "azurerm_mysql_flexible_database" "grafana" {
-  resource_group_name = azurerm_mysql_flexible_server.grafana.resource_group_name
-
-  name        = "grafana"
-  charset     = "latin1"
-  collation   = "latin1_swedish_ci"
-  server_name = "s940-radix-grafana-c2-prod" # TODO azurerm_mysql_flexible_server.grafana.name
-}
-
-resource "azurerm_mysql_flexible_server_active_directory_administrator" "grafana" {
-  identity_id = module.grafana-mi-server.id
-  login       = data.azuread_group.sql_admin.display_name
-  object_id   = data.azuread_group.sql_admin.object_id
-  server_id   = azurerm_mysql_flexible_server.grafana.id
-  tenant_id   = data.azurerm_client_config.current.tenant_id
-}
-
-
 output "mi-admin-client-id" {
   value = module.grafana-mi-admin.client-id
 }

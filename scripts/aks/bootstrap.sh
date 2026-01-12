@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE          : dev|playground|prod|c2
+# - RADIX_ZONE          : dev|playground|prod|c2|c3
 # - CLUSTER_NAME        : Keep name short due to Azure weirdness. Ex: "test-2", "weekly-93".
 
 # Optional:

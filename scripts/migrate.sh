@@ -11,7 +11,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE          : dev|playground|prod|c2
+# - RADIX_ZONE          : dev|playground|prod|c2|c3
 # - SOURCE_CLUSTER      : Ex: "test-2", "weekly-93"
 # - DEST_CLUSTER        : Ex: "test-2", "weekly-93"
 
@@ -29,7 +29,7 @@
 
 
 # DISASTER RECOVERY:
-# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c ./migrate.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c FLUX_BRANCH=mybranch ./migrate.sh
 
 
 
@@ -39,11 +39,11 @@
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
     exit 1
 fi
 
@@ -57,6 +57,26 @@ yel=$'\e[1;33m'
 normal=$(tput sgr0)
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
+function check_secrets_exist() {
+    local keyvault_name="$1"
+    shift
+    local keys=("$@")
+    local missing_secrets=()
+    
+    for key in "${keys[@]}"; do
+        if ! az keyvault secret show --vault-name "$keyvault_name" --name "$key" &>/dev/null; then
+            missing_secrets+=("$key")
+        fi
+    done
+    
+    if [ ${#missing_secrets[@]} -gt 0 ]; then
+        echo "ERROR: Missing secrets in Key Vault '$keyvault_name': ${missing_secrets[*]}" >&2
+        return 1
+    fi
+    
+    return 0
+}
 
 echo ""
 printf "Check for neccesary executables... \n"
@@ -161,6 +181,11 @@ if [[ -z "$DEST_CLUSTER" ]]; then
     exit 1
 fi
 
+if [[ -z "$FLUX_BRANCHE" ]]; then
+    FLUX_BRANCHE="master"
+
+fi
+
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
@@ -242,6 +267,39 @@ IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
 MIGRATION_STRATEGY="aa"
 RADIX_ENVIRONMENT=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
 STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
+APP_CONFIG_NAME="radix-appconfig-$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
+
+#######################################################################################
+### Check if all secrets exist in Key Vault
+### Read from Azure App Configuration
+
+config_key="base_secrets"
+secret_list=$(az appconfig kv show --name "$APP_CONFIG_NAME" --key "$config_key" --query "value" -o tsv 2>/dev/null)
+
+if [ $? -ne 0 ] || [ -z "$secret_list" ]; then
+    echo "ERROR: Failed to retrieve key '$config_key' from App Configuration '$APP_CONFIG_NAME'" >&2
+    exit 1
+fi
+
+# Parse the list into an array
+# If it's comma-separated:
+IFS=',' read -ra secrets <<< "$secret_list"
+
+# Or if it's a JSON array like ["secret1","secret2","secret3"]:
+# mapfile -t secrets < <(echo "$secret_list" | jq -r '.[]')
+
+check_secrets_exist "radix-keyv-c3" "${secrets[@]}"
+
+#######################################################################################
+### Check if kubernetes-api-auth-ip-range are defined
+### Read from Azure App Configuration
+config_key="kubernetes-api-auth-ip-range"
+ip_list=$(az appconfig kv show --name "$APP_CONFIG_NAME" --key "$config_key" --query "value" -o tsv 2>/dev/null)
+
+if [ $? -ne 0 ] || [ -z "$ip_list" ]; then
+    echo "ERROR: Failed to retrieve key '$config_key' from App Configuration '$APP_CONFIG_NAME'" >&2
+    exit 1
+fi
 
 #######################################################################################
 ### Prepare az session
@@ -283,6 +341,7 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  SOURCE_CLUSTER                   : $SOURCE_CLUSTER"
 echo -e "   -  BACKUP_NAME                      : $BACKUP_NAME"
 echo -e "   -  DEST_CLUSTER                     : $DEST_CLUSTER"
+echo -e "   -  FLUX BRANCHE                     : $FLUX_BRANCHE"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
@@ -468,7 +527,7 @@ EOF
     flux bootstrap git \
     --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
     --url="ssh://git@github.com/equinor/radix-flux" \
-    --branch="master" \
+    --branch="$FLUX_BRANCH" \
     --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
     --components-extra=image-reflector-controller,image-automation-controller \
     --version="v$FLUX_VERSION" \

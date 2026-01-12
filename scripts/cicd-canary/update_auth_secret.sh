@@ -13,7 +13,7 @@
 ###
 
 # Required:
-# - RADIX_ZONE          : dev|playground|prod|c2
+# - RADIX_ZONE          : dev|playground|prod|c2|c3
 
 # Optional:
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
@@ -30,11 +30,11 @@
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2)$ ]]
+if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2" >&2
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
     exit 1
 fi
 

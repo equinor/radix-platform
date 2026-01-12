@@ -2,11 +2,11 @@
 
 set -e
 
-export SOURCE_ACR="radixdev"
-export TARGET_ACR="radixdevdr"
-export SOURCE_SUBSCRIPTION_ID="16ede44b-1f74-40a5-b428-46cca9a5741b"
-export TARGET_SUBSCRIPTION_ID="939950ec-da7e-4349-8b8d-77d9c278af04"
-export SOURCE_RESOURCE_GROUP="common"
+export SOURCE_ACR="radixc2prod"
+export TARGET_ACR="radixc3"
+export SOURCE_SUBSCRIPTION_ID="ded7ca41-37c8-4085-862f-b11d21ab341a"
+export TARGET_SUBSCRIPTION_ID="ded7ca41-37c8-4085-862f-b11d21ab341a"
+export SOURCE_RESOURCE_GROUP="common-c2"
 
 az account set --subscription "${SOURCE_SUBSCRIPTION_ID}"
 repos=$(az acr repository list --name "${SOURCE_ACR}" --output tsv | grep radix-)

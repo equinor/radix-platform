@@ -30,6 +30,26 @@ function dr_zone_message() {
   echo ""
 }
 
+function check_secrets_exist() {
+    local keyvault_name="$1"
+    shift
+    local keys=("$@")
+    local missing_secrets=()
+    
+    for key in "${keys[@]}"; do
+        if ! az keyvault secret show --vault-name "$keyvault_name" --name "$key" &>/dev/null; then
+            missing_secrets+=("$key")
+        fi
+    done
+    
+    if [ ${#missing_secrets[@]} -gt 0 ]; then
+        echo "ERROR: Missing secrets in Key Vault '$keyvault_name': ${missing_secrets[*]}" >&2
+        return 1
+    fi
+    
+    return 0
+}
+
 
 function config_path() {
   local env="$1"
@@ -41,7 +61,7 @@ function config_path() {
     else
       echo "$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/s941/$env/config.yaml"
     fi
-  elif [[ $env == "prod" ]] || [[ $env == "c2" ]] || [[ $env == "extmon" ]] ; then
+  elif [[ $env == "prod" ]] || [[ $env == "c2" ]] || [[ $env == "c3" ]] || [[ $env == "extmon" ]] ; then
     if [[ ! -f "$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/s940/$env/config.yaml" ]]; then
       echo "ERROR: RADIX_ZONE=$env is invalid, the file does not exist." >&2
       exit 1
@@ -56,7 +76,7 @@ function environment_json() {
   RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
   if [[ $RADIX_ZONE == "dev" ]] || [[ $RADIX_ZONE == "playground" ]]; then
     local AZ_SUBSCRIPTION_NAME="s941"
-  elif [[ $RADIX_ZONE == "prod" ]] || [[ $RADIX_ZONE == "c2" ]] || [[ $RADIX_ZONE == "extmon" ]] ; then
+  elif [[ $RADIX_ZONE == "prod" ]] || [[ $RADIX_ZONE == "c2" ]] || [[ $RADIX_ZONE == "c3" ]] || [[ $RADIX_ZONE == "extmon" ]] ; then
     local AZ_SUBSCRIPTION_NAME="s940"
   fi
   local terraform=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init) >&2
