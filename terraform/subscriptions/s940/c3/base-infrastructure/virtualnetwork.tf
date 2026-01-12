@@ -15,7 +15,7 @@ module "azurerm_public_ip_prefix_ingress" {
   publicipprefixname  = "ippre-ingress-radix-aks-${module.config.environment}-${module.config.location}-001"
   pipprefix           = "ingress-radix-aks"
   pippostfix          = module.config.location
-  enviroment          = "c3"
+  enviroment          = module.config.environment
   prefix_length       = 29
   publicipcounter     = 8
   zones               = ["1", "2", "3"]
@@ -28,7 +28,7 @@ module "azurerm_public_ip_prefix_egress_001" {
   publicipprefixname  = "ippre-radix-aks-${module.config.environment}-${module.config.location}-001"
   pipprefix           = "radix-aks"
   pippostfix          = module.config.location
-  enviroment          = "c3"
+  enviroment          = module.config.environment
   prefix_length       = 28 # Max aivailable /28
   publicipcounter     = 16
 }
@@ -40,7 +40,7 @@ module "azurerm_public_ip_prefix_egress_002" {
   publicipprefixname   = "ippre-radix-aks-${module.config.environment}-${module.config.location}-002"
   pipprefix            = "radix-aks"
   pippostfix           = module.config.location
-  enviroment           = "c3"
+  enviroment           = module.config.environment
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
   puplicipstartcounter = 17
@@ -53,7 +53,7 @@ module "azurerm_public_ip_prefix_egress_003" {
   publicipprefixname   = "ippre-radix-aks-${module.config.environment}-${module.config.location}-003"
   pipprefix            = "radix-aks"
   pippostfix           = module.config.location
-  enviroment           = "c3"
+  enviroment           = module.config.environment
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
   puplicipstartcounter = 33
