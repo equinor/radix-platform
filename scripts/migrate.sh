@@ -181,8 +181,8 @@ if [[ -z "$DEST_CLUSTER" ]]; then
     exit 1
 fi
 
-if [[ -z "$FLUX_BRANCHE" ]]; then
-    FLUX_BRANCHE="master"
+if [[ -z "$FLUX_BRANCH" ]]; then
+    FLUX_BRANCH="master"
 
 fi
 
@@ -341,7 +341,7 @@ echo -e "   -------------------------------------------------------------------"
 echo -e "   -  SOURCE_CLUSTER                   : $SOURCE_CLUSTER"
 echo -e "   -  BACKUP_NAME                      : $BACKUP_NAME"
 echo -e "   -  DEST_CLUSTER                     : $DEST_CLUSTER"
-echo -e "   -  FLUX BRANCHE                     : $FLUX_BRANCHE"
+echo -e "   -  FLUX BRANCH                      : $FLUX_BRANCH"
 echo -e ""
 echo -e "   > WHO:"
 echo -e "   -------------------------------------------------------------------"
