@@ -82,4 +82,5 @@ clusters:
     aksversion: "1.33.5"
     networkset: "networkset1"
     network_policy: "cilium"
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true

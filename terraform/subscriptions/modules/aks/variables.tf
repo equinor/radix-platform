@@ -28,11 +28,6 @@ variable "cost_analysis" {
   default = false
 }
 
-variable "workload_identity_enabled" {
-  type    = bool
-  default = false
-}
-
 variable "authorized_ip_ranges" {
   type = list(string)
 }
@@ -118,15 +113,6 @@ variable "containers_workspace_id" {
   type = string
 }
 
-variable "service_endpoints" {
-  type    = list(string)
-  default = []
-}
-
-variable "ingressIP" {
-  type = string
-}
-
 variable "vnethub_id" {
   type = string
 }
@@ -140,10 +126,6 @@ variable "cluster_vnet_resourcegroup" {
   type = string
 }
 
-variable "common_resource_group" {
-  type = string
-}
-
 variable "active_cluster" {
   type    = bool
   default = false
@@ -153,7 +135,4 @@ variable "hostencryption" {
   type    = bool
   default = false
 
-}
-variable "istioIP" {
-  type = string
 }

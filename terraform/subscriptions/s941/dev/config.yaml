@@ -42,10 +42,13 @@ clusters:
     networkset: "networkset1"
     network_policy: "cilium"
     hostencryption: true
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     #activecluster: true
+
   weekly-03:
     aksversion: "1.33.5"
     networkset: "networkset2"
     network_policy: "cilium"
     hostencryption: true
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true

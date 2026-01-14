@@ -60,7 +60,6 @@ module "aks" {
   containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
   network_policy              = var.network_policy
   developers                  = var.developers
-  ingressIP                   = var.ingressIP
   subscription                = var.subscription
   vnethub_id                  = data.azurerm_virtual_network.hub.id
   dnszones                    = var.private_dns_zones_names

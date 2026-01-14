@@ -44,4 +44,5 @@ clusters:
     networkset: "networkset1"
     network_policy: "cilium"
     dns_prefix: "playground-clusters-playgro-16ede4"
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true

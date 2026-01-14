@@ -33,4 +33,5 @@ clusters:
     aksversion: "1.32.5"
     networkset: "networkset2"
     network_policy: "calico"
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true
