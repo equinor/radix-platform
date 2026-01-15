@@ -167,30 +167,3 @@ resource "azurerm_management_lock" "aks" {
   lock_level = "CanNotDelete"
   notes      = "IaC : Terraform"
 }
-
-resource "azurerm_dns_a_record" "active" {
-  for_each            = var.active_cluster && var.enviroment != "extmon" ? { for record in toset(["@", "*", "*.app"]) : record => record } : {}
-  name                = each.key
-  zone_name           = "${var.enviroment}.radix.equinor.com" == "platform.radix.equinor.com" ? "radix.equinor.com" : "${var.enviroment}.radix.equinor.com"
-  resource_group_name = var.common_resource_group
-  ttl                 = 300
-  records             = [var.ingressIP]
-}
-
-resource "azurerm_dns_a_record" "this" {
-  name                = "*.${var.cluster_name}"
-  zone_name           = "${var.enviroment}.radix.equinor.com" == "extmon.radix.equinor.com" || "${var.enviroment}.radix.equinor.com" == "platform.radix.equinor.com" ? "radix.equinor.com" : "${var.enviroment}.radix.equinor.com"
-  resource_group_name = var.common_resource_group == "common-extmon" ? "common-platform" : var.common_resource_group
-  ttl                 = 300
-  records             = [var.ingressIP]
-}
-
-resource "azurerm_dns_a_record" "extmon" {
-  for_each            = var.enviroment == "extmon" && var.active_cluster ? { "${var.enviroment}" : true } : {}
-  name                = "*.ext-mon"
-  zone_name           = "${var.enviroment}.radix.equinor.com" == "extmon.radix.equinor.com" ? "radix.equinor.com" : "${var.enviroment}.radix.equinor.com"
-  resource_group_name = var.common_resource_group == "common-extmon" ? "common-platform" : var.common_resource_group
-  ttl                 = 300
-  records             = [var.ingressIP]
-}
-

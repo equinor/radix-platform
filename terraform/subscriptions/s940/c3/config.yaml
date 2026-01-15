@@ -22,7 +22,6 @@ networksets:
   networkset1:
     vnet: "10.11.0.0"
     ingressIP:  "51.12.145.16"
-    istioIP:    "51.12.145.23"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c3/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c3-swedencentral-001"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c3/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c3-swedencentral-002"
@@ -51,7 +50,6 @@ networksets:
   networkset2:
     vnet: "10.12.0.0"
     ingressIP: "51.12.145.18"
-    istioIP:    "51.12.145.21"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c3/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c3-swedencentral-025"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c3/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c3-swedencentral-026"
@@ -82,4 +80,5 @@ clusters:
     aksversion: "1.33.5"
     networkset: "networkset1"
     network_policy: "cilium"
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true

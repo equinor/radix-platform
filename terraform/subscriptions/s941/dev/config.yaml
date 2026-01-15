@@ -23,7 +23,6 @@ networksets:
   networkset1:
     vnet:       "10.3.0.0"
     ingressIP:  "20.223.40.148"
-    istioIP: "20.223.40.150"
     gatewayPIP: "pip-ingress-radix-aks-development-northeurope-003"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003"
@@ -31,7 +30,6 @@ networksets:
   networkset2:
     vnet:       "10.4.0.0"
     ingressIP:  "20.223.40.149"
-    istioIP: "20.223.40.151"
     gatewayPIP: "pip-ingress-radix-aks-development-northeurope-004"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001"
@@ -42,10 +40,13 @@ clusters:
     networkset: "networkset1"
     network_policy: "cilium"
     hostencryption: true
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     #activecluster: true
+
   weekly-03:
     aksversion: "1.33.5"
     networkset: "networkset2"
     network_policy: "cilium"
     hostencryption: true
+    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true
