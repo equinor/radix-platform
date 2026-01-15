@@ -56,18 +56,13 @@ module "aks" {
   containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
   network_policy              = each.value.network_policy
   developers                  = module.config.developers
-  ingressIP                   = module.config.networksets[each.value.networkset].ingressIP
-  istioIP                     = module.config.networksets[each.value.networkset].istioIP
   subscription                = module.config.subscription
   vnethub_id                  = data.azurerm_virtual_network.hub.id
   dnszones                    = module.config.private_dns_zones_names
   cluster_vnet_resourcegroup  = data.azurerm_virtual_network.hub.resource_group_name
-  common_resource_group       = module.config.common_resource_group
   active_cluster              = lookup(module.config.cluster[each.key], "activecluster", false)
   hostencryption              = lookup(module.config.cluster[each.key], "hostencryption", false)
 }
-
-
 
 locals {
   flattened_vnets = {
@@ -83,7 +78,6 @@ locals {
     for key, value in module.config.cluster : key => {
       cluster   = key
       ingressIp = module.config.networksets[module.config.cluster[key].networkset].ingressIP
-      istioIp   = module.config.networksets[module.config.cluster[key].networkset].istioIP
     }
   }
 }

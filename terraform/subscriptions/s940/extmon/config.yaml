@@ -3,7 +3,7 @@ flux_folder: "monitoring"
 cluster_type: "production"
 subscription_shortname: "s940"
 location: "northeurope"
-developers: ["a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"]
+developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev
 zoneconfig:
 backend:
   resource_group_name: "s940-tfstate"
@@ -17,14 +17,12 @@ networksets:
   networkset1:
     vnet: "10.3.0.0"
     ingressIP:  "40.112.68.27"
-    istioIP:    "40.112.68.24"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-001"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-004"
   networkset2:
     vnet: "10.4.0.0"
     ingressIP: "40.112.68.26"
-    istioIP:   "40.112.68.25"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-002"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-003"

@@ -62,7 +62,7 @@ variable "nodepools" {
         "sku"                  = "gpu"
       }
       node_taints  = ["radix-node-gpu-count=1:NoSchedule"]
-      os_disk_type = "Managed" # Standard_NC40ads_H100_v5 fail to boot if disk type is Ephemeral
+      os_disk_type = "Ephemeral"
     }
     armpipepool = {
       vm_size   = "Standard_E16ps_v5"
@@ -82,7 +82,7 @@ variable "nodepools" {
     x86pipepool = {
       vm_size   = "Standard_E16as_v5"
       min_count = 1
-      max_count = 32
+      max_count = 50
       node_labels = {
         "nodepooltasks" = "jobs"
       }
