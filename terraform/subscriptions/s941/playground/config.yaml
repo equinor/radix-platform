@@ -23,7 +23,6 @@ networksets:
   networkset1:
     vnet: "10.5.0.0"
     ingressIP:  "20.223.26.208"
-    istioIP:    "20.223.26.210"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-002"
@@ -32,7 +31,6 @@ networksets:
   networkset2:
     vnet: "10.6.0.0"
     ingressIP: "20.223.26.209"
-    istioIP:    "20.223.26.211"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-005"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-006"
