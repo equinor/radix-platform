@@ -783,6 +783,7 @@ printf "%sYou need to do following tasks to activate cluster:%s\n" "${yel}" "${n
 printf "%s► Modify $RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) %s%s\n" "${grn}" "${normal}"
 printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply' %s%s\n" "${grn}" "${normal}"
 printf "%s► Execute: 'git push & merge branch '${DEST_CLUSTER}' to master' %s%s\n" "${grn}" "${normal}"
+printf "%s► (You might have to do this twice as there is not a common way to do destroy before create) %s%s\n" "${yel}" "${normal}"
 printf "%s► Modify: postBuild.yaml file in radix-flux to reflect 'ACTIVE_CLUSTER: ${DEST_CLUSTER}' and merge %s%s\n" "${grn}" "${normal}"
 echo ""
 printf "Post a slack message about new active cluster in $RADIX_ZONE.\n"
