@@ -269,7 +269,7 @@ stop_radix_operator() {
   kubectl scale deployment radix-operator --namespace default --replicas=0
 
   printf "Waiting for radix-operator is stopped\n"
-  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default | wc -l) != 0 ]]; do
+  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -ne 0 ]]; do
     sleep 5
   done
   printf " Done.\n"
@@ -280,7 +280,7 @@ start_radix_operator() {
   kubectl scale deployment radix-operator --namespace default --replicas=1
 
   printf "Waiting for radix-operator is started"
-  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default | wc -l) == 0 ]]; do
+  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
     sleep 5
   done
   printf " Done.\n"
