@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: radix-platform
+  title: Radix Platform
+  description: "Radix infrastructure as code"
+  annotations:
+    github.com/project-slug: equinor/radix-platform
+spec:
+  type: tool
+  lifecycle: production
+  owner: omnia-radix
+  system: Radix
