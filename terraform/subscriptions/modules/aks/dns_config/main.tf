@@ -30,6 +30,17 @@ locals {
   ]...)
 }
 
+# Wait 10 seconds before creating DNS records (after destroy)
+resource "time_sleep" "wait_after_destroy" {
+  create_duration = "10s"
+
+  triggers = {
+    cluster_ips     = jsonencode(local.cluster_ips)
+    active_records  = jsonencode(local.active_records)
+    active_clusters = jsonencode(local.active_clusters)
+  }
+}
+
 # Active cluster wildcard records
 resource "azurerm_dns_a_record" "active" {
   for_each            = local.active_records
@@ -38,6 +49,12 @@ resource "azurerm_dns_a_record" "active" {
   resource_group_name = var.common_resource_group
   ttl                 = 300
   records             = [each.value.ip]
+
+  depends_on = [time_sleep.wait_after_destroy]
+
+  lifecycle {
+    create_before_destroy = false
+  }
 }
 
 # Cluster-specific wildcard records
@@ -48,6 +65,12 @@ resource "azurerm_dns_a_record" "cluster" {
   resource_group_name = local.dns_resource_group
   ttl                 = 300
   records             = [local.cluster_ips[each.key]]
+
+  depends_on = [time_sleep.wait_after_destroy]
+
+  lifecycle {
+    create_before_destroy = false
+  }
 }
 
 # Extmon-specific record
@@ -58,4 +81,10 @@ resource "azurerm_dns_a_record" "extmon" {
   resource_group_name = local.dns_resource_group
   ttl                 = 300
   records             = [local.cluster_ips[keys({ for k, v in var.clusters : k => v if v.active_cluster })[0]]]
+
+  depends_on = [time_sleep.wait_after_destroy]
+
+  lifecycle {
+    create_before_destroy = false
+  }
 }
