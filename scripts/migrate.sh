@@ -464,26 +464,6 @@ if [[ $install_base_components == true ]]; then
     printf "Done.\n"
 
     #######################################################################################
-    ### Install istio
-    ###
-    echo ""
-    SELECTED_ISTIO_IP_ADDRESS=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster=="'${DEST_CLUSTER}'") | .istioIp')
-    kubectl create namespace istio-system --dry-run=client -o yaml |
-    kubectl apply -f -
-    
-    kubectl apply -f - <<EOF
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: istio-gateway-config
-  namespace: istio-system
-data:
-  service: |
-    spec:
-      externalTrafficPolicy: Local
-EOF
-    printf "Done.\n"
-    #######################################################################################
     ### Install Flux
     echo ""
     echo "Install Flux v2"
