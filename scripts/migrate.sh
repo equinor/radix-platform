@@ -136,7 +136,7 @@ hash flux 2>/dev/null || {
     echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
     exit 1
 }
-REQ_FLUX_VERSION="2.6.4"
+REQ_FLUX_VERSION="2.7.5"
 FLUX_VERSION=$(flux --version | awk '{print $3'})
 if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
     printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
@@ -781,9 +781,9 @@ echo ""
 printf "\n"
 printf "%sYou need to do following tasks to activate cluster:%s\n" "${yel}" "${normal}"
 printf "%s► Modify $RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) %s%s\n" "${grn}" "${normal}"
-printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply' %s%s\n" "${grn}" "${normal}"
+printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks' %s%s\n" "${grn}" "${normal}"
+printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply -target module.dns_config' %s%s\n" "${grn}" "${normal}"
 printf "%s► Execute: 'git push & merge branch '${DEST_CLUSTER}' to master' %s%s\n" "${grn}" "${normal}"
-printf "%s► (You might have to do this twice as there is not a common way to do destroy before create) %s%s\n" "${yel}" "${normal}"
 printf "%s► Modify: postBuild.yaml file in radix-flux to reflect 'ACTIVE_CLUSTER: ${DEST_CLUSTER}' and merge %s%s\n" "${grn}" "${normal}"
 echo ""
 printf "Post a slack message about new active cluster in $RADIX_ZONE.\n"
