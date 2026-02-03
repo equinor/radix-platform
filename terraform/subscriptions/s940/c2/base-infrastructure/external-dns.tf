@@ -5,7 +5,7 @@ module "radix_id_externaldns_mi" {
   resource_group_name = module.resourcegroup_common.data.name
   roleassignments = {
     mi_akskubelet = {
-      role     = "DNS TXT Contributor"
+      role     = "DNS Zone Contributor"
       scope_id = module.dns_zone.azurerm_dns_zone_id
     }
   }
