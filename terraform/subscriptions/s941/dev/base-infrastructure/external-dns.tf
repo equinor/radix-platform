@@ -13,7 +13,5 @@ module "radix_id_externaldns_mi" {
 
 output "radix-id-external-dns" {
   value       = module.radix_id_externaldns_mi.client-id
-  sensitive   = true
   description = "client-id for mi"
-  depends_on  = []
 }
