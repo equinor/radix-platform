@@ -22,6 +22,7 @@ networksets:
   networkset1:
     vnet: "10.8.0.0"
     ingressIP: "20.223.122.1"
+    gatewayPIP: "pip-ingress-radix-aks-production-northeurope-003"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-001"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-production-northeurope-002"
@@ -50,6 +51,7 @@ networksets:
   networkset2:
     vnet: "10.9.0.0"
     ingressIP:  "20.223.115.58"
+    gatewayPIP: "pip-ingress-radix-aks-platform-northeurope-003"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-017"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-018"
@@ -70,6 +72,7 @@ networksets:
   networkset3:
     vnet: "10.10.0.0"
     ingressIP:  "20.223.115.57"
+    gatewayPIP: "pip-ingress-radix-aks-platform-northeurope-004"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-033"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-034"
