@@ -31,14 +31,14 @@
 # RADIX_ZONE=dev SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c FLUX_BRANCH=mybranch ./migrate.sh
 
 # Subfunction:
-# RADIX_ZONE=dev SUBFUNCTION=flux DEST_CLUSTER=weekly-35
+# RADIX_ZONE=dev SUBFUNCTION=flux DEST_CLUSTER=weekly-35 ./migrate.sh
 
 #######################################################################################
 ### SUBFUNCTIONS:
 ###
 
 # Available subfunctions:
-# RADIX_ZONE=dev SUBFUNCTION=flux DEST_CLUSTER=weekly-35
+# RADIX_ZONE=dev SUBFUNCTION=flux DEST_CLUSTER=weekly-35 ./migrate.sh
 
 
 red=$'\e[1;31m'
@@ -78,8 +78,7 @@ function flux_configmap() {
   # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
   get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
   printf "\n%s► Deploy radix-flux-config configmap in flux namespace\n"
-  kubectl delete configmap radix-flux-config -n flux-system > /dev/null 2>&1 || true
-  kubectl create configmap radix-flux-config -n flux-system \
+  CM=$(kubectl create configmap radix-flux-config -n flux-system --dry-run=client -o yaml \
       --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
       --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
       --from-literal=prometheusName="radix-stage1" \
@@ -91,7 +90,27 @@ function flux_configmap() {
       --from-literal=subscriptionId="$AZ_SUBSCRIPTION_ID" \
       --from-literal=dnsZoneResourceGroup="$AZ_RESOURCE_GROUP_DNS" \
       --from-literal=radixIdCertManager="$RADIX_ID_CERTMANAGER_MI_CLIENT_ID" \
-      --from-literal=zone="$RADIX_ENVIRONMENT" &>/dev/null
+      --from-literal=zone="$RADIX_ENVIRONMENT" )
+  echo ""
+  printf "%s%s\n" "${grn}" "$CM" "${normal}"
+  echo ""
+  if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -r -p "Is this correct? (Y/n) " yn
+        case $yn in
+        [Yy]*) 
+            kubectl replace --force -f - <<< "$CM"
+            break
+            ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
+        esac
+    done
+fi
 }
 
 function check_secrets_exist() {
