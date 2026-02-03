@@ -89,6 +89,8 @@ function environment_json() {
   local ip_prefix_egress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .egress)
   local ip_prefix_ingress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .ingress)
   local ip_prefix_egress_ips=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw egress_ips)
+  local radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id)
+  local dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group)
   local json=$(cat <<EOF
   {
     "cluster_rg": "$az_resource_group_clusters",
@@ -99,7 +101,9 @@ function environment_json() {
     "acr": "$imageRegistry",
     "egress_prefix": "$ip_prefix_egress",
     "ingress_prefix": "$ip_prefix_ingress",
-    "ip_prefix_egress_ips": "$ip_prefix_egress_ips"
+    "ip_prefix_egress_ips": "$ip_prefix_egress_ips",
+    "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
+    "dns_zone_resource_group": "$dns_zone_resource_group"
   }
 EOF
 )
@@ -168,4 +172,96 @@ get_latest_release() {
   # retrieves latest release version from a GitHub repository. Assumes the version has format v<version>.<major_version>.<minor_version>
   # this function does not use the more convenient GitHub API in order to circumvent rate limiting
   curl -sL https://github.com/$1/releases/latest | grep -E "/tree/" | grep -E "v[0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}" -o | head -1
+}
+
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
+function check_installed_components() {
+  echo ""
+  printf "Check for neccesary executables... \n"
+  hash az 2>/dev/null || {
+      echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
+      exit 1
+  }
+
+  AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
+  MIN_AZ_CLI="2.57.0"
+  if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+      printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI."${normal}"\n"
+      exit 1
+  fi
+
+  hash cilium 2>/dev/null || {
+      echo -e "\nERROR: cilium not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash jq 2>/dev/null || {
+      echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash yq 2>/dev/null || {
+      echo -e "\nERROR: yq not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash kubectl 2>/dev/null || {
+      echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
+      exit 1
+  }
+
+  hash envsubst 2>/dev/null || {
+      echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash helm 2>/dev/null || {
+      echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash velero 2>/dev/null || {
+      echo -e "\nERROR: velero not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash htpasswd 2>/dev/null || {
+      echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash flux 2>/dev/null || {
+      echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
+      exit 1
+  }
+  REQ_FLUX_VERSION="2.7.5"
+  FLUX_VERSION=$(flux --version | awk '{print $3'})
+  if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
+      printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
+      exit 1
+  fi
+
+
+  hash sqlcmd 2>/dev/null || {
+      echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
+      exit 1
+  }
+
+  hash kubelogin 2>/dev/null || {
+      echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
+      exit 1
+  }
+
+  hash uuidgen 2>/dev/null || {
+      echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  hash terraform 2>/dev/null || {
+      echo -e "\nERROR: terraform not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
+  printf "Done.\n"  
 }

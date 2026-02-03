@@ -21,21 +21,30 @@
 #######################################################################################
 ### HOW TO USE
 ###
-
+# Migrate:
 # RADIX_ZONE=dev SOURCE_CLUSTER=weekly-34 DEST_CLUSTER=cilium-35 ./migrate.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 
 # or without log:
 # RADIX_ZONE=dev SOURCE_CLUSTER=weekly-34 DEST_CLUSTER=weekly-35 ./migrate.sh
 
-
 # DISASTER RECOVERY:
 # RADIX_ZONE=dev SOURCE_CLUSTER=weekly-19 BACKUP_NAME=all-hourly-20220510150047 DEST_CLUSTER=weekly-19c FLUX_BRANCH=mybranch ./migrate.sh
 
-
+# Subfunction:
+# RADIX_ZONE=dev SUBFUNCTION=flux DEST_CLUSTER=weekly-35 ./migrate.sh
 
 #######################################################################################
-### Read inputs and configs
+### SUBFUNCTIONS:
 ###
+
+# Available subfunctions:
+# RADIX_ZONE=dev SUBFUNCTION=flux DEST_CLUSTER=weekly-35 ./migrate.sh
+
+
+red=$'\e[1;31m'
+grn=$'\e[1;32m'
+yel=$'\e[1;33m'
+normal=$(tput sgr0)
 
 # Required inputs
 
@@ -47,16 +56,62 @@ else
     exit 1
 fi
 
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+check_installed_components
+
 #######################################################################################
-### Check for prerequisites binaries
+### Functions
 ###
 
-red=$'\e[1;31m'
-grn=$'\e[1;32m'
-yel=$'\e[1;33m'
-normal=$(tput sgr0)
-
-function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+function login_azure() {
+  #######################################################################################
+  ### Prepare az session
+  ###
+  echo ""
+  AZ_SUBSCRIPTION_ID="$1"
+  printf "Logging in to Azure Subscription ID: %s\n" "$1"
+  az account show >/dev/null || az login >/dev/null
+  az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
+}
+function flux_configmap() {
+  # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
+  get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
+  printf "\n%s► Deploy radix-flux-config configmap in flux namespace\n"
+  CM=$(kubectl create configmap radix-flux-config -n flux-system --dry-run=client -o yaml \
+      --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
+      --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
+      --from-literal=prometheusName="radix-stage1" \
+      --from-literal=imageRegistry="$IMAGE_REGISTRY" \
+      --from-literal=pipGatewayIp="$(cat $(config_path $RADIX_ZONE) | yq .networksets.$(cat $(config_path $RADIX_ZONE) | yq .clusters.$DEST_CLUSTER.networkset).gatewayPIP)" \
+      --from-literal=clusterName="$CLUSTER_NAME" \
+      --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
+      --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL" \
+      --from-literal=subscriptionId="$AZ_SUBSCRIPTION_ID" \
+      --from-literal=dnsZoneResourceGroup="$AZ_RESOURCE_GROUP_DNS" \
+      --from-literal=radixIdCertManager="$RADIX_ID_CERTMANAGER_MI_CLIENT_ID" \
+      --from-literal=zone="$RADIX_ENVIRONMENT" )
+  echo ""
+  printf "%s%s\n" "${grn}" "$CM" "${normal}"
+  echo ""
+  if [[ $USER_PROMPT == true ]]; then
+    while true; do
+        read -r -p "Is this correct? (Y/n) " yn
+        case $yn in
+        [Yy]*) 
+            kubectl replace --force -f - <<< "$CM"
+            break
+            ;;
+        [Nn]*)
+            echo ""
+            echo "Quitting."
+            exit 0
+            ;;
+        *) echo "Please answer yes or no." ;;
+        esac
+    done
+fi
+}
 
 function check_secrets_exist() {
     local keyvault_name="$1"
@@ -78,117 +133,28 @@ function check_secrets_exist() {
     return 0
 }
 
-echo ""
-printf "Check for neccesary executables... \n"
-hash az 2>/dev/null || {
-    echo -e "\nERROR: Azure-CLI not found in PATH. Exiting... " >&2
-    exit 1
-}
-
-AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
-MIN_AZ_CLI="2.57.0"
-if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
-    printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI."${normal}"\n"
-    exit 1
-fi
-
-hash cilium 2>/dev/null || {
-    echo -e "\nERROR: cilium not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash jq 2>/dev/null || {
-    echo -e "\nERROR: jq not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash yq 2>/dev/null || {
-    echo -e "\nERROR: yq not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash kubectl 2>/dev/null || {
-    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
-    exit 1
-}
-
-hash envsubst 2>/dev/null || {
-    echo -e "\nERROR: envsubst not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash helm 2>/dev/null || {
-    echo -e "\nERROR: helm not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash velero 2>/dev/null || {
-    echo -e "\nERROR: velero not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash htpasswd 2>/dev/null || {
-    echo -e "\nERROR: htpasswd not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash flux 2>/dev/null || {
-    echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
-    exit 1
-}
-REQ_FLUX_VERSION="2.7.5"
-FLUX_VERSION=$(flux --version | awk '{print $3'})
-if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
-    printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
-    exit 1
-fi
-
-
-hash sqlcmd 2>/dev/null || {
-    echo -e "\nERROR: sqlcmd not found in PATH. Exiting... " >&2
-    exit 1
-}
-
-hash kubelogin 2>/dev/null || {
-    echo -e "\nERROR: kubelogin not found in PATH. Exiting... " >&2
-    exit 1
-}
-
-hash uuidgen 2>/dev/null || {
-    echo -e "\nERROR: uuidgen not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-hash terraform 2>/dev/null || {
-    echo -e "\nERROR: terraform not found in PATH. Exiting..." >&2
-    exit 1
-}
-
-printf "Done.\n"
 
 #######################################################################################
 ### Read Zone Config
 ###
-
-
-if [[ -z "$SOURCE_CLUSTER" ]]; then
-    echo "ERROR: Please provide SOURCE_CLUSTER" >&2
-    exit 1
-fi
 
 if [[ -z "$DEST_CLUSTER" ]]; then
     echo "ERROR: Please provide DEST_CLUSTER" >&2
     exit 1
 fi
 
+if [[ -z "$SUBFUNCTION" ]]; then
+  if [[ -z "$SOURCE_CLUSTER" ]]; then
+    echo "ERROR: Please provide SOURCE_CLUSTER" >&2
+    exit 1
+fi
+
+fi
+
 if [[ -z "$FLUX_BRANCH" ]]; then
     FLUX_BRANCH="master"
 
 fi
-
-# Source util scripts
-RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
 # Optional inputs
 
@@ -256,18 +222,43 @@ RADIX_ZONE_YAML=$(cat <<EOF
 $(<$RADIX_ZONE_ENV)
 EOF
 )
+CLUSTER_NAME="$DEST_CLUSTER"
+#######################################################################################
+# YAML values (Input from static config.yaml from each zone)
 AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
-CLUSTER_NAME="$DEST_CLUSTER"
+APP_CONFIG_NAME="radix-appconfig-$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
+RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
+
+# JSON values (Generated from function environment_json which reads from terraform outputs)
+AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
 MIGRATION_STRATEGY="aa"
-RADIX_ENVIRONMENT=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
 STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
-APP_CONFIG_NAME="radix-appconfig-$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
+RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
+login_azure "$AZ_SUBSCRIPTION_ID"
+
+# Key Vault values
+SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook | jq -r .value)"
+
+if [[ -n "$SUBFUNCTION" ]]; then
+    case "$SUBFUNCTION" in
+        flux)
+            flux_configmap
+            exit 0
+            ;;
+        *)
+            echo ""
+            printf "%sERROR %s%s\n" "${red}" "Unknown SUBFUNCTION: $SUBFUNCTION" "${normal}"
+            exit 1
+            ;;
+    esac
+fi
 
 #######################################################################################
 ### Check if all secrets exist in Key Vault
@@ -301,13 +292,6 @@ if [ $? -ne 0 ] || [ -z "$ip_list" ]; then
     exit 1
 fi
 
-#######################################################################################
-### Prepare az session
-###
-printf "Logging you in to Azure if not already logged in... "
-az account show >/dev/null || az login >/dev/null
-az account set --subscription "$AZ_SUBSCRIPTION_ID" >/dev/null
-printf "Done.\n"
 
 #######################################################################################
 ### Verifying Data Contributor on scope of subscription is activated
@@ -396,18 +380,6 @@ printf "%s► Modify %s%s\n" "${grn}" "${RADIX_PLATFORM_REPOSITORY_PATH}/terrafo
 echo "DO NOT alter the 'activecluster' value yet.."
 echo "Press 'space' to continue"
 read -r -s -d ' '
-# printf "%s► Adding file context to index\n"
-# git add ${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml &> /dev/null
-# printf "%s► Git commit - Add new Radix Cluster in ${DEST_CLUSTER}\n"
-# git commit -m "Add new Radix Cluster in ${DEST_CLUSTER}" &> /dev/null
-# printf "%s► Git Push - Add new Radix Cluster in $DEST_CLUSTER\n"
-# git push --set-upstream origin ${DEST_CLUSTER} &> /dev/null
-# echo "- Create a pull request to master"
-# echo "- Monitor the github action and the result"
-# echo "- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox"
-# echo "- The Pre-cluster task will now be executed, and the new cluster will be created"
-# echo "Press 'space' to continue"
-# read -r -s -d ' '
 printf "Do some terraform tasks..."
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply
@@ -434,6 +406,7 @@ if [[ $USER_PROMPT == true ]]; then
         esac
     done
 fi
+
 
 if [[ $install_base_components == true ]]; then
     #######################################################################################
@@ -483,20 +456,7 @@ if [[ $install_base_components == true ]]; then
     fi
     printf "...Done"
 
-    # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
-    printf "Deploy \"radix-flux-config\" configmap in flux-system namespace..."
-    kubectl create configmap radix-flux-config -n flux-system \
-        --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
-        --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
-        --from-literal=prometheusName="radix-stage1" \
-        --from-literal=imageRegistry="$IMAGE_REGISTRY" \
-        --from-literal=pipGatewayIp="$(cat $(config_path $RADIX_ZONE) | yq .networksets.$(cat $(config_path $RADIX_ZONE) | yq .clusters.$DEST_CLUSTER.networkset).gatewayPIP)" \
-        --from-literal=clusterName="$CLUSTER_NAME" \
-        --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
-        --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL" \
-        --from-literal=zone="$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
-        
-    printf "...Done.\n"
+    flux_configmap()
 
     az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \
