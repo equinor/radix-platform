@@ -9,5 +9,5 @@ metadata:
 spec:
   type: tool
   lifecycle: production
-  owner: omnia-radix
-  system: Radix
+  owner: team-radix
+  ssystem: system:default/Radix
