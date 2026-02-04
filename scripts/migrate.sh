@@ -93,6 +93,7 @@ function flux_configmap() {
       --from-literal=zone="$RADIX_ENVIRONMENT" )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
+  echo "$CM" | KUBECTL_EXTERNAL_DIFF="colordiff -N -u" kubectl diff -f -
   echo ""
   if [[ $USER_PROMPT == true ]]; then
     while true; do

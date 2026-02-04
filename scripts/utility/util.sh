@@ -263,5 +263,10 @@ function check_installed_components() {
       exit 1
   }
 
+  hash colordiff 2>/dev/null || {
+      echo -e "\nERROR: colordiff not found in PATH. Exiting..." >&2
+      exit 1
+  }
+
   printf "Done.\n"  
 }
