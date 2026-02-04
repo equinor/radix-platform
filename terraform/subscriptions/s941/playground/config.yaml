@@ -1,7 +1,6 @@
 environment: "playground"
 flux_folder: "playground"
-# cluster_type: "playground"
-cluster_type: "development"
+cluster_type: "playground"
 subscription_shortname: "s941"
 location: "northeurope"
 developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev
