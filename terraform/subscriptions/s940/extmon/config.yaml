@@ -17,12 +17,14 @@ networksets:
   networkset1:
     vnet: "10.3.0.0"
     ingressIP:  "40.112.68.27"
+    gatewayPIP: "pip-ingress-radix-aks-extmon-northeurope-004"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-001"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-004"
   networkset2:
     vnet: "10.4.0.0"
     ingressIP: "40.112.68.26"
+    gatewayPIP: "pip-ingress-radix-aks-extmon-northeurope-003"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-002"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-extmon/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-extmon-northeurope-003"
