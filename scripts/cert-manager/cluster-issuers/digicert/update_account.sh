@@ -98,6 +98,24 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+# Source util scripts
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+DIGICERT_EXTERNAL_ACCOUNT_KV_SECRET="digicert-external-account"
 #######################################################################################
 ### Prepare az session
 ###
@@ -162,10 +180,15 @@ secret=$(jq --null-input -r \
     '{accountKeyID: $accountKeyID, accountHMACKey: $accountHMACKey, accountEmail: $accountEmail, acmeServer: $acmeServer}'
 ) || exit
 
+# Calculate expiry date 1 year from now on macOS
+EXPIRY_DATE=$(date -v+1y -u +"%Y-%m-%dT%H:%M:%SZ")
+
 az keyvault secret set --only-show-errors \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+    --subscription "$AZ_SUBSCRIPTION_ID" \
     --name "${DIGICERT_EXTERNAL_ACCOUNT_KV_SECRET}" \
     --value "${secret}" \
+    --expires "$EXPIRY_DATE" \
     2>&1 >/dev/null || exit
 
 echo ""
