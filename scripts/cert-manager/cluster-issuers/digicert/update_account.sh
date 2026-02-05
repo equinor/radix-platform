@@ -180,8 +180,15 @@ secret=$(jq --null-input -r \
     '{accountKeyID: $accountKeyID, accountHMACKey: $accountHMACKey, accountEmail: $accountEmail, acmeServer: $acmeServer}'
 ) || exit
 
-# Calculate expiry date 1 year from now on macOS
-EXPIRY_DATE=$(date -v+1y -u +"%Y-%m-%dT%H:%M:%SZ")
+# Calculate expiry date 1 year from now (portable across GNU and BSD/macOS date)
+if EXPIRY_DATE=$(date -d '+1 year' -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+    :
+elif EXPIRY_DATE=$(date -v+1y -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+    :
+else
+    echo "ERROR: Unable to compute expiry date: unsupported date implementation." >&2
+    exit 1
+fi
 
 az keyvault secret set --only-show-errors \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
