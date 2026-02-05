@@ -10,9 +10,6 @@ module "acr" {
   radix_cr_cicd        = replace(replace(module.app_application_registration.cr_cicd.azuread_service_principal_id, "/servicePrincipals/", ""), "/", "")
   secondary_location   = module.config.secondary_location
   depends_on           = [module.azurerm_virtual_network]
-  abac_this            = false
-  abac_env             = false
-  abac_cache           = false
 }
 
 output "imageRegistry" {

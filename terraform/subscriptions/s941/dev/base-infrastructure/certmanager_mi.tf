@@ -28,5 +28,5 @@ output "radix_id_certmanager_mi_client_id" {
 
 output "dns_zone_resource_group" {
   value = module.dns_zone.azurerm_dns_resource_group_name
-  
+
 }

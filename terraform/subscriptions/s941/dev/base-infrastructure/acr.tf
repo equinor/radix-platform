@@ -11,9 +11,6 @@ module "acr" {
   acr_retension_policy = 1
   secondary_location   = module.config.secondary_location
   depends_on           = [module.azurerm_virtual_network]
-  abac_this            = true
-  abac_env             = true
-  abac_cache           = true
 }
 
 output "imageRegistry" {

@@ -77,10 +77,11 @@ function login_azure() {
 function flux_configmap() {
   # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
   get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
+  verify_cluster_access
   printf "\n%s► Deploy radix-flux-config configmap in flux namespace\n"
   CM=$(kubectl create configmap radix-flux-config -n flux-system --dry-run=client -o yaml \
-      --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
-      --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
+      --from-literal=dnsZone="$(echo $AZ_RESOURCE_DNS | sed 's/^platform\.//')" \
+      --from-literal=appAliasBaseURL="app.$(echo $AZ_RESOURCE_DNS | sed 's/^platform\.//')" \
       --from-literal=prometheusName="radix-stage1" \
       --from-literal=imageRegistry="$IMAGE_REGISTRY" \
       --from-literal=pipGatewayIp="$(cat $(config_path $RADIX_ZONE) | yq .networksets.$(cat $(config_path $RADIX_ZONE) | yq .clusters.$DEST_CLUSTER.networkset).gatewayPIP)" \
@@ -93,9 +94,15 @@ function flux_configmap() {
       --from-literal=zone="$RADIX_ENVIRONMENT" )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
-  echo "$CM" | KUBECTL_EXTERNAL_DIFF="colordiff -N -u" kubectl diff -f -
   echo ""
-  if [[ $USER_PROMPT == true ]]; then
+  CHANGES=$(echo "$CM" | kubectl diff -f - 2>&1)
+  if [[ -z "$CHANGES" ]]; then
+    printf "No changes detected in configmap,so I just quit...\n"
+  else
+    echo "$CM" | KUBECTL_EXTERNAL_DIFF="colordiff -N -u" kubectl diff -f -
+  fi
+  echo ""
+  if [[ $CHANGES ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in

@@ -187,7 +187,7 @@ resource "azurerm_storage_management_policy" "this" {
     }
   }
   dynamic "rule" {
-    for_each = (var.testzone || var.cluster_type == "development") ? [1] : []
+    for_each = (var.testzone || var.cluster_type == "development" || var.cluster_type == "playground") ? [1] : []
     content {
       name    = "Lifecycle Storageaccount"
       enabled = true
