@@ -105,7 +105,7 @@ source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 #######################################################################################
 ### Environment
 ###
-printf "\n► Read YAML configfile $RADIX_ZONE"
+printf "\n► Read YAML config file $RADIX_ZONE"
 RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
 printf "\n► Read terraform variables and configuration"
 RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
