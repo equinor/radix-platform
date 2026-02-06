@@ -98,6 +98,24 @@ if [[ -z "$USER_PROMPT" ]]; then
     USER_PROMPT=true
 fi
 
+# Source util scripts
+RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
+source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+
+#######################################################################################
+### Environment
+###
+printf "\n► Read YAML config file $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n► Read terraform variables and configuration"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+DIGICERT_EXTERNAL_ACCOUNT_KV_SECRET="digicert-external-account"
 #######################################################################################
 ### Prepare az session
 ###
@@ -162,10 +180,22 @@ secret=$(jq --null-input -r \
     '{accountKeyID: $accountKeyID, accountHMACKey: $accountHMACKey, accountEmail: $accountEmail, acmeServer: $acmeServer}'
 ) || exit
 
+# Calculate expiry date 1 year from now (portable across GNU and BSD/macOS date)
+if EXPIRY_DATE=$(date -d '+1 year' -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+    :
+elif EXPIRY_DATE=$(date -v+1y -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+    :
+else
+    echo "ERROR: Unable to compute expiry date: unsupported date implementation." >&2
+    exit 1
+fi
+
 az keyvault secret set --only-show-errors \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
+    --subscription "$AZ_SUBSCRIPTION_ID" \
     --name "${DIGICERT_EXTERNAL_ACCOUNT_KV_SECRET}" \
     --value "${secret}" \
+    --expires "$EXPIRY_DATE" \
     2>&1 >/dev/null || exit
 
 echo ""
