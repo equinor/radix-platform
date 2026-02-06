@@ -47,7 +47,7 @@ resource "azurerm_dns_a_record" "active" {
   name                = each.value.name
   zone_name           = local.zone_name
   resource_group_name = var.common_resource_group
-  ttl                 = 300
+  ttl                 = 30
   records             = [each.value.ip]
 
   depends_on = [time_sleep.wait_after_destroy]
@@ -63,7 +63,7 @@ resource "azurerm_dns_a_record" "cluster" {
   name                = "*.${each.value.cluster_name}"
   zone_name           = local.zone_name
   resource_group_name = local.dns_resource_group
-  ttl                 = 300
+  ttl                 = 30
   records             = [local.cluster_ips[each.key]]
 
   depends_on = [time_sleep.wait_after_destroy]
@@ -79,7 +79,7 @@ resource "azurerm_dns_a_record" "extmon" {
   name                = "*.ext-mon"
   zone_name           = local.zone_name
   resource_group_name = local.dns_resource_group
-  ttl                 = 300
+  ttl                 = 30
   records             = [local.cluster_ips[keys({ for k, v in var.clusters : k => v if v.active_cluster })[0]]]
 
   depends_on = [time_sleep.wait_after_destroy]

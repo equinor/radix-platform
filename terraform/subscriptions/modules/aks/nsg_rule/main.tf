@@ -7,7 +7,7 @@ data "azurerm_network_security_group" "this" {
 data "azurerm_public_ip" "gateway_pip" {
   for_each            = local.nsg_to_gateway_pip
   name                = each.value
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resource_group_name == "clusters" ? "clusters-platform" : var.resource_group_name # TODO should be in the same RG as NSG
 }
 
 locals {
