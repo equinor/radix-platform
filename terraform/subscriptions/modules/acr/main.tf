@@ -37,7 +37,6 @@ resource "azurerm_container_registry" "this" {
 }
 
 resource "azapi_update_resource" "this_abac_mode" {
-  for_each    = var.abac_this ? { "enabled" = true } : {}
   type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
   resource_id = azurerm_container_registry.this.id
 
@@ -124,7 +123,6 @@ resource "azurerm_container_registry" "env" {
 }
 
 resource "azapi_update_resource" "env_abac_mode" {
-  for_each    = var.abac_env ? { "enabled" = true } : {}
   type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
   resource_id = azurerm_container_registry.env.id
 
@@ -187,14 +185,14 @@ resource "azurerm_container_registry_task" "build_push" {
   }
 }
 
-resource "azurerm_role_assignment" "build_push" {
+resource "azurerm_role_assignment" "build_push_env" {
   scope                = azurerm_container_registry.env.id
   role_definition_name = "AcrPush"
   principal_id         = azurerm_container_registry_task.build_push.identity[0].principal_id
 }
 
-resource "azurerm_role_assignment" "build_abac" {
-  for_each             = var.abac_env ? { "enabled" = true } : {}
+resource "azurerm_role_assignment" "build_writer_env" {
+  count                = var.abac_env ? 1 : 0
   scope                = azurerm_container_registry.env.id
   role_definition_name = "Container Registry Repository Writer"
   principal_id         = azurerm_container_registry_task.build_push.identity[0].principal_id
@@ -256,14 +254,14 @@ resource "azurerm_role_assignment" "env" {
 }
 
 # Need both List and Contributor roles for ABAC to work properly
-resource "azurerm_role_assignment" "env_abac_list" {
-  for_each             = var.abac_env ? { "enabled" = true } : {}
+resource "azurerm_role_assignment" "env_cr_cicd_list" {
+  count                = var.abac_env ? 1 : 0
   scope                = azurerm_container_registry.env.id
   role_definition_name = "Container Registry Repository Catalog Lister"
   principal_id         = var.radix_cr_cicd
 }
-resource "azurerm_role_assignment" "env_abac_contributor" {
-  for_each             = var.abac_env ? { "enabled" = true } : {}
+resource "azurerm_role_assignment" "env_cr_cicd_contributor" {
+  count                = var.abac_env ? 1 : 0
   scope                = azurerm_container_registry.env.id
   role_definition_name = "Container Registry Repository Contributor"
   principal_id         = var.radix_cr_cicd
@@ -334,7 +332,6 @@ resource "azurerm_container_registry" "cache" {
 }
 
 resource "azapi_update_resource" "cache_abac_mode" {
-  for_each    = var.abac_cache ? { "enabled" = true } : {}
   type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
   resource_id = azurerm_container_registry.cache.id
 
