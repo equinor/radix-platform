@@ -280,7 +280,7 @@ IFS=',' read -ra secrets <<< "$secret_list"
 # Or if it's a JSON array like ["secret1","secret2","secret3"]:
 # mapfile -t secrets < <(echo "$secret_list" | jq -r '.[]')
 
-check_secrets_exist "radix-keyv-c3" "${secrets[@]}"
+check_secrets_exist "${AZ_RESOURCE_KEYVAULT}" "${secrets[@]}"
 
 #######################################################################################
 ### Check if kubernetes-api-auth-ip-range are defined
@@ -371,7 +371,7 @@ if [[ -z "$STORAGACCOUNT" ]]; then
     exit 1
 fi
 
-echo "Makeing sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
+echo "Making sure that Storage Account container $DEST_CLUSTER exists on $STORAGACCOUNT."
 CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
 echo ""
 # echo "You need to create a pull request to make ready for new cluster"
@@ -457,7 +457,7 @@ if [[ $install_base_components == true ]]; then
     fi
     printf "...Done"
 
-    flux_configmap()
+    flux_configmap
 
     az keyvault secret download \
     --vault-name "$AZ_RESOURCE_KEYVAULT" \

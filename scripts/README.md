@@ -42,13 +42,16 @@ NOTE: If there is a need to migrate to a new cluster with a different setup, ple
 
 This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
-- PIM yourself to 'AZ PIM OMNIA RADIX Cluster Admin - `dev or prod`'
-- Check that you can list secrets in current cluster (where you are migrating from)
-- Optionally Teardown: Modify `config.yaml` and comment out the cluster to be removed, then run `teardown.sh` in `scripts/aks/teardown.sh`
-- Run script by the [migrate.sh](./migrate.sh). See file header in for usage
-- Follow the procedure from the script.
-- After cluster is created from the Github Action, verify the cluster in Azure
-- After Github Action is finished, press space to space to continue in the migration script
+- PIM yourself to `AZ PIM OMNIA RADIX Cluster Admin - <dev or prod>` group, and `Radix Confidential Data Contributor` and `Contributor` resource for the respective subscription
+- Teardown old cluster
+    - Modify `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` and comment out the cluster to be removed
+    - Run `teardown.sh` in `scripts/aks/teardown.sh`
+- Migrate new cluster:
+    - Add new cluster to `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` but do not set `activecluster` to true yet
+    - Run script by the [migrate.sh](./migrate.sh). See file header in for usage
+    - Follow the procedure from the script.
+    - After cluster is created from the Github Action, verify the cluster in Azure
+    - After Github Action is finished, press space to space to continue in the migration script
 
 #### 2.1.1 Set new cluster to active
 
@@ -62,7 +65,7 @@ Steps:
 
 There are seven steps to setting up a Radix cluster from scratch. These steps can be run individually when modifying an existing cluster, or sequentially when setting up a new cluster:
 
-- PIM yourself to 'AZ PIM OMNIA RADIX Cluster Admin - `dev or prod`'
+- PIM yourself to 'AZ PIM OMNIA RADIX Cluster Admin - `<dev or prod>`' and `Radix Confidential Data Contributor` for the respective subscription
 - Modify the ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster
 - Create a pull request to master"
 - Monitor the github action and the result
