@@ -70,14 +70,41 @@ module "azurerm_public_ip_prefix_egress_platform" {
   publicipcounter     = 16
 }
 
+module "azurerm_public_ip_prefix_egress_002" {
+  source               = "../../../modules/network_publicipprefix"
+  location             = module.config.location
+  resource_group_name  = module.resourcegroup_clusters.data.name
+  publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-002" #TODO
+  pipprefix            = "radix-aks"
+  pippostfix           = module.config.location
+  enviroment           = "platform"
+  prefix_length        = 28 # Max aivailable /28
+  publicipcounter      = 16
+  puplicipstartcounter = 17
+}
+
+module "azurerm_public_ip_prefix_egress_003" {
+  source               = "../../../modules/network_publicipprefix"
+  location             = module.config.location
+  resource_group_name  = module.resourcegroup_clusters.data.name
+  publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-003" #TODO
+  pipprefix            = "radix-aks"
+  pippostfix           = module.config.location
+  enviroment           = "platform"
+  prefix_length        = 28 # Max aivailable /28
+  publicipcounter      = 16
+  puplicipstartcounter = 33
+}
+
+
 
 output "egress_ips" {
-  value = "${module.azurerm_public_ip_prefix_egress.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_platform.data.ip_prefix}"
+  value = "${module.azurerm_public_ip_prefix_egress.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_platform.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_002.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_003.data.ip_prefix}"
 }
 
 output "public_ip_prefix_names" {
   value = {
-    egress  = module.azurerm_public_ip_prefix_egress.data.name
+    egress  = "${module.azurerm_public_ip_prefix_egress.data.name},${module.azurerm_public_ip_prefix_egress_platform.data.name},${module.azurerm_public_ip_prefix_egress_002.data.name},${module.azurerm_public_ip_prefix_egress_003.data.name}"
     ingress = module.azurerm_public_ip_prefix_ingress.data.name
   }
 }
