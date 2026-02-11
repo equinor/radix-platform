@@ -95,16 +95,75 @@ module "azurerm_public_ip_prefix_egress_003" {
   publicipcounter      = 16
   puplicipstartcounter = 33
 }
+##################################################################################################
+## Reserved block C1
+##
+
+module "azurerm_public_ip_prefix_egress_004" {
+  source               = "../../../modules/network_publicipprefix"
+  location             = module.config.location
+  resource_group_name  = module.resourcegroup_clusters.data.name
+  publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-004" #TODO
+  pipprefix            = "radix-aks"
+  pippostfix           = module.config.location
+  enviroment           = "platform"
+  prefix_length        = 28 # Max aivailable /28
+  publicipcounter      = 16
+  puplicipstartcounter = 49
+  zones               = ["1", "2", "3"]
+}
+
+module "azurerm_public_ip_prefix_egress_005" {
+  source               = "../../../modules/network_publicipprefix"
+  location             = module.config.location
+  resource_group_name  = module.resourcegroup_clusters.data.name
+  publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-005" #TODO
+  pipprefix            = "radix-aks"
+  pippostfix           = module.config.location
+  enviroment           = "platform"
+  prefix_length        = 28 # Max aivailable /28
+  publicipcounter      = 16
+  puplicipstartcounter = 65
+  zones               = ["1", "2", "3"]
+}
+
+module "azurerm_public_ip_prefix_egress_006" {
+  source               = "../../../modules/network_publicipprefix"
+  location             = module.config.location
+  resource_group_name  = module.resourcegroup_clusters.data.name
+  publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-006" #TODO
+  pipprefix            = "radix-aks"
+  pippostfix           = module.config.location
+  enviroment           = "platform"
+  prefix_length        = 28 # Max aivailable /28
+  publicipcounter      = 16
+  puplicipstartcounter = 81
+  zones               = ["1", "2", "3"]
+}
+
+module "azurerm_public_ip_prefix_egress_007" {
+  source               = "../../../modules/network_publicipprefix"
+  location             = module.config.location
+  resource_group_name  = module.resourcegroup_clusters.data.name
+  publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-007" #TODO
+  pipprefix            = "radix-aks"
+  pippostfix           = module.config.location
+  enviroment           = "platform"
+  prefix_length        = 28 # Max aivailable /28
+  publicipcounter      = 16
+  puplicipstartcounter = 97
+  zones               = ["1", "2", "3"]
+}
 
 
 
 output "egress_ips" {
-  value = "${module.azurerm_public_ip_prefix_egress.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_platform.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_002.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_003.data.ip_prefix}"
+  value = "${module.azurerm_public_ip_prefix_egress.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_platform.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_002.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_003.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_004.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_005.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_006.data.ip_prefix},${module.azurerm_public_ip_prefix_egress_007.data.ip_prefix}"
 }
 
 output "public_ip_prefix_names" {
   value = {
-    egress  = "${module.azurerm_public_ip_prefix_egress.data.name},${module.azurerm_public_ip_prefix_egress_platform.data.name},${module.azurerm_public_ip_prefix_egress_002.data.name},${module.azurerm_public_ip_prefix_egress_003.data.name}"
+    egress  = "${module.azurerm_public_ip_prefix_egress.data.name},${module.azurerm_public_ip_prefix_egress_platform.data.name},${module.azurerm_public_ip_prefix_egress_002.data.name},${module.azurerm_public_ip_prefix_egress_003.data.name},${module.azurerm_public_ip_prefix_egress_004.data.name},${module.azurerm_public_ip_prefix_egress_005.data.name},${module.azurerm_public_ip_prefix_egress_006.data.name},${module.azurerm_public_ip_prefix_egress_007.data.name}"
     ingress = module.azurerm_public_ip_prefix_ingress.data.name
   }
 }
