@@ -192,6 +192,7 @@ resource "azurerm_role_assignment" "build_push" {
 }
 
 resource "azurerm_role_assignment" "build_abac" {
+  count                = var.abac_env ? 1 : 0
   scope                = azurerm_container_registry.env.id
   role_definition_name = "Container Registry Repository Writer"
   principal_id         = azurerm_container_registry_task.build_push.identity[0].principal_id
@@ -254,11 +255,13 @@ resource "azurerm_role_assignment" "env" {
 
 # Need both List and Contributor roles for ABAC to work properly
 resource "azurerm_role_assignment" "env_abac_list" {
+  count                = var.abac_env ? 1 : 0
   scope                = azurerm_container_registry.env.id
   role_definition_name = "Container Registry Repository Catalog Lister"
   principal_id         = var.radix_cr_cicd
 }
 resource "azurerm_role_assignment" "env_abac_contributor" {
+  count                = var.abac_env ? 1 : 0
   scope                = azurerm_container_registry.env.id
   role_definition_name = "Container Registry Repository Contributor"
   principal_id         = var.radix_cr_cicd
