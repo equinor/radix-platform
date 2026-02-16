@@ -3,49 +3,49 @@ flux_folder: "development"
 cluster_type: "development"
 subscription_shortname: "s941"
 location: "northeurope"
-all_ip_prefix_enviroments: ["development","playground"]
+all_ip_prefix_enviroments: ["development", "playground"]
 developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev
 secondary_location: "westeurope"
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "radix-ar-networkpolicy-canary"
-  
+
 backend:
-  resource_group_name:   "s941-tfstate"
-  storage_account_name:  "s941radixinfra"
-  container_name:        "infrastructure"
-  subscription_id:       "16ede44b-1f74-40a5-b428-46cca9a5741b"
-  tenant_id:             "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
-  ip_key_vault_id:       "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.KeyVault/vaults/radix-keyv-dev"
-  terraform_storage_id:  "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/s941-tfstate/providers/Microsoft.Storage/storageAccounts/s941radixinfra"
+  resource_group_name: "s941-tfstate"
+  storage_account_name: "s941radixinfra"
+  container_name: "infrastructure"
+  subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
+  tenant_id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+  ip_key_vault_id: "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/common-dev/providers/Microsoft.KeyVault/vaults/radix-keyv-dev"
+  terraform_storage_id: "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/s941-tfstate/providers/Microsoft.Storage/storageAccounts/s941radixinfra"
 networksets:
   networkset1:
-    vnet:       "10.3.0.0"
-    ingressIP:  "20.223.40.148"
+    vnet: "10.3.0.0"
+    ingressIP: "20.223.40.148"
     gatewayPIP: "pip-ingress-radix-aks-development-northeurope-003"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-003"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-004"
   networkset2:
-    vnet:       "10.4.0.0"
-    ingressIP:  "20.223.40.149"
+    vnet: "10.4.0.0"
+    ingressIP: "20.223.40.149"
     gatewayPIP: "pip-ingress-radix-aks-development-northeurope-004"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-001"
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-dev/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-development-northeurope-002"
 clusters:
-  weekly-06:
-    aksversion: "1.33.5"
+  weekly-08:
+    aksversion: "1.34.2"
     networkset: "networkset1"
     network_policy: "cilium"
     hostencryption: true
     dns_wildcard: nginx # Options: "nginx" or "istio"
-    activecluster: false
+    activecluster: true
   weekly-07:
     aksversion: "1.33.5"
     networkset: "networkset2"
     network_policy: "cilium"
     hostencryption: true
     dns_wildcard: nginx # Options: "nginx" or "istio"
-    activecluster: true
+    activecluster: false

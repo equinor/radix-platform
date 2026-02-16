@@ -8,42 +8,6 @@ resource "azurerm_network_security_group" "this" {
   }
 }
 
-data "azurerm_network_watcher" "this" {
-  name                = "NetworkWatcher_${var.location}"
-  resource_group_name = "NetworkWatcherRG"
-}
-
-resource "azapi_resource" "vnet_flow_logs" {
-  type      = "Microsoft.Network/networkWatchers/flowLogs@2023-11-01"
-  name      = "${azurerm_virtual_network.this.name}-logs"
-  location  = data.azurerm_network_watcher.this.location
-  parent_id = data.azurerm_network_watcher.this.id
-  tags = {
-    IaC = "terraform"
-  }
-
-  body = {
-    properties = {
-      enabled = true
-      flowAnalyticsConfiguration = {
-        networkWatcherFlowAnalyticsConfiguration = {
-          enabled = false
-        }
-      }
-      format = {
-        type    = "JSON"
-        version = 2
-      }
-      retentionPolicy = {
-        days    = 90
-        enabled = true
-      }
-      storageId        = var.storageaccount_id
-      targetResourceId = azurerm_virtual_network.this.id
-    }
-  }
-}
-
 resource "azurerm_virtual_network" "this" {
   name                = "vnet-${var.cluster_name}"
   location            = var.location
