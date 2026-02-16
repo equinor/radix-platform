@@ -50,16 +50,13 @@ This scripts takes care of bootstrapping new cluster (if it hasn't been created 
     - Add new cluster to `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` but do not set `activecluster` to true yet
     - Run script by the [migrate.sh](./migrate.sh). See file header in for usage
     - Follow the procedure from the script.
-    - After cluster is created from the Github Action, verify the cluster in Azure
-    - After Github Action is finished, press space to space to continue in the migration script
 
 #### 2.1.1 Set new cluster to active
 
 The following steps should only be performed when `active-to-active` was selected as migration strategy in `migrate.sh`.
 
 Steps:
-1. Run [move_custom_ingresses.sh](./move_custom_ingresses.sh).
-2. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `postBuild.yaml` for the respective Radix zone.
+1. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `postBuild.yaml` for the respective Radix zone.
 
 ### 2.2 Setting up a cluster from scratch
 
