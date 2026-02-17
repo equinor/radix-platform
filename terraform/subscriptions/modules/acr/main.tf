@@ -185,7 +185,7 @@ resource "azurerm_container_registry_task" "build_push" {
   }
 }
 
-resource "azurerm_role_assignment" "build_push" {
+resource "azurerm_role_assignment" "build_push_env" {
   scope                = azurerm_container_registry.env.id
   role_definition_name = "AcrPush"
   principal_id         = azurerm_container_registry_task.build_push.identity[0].principal_id

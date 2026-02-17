@@ -5,10 +5,14 @@ module "keyvault" {
   resource_group_name = module.config.common_resource_group
   vnet_resource_group = module.config.vnet_resource_group
   kv_secrets_user_id  = module.acr.azurerm_container_registry_credential_id
-  appconfig_sku       = module.config.cluster_type == "development" ? "developer" : "standard"
+  appconfig_sku       = module.config.cluster_type == "playground" ? "developer" : "standard"
   environment         = module.config.environment
 }
 
 output "keyvault_name" {
   value = module.keyvault.vault_name
+}
+
+output "keyvault_config_name" {
+  value = module.keyvault.config_keyvault_name
 }

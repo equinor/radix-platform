@@ -12,3 +12,7 @@ module "keyvault" {
 output "keyvault_name" {
   value = module.keyvault.vault_name
 }
+
+output "keyvault_config_name" {
+  value = module.keyvault.config_keyvault_name
+}

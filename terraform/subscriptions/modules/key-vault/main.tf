@@ -10,7 +10,7 @@ data "azurerm_role_definition" "this" {
 }
 
 data "azurerm_key_vault" "keyvault" {
-  name                = "radix-keyv-${var.environment}" # template
+  name                = "radix-config-${var.environment}" # template
   resource_group_name = var.resource_group_name
 }
 
@@ -333,4 +333,28 @@ resource "azurerm_logic_app_action_custom" "this" {
 
 output "azurerm_app_configuration_id" {
   value = azurerm_app_configuration.this.id
+}
+
+#######################################################################################################
+# Config keyvault for bootstrap of clusters.
+
+resource "azurerm_key_vault" "config" {
+  name                          = "radix-config-${var.environment}"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  tenant_id                     = data.azurerm_client_config.current.tenant_id
+  public_network_access_enabled = false
+  # rbac_authorization_enabled  = var.enable_rbac_authorization
+  soft_delete_retention_days = 30
+  purge_protection_enabled   = true
+  network_acls {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+    ip_rules       = []
+  }
+  sku_name = "standard"
+}
+
+output "config_keyvault_name" {
+  value = azurerm_key_vault.config.name
 }

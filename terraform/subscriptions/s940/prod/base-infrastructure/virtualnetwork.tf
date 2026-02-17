@@ -110,7 +110,7 @@ module "azurerm_public_ip_prefix_egress_004" {
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
   puplicipstartcounter = 49
-  zones               = ["1", "2", "3"]
+  zones                = ["1", "2", "3"]
 }
 
 module "azurerm_public_ip_prefix_egress_005" {
@@ -124,7 +124,7 @@ module "azurerm_public_ip_prefix_egress_005" {
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
   puplicipstartcounter = 65
-  zones               = ["1", "2", "3"]
+  zones                = ["1", "2", "3"]
 }
 
 module "azurerm_public_ip_prefix_egress_006" {
@@ -138,7 +138,7 @@ module "azurerm_public_ip_prefix_egress_006" {
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
   puplicipstartcounter = 81
-  zones               = ["1", "2", "3"]
+  zones                = ["1", "2", "3"]
 }
 
 module "azurerm_public_ip_prefix_egress_007" {
@@ -152,7 +152,7 @@ module "azurerm_public_ip_prefix_egress_007" {
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
   puplicipstartcounter = 97
-  zones               = ["1", "2", "3"]
+  zones                = ["1", "2", "3"]
 }
 
 
