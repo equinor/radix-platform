@@ -1,7 +1,7 @@
 
 resource "azurerm_mssql_server" "sqlserver" {
   administrator_login                      = var.administrator_login
-  administrator_login_password             = var.administrator_password
+  administrator_login_password             = var.azuread_authentication_only ? null : var.administrator_password
   location                                 = var.location
   minimum_tls_version                      = var.minimum_tls_version
   name                                     = var.server_name
@@ -23,6 +23,7 @@ resource "azurerm_mssql_server" "sqlserver" {
 
   lifecycle {
     prevent_destroy = true
+    ignore_changes  = [administrator_login_password]
   }
 }
 

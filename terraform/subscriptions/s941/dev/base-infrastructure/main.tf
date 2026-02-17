@@ -2,6 +2,11 @@ module "config" {
   source = "../../../modules/config"
 }
 
+resource "random_password" "this" {
+  length  = 32
+  special = true
+}
+
 data "azurerm_subscription" "current" {}
 
 data "azuread_group" "sql_admin" {

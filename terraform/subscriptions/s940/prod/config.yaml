@@ -92,7 +92,7 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-platform/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-platform-northeurope-048"
 clusters:
   eu-18:
-    aksversion: "1.32.5"
+    aksversion: "1.33.6"
     networkset: "networkset1"
     network_policy: "calico"
     dns_wildcard: nginx # Options: "nginx" or "istio"

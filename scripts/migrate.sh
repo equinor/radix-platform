@@ -86,7 +86,6 @@ function flux_configmap() {
       --from-literal=pipGatewayIp="$(cat $(config_path $RADIX_ZONE) | yq .networksets.$(cat $(config_path $RADIX_ZONE) | yq .clusters.$DEST_CLUSTER.networkset).gatewayPIP)" \
       --from-literal=clusterName="$CLUSTER_NAME" \
       --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
-      --from-literal=slackWebhookURL="$SLACK_WEBHOOK_URL" \
       --from-literal=subscriptionId="$AZ_SUBSCRIPTION_ID" \
       --from-literal=dnsZoneResourceGroup="$AZ_RESOURCE_GROUP_DNS" \
       --from-literal=radixIdCertManager="$RADIX_ID_CERTMANAGER_MI_CLIENT_ID" \
@@ -244,8 +243,6 @@ STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
 RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
 login_azure "$AZ_SUBSCRIPTION_ID"
 
-# Key Vault values
-SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook | jq -r .value)"
 
 if [[ -n "$SUBFUNCTION" ]]; then
     case "$SUBFUNCTION" in
@@ -446,10 +443,6 @@ if [[ $install_base_components == true ]]; then
     FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
 
     echo "Creating \"radix-flux-config\"..."
-
-    printf "\nGetting Slack Webhook URL..."
-    SLACK_WEBHOOK_URL="$(az keyvault secret show --vault-name $AZ_RESOURCE_KEYVAULT --name slack-webhook | jq -r .value)"
-    printf "...Done\n"
 
     printf "\nWorking on namespace flux-system"
     if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
