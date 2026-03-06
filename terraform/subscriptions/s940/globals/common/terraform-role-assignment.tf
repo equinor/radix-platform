@@ -19,13 +19,13 @@ data "azurerm_storage_account" "infra" {
   resource_group_name = module.config.backend.resource_group_name
 }
 
-data "azuread_group" "radix-platform-operators" {
-  display_name     = "Radix Platform Operators"
+data "azuread_group" "s940_contributors" {
+  display_name     = "AZAPPL S940 - Contributor"
   security_enabled = true
 }
 
 # resource "azurerm_role_assignment" "terraform-contributor" {
-#   principal_id       = data.azuread_group.radix-platform-operators.object_id
+#   principal_id       = data.azuread_group.s940_contributors.object_id
 #   scope              = data.azurerm_storage_account.infra.id
 #   role_definition_id = azurerm_role_definition.terraform-state-contributor.role_definition_resource_id
 # }

@@ -15,8 +15,8 @@ resource "azuread_service_principal" "grafana-logreader" {
 resource "azurerm_role_assignment" "grafana-logreader" {
   for_each = data.azurerm_subscription.subscriptions
 
+  principal_id         = azuread_service_principal.grafana-logreader.object_id
   role_definition_name = "Reader"
-  principal_id         = azuread_service_principal.grafana-logreader.id
   scope                = each.value.id
 }
 

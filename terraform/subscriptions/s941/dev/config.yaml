@@ -2,6 +2,8 @@ environment: "dev"
 flux_folder: "development"
 cluster_type: "development"
 subscription_shortname: "s941"
+subscription_contributor: "AZAPPL S941 - Contributor"
+legal_owners: ["4f1754a0-e821-4f89-bdf6-0c70306fca0f"] # Mail enabled Owner of the subscription
 location: "northeurope"
 all_ip_prefix_enviroments: ["development", "playground"]
 developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev

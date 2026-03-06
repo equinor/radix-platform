@@ -19,8 +19,8 @@ data "azurerm_storage_account" "infra" {
   resource_group_name = module.config.backend.resource_group_name
 }
 
-data "azuread_group" "radix-platform-developers" {
-  display_name     = "Radix Platform Developers"
+data "azuread_group" "s941_contributors" {
+  display_name     = "AZAPPL S941 - Contributor"
   security_enabled = true
 }
 
