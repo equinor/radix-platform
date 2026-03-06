@@ -1,39 +1,49 @@
+#region Data Sources - Subscriptions
 data "azurerm_subscription" "current" {
 }
 
-data "azuread_group" "radix" {
-  display_name = "Radix"
-}
-
-data "azuread_group" "radix-platform-developers" {
-  display_name     = "Radix Platform Developers"
-  security_enabled = true
-}
-
-data "azuread_group" "radix-platform-operators" {
-  display_name     = "Radix Platform Operators"
-  security_enabled = true
-}
 data "azurerm_subscription" "subscriptions" {
-  for_each        = var.subscriptions
+  for_each = var.subscriptions
+
   subscription_id = each.value
 }
+#endregion Data Sources - Subscriptions
 
+#region Data Sources - Azure AD Groups
+data "azuread_group" "radix" {
+  display_name = "Radix Privileged Accounts"
+}
+
+data "azuread_group" "s940_contributors" {
+  display_name     = "AZAPPL S940 - Contributor"
+  security_enabled = true
+}
+
+data "azuread_group" "s941_contributors" {
+  display_name     = "AZAPPL S941 - Contributor"
+  security_enabled = true
+}
+#endregion Data Sources - Azure AD Groups
+
+#region Role Assignments
 resource "azurerm_role_assignment" "operator-roles" {
   for_each = var.operator-roles
 
-  principal_id         = data.azuread_group.radix-platform-operators.id
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
+  principal_id         = data.azuread_group.s940_contributors.object_id
   role_definition_name = each.value.role
+  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
 }
+
 resource "azurerm_role_assignment" "developer-roles" {
   for_each = var.developer-roles
 
-  principal_id         = data.azuread_group.radix-platform-developers.id
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
+  principal_id         = data.azuread_group.s941_contributors.object_id
   role_definition_name = each.value.role
+  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
 }
+#endregion Role Assignments
 
+#region Application Registrations
 resource "azuread_application_registration" "ar-radix-servicenow-proxy-client" {
   display_name                 = "ar-radix-servicenow-proxy-client"
   service_management_reference = "110327"
@@ -41,16 +51,18 @@ resource "azuread_application_registration" "ar-radix-servicenow-proxy-client" {
 
 #TODO - Need refinement
 resource "azuread_application" "ar-radix-servicenow-proxy-server" {
-  display_name = "ar-radix-servicenow-proxy-server"
-  identifier_uris = [
-    "api://1b4a22f1-d4a1-4b6a-81b2-fd936daf1786"
-  ]
+  display_name                 = "ar-radix-servicenow-proxy-server"
   owners                       = tolist(data.azuread_group.radix.members)
   service_management_reference = "110327"
   sign_in_audience             = "AzureADandPersonalMicrosoftAccount"
 
+  identifier_uris = [
+    "api://1b4a22f1-d4a1-4b6a-81b2-fd936daf1786"
+  ]
+
   api {
     requested_access_token_version = 2
+
     oauth2_permission_scope {
       admin_consent_description  = "Allows the app to read ServiceNow applications"
       admin_consent_display_name = "Read applications from ServiceNow"
@@ -62,6 +74,7 @@ resource "azuread_application" "ar-radix-servicenow-proxy-server" {
       value                      = "Application.Read"
     }
   }
+
   single_page_application {
     redirect_uris = [
       "http://localhost:3002/swaggerui/oauth2-redirect.html",
@@ -69,10 +82,30 @@ resource "azuread_application" "ar-radix-servicenow-proxy-server" {
   }
 }
 
+module "app_application_registration" {
+  source   = "../../subscriptions/modules/app_application_registration"
+  for_each = var.appregistrations
+
+  app_role_assignment_required       = each.value.app_role_assignment_required
+  audience                           = each.value.sign_in_audience
+  displayname                        = each.value.display_name
+  implicit_id_token_issuance_enabled = each.value.implicit_id_token_issuance_enabled
+  internal_notes                     = each.value.notes
+  permissions                        = each.value.permissions
+  radixowners                        = data.azuread_group.radix.members
+  service_management_reference       = each.value.service_management_reference
+  token_version                      = each.value.token_version
+}
+#endregion Application Registrations
+
+#region Custom Role Definitions
 resource "azurerm_role_definition" "dns_txt_contributor" {
   name        = "DNS TXT Contributor"
-  description = "Can manage DNS TXT records only."
   scope       = data.azurerm_subscription.current.id
+  description = "Can manage DNS TXT records only."
+
+  assignable_scopes = var.all_subscriptions
+
   permissions {
     actions = [
       "Microsoft.Network/dnsZones/TXT/*",
@@ -86,13 +119,15 @@ resource "azurerm_role_definition" "dns_txt_contributor" {
     ]
     not_actions = []
   }
-  assignable_scopes = var.all_subscriptions
 }
 
 resource "azurerm_role_definition" "radix_confidential_data_contributor" {
   name        = "Radix Confidential Data Contributor"
-  description = "Role definition to access and update KV,SA and ACR"
   scope       = data.azurerm_subscription.current.id
+  description = "Role definition to access and update KV,SA and ACR"
+
+  assignable_scopes = var.all_subscriptions
+
   permissions {
     actions = [
       "Microsoft.ContainerRegistry/registries/read",
@@ -105,30 +140,16 @@ resource "azurerm_role_definition" "radix_confidential_data_contributor" {
       "Microsoft.Storage/storageAccounts/blobServices/containers/read",
       "Microsoft.Storage/storageAccounts/blobServices/containers/write",
       "Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action"
-      ]
-      data_actions = [
-        "Microsoft.KeyVault/vaults/secrets/*",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/move/action",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action"
-      ]
+    ]
+    data_actions = [
+      "Microsoft.KeyVault/vaults/secrets/*",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/move/action",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action"
+    ]
     not_actions = []
   }
-  assignable_scopes = var.all_subscriptions
 }
-
-module "app_application_registration" {
-  source                             = "../../subscriptions/modules/app_application_registration"
-  for_each                           = var.appregistrations
-  displayname                        = each.value.display_name
-  internal_notes                     = each.value.notes
-  service_management_reference       = each.value.service_management_reference
-  radixowners                        = data.azuread_group.radix.members
-  permissions                        = each.value.permissions
-  implicit_id_token_issuance_enabled = each.value.implicit_id_token_issuance_enabled
-  app_role_assignment_required       = each.value.app_role_assignment_required
-  audience                           = each.value.sign_in_audience
-  token_version                      = each.value.token_version
-}
+#endregion Custom Role Definitions

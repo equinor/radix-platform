@@ -128,3 +128,11 @@ output "secondary_location" {
 output "testzone" {
   value = lookup(local.config, "testzone", false)
 }
+
+output "subscription_contributor" {
+  value = local.config.subscription_contributor
+}
+
+output "legal_owners" {
+  value = local.config.legal_owners
+}

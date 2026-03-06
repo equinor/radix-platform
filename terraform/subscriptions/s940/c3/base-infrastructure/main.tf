@@ -19,7 +19,7 @@ data "azuread_group" "radix" {
 }
 
 data "azuread_group" "radix_az" {
-  display_name = "AZAPPL ${module.config.subscription_shortname} - Owner"
+  display_name = module.config.subscription_contributor
 }
 
 data "azurerm_key_vault" "this" {

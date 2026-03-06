@@ -110,12 +110,12 @@ variable "appregistrations" {
         }
       }
       role_assignments = {
-        radix_platform_operators = {
-          principal_object_id = "be5526de-1b7d-4389-b1ab-a36a99ef5cc5"
+        radix_contributors = {
+          principal_object_id = "0095272d-cb0a-4284-b1b5-86787b692627"
           role_key            = "admins"
         }
         radix = {
-          principal_object_id = "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
+          principal_object_id = "ec8c30af-ffb6-4928-9c5c-4abf6ae6f82e"
           role_key            = "editors"
         }
       }
