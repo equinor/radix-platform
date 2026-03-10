@@ -47,6 +47,11 @@ This scripts takes care of bootstrapping new cluster (if it hasn't been created 
     - Modify `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` and comment out the cluster to be removed
     - Run `teardown.sh` in `scripts/aks/teardown.sh`
 - Migrate new cluster:
+    - Temporary steps, while we run both Istio and Ingress NGINX:
+        - Disable `external-dns` Kustomization in source cluster: `flux suspend ks external-dns --context weekly-xx`
+        - Patch `external-dns` HelmRelease to start deletion of HTTPRoute DNS records
+        `kubectl patch HelmRelease -n external-dns external-dns --type='json' -p='[{"op": "replace", "path": "/spec/values/annotationFilter", "value":"radix.equinor.com/preview-gateway-mode=never"}]' --context weekly-xx`
+        - Wait for TXT and A records to be deleted. You can follow the external-dns pod logs and wait for a `All records are already up to date` entry. Verify that all HTTPRoute specific TXT and A records are deleted from the DNS Zone.
     - Add new cluster to `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` but do not set `activecluster` to true yet
     - Run script by the [migrate.sh](./migrate.sh). See file header in for usage
     - Follow the procedure from the script.

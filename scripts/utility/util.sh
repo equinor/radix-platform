@@ -238,7 +238,7 @@ function check_installed_components() {
   REQ_FLUX_VERSION="2.7.5"
   FLUX_VERSION=$(flux --version | awk '{print $3'})
   if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
-      printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
+      printf ""${yel}"Please install specific version ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
       exit 1
   fi
 
