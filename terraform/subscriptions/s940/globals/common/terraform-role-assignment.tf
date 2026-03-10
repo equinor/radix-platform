@@ -19,19 +19,8 @@ data "azurerm_storage_account" "infra" {
   resource_group_name = module.config.backend.resource_group_name
 }
 
-data "azuread_group" "s940_contributors" {
-  display_name     = "AZAPPL S940 - Contributor"
-  security_enabled = true
-}
-
-# resource "azurerm_role_assignment" "terraform-contributor" {
-#   principal_id       = data.azuread_group.s940_contributors.object_id
-#   scope              = data.azurerm_storage_account.infra.id
-#   role_definition_id = azurerm_role_definition.terraform-state-contributor.role_definition_resource_id
-# }
-
-data "azuread_group" "azappl_developers" {
-  display_name     = "AZAPPL ${module.config.environment} - Contributor"
+data "azuread_group" "contributors" {
+  display_name     = module.config.subscription_contributor
   security_enabled = true
 }
 
@@ -39,8 +28,20 @@ data "azurerm_role_definition" "azappl_confidential_data_contributor" {
   name  = "Radix Confidential Data Contributor"
   scope = "/subscriptions/${module.config.subscription}"
 }
+
+data "azurerm_role_definition" "radix_standard_reader" {
+  name  = "Radix Standard Reader"
+  scope = "/subscriptions/${module.config.subscription}"
+}
+
+resource "azurerm_role_assignment" "standard_reader" {
+  principal_id       = data.azuread_group.contributors.object_id
+  role_definition_id = data.azurerm_role_definition.radix_standard_reader.id
+  scope              = "/subscriptions/${module.config.subscription}"
+}
+
 resource "azurerm_pim_eligible_role_assignment" "azappl_contributor" {
-  principal_id       = data.azuread_group.azappl_developers.object_id
+  principal_id       = data.azuread_group.contributors.object_id
   role_definition_id = data.azurerm_role_definition.azappl_confidential_data_contributor.id
   scope              = "/subscriptions/${module.config.subscription}"
   schedule {
