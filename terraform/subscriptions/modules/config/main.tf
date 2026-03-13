@@ -89,6 +89,7 @@ output "private_dns_zones_names" {
     "privatelink.queue.core.windows.net",
     "privatelink.radix.equinor.com",
     "privatelink.redis.cache.windows.net",
+    "privatelink.redisenterprise.cache.azure.net",
     "privatelink.services.ai.azure.com",
     "privatelink.table.core.windows.net",
     "privatelink.table.cosmos.azure.com",
