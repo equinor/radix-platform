@@ -40,7 +40,7 @@ resource "azurerm_role_assignment" "standard_reader" {
   scope              = "/subscriptions/${module.config.subscription}"
 }
 
-resource "azurerm_pim_eligible_role_assignment" "azappl_developers" {
+resource "azurerm_pim_eligible_role_assignment" "azappl_contributor" {
   principal_id       = data.azuread_group.contributors.object_id
   role_definition_id = data.azurerm_role_definition.azappl_confidential_data_contributor.id
   scope              = "/subscriptions/${module.config.subscription}"

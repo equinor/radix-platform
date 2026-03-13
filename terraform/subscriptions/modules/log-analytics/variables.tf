@@ -13,12 +13,6 @@ variable "location" {
   type        = string
 }
 
-variable "local_authentication_disabled" {
-  description = "Specifies if the Log Analytics Workspace should enforce authentication using Azure AD."
-  type        = bool
-  default     = true
-}
-
 variable "retention_in_days" {
   description = "The number of days that logs should be retained."
   type        = number

@@ -50,4 +50,3 @@ resource "azurerm_pim_eligible_role_assignment" "azappl_contributor" {
     }
   }
 }
-

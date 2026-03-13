@@ -26,21 +26,6 @@ data "azuread_group" "s941_contributors" {
 #endregion Data Sources - Azure AD Groups
 
 #region Role Assignments
-resource "azurerm_role_assignment" "operator-roles" {
-  for_each = var.operator-roles
-
-  principal_id         = data.azuread_group.s940_contributors.object_id
-  role_definition_name = each.value.role
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
-}
-
-resource "azurerm_role_assignment" "developer-roles" {
-  for_each = var.developer-roles
-
-  principal_id         = data.azuread_group.s941_contributors.object_id
-  role_definition_name = each.value.role
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
-}
 #endregion Role Assignments
 
 #region Application Registrations
