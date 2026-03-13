@@ -26,21 +26,6 @@ data "azuread_group" "s941_contributors" {
 #endregion Data Sources - Azure AD Groups
 
 #region Role Assignments
-resource "azurerm_role_assignment" "operator-roles" {
-  for_each = var.operator-roles
-
-  principal_id         = data.azuread_group.s940_contributors.object_id
-  role_definition_name = each.value.role
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
-}
-
-resource "azurerm_role_assignment" "developer-roles" {
-  for_each = var.developer-roles
-
-  principal_id         = data.azuread_group.s941_contributors.object_id
-  role_definition_name = each.value.role
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
-}
 #endregion Role Assignments
 
 #region Application Registrations
@@ -121,6 +106,22 @@ resource "azurerm_role_definition" "dns_txt_contributor" {
   }
 }
 
+resource "azurerm_role_definition" "radix_standard_reader" {
+  name  = "Radix Standard Reader"
+  scope = data.azurerm_subscription.current.id
+
+  permissions {
+    actions = ["*/read"]
+    not_actions = [
+      "Microsoft.OperationalInsights/workspaces/query/read",
+      "Microsoft.OperationalInsights/workspaces/query/*/read",
+      "Microsoft.OperationalInsights/workspaces/search/action"
+    ]
+  }
+
+  assignable_scopes = var.all_subscriptions
+}
+
 resource "azurerm_role_definition" "radix_confidential_data_contributor" {
   name        = "Radix Confidential Data Contributor"
   scope       = data.azurerm_subscription.current.id
@@ -136,6 +137,11 @@ resource "azurerm_role_definition" "radix_confidential_data_contributor" {
       "Microsoft.ContainerRegistry/registries/push/write",
       "Microsoft.KeyVault/vaults/read",
       "Microsoft.KeyVault/vaults/write",
+      "Microsoft.OperationalInsights/workspaces/read",
+      "Microsoft.OperationalInsights/workspaces/query/read",
+      "Microsoft.OperationalInsights/workspaces/query/*/read",
+      "Microsoft.OperationalInsights/workspaces/analytics/query/action",
+      "Microsoft.OperationalInsights/workspaces/search/action",
       "Microsoft.Storage/storageAccounts/blobServices/containers/delete",
       "Microsoft.Storage/storageAccounts/blobServices/containers/read",
       "Microsoft.Storage/storageAccounts/blobServices/containers/write",

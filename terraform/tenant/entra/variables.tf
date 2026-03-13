@@ -30,26 +30,6 @@ variable "all_subscriptions" {
   default = ["/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a", "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b", "/subscriptions/939950ec-da7e-4349-8b8d-77d9c278af04"]
 }
 
-
-variable "operator-roles" {
-  type = map(object({
-    role         = string
-    subscription = string
-  }))
-  default = {
-    s940 = { role = "Key Vault Secrets Officer", subscription : "s940" }
-  }
-}
-variable "developer-roles" {
-  type = map(object({
-    role         = string
-    subscription = string
-  }))
-  default = {
-    s941 = { role = "Key Vault Secrets Officer", subscription : "s941" }
-  }
-}
-
 variable "service-manager-ref" {
   type        = string
   default     = "110327"
