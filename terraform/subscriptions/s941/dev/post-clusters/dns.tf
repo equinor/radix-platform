@@ -1,3 +1,9 @@
+data "azurerm_public_ip" "gateway_pip" {
+  for_each            = module.config.networksets
+  name                = each.value.gatewayPIP
+  resource_group_name = module.config.cluster_resource_group
+}
+
 locals {
 
   # Prepare cluster data for DNS module
@@ -6,6 +12,7 @@ locals {
       cluster_name      = cluster_name
       active_cluster    = lookup(cluster_config, "activecluster", false)
       nginx_ip          = module.config.networksets[cluster_config.networkset].ingressIP
+      istio_ip          = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
       dns_wildcard_type = lookup(cluster_config, "dns_wildcard", "nginx")
     }
   }
