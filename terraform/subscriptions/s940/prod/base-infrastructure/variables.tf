@@ -101,6 +101,12 @@ variable "appregistrations" {
         }
       }
       app_roles = {
+        system-admin = {
+          Displayname = "Radix Grafana System Admins"
+          Membertype  = "User"
+          Value       = "GrafanaAdmin"
+          Description = "Grafana System Admin"
+        }
         admins = {
           Displayname = "Radix Grafana Admins"
           Membertype  = "User"
@@ -117,7 +123,7 @@ variable "appregistrations" {
       role_assignments = {
         radix_contributors = {
           principal_object_id = "17b94e5c-3174-4efa-9b88-45980b49997b"
-          role_key            = "admins"
+          role_key            = "system-admin"
         }
         radix = {
           principal_object_id = "64b28659-4fe4-4222-8497-85dd7e43e25b"
