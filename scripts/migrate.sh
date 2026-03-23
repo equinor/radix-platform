@@ -479,26 +479,21 @@ if [[ $install_base_components == true ]]; then
     echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
 fi
 
-if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
-    package="tmux"
-    checkpackage=$(dpkg -s ${package} /dev/null 2>&1 | grep Status:)
-    if [[ -n ${checkpackage} ]]; then
-        tmux new -s flux -d 'watch "kubectl get ks -A"' \; split-window -v 'watch "kubectl get hr -A"'
-        echo "Please open a new terminal window, and run following command:"
-        echo ""
-        echo "tmux a -t flux"
-        echo ""
-        echo "Hit space after every kustomizations and helmreleases is in 'Ready' state."
-        echo "(Tip: You migt need to open another terminal windows to do flux reconcile commands etc...)"
-        read -r -s -d ' '
-        tmux kill-session -t flux
-    else
-        echo "Optional: Please do 'sudo apt install ${package}' for instruction how to monitor Flux kustomizations and helmreleases before you run the migration script next time......"
-        echo "You can run it manually now in seperate terminal windows:"
-        echo "watch \"kubectl get ks -A\""
-        echo "watch \"kubectl get hr -A\""
-    fi
-
+if command -v "tmux" >/dev/null 2>&1; then
+    tmux new -s flux -d 'watch "kubectl get ks -A"' \; split-window -v 'watch "kubectl get hr -A"'
+    echo "Please open a new terminal window, and run following command:"
+    echo ""
+    echo "tmux a -t flux"
+    echo ""
+    echo "Hit space after every kustomizations and helmreleases is in 'Ready' state."
+    echo "(Tip: You migt need to open another terminal windows to do flux reconcile commands etc...)"
+    read -r -s -d ' '
+    tmux kill-session -t flux
+else
+    echo "Optional: Please install tmux for instruction how to monitor Flux kustomizations and helmreleases before you run the migration script next time......"
+    echo "You can run it manually now in seperate terminal windows:"
+    echo "watch \"kubectl get ks -A\""
+    echo "watch \"kubectl get hr -A\""
 fi
 
 # Wait for operator to be deployed from flux
@@ -581,22 +576,17 @@ spec:
   - azure
 EOF
 
-if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
-    package="tmux"
-    checkpackage=$(dpkg -s ${package} /dev/null 2>&1 | grep Status:)
-    if [[ -n ${checkpackage} ]]; then
-        tmux new -s velero -d 'watch "kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
-        echo "Please open a new terminal window, and run following command:"
-        echo ""
-        echo "tmux a -t velero"
-        echo ""
-        KILL_VELERO_WINDOWS=true
-    else
-        echo "Optional: Please do 'sudo apt install ${package}' for instruction how to monitor Velero restore in the migration script next time......"
-        echo "You can run it manually now:"
-        echo "watch \"kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems\""
-    fi
-
+if command -v "tmux" >/dev/null 2>&1; then
+    tmux new -s velero -d 'watch "kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
+    echo "Please open a new terminal window, and run following command:"
+    echo ""
+    echo "tmux a -t velero"
+    echo ""
+    KILL_VELERO_WINDOWS=true
+else
+    echo "Optional: Please install tmux for instruction how to monitor Velero restore in the migration script next time......"
+    echo "You can run it manually now:"
+    echo "watch \"kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems\""
 fi
 
 echo ""
