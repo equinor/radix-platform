@@ -420,6 +420,10 @@ output "azurerm_container_registry_cache_id" {
   value = azurerm_container_registry.cache.id
 }
 
+output "azurerm_container_registry_cache_name" {
+  value = azurerm_container_registry.cache.name
+}
+
 output "azurerm_container_registry_app_id" {
   value = azurerm_container_registry.this.id
 }

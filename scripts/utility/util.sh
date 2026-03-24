@@ -91,6 +91,7 @@ function environment_json() {
   local ip_prefix_egress_ips=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw egress_ips)
   local radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id)
   local dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group)
+  local cacheRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw cacheRegistry)
   local json=$(cat <<EOF
   {
     "cluster_rg": "$az_resource_group_clusters",
@@ -103,7 +104,8 @@ function environment_json() {
     "ingress_prefix": "$ip_prefix_ingress",
     "ip_prefix_egress_ips": "$ip_prefix_egress_ips",
     "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
-    "dns_zone_resource_group": "$dns_zone_resource_group"
+    "dns_zone_resource_group": "$dns_zone_resource_group",
+    "cache_registry": "$cacheRegistry.azurecr.io"
   }
 EOF
 )

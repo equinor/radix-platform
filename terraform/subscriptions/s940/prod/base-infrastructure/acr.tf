@@ -18,3 +18,7 @@ module "acr" {
 output "imageRegistry" {
   value = module.acr.azurerm_container_registry_env_login_server
 }
+
+output "cacheRegistry" {
+  value = module.acr.azurerm_container_registry_cache_name
+}

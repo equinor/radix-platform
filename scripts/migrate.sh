@@ -89,7 +89,8 @@ function flux_configmap() {
       --from-literal=subscriptionId="$AZ_SUBSCRIPTION_ID" \
       --from-literal=dnsZoneResourceGroup="$AZ_RESOURCE_GROUP_DNS" \
       --from-literal=radixIdCertManager="$RADIX_ID_CERTMANAGER_MI_CLIENT_ID" \
-      --from-literal=zone="$RADIX_ENVIRONMENT" )
+      --from-literal=zone="$RADIX_ENVIRONMENT" \
+      --from-literal=cacheRegistry="$RADIX_CACHE_REGISTRY" )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
   echo "$CM" | KUBECTL_EXTERNAL_DIFF="colordiff -N -u" kubectl diff -f -
@@ -238,6 +239,7 @@ AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
+RADIX_CACHE_REGISTRY=$(yq '.cache_registry' <<< "$RADIX_RESOURCE_JSON")
 MIGRATION_STRATEGY="aa"
 STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
 RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
