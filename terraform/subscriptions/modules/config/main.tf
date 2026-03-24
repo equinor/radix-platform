@@ -26,9 +26,7 @@ output "cluster_resource_group" {
   value = "clusters-${local.config.environment}"
 }
 output "vnet_resource_group" {
-  # Todo: Create platform resources next time eu18 is recreated
-  # Todo: Also fix terraform/subscriptions/modules/mssqldatabase/networking.tf
-  value = "cluster-vnet-hub-${local.config.environment == "platform" ? "prod" : local.config.environment}"
+  value = "${local.config.network.vnet_hub_resourcegroup}"
 }
 output "key_vault_name" {
   value = "radix-keyv-${local.config.environment}"
