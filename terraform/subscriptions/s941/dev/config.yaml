@@ -8,6 +8,9 @@ location: "northeurope"
 all_ip_prefix_enviroments: ["development", "playground"]
 developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev
 secondary_location: "westeurope"
+network:
+  vnet_hub_resourcegroup: "cluster-vnet-hub-dev"
+
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
