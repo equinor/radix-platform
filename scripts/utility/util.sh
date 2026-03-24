@@ -105,7 +105,7 @@ function environment_json() {
     "ip_prefix_egress_ips": "$ip_prefix_egress_ips",
     "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
     "dns_zone_resource_group": "$dns_zone_resource_group",
-    "cache_registry": "$cacheRegistry"
+    "cache_registry": "$cacheRegistry.azurecr.io"
   }
 EOF
 )
