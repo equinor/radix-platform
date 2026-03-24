@@ -26,7 +26,7 @@ output "cluster_resource_group" {
   value = "clusters-${local.config.environment}"
 }
 output "vnet_resource_group" {
-  value = "${local.config.network.vnet_hub_resourcegroup}"
+  value = local.config.network.vnet_hub_resourcegroup
 }
 output "key_vault_name" {
   value = "radix-keyv-${local.config.environment}"
