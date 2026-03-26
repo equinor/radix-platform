@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 #Clone Repo
+        uses: actions/checkout@v6 #Clone Repo
 
       - name: 'Az login'
         uses: azure/login@v2

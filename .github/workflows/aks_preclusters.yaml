@@ -30,7 +30,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 #Clone Repo
+        uses: actions/checkout@v6 #Clone Repo
         with:
           fetch-depth: '2'
       - name: 'Az login'
