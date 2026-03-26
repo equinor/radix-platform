@@ -38,7 +38,7 @@ jobs:
             client_id: "fa0fa160-648d-46f0-93ce-65fe0838a075"
             abac: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-go@v5
 

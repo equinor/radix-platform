@@ -15,7 +15,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: 'Clone repo'
-        uses: actions/checkout@v4 #Clone Repo
+        uses: actions/checkout@v6 #Clone Repo
       - name: 'Terraform CLI'
         uses: hashicorp/setup-terraform@v3
         with:
