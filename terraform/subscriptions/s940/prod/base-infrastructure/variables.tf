@@ -55,9 +55,9 @@ variable "appregistrations" {
   }))
   default = {
     webconsole = {
-      display_name                 = "Omnia Radix Web Console - Platform"
+      display_name                 = "Radix Web Console - Platform"
       service_management_reference = "110327"
-      notes                        = "Omnia Radix Web Console - Platform"
+      notes                        = "Radix Web Console - Platform"
       app_role_assignment_required = true
       permissions = {
         msgraph = {
