@@ -26,7 +26,7 @@ locals {
 }
 
 data "azuread_application" "webconsole" {
-  display_name = "Omnia Radix Web Console - ${module.config.environment}"
+  display_name = "Radix Web Console - ${module.config.environment}"
 }
 
 module "webconsole_redirect_uris" {
