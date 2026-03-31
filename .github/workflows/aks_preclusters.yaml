@@ -4,6 +4,7 @@ on:
   #   paths:
   #   - terraform/subscriptions/**  
   workflow_dispatch:
+permissions: {}
 jobs:
   terraform-plan:
     name: Terraform pre-clusters
@@ -30,11 +31,11 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6 #Clone Repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: '2'
       - name: 'Az login'
-        uses: azure/login@v2
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
         with:
           client-id: ${{ env.ARM_CLIENT_ID }}
           tenant-id: ${{ env.ARM_TENANT_ID }}
@@ -56,7 +57,7 @@ jobs:
       - name: Lets sleep for 30 seconds for FW rule to complete
         run: sleep 30s
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
         with:
           terraform_version: 'latest'
       - name: Terraform Init & Plan
