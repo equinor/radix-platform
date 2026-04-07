@@ -42,10 +42,10 @@ NOTE: If there is a need to migrate to a new cluster with a different setup, ple
 
 This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
-- PIM yourself to `AZ PIM OMNIA RADIX Cluster Admin - <dev or prod>` group, and `Radix Confidential Data Contributor` and `Contributor` resource for the respective subscription
+- PIM yourself to `AZ PIM RADIX Cluster Admin - <s940|s941>` group, and `Radix Confidential Data Contributor` and `Contributor` resource for the respective subscription
 - Teardown old cluster
     - Modify `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` and comment out the cluster to be removed
-    - Run `teardown.sh` in `scripts/aks/teardown.sh`
+    - Run `teardown.sh` in `scripts/aks/teardown.sh`. See file header for usage.
 - Migrate new cluster:
     - Temporary steps, while we run both Istio and Ingress NGINX:
         - Disable `external-dns` Kustomization in source cluster: `flux suspend ks external-dns --context weekly-xx`
@@ -53,7 +53,7 @@ This scripts takes care of bootstrapping new cluster (if it hasn't been created 
         `kubectl patch HelmRelease -n external-dns external-dns --type='json' -p='[{"op": "replace", "path": "/spec/values/annotationFilter", "value":"radix.equinor.com/preview-gateway-mode=never"}]' --context weekly-xx`
         - Wait for TXT and A records to be deleted. You can follow the external-dns pod logs and wait for a `All records are already up to date` entry. Verify that all HTTPRoute specific TXT and A records are deleted from the DNS Zone.
     - Add new cluster to `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` but do not set `activecluster` to true yet
-    - Run script by the [migrate.sh](./migrate.sh). See file header in for usage
+    - Run script by the [migrate.sh](./migrate.sh). See file header for usage.
     - Follow the procedure from the script.
 
 #### 2.1.1 Set new cluster to active
@@ -67,7 +67,7 @@ Steps:
 
 There are seven steps to setting up a Radix cluster from scratch. These steps can be run individually when modifying an existing cluster, or sequentially when setting up a new cluster:
 
-- PIM yourself to 'AZ PIM OMNIA RADIX Cluster Admin - `<dev or prod>`' and `Radix Confidential Data Contributor` for the respective subscription
+- PIM yourself to 'AZ PIM RADIX Cluster Admin - `<s940|s941>`' and `Radix Confidential Data Contributor` for the respective subscription
 - Modify the ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster
 - Create a pull request to master"
 - Monitor the github action and the result
