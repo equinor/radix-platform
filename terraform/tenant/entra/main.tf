@@ -81,6 +81,31 @@ module "app_application_registration" {
   service_management_reference       = each.value.service_management_reference
   token_version                      = each.value.token_version
 }
+
+module "app_application_registration_swaggerui" {
+  source = "../../subscriptions/modules/app_application_registration"
+
+  displayname    = "radix-ar-swaggerui"
+  internal_notes = null
+  permissions = {
+    msgraph = {
+      id = "00000003-0000-0000-c000-000000000000" # msgraph
+      scope_ids = [
+        "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+      ]
+    }
+    kubernetes = {
+      id = "34a47c2f-cd0d-47b4-a93c-2c41130c671c" # kubernetes
+      scope_ids = [
+        "34a47c2f-cd0d-47b4-a93c-2c41130c671c" # user.read
+      ]
+    }
+  }
+
+  radixowners                  = data.azuread_group.radix.members
+  service_management_reference = "110327"
+  token_version                = 2
+}
 #endregion Application Registrations
 
 #region Custom Role Definitions
