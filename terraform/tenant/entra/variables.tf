@@ -35,36 +35,3 @@ variable "service-manager-ref" {
   default     = "110327"
   description = "Service Manager Reference, required on all App Registrations"
 }
-
-variable "appregistrations" {
-  description = "App registrations"
-  type = map(object({
-    display_name                       = string
-    service_management_reference       = string
-    notes                              = optional(string)
-    implicit_id_token_issuance_enabled = optional(bool, false)
-    app_role_assignment_required       = optional(bool, false)
-    sign_in_audience                   = optional(string)
-    token_version                      = optional(number)
-    permissions = optional(map(object({
-      id        = string
-      scope_ids = list(string)
-    })))
-  }))
-  default = {
-    servicenow_proxy_client = {
-      display_name                 = "ar-radix-servicenow-proxy-client"
-      service_management_reference = "110327"
-      token_version                = 2
-      permissions = {
-        msgraph = {
-          id = "00000003-0000-0000-c000-000000000000" # msgraph
-          scope_ids = [
-            "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
-          ]
-        }
-      }
-    }
-  }
-}
-

@@ -67,19 +67,80 @@ resource "azuread_application" "ar-radix-servicenow-proxy-server" {
   }
 }
 
-module "app_application_registration" {
-  source   = "../../subscriptions/modules/app_application_registration"
-  for_each = var.appregistrations
+module "appreg_servicenow_client" {
+  source = "../../subscriptions/modules/app_application_registration"
 
-  app_role_assignment_required       = each.value.app_role_assignment_required
-  audience                           = each.value.sign_in_audience
-  displayname                        = each.value.display_name
-  implicit_id_token_issuance_enabled = each.value.implicit_id_token_issuance_enabled
-  internal_notes                     = each.value.notes
-  permissions                        = each.value.permissions
-  radixowners                        = data.azuread_group.radix.members
-  service_management_reference       = each.value.service_management_reference
-  token_version                      = each.value.token_version
+  displayname    = "ar-radix-servicenow-proxy-client"
+  internal_notes = null
+  permissions = {
+    msgraph = {
+      id = "00000003-0000-0000-c000-000000000000" # msgraph
+      scope_ids = [
+        "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+      ]
+    }
+  }
+  radixowners                  = data.azuread_group.radix.members
+  service_management_reference = "110327"
+  token_version                = 2
+}
+
+module "app_application_registration_swaggerui" {
+  source = "../../subscriptions/modules/app_application_registration"
+
+  displayname    = "radix-ar-swaggerui"
+  internal_notes = null
+  permissions = {
+    msgraph = {
+      id = "00000003-0000-0000-c000-000000000000" # msgraph
+      scope_ids = [
+        "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+      ]
+    }
+    kubernetes = {
+      id = "6dae42f8-4368-4678-94ff-3960e28e3630" # kubernetes
+      scope_ids = [
+        "34a47c2f-cd0d-47b4-a93c-2c41130c671c" # user.read
+      ]
+    }
+  }
+
+  radixowners                  = data.azuread_group.radix.members
+  service_management_reference = "110327"
+  token_version                = 2
+}
+
+resource "azuread_application_redirect_uris" "swaggerui" {
+  application_id = module.app_application_registration_swaggerui.azuread_application_id
+  type           = "SPA"
+
+  redirect_uris = [
+    "http://localhost:3000/swaggerui/oauth2-redirect.html",
+    "http://localhost:3001/swaggerui/oauth2-redirect.html",
+    "http://localhost:3002/swaggerui/oauth2-redirect.html",
+    "http://localhost:3003/swaggerui/oauth2-redirect.html",
+
+    # radix-api (dnsAlias: api)
+    "https://api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+
+    # radix-cost-allocation-api (dnsAlias: cost-api)
+    "https://cost-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+
+    # radix-vulnerability-scanner-api (dnsAlias: vulnerability-scan-api)
+    "https://vulnerability-scan-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+  ]
 }
 #endregion Application Registrations
 
