@@ -120,26 +120,56 @@ resource "azuread_application_redirect_uris" "swaggerui" {
     "http://localhost:3002/swaggerui/oauth2-redirect.html",
     "http://localhost:3003/swaggerui/oauth2-redirect.html",
 
-    # radix-api (dnsAlias: api)
+    # radix-api (component: server, dnsAlias: api)
     "https://api.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-qa.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-prod.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-qa.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-prod.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-qa.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-prod.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-qa.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-prod.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-qa.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-api-prod.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
 
-    # radix-cost-allocation-api (dnsAlias: cost-api)
+    # radix-cost-allocation-api (component: server, dnsAlias: cost-api)
     "https://cost-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://cost-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://cost-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://cost-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://cost-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-qa.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-prod.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-qa.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-prod.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-qa.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-prod.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-qa.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-prod.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-qa.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-cost-allocation-api-prod.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
 
-    # radix-vulnerability-scanner-api (dnsAlias: vulnerability-scan-api)
+    # radix-vulnerability-scanner-api (component: server, dnsAlias: vulnerability-scan-api)
     "https://vulnerability-scan-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://vulnerability-scan-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://vulnerability-scan-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://vulnerability-scan-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
     "https://vulnerability-scan-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-qa.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-prod.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-qa.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-prod.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-qa.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-prod.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-qa.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-prod.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-qa.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://server-radix-vulnerability-scanner-api-prod.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
   ]
 }
 #endregion Application Registrations
