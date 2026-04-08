@@ -110,7 +110,7 @@ module "app_application_registration_swaggerui" {
   token_version                = 2
 }
 
-resource "azuread_application_redirect_uris" "swaggerui-dev" {
+resource "azuread_application_redirect_uris" "swaggerui" {
   application_id = module.app_application_registration_swaggerui.azuread_application_id
   type           = "SPA"
 
@@ -119,6 +119,27 @@ resource "azuread_application_redirect_uris" "swaggerui-dev" {
     "http://localhost:3001/swaggerui/oauth2-redirect.html",
     "http://localhost:3002/swaggerui/oauth2-redirect.html",
     "http://localhost:3003/swaggerui/oauth2-redirect.html",
+
+    # radix-api (dnsAlias: api)
+    "https://api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+
+    # radix-cost-allocation-api (dnsAlias: cost-api)
+    "https://cost-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+
+    # radix-vulnerability-scanner-api (dnsAlias: vulnerability-scan-api)
+    "https://vulnerability-scan-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
   ]
 }
 #endregion Application Registrations
