@@ -39,32 +39,43 @@ data "azurerm_virtual_network" "hub" {
 }
 
 module "aks" {
-  source                      = "../../modules/aks"
-  cluster_name                = var.cluster_name
-  resource_group              = var.cluster_resource_group
-  location                    = var.location
-  dns_prefix                  = var.dns_prefix
-  outbound_ip_address_ids     = var.outbound_ip_address_ids
-  storageaccount_id           = data.azurerm_storage_account.this.id
-  address_space               = var.address_space
-  enviroment                  = var.environment
-  aks_version                 = var.aks_version
-  authorized_ip_ranges        = split(",", nonsensitive(data.azurerm_key_vault_secret.api_ip.value))
-  nodepools                   = var.nodepools
-  systempool                  = var.systempool
-  identity_aks                = data.azurerm_user_assigned_identity.aks.id
-  identity_kublet_client      = data.azurerm_user_assigned_identity.akskubelet.client_id
-  identity_kublet_object      = data.azurerm_user_assigned_identity.akskubelet.principal_id
-  identity_kublet_identity_id = data.azurerm_user_assigned_identity.akskubelet.id
-  defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
-  containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
-  network_policy              = var.network_policy
-  developers                  = var.developers
-  subscription                = var.subscription
-  vnethub_id                  = data.azurerm_virtual_network.hub.id
-  dnszones                    = var.private_dns_zones_names
-  cluster_vnet_resourcegroup  = data.azurerm_virtual_network.hub.resource_group_name
-  common_resource_group       = var.common_resource_group
+  source                            = "../../modules/aks"
+  cluster_name                      = var.cluster_name
+  resource_group                    = var.cluster_resource_group
+  location                          = var.location
+  dns_prefix                        = var.dns_prefix != "" ? var.dns_prefix : "${var.cluster_name}-${var.cluster_resource_group}-${substr(var.subscription, 0, 6)}"
+  outbound_ip_address_ids           = var.outbound_ip_address_ids
+  storageaccount_id                 = data.azurerm_storage_account.this.id
+  address_space                     = var.address_space
+  enviroment                        = var.environment
+  aks_version                       = var.aks_version
+  authorized_ip_ranges              = split(",", nonsensitive(data.azurerm_key_vault_secret.api_ip.value))
+  nodepools                         = var.nodepools
+  systempool                        = var.systempool
+  identity_aks                      = data.azurerm_user_assigned_identity.aks.id
+  identity_kublet_client            = data.azurerm_user_assigned_identity.akskubelet.client_id
+  identity_kublet_object            = data.azurerm_user_assigned_identity.akskubelet.principal_id
+  identity_kublet_identity_id       = data.azurerm_user_assigned_identity.akskubelet.id
+  defender_workspace_id             = data.azurerm_log_analytics_workspace.defender.id
+  containers_workspace_id           = data.azurerm_log_analytics_workspace.containers.id
+  network_data_plane                = var.network_policy == "cilium" ? "cilium" : "azure"
+  network_plugin_mode               = var.network_policy == "cilium" ? "overlay" : null
+  network_policy                    = var.network_policy
+  developers                        = var.developers
+  subscription                      = var.subscription
+  vnethub_id                        = data.azurerm_virtual_network.hub.id
+  nsg_name                          = "nsg-${var.cluster_name}"
+  vnet_name                         = "vnet-${var.cluster_name}"
+  subnet_name                       = "subnet-${var.cluster_name}"
+  hub_virtual_network_name          = data.azurerm_virtual_network.hub.name
+  hub_to_cluster_peering_name       = var.cluster_name == "c2-11" ? "vnet-hub-to-c2-11" : "hub-to-vnet-${var.cluster_name}"
+  cluster_to_hub_peering_name       = var.cluster_name == "c2-11" ? "c2-11-to-vnet-hub" : "vnet-${var.cluster_name}-to-hub"
+  dnszones                          = var.private_dns_zones_names
+  cluster_vnet_resourcegroup        = data.azurerm_virtual_network.hub.resource_group_name
+  cluster_to_hub_resource_group     = var.cluster_resource_group
+  network_lock_name                 = "vnet-${var.cluster_name}-CanNotDelete-Lock"
+  private_dns_zone_link_name        = "${var.cluster_name}-link"
+  monitor_data_collection_rule_name = "MSCI-${var.location}-${var.cluster_name}"
   # active_cluster              = lookup(module.config.cluster[each.key], "activecluster", false)
   hostencryption = lookup(module.config.cluster[each.key], "hostencryption", false)
 }

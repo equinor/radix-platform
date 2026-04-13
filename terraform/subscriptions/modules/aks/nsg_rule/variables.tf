@@ -8,6 +8,11 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "public_ip_resource_group" {
+  description = "Resource group name where gateway Public IPs are located"
+  type        = string
+}
+
 variable "clusters" {
   description = "Map of cluster configurations"
   type = map(object({

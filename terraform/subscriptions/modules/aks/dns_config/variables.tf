@@ -18,3 +18,25 @@ variable "common_resource_group" {
   description = "Common resource group name for DNS zones"
   type        = string
 }
+
+variable "zone_name" {
+  description = "DNS zone name used for wildcard records"
+  type        = string
+}
+
+variable "dns_resource_group" {
+  description = "Resource group for DNS A records that are not always in the common resource group"
+  type        = string
+}
+
+variable "create_active_records" {
+  description = "Whether to create active wildcard records (@, *, *.app)"
+  type        = bool
+  default     = true
+}
+
+variable "create_extmon_record" {
+  description = "Whether to create the ext-mon wildcard record"
+  type        = bool
+  default     = false
+}

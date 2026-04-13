@@ -9,6 +9,7 @@ secondary_location: "westeurope"
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod
 network:
   vnet_hub_resourcegroup: "cluster-vnet-hub-prod"
+  public_ip_resource_group: "clusters-platform"
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
@@ -101,3 +102,5 @@ clusters:
     network_policy: "calico"
     dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true
+    cluster_resource_group: "clusters"
+    monitor_data_collection_rule_prefix: "MSCI-NEU-"

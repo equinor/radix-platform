@@ -34,34 +34,48 @@ data "azurerm_virtual_network" "hub" {
 }
 
 module "aks" {
-  source                      = "../../../modules/aks"
-  for_each                    = module.config.cluster
-  cluster_name                = each.key
-  resource_group              = module.config.cluster_resource_group
-  location                    = module.config.location
-  dns_prefix                  = lookup(module.config.cluster[each.key], "dns_prefix", "")
-  outbound_ip_address_ids     = module.config.networksets[each.value.networkset].egress
-  storageaccount_id           = data.azurerm_storage_account.this.id
-  address_space               = module.config.networksets[each.value.networkset].vnet
-  enviroment                  = module.config.environment
-  aks_version                 = each.value.aksversion
-  authorized_ip_ranges        = split(",", data.azurerm_app_configuration_key.ip_range.value)
-  nodepools                   = var.nodepools
-  systempool                  = var.systempool
-  identity_aks                = data.azurerm_user_assigned_identity.aks.id
-  identity_kublet_client      = data.azurerm_user_assigned_identity.akskubelet.client_id
-  identity_kublet_object      = data.azurerm_user_assigned_identity.akskubelet.principal_id
-  identity_kublet_identity_id = data.azurerm_user_assigned_identity.akskubelet.id
-  defender_workspace_id       = data.azurerm_log_analytics_workspace.defender.id
-  containers_workspace_id     = data.azurerm_log_analytics_workspace.containers.id
-  network_policy              = each.value.network_policy
-  developers                  = module.config.developers
-  subscription                = module.config.subscription
-  vnethub_id                  = data.azurerm_virtual_network.hub.id
-  dnszones                    = module.config.private_dns_zones_names
-  cluster_vnet_resourcegroup  = data.azurerm_virtual_network.hub.resource_group_name
-  active_cluster              = lookup(module.config.cluster[each.key], "activecluster", false)
-  hostencryption              = lookup(module.config.cluster[each.key], "hostencryption", false)
+  source                            = "../../../modules/aks"
+  for_each                          = module.config.cluster
+  cluster_name                      = each.key
+  resource_group                    = lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)
+  location                          = module.config.location
+  dns_prefix                        = lookup(module.config.cluster[each.key], "dns_prefix", "${each.key}-${lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)}-${substr(module.config.subscription, 0, 6)}")
+  outbound_ip_address_ids           = module.config.networksets[each.value.networkset].egress
+  storageaccount_id                 = data.azurerm_storage_account.this.id
+  address_space                     = module.config.networksets[each.value.networkset].vnet
+  enviroment                        = module.config.environment
+  aks_version                       = each.value.aksversion
+  authorized_ip_ranges              = split(",", data.azurerm_app_configuration_key.ip_range.value)
+  nodepools                         = var.nodepools
+  systempool                        = var.systempool
+  identity_aks                      = data.azurerm_user_assigned_identity.aks.id
+  identity_kublet_client            = data.azurerm_user_assigned_identity.akskubelet.client_id
+  identity_kublet_object            = data.azurerm_user_assigned_identity.akskubelet.principal_id
+  identity_kublet_identity_id       = data.azurerm_user_assigned_identity.akskubelet.id
+  defender_workspace_id             = data.azurerm_log_analytics_workspace.defender.id
+  containers_workspace_id           = data.azurerm_log_analytics_workspace.containers.id
+  network_data_plane                = each.value.network_policy == "cilium" ? "cilium" : "azure"
+  network_plugin_mode               = each.value.network_policy == "cilium" ? "overlay" : null
+  network_policy                    = each.value.network_policy
+  developers                        = module.config.developers
+  subscription                      = module.config.subscription
+  vnethub_id                        = data.azurerm_virtual_network.hub.id
+  nsg_name                          = "nsg-${each.key}"
+  vnet_name                         = "vnet-${each.key}"
+  subnet_name                       = "subnet-${each.key}"
+  hub_virtual_network_name          = data.azurerm_virtual_network.hub.name
+  hub_to_cluster_peering_name       = "hub-to-vnet-${each.key}"
+  cluster_to_hub_peering_name       = "vnet-${each.key}-to-hub"
+  dnszones                          = module.config.private_dns_zones_names
+  cluster_vnet_resourcegroup        = data.azurerm_virtual_network.hub.resource_group_name
+  cluster_to_hub_resource_group     = lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)
+  enable_ddos_protection_plan       = true
+  enable_network_lock               = true
+  network_lock_name                 = "vnet-${each.key}-CanNotDelete-Lock"
+  private_dns_zone_link_name        = "${each.key}-link"
+  monitor_data_collection_rule_name = "MSCI-${module.config.location}-${each.key}"
+  hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
+
 }
 
 locals {
