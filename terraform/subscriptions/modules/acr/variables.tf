@@ -1,6 +1,17 @@
-variable "acr" {
-  description = "ACR name"
+variable "environment" {
+  description = "Infrastructure environment name, for example dev, c2, c3, platform. Used for cache registry naming."
   type        = string
+}
+
+variable "acr_name" {
+  description = "Short ACR name suffix used for app/env registry and resource names, for example prod, c2, c3, dev"
+  type        = string
+}
+
+variable "acr_env_name" {
+  description = "Full explicit name for the environment (env) registry. Defaults to radix<acr_name>. Override for c2: radixc2prod"
+  type        = string
+  default     = null
 }
 
 variable "location" {

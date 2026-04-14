@@ -44,8 +44,7 @@ variable "azuread_authentication_only" {
   type    = bool
 }
 variable "env" {
-  type        = string
-  description = "dev, playground, c2 or prod"
+  type = string
 }
 variable "vnet_resource_group" {
   type = string

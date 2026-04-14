@@ -9,7 +9,7 @@ terraform {
 
 #App ACR
 resource "azurerm_container_registry" "this" {
-  name                          = "radix${var.acr}app"
+  name                          = "radix${var.acr_name}app"
   location                      = var.location
   resource_group_name           = var.resource_group_name
   sku                           = "Premium"
@@ -48,7 +48,7 @@ resource "azapi_update_resource" "this_abac_mode" {
 }
 
 resource "azurerm_private_endpoint" "this" {
-  name                = "pe-radix-acr-app-${var.acr}"
+  name                = "pe-radix-acr-app-${var.acr_name}"
   resource_group_name = var.vnet_resource_group
   location            = var.location
   subnet_id           = var.subnet_id
@@ -92,7 +92,7 @@ resource "azurerm_management_lock" "this" {
 
 #Env ACR
 resource "azurerm_container_registry" "env" {
-  name                          = "radix${var.acr}" == "radixc2" ? "radixc2prod" : "radix${var.acr}"
+  name                          = coalesce(var.acr_env_name, "radix${var.acr_name}")
   location                      = var.location
   resource_group_name           = var.resource_group_name
   sku                           = "Premium"
@@ -134,7 +134,7 @@ resource "azapi_update_resource" "env_abac_mode" {
 }
 
 resource "azurerm_container_registry_task" "build_push" {
-  name                  = "radix-image-builder-${var.acr}"
+  name                  = "radix-image-builder-${var.acr_name}"
   container_registry_id = azurerm_container_registry.env.id
   platform {
     os           = "Linux"
@@ -199,7 +199,7 @@ resource "azurerm_role_assignment" "build_abac" {
 }
 
 resource "azurerm_container_registry_task" "build" {
-  name                  = "radix-image-builder-build-only-${var.acr}"
+  name                  = "radix-image-builder-build-only-${var.acr_name}"
   container_registry_id = azurerm_container_registry.env.id
   platform {
     os           = "Linux"
@@ -268,7 +268,7 @@ resource "azurerm_role_assignment" "env_abac_contributor" {
 }
 
 resource "azurerm_private_endpoint" "env" {
-  name                = var.acr == "c2" ? "pe-radix-acr-c2prod" : "pe-radix-acr-${var.acr}"
+  name                = "pe-radix-acr-${trimprefix(coalesce(var.acr_env_name, "radix${var.acr_name}"), "radix")}"
   resource_group_name = var.vnet_resource_group
   location            = var.location
   subnet_id           = var.subnet_id
@@ -312,7 +312,7 @@ resource "azurerm_management_lock" "env" {
 
 #Cache
 resource "azurerm_container_registry" "cache" {
-  name                          = "radix${var.acr}cache" == "radixprodcache" ? "radixplatformcache" : "radix${var.acr}cache"
+  name                          = "radix${var.environment}cache"
   resource_group_name           = var.resource_group_name
   location                      = var.location
   sku                           = "Premium"
@@ -366,7 +366,7 @@ resource "azurerm_container_registry_cache_rule" "cache" {
 }
 
 resource "azurerm_private_endpoint" "cache" {
-  name                = "pe-radix-acr-cache-${var.acr}"
+  name                = "pe-radix-acr-cache-${var.acr_name}"
   resource_group_name = var.vnet_resource_group
   location            = var.location
   subnet_id           = var.subnet_id

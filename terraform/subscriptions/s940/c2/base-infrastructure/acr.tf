@@ -2,7 +2,9 @@ module "acr" {
   source               = "../../../modules/acr"
   location             = module.config.location
   resource_group_name  = module.resourcegroup_common.data.name
-  acr                  = module.config.environment
+  environment          = module.config.environment
+  acr_name             = module.config.environment
+  acr_env_name         = "radixc2prod"
   vnet_resource_group  = module.azurerm_virtual_network.data.vnet_hub.resource_group_name
   subnet_id            = module.azurerm_virtual_network.data.vnet_subnet.id
   keyvault_name        = module.keyvault.vault_name
