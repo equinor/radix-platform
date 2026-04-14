@@ -23,8 +23,6 @@ module "dns_config" {
   clusters              = local.clusters_for_dns
   environment           = module.config.environment
   common_resource_group = module.config.common_resource_group
-  zone_name             = module.config.environment == "platform" || module.config.environment == "extmon" ? "radix.equinor.com" : "${module.config.environment}.radix.equinor.com"
-  dns_resource_group    = module.config.common_resource_group == "common-extmon" ? "common-platform" : module.config.common_resource_group
-  create_active_records = module.config.environment != "extmon"
-  create_extmon_record  = module.config.environment == "extmon"
+  zone_name             = "${module.config.environment}.radix.equinor.com"
+  dns_resource_group    = module.config.common_resource_group
 }
