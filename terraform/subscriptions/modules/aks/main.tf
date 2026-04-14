@@ -11,11 +11,11 @@ resource "azurerm_kubernetes_cluster" "this" {
   name                             = var.cluster_name
   resource_group_name              = var.resource_group
   location                         = var.location
-  dns_prefix                       = var.dns_prefix != "" ? var.dns_prefix : "${var.cluster_name}-${var.resource_group}-${substr(var.subscription, 0, 6)}"
+  dns_prefix                       = var.dns_prefix
   kubernetes_version               = var.aks_version
-  node_os_upgrade_channel          = var.enviroment == "dev" || var.enviroment == "playground" || var.enviroment == "extmon" ? "NodeImage" : "None"
+  node_os_upgrade_channel          = var.node_os_upgrade_channel
   cost_analysis_enabled            = var.cost_analysis
-  sku_tier                         = var.enviroment == "dev" ? "Free" : "Standard"
+  sku_tier                         = var.sku_tier
   http_application_routing_enabled = false
   local_account_disabled           = true
   oidc_issuer_enabled              = true
@@ -25,14 +25,14 @@ resource "azurerm_kubernetes_cluster" "this" {
     secret_rotation_enabled = true
   }
 
-  workload_identity_enabled = var.enviroment == "extmon" ? true : false
+  workload_identity_enabled = var.enable_workload_identity
   lifecycle {
     ignore_changes = [
       default_node_pool[0].upgrade_settings
     ]
   }
 
-  tags = var.active_cluster == true && var.enviroment == "dev" ? { "autostartupschedule" = "true" } : {}
+  tags = var.tags
   api_server_access_profile {
     authorized_ip_ranges = var.authorized_ip_ranges
   }
@@ -113,11 +113,11 @@ resource "azurerm_kubernetes_cluster" "this" {
       "IPv4",
     ]
     load_balancer_sku   = "standard"
-    network_data_plane  = var.network_policy == "cilium" ? "cilium" : "azure" #var.network_policy #Dependency
+    network_data_plane  = var.network_data_plane
     network_plugin      = "azure"
     network_policy      = var.network_policy
     outbound_type       = "loadBalancer"
-    network_plugin_mode = var.network_policy == "cilium" ? "overlay" : null
+    network_plugin_mode = var.network_plugin_mode
     # pod_cidr            = "10.244.0.0/16"
     # pod_cidrs = [
     #   "10.244.0.0/16",
@@ -161,7 +161,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
 }
 
 resource "azurerm_management_lock" "aks" {
-  for_each   = var.enviroment == "platform" || var.enviroment == "c2" ? { "${var.cluster_name}" : true } : {}
+  count      = var.cluster_lock ? 1 : 0
   name       = "${var.cluster_name}-CanNotDelete-Lock"
   scope      = azurerm_kubernetes_cluster.this.id
   lock_level = "CanNotDelete"

@@ -16,6 +16,10 @@ zoneconfig:
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "radix-ar-networkpolicy-canary"
 
+aksconfig: 
+  dataCollectionSettings: "5m"
+
+
 backend:
   resource_group_name: "s941-tfstate"
   storage_account_name: "s941radixinfra"

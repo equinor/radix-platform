@@ -25,6 +25,9 @@ output "common_resource_group" {
 output "cluster_resource_group" {
   value = "clusters-${local.config.environment}"
 }
+output "public_ip_resource_group" {
+  value = lookup(lookup(local.config, "network", {}), "public_ip_resource_group", null)
+}
 output "vnet_resource_group" {
   value = local.config.network.vnet_hub_resourcegroup
 }

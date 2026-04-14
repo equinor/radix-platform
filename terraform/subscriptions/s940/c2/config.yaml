@@ -9,10 +9,15 @@ secondary_location: "northeurope"
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod
 network:
   vnet_hub_resourcegroup: "cluster-vnet-hub-c2"
+  
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "ar-radix-networkpolicy-canary"
+
+aksconfig:
+  node_os_upgrade_channel: "None"
+  sku_tier: "Standard"
   
 backend:
   resource_group_name: "s940-tfstate"
@@ -69,3 +74,7 @@ clusters:
     network_policy: "calico"
     dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true
+    ddos_protection: true
+    ContainerInsights_time: "1m"
+    cluster_to_hub_peering: "c2-11-to-vnet-hub"
+    hub_to_cluster_peering: "vnet-hub-to-c2-11"

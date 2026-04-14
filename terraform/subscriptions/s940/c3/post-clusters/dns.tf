@@ -23,4 +23,6 @@ module "dns_config" {
   clusters              = local.clusters_for_dns
   environment           = module.config.environment
   common_resource_group = module.config.common_resource_group
+  zone_name             = "${module.config.environment}.radix.equinor.com"
+  dns_resource_group    = module.config.common_resource_group
 }
