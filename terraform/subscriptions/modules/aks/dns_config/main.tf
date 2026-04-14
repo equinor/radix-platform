@@ -70,22 +70,3 @@ resource "azurerm_dns_a_record" "cluster" {
     create_before_destroy = false
   }
 }
-
-# Extmon-specific record
-resource "azurerm_dns_a_record" "extmon" {
-  for_each            = var.create_extmon_record && anytrue([for c in var.clusters : c.active_cluster]) ? { "extmon" : true } : {}
-  name                = "*.ext-mon"
-  zone_name           = var.zone_name
-  resource_group_name = var.dns_resource_group
-  ttl                 = 30
-  records = [{
-    for k, v in var.clusters :
-    k => (v.dns_wildcard_type == "istio" ? v.istio_ip : v.nginx_ip) if v.active_cluster
-  }[keys({ for k, v in var.clusters : k => v if v.active_cluster })[0]]]
-
-  depends_on = [time_sleep.wait_after_destroy]
-
-  lifecycle {
-    create_before_destroy = false
-  }
-}

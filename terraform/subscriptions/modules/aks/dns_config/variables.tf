@@ -34,9 +34,3 @@ variable "create_active_records" {
   type        = bool
   default     = true
 }
-
-variable "create_extmon_record" {
-  description = "Whether to create the ext-mon wildcard record"
-  type        = bool
-  default     = false
-}

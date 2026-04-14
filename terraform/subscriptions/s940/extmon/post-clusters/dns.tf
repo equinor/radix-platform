@@ -26,5 +26,27 @@ module "dns_config" {
   zone_name             = "radix.equinor.com"
   dns_resource_group    = "common-platform"
   create_active_records = false
-  create_extmon_record  = true
 }
+
+resource "azurerm_dns_a_record" "extmon" {
+  for_each            = anytrue([for c in local.clusters_for_dns : c.active_cluster]) ? { "extmon" : true } : {}
+  name                = "*.ext-mon"
+  zone_name           = "radix.equinor.com"
+  resource_group_name = "common-platform"
+  ttl                 = 30
+  records = [{
+    for k, v in local.clusters_for_dns :
+    k => (v.dns_wildcard_type == "istio" ? v.istio_ip : v.nginx_ip) if v.active_cluster
+  }[keys({ for k, v in local.clusters_for_dns : k => v if v.active_cluster })[0]]]
+
+
+  lifecycle {
+    create_before_destroy = false
+  }
+}
+
+output "extmon_records" {
+  description = "Extmon DNS records"
+  value       = azurerm_dns_a_record.extmon
+}
+
