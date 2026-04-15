@@ -1,8 +1,3 @@
-variable "acr" {
-  description = "ACR name"
-  type        = string
-}
-
 variable "location" {
   description = "The Azure Region where the Backup Vault should exist."
   type        = string
@@ -198,3 +193,26 @@ variable "abac_cache" {
   default     = false
 }
 
+variable "acr_user_cache_name" {
+  description = "Short name prefix for the user cache registry."
+  type        = string
+  default     = null
+}
+
+variable "acr_user_image_name" {
+  description = "Short name prefix for the user image registry."
+  type        = string
+  default     = null
+}
+
+variable "acr_system_cache_name" {
+  description = "Short name prefix for the system cache registry."
+  type        = string
+  default     = null
+}
+
+variable "acr_prefix_env" {
+  description = "Prefix for the ACR environment. For example, prod."
+  type        = string
+  default     = null
+}

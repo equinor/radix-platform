@@ -1,8 +1,12 @@
 module "acr" {
-  source               = "../../../modules/acr"
-  location             = module.config.location
-  resource_group_name  = module.resourcegroup_common.data.name
-  acr                  = module.config.environment
+  source                = "../../../modules/acr"
+  location              = module.config.location
+  resource_group_name   = module.resourcegroup_common.data.name
+  acr_user_cache_name   = "radix${module.config.environment}app"
+  acr_user_image_name   = "radix${module.config.environment}prod"
+  acr_system_cache_name = "radix${module.config.environment}cache"
+  acr_prefix_env        = module.config.environment
+  # environment          = module.config.environment
   vnet_resource_group  = module.azurerm_virtual_network.data.vnet_hub.resource_group_name
   subnet_id            = module.azurerm_virtual_network.data.vnet_subnet.id
   keyvault_name        = module.keyvault.vault_name
