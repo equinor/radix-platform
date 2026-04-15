@@ -1,17 +1,19 @@
 module "acr" {
-  source               = "../../../modules/acr"
-  location             = module.config.location
-  resource_group_name  = module.config.common_resource_group
-  environment          = module.config.environment
-  acr_name             = module.config.environment
-  vnet_resource_group  = module.config.vnet_resource_group
-  subnet_id            = module.azurerm_virtual_network.azurerm_subnet_id
-  keyvault_name        = module.keyvault.vault_name
-  dockercredentials_id = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
-  radix_cr_cicd        = replace(replace(module.app_application_registration.cr_cicd.azuread_service_principal_id, "/servicePrincipals/", ""), "/", "")
-  acr_retension_policy = 1
-  secondary_location   = module.config.secondary_location
-  depends_on           = [module.azurerm_virtual_network]
+  source                = "../../../modules/acr"
+  location              = module.config.location
+  resource_group_name   = module.config.common_resource_group
+  acr_user_cache_name   = "radix${module.config.environment}app"
+  acr_user_image_name   = "radix${module.config.environment}"
+  acr_system_cache_name = "radix${module.config.environment}cache"
+  acr_prefix_env        = module.config.environment
+  vnet_resource_group   = module.config.vnet_resource_group
+  subnet_id             = module.azurerm_virtual_network.azurerm_subnet_id
+  keyvault_name         = module.keyvault.vault_name
+  dockercredentials_id  = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
+  radix_cr_cicd         = replace(replace(module.app_application_registration.cr_cicd.azuread_service_principal_id, "/servicePrincipals/", ""), "/", "")
+  acr_retension_policy  = 1
+  secondary_location    = module.config.secondary_location
+  depends_on            = [module.azurerm_virtual_network]
 
 }
 

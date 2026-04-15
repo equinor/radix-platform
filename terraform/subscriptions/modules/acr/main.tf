@@ -6,10 +6,10 @@ terraform {
     }
   }
 }
-
-#App ACR
+####################################################################################
+# User Cache ACR 
 resource "azurerm_container_registry" "this" {
-  name                          = "radix${var.acr_name}app"
+  name                          = var.acr_user_cache_name # All radix{zone}app registries
   location                      = var.location
   resource_group_name           = var.resource_group_name
   sku                           = "Premium"
@@ -48,7 +48,7 @@ resource "azapi_update_resource" "this_abac_mode" {
 }
 
 resource "azurerm_private_endpoint" "this" {
-  name                = "pe-radix-acr-app-${var.acr_name}"
+  name                = "pe-radix-acr-app-${var.acr_prefix_env}"
   resource_group_name = var.vnet_resource_group
   location            = var.location
   subnet_id           = var.subnet_id
@@ -89,10 +89,10 @@ resource "azurerm_management_lock" "this" {
   lock_level = "CanNotDelete"
   notes      = "IaC : Terraform"
 }
-
-#Env ACR
+####################################################################################
+# User Images ACR
 resource "azurerm_container_registry" "env" {
-  name                          = coalesce(var.acr_env_name, "radix${var.acr_name}")
+  name                          = var.acr_user_image_name # All radix{zone} registries
   location                      = var.location
   resource_group_name           = var.resource_group_name
   sku                           = "Premium"
@@ -134,7 +134,7 @@ resource "azapi_update_resource" "env_abac_mode" {
 }
 
 resource "azurerm_container_registry_task" "build_push" {
-  name                  = "radix-image-builder-${var.acr_name}"
+  name                  = "radix-image-builder-${var.acr_prefix_env}"
   container_registry_id = azurerm_container_registry.env.id
   platform {
     os           = "Linux"
@@ -199,7 +199,7 @@ resource "azurerm_role_assignment" "build_abac" {
 }
 
 resource "azurerm_container_registry_task" "build" {
-  name                  = "radix-image-builder-build-only-${var.acr_name}"
+  name                  = "radix-image-builder-build-only-${var.acr_prefix_env}"
   container_registry_id = azurerm_container_registry.env.id
   platform {
     os           = "Linux"
@@ -268,7 +268,7 @@ resource "azurerm_role_assignment" "env_abac_contributor" {
 }
 
 resource "azurerm_private_endpoint" "env" {
-  name                = "pe-radix-acr-${trimprefix(coalesce(var.acr_env_name, "radix${var.acr_name}"), "radix")}"
+  name                = "pe-radix-acr-${var.acr_prefix_env}"
   resource_group_name = var.vnet_resource_group
   location            = var.location
   subnet_id           = var.subnet_id
@@ -309,10 +309,10 @@ resource "azurerm_management_lock" "env" {
   lock_level = "CanNotDelete"
   notes      = "IaC : Terraform"
 }
-
-#Cache
+####################################################################################
+# System Cache ACR
 resource "azurerm_container_registry" "cache" {
-  name                          = "radix${var.environment}cache"
+  name                          = var.acr_system_cache_name # All radix{zone}cache registries
   resource_group_name           = var.resource_group_name
   location                      = var.location
   sku                           = "Premium"
@@ -366,7 +366,7 @@ resource "azurerm_container_registry_cache_rule" "cache" {
 }
 
 resource "azurerm_private_endpoint" "cache" {
-  name                = "pe-radix-acr-cache-${var.acr_name}"
+  name                = "pe-radix-acr-cache-${var.acr_prefix_env}"
   resource_group_name = var.vnet_resource_group
   location            = var.location
   subnet_id           = var.subnet_id
