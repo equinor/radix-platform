@@ -11,20 +11,36 @@ variable "storageaccounts" {
     backup                   = optional(bool, false)
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
-    lifecyclepolicy          = optional(bool, false)
+    lifecycle_policy_rules = optional(list(object({
+      name                                                    = optional(string, "Lifecycle Storageaccount")
+      enabled                                                 = optional(bool, true)
+      blob_types                                              = optional(list(string), ["blockBlob", "appendBlob"])
+      delete_after_days_since_creation                        = optional(number)
+      delete_after_days_since_modification_greater_than       = optional(number)
+      tier_to_cool_after_days_since_modification_greater_than = optional(number)
+    })), [])
   }))
   default = {
     log = {
       name                     = "log"
       account_replication_type = "ZRS"
       backup                   = true
+      lifecycle_policy_rules = [{
+        blob_types                                              = ["blockBlob"]
+        delete_after_days_since_creation                        = 60
+        delete_after_days_since_modification_greater_than       = 90
+        tier_to_cool_after_days_since_modification_greater_than = 30
+      }]
 
     },
     velero = {
       name                     = "velero"
       account_replication_type = "GRS"
       backup                   = true
-      lifecyclepolicy          = true
+      lifecycle_policy_rules = [{
+        delete_after_days_since_creation                  = 60
+        delete_after_days_since_modification_greater_than = 90
+      }]
     }
   }
 }
