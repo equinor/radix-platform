@@ -21,10 +21,9 @@ module "storageaccount" {
   policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
   subnet_id                = module.azurerm_virtual_network.azurerm_subnet_id
   vnet_resource_group      = module.config.vnet_resource_group
-  lifecyclepolicy          = each.value.lifecyclepolicy
+  lifecycle_policy_rules   = each.value.lifecycle_policy_rules
   log_analytics_id         = module.loganalytics.workspace_id
   subscription_shortname   = module.config.subscription_shortname
-  cluster_type             = module.config.cluster_type
   depends_on               = [module.backupvault]
 }
 
