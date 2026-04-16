@@ -1,3 +1,11 @@
+module "resourcegroups" {
+  for_each = toset(["clusters-c1"])
+
+  source   = "../../../modules/resourcegroups"
+  name     = each.value
+  location = module.config.location
+}
+
 data "azurerm_resource_group" "common" { # Defined in Global
   name = "common"
 }
