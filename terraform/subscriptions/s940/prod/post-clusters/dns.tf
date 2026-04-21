@@ -1,7 +1,7 @@
 data "azurerm_public_ip" "gateway_pip" {
-  for_each            = module.config.networksets
+  for_each            = { for k, v in module.config.networksets : k => v if try(v.gatewayPIP, null) != null }
   name                = each.value.gatewayPIP
-  resource_group_name = module.config.cluster_resource_group
+  resource_group_name = coalesce(try(each.value.pip_resource_group, null), module.config.cluster_resource_group)
 }
 
 locals {
@@ -11,7 +11,7 @@ locals {
     for cluster_name, cluster_config in module.config.cluster : cluster_name => {
       cluster_name      = cluster_name
       active_cluster    = lookup(cluster_config, "activecluster", false)
-      nginx_ip          = module.config.networksets[cluster_config.networkset].ingressIP
+      nginx_ip          = try(module.config.networksets[cluster_config.networkset].ingressIP, null)
       istio_ip          = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
       dns_wildcard_type = lookup(cluster_config, "dns_wildcard", "nginx")
     }

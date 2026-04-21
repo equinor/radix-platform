@@ -96,7 +96,7 @@ output "private_dns_zones_names" {
     "privatelink.table.cosmos.azure.com",
     "privatelink.vaultcore.azure.net",
     "privatelink.web.core.windows.net",
-    "privatelink.kusto.windows.net"
+    "privatelink.northeurope.kusto.windows.net"
   ]
 }
 
