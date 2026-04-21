@@ -73,7 +73,7 @@ module "azurerm_public_ip_prefix_egress_platform" {
 module "azurerm_public_ip_prefix_egress_002" {
   source               = "../../../modules/network_publicipprefix"
   location             = module.config.location
-  resource_group_name  = module.resourcegroup_clusters.data.name
+  resource_group_name  = "clusters-c1" #TODO Will be removed when old cluster are decommissioned
   publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-002" #TODO
   pipprefix            = "radix-aks"
   pippostfix           = module.config.location
@@ -86,7 +86,7 @@ module "azurerm_public_ip_prefix_egress_002" {
 module "azurerm_public_ip_prefix_egress_003" {
   source               = "../../../modules/network_publicipprefix"
   location             = module.config.location
-  resource_group_name  = module.resourcegroup_clusters.data.name
+  resource_group_name  = "clusters-c1" #TODO Will be removed when old cluster are decommissioned
   publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-003" #TODO
   pipprefix            = "radix-aks"
   pippostfix           = module.config.location
@@ -95,9 +95,6 @@ module "azurerm_public_ip_prefix_egress_003" {
   publicipcounter      = 16
   puplicipstartcounter = 33
 }
-##################################################################################################
-## Reserved block C1
-##
 
 module "azurerm_public_ip_prefix_egress_004" {
   source               = "../../../modules/network_publicipprefix"

@@ -33,6 +33,18 @@ data "azurerm_virtual_network" "hub" {
   resource_group_name = module.config.vnet_resource_group
 }
 
+locals {
+  systempool_variants = {
+    systempool    = var.systempool
+    systempool_v1 = var.systempool_v1
+  }
+
+  nodepools_variants = {
+    nodepools    = var.nodepools
+    nodepools_v1 = var.nodepools_v1
+  }
+}
+
 module "aks" {
   source                            = "../../../modules/aks"
   for_each                          = module.config.cluster
@@ -46,8 +58,8 @@ module "aks" {
   enviroment                        = module.config.environment
   aks_version                       = each.value.aksversion
   authorized_ip_ranges              = split(",", data.azurerm_app_configuration_key.ip_range.value)
-  nodepools                         = var.nodepools
-  systempool                        = var.systempool
+  nodepools                         = lookup(local.nodepools_variants, lookup(each.value, "nodepools", "nodepools"), var.nodepools)
+  systempool                        = lookup(local.systempool_variants, lookup(each.value, "systempool", "systempool"), var.systempool)
   identity_aks                      = data.azurerm_user_assigned_identity.aks.id
   identity_kublet_client            = data.azurerm_user_assigned_identity.akskubelet.client_id
   identity_kublet_object            = data.azurerm_user_assigned_identity.akskubelet.principal_id
@@ -89,8 +101,9 @@ locals {
   }
   clusters = {
     for key, value in module.config.cluster : key => {
-      cluster   = key
-      ingressIp = module.config.networksets[module.config.cluster[key].networkset].ingressIP
+      cluster        = key
+      resource_group = lookup(module.config.cluster[key], "cluster_resource_group", module.config.cluster_resource_group)
+      ingressIp      = try(module.config.networksets[module.config.cluster[key].networkset].ingressIP, null)
     }
   }
 }
