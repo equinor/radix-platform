@@ -1,7 +1,7 @@
 data "azurerm_network_security_group" "this" {
   for_each            = var.nsg_ids
   name                = each.key
-  resource_group_name = var.resource_group_name
+  resource_group_name = lookup(var.nsg_resource_group_names, each.key, var.resource_group_name)
 }
 
 data "azurerm_public_ip" "gateway_pip" {

@@ -5,7 +5,7 @@ data "azurerm_user_assigned_identity" "grafana" {
 
 module "grafana-mi-fedcred" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "k8s-grafana-${each.key}"
   issuer              = each.value
   subject             = "system:serviceaccount:monitor:grafana"

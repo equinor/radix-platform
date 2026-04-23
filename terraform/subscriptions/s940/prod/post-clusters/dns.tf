@@ -1,7 +1,13 @@
+# data "azurerm_public_ip" "gateway_pip" {
+#   for_each            = { for k, v in module.config.networksets : k => v if try(v.gatewayPIP, null) != null }
+#   name                = each.value.gatewayPIP
+#   resource_group_name = coalesce(try(each.value.pip_resource_group, null), module.config.cluster_resource_group)
+# }
+
 data "azurerm_public_ip" "gateway_pip" {
-  for_each            = { for k, v in module.config.networksets : k => v if try(v.gatewayPIP, null) != null }
+  for_each            = module.config.networksets
   name                = each.value.gatewayPIP
-  resource_group_name = coalesce(try(each.value.pip_resource_group, null), module.config.cluster_resource_group)
+  resource_group_name = module.config.cluster_resource_group
 }
 
 locals {
