@@ -6,7 +6,7 @@ data "azurerm_user_assigned_identity" "this" {
 locals {
   namespaces = ["default", "flux-system", "radix-cicd-canary"]
   eso_namespaced_credentials = merge([
-    for cluster_key, issuer_url in module.clusters.oidc_issuer_url : {
+    for cluster_key, issuer_url in local.oidc_issuer_urls : {
       for namespace in local.namespaces :
       "${cluster_key}-${namespace}" => {
         cluster_key = cluster_key
@@ -19,7 +19,7 @@ locals {
 
 module "eso" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "operator-wi-${each.key}"
   issuer              = each.value
   subject             = "system:serviceaccount:external-secrets:workload-identity-sa"

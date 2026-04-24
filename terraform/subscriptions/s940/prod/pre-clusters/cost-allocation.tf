@@ -7,7 +7,7 @@ data "azurerm_user_assigned_identity" "cost-allocation-writer" {
 
 module "cost-allocation-writer" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "k8s-radix-cost-allocation-writer-${each.key}-${module.config.environment}"
   issuer              = each.value
   subject             = "system:serviceaccount:radix-cost-allocation:radix-cost-allocation"
@@ -24,7 +24,7 @@ data "azurerm_user_assigned_identity" "cost-allocation-api-reader" {
 
 module "cost-allocation-api-reader-prod" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "k8s-radix-cost-allocation-reader-prod-${each.key}-${module.config.environment}"
   issuer              = each.value
   subject             = "system:serviceaccount:radix-cost-allocation-api-prod:server-sa"
@@ -35,7 +35,7 @@ module "cost-allocation-api-reader-prod" {
 
 module "cost-allocation-api-reader-qa" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "k8s-radix-cost-allocation-reader-qa-${each.key}-${module.config.environment}"
   issuer              = each.value
   subject             = "system:serviceaccount:radix-cost-allocation-api-qa:server-sa"

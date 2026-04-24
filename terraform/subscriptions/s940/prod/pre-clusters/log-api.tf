@@ -5,7 +5,7 @@ data "azurerm_user_assigned_identity" "log-api-mi" {
 
 module "log-api-mi-prod" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "k8s-radix-log-api-prod-${each.key}-${module.config.environment}"
   issuer              = each.value
   subject             = "system:serviceaccount:radix-log-api-prod:server-sa"
@@ -16,7 +16,7 @@ module "log-api-mi-prod" {
 
 module "log-api-mi-qa" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "k8s-radix-log-api-qa-${each.key}-${module.config.environment}"
   issuer              = each.value
   subject             = "system:serviceaccount:radix-log-api-qa:server-sa"

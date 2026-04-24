@@ -117,5 +117,8 @@ output "clusters" {
 }
 
 output "oidc_issuer_url" {
-  value = module.clusters.oidc_issuer_url
+  value = merge(
+    module.clusters.oidc_issuer_url,
+    try(module.clusters_c1.oidc_issuer_url, {})
+  )
 }

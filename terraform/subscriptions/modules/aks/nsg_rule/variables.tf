@@ -8,6 +8,12 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "nsg_resource_group_names" {
+  description = "Optional map of NSG name to resource group name. Overrides resource_group_name per NSG when provided."
+  type        = map(string)
+  default     = {}
+}
+
 variable "public_ip_resource_group" {
   description = "Resource group name where gateway Public IPs are located"
   type        = string

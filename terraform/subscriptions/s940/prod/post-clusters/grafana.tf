@@ -1,10 +1,10 @@
 locals {
   grafana_uris = [
-    for k, v in module.clusters.oidc_issuer_url :
+    for k, v in local.oidc_issuer_urls :
     "https://grafana.${k}.radix.equinor.com/login/generic_oauth"
   ]
   grafana_uris_azuread = [
-    for k, v in module.clusters.oidc_issuer_url :
+    for k, v in local.oidc_issuer_urls :
     "https://grafana.${k}.radix.equinor.com/login/azuread"
   ]
 }
@@ -21,7 +21,7 @@ module "grafana_redirect_uris" {
 }
 
 module "grafana_fedcred" {
-  for_each       = module.clusters.oidc_issuer_url
+  for_each       = local.oidc_issuer_urls
   source         = "../../../modules/app_application_federated_credentials"
   application_id = data.azuread_application.grafana.id
   display_name   = each.key

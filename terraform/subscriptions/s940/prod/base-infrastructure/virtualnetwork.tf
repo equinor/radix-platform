@@ -71,7 +71,7 @@ module "azurerm_public_ip_prefix_egress_002" {
   enviroment           = "platform"
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
-  puplicipstartcounter = 17
+  puplicipstartcounter = 17 # 17 to 32 because 1 to 16 are used in ip preffix 001
 }
 
 module "azurerm_public_ip_prefix_egress_003" {
@@ -84,7 +84,7 @@ module "azurerm_public_ip_prefix_egress_003" {
   enviroment           = "platform"
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
-  puplicipstartcounter = 33
+  puplicipstartcounter = 33 # 33 to 48 because 17 to 32 are used in ip preffix 002
 }
 
 module "azurerm_public_ip_prefix_egress_004" {

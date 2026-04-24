@@ -1,6 +1,6 @@
 locals {
   web-uris = distinct(flatten(
-    [for k, v in module.clusters.oidc_issuer_url : [
+    [for k, v in local.oidc_issuer_urls: [
       "http://localhost:8000/oauth2/callback",
 
       "https://console.radix.equinor.com/oauth2/callback",
@@ -16,7 +16,7 @@ locals {
   ))
 
   singlepage-uris = distinct(flatten(
-    [for k, v in module.clusters.oidc_issuer_url : [
+    [for k, v in local.oidc_issuer_urls : [
       "http://localhost:8080/applications",
 
       "https://web-radix-web-console-prod.${k}.radix.equinor.com/applications",

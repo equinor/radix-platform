@@ -5,7 +5,7 @@ data "azurerm_user_assigned_identity" "cert-manager-mi" {
 
 module "cert-manager-mi-fedcred" {
   source              = "../../../modules/federated-credentials"
-  for_each            = module.clusters.oidc_issuer_url
+  for_each            = local.oidc_issuer_urls
   name                = "k8s-cert-manager-dns01-${each.key}-${module.config.environment}"
   issuer              = each.value
   subject             = "system:serviceaccount:cert-manager:cert-manager"
