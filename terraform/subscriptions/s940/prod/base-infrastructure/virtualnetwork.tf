@@ -36,15 +36,6 @@ module "azurerm_public_ip_prefix_egress" {
 ### This block are reserved to new network when Cluster are migrated to platform resources group
 ###
 
-module "azurerm_virtual_network_platform" {
-  source              = "../../../modules/virtualnetwork"
-  location            = module.config.location
-  enviroment          = module.config.environment
-  vnet_resource_group = "cluster-vnet-hub-platform"
-  private_dns_zones   = tolist(module.config.private_dns_zones_names)
-  depends_on          = [module.resourcegroup_vnet]
-}
-
 module "azurerm_public_ip_prefix_ingress_platform" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location

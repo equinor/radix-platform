@@ -122,6 +122,22 @@ resource "azurerm_container_registry" "env" {
   }
 }
 
+resource "azurerm_container_registry_agent_pool" "user_image_pool" {
+  name                  = "${var.acr_prefix_env}-zone-pool"
+  resource_group_name   = var.resource_group_name
+  location              = var.location
+  container_registry_name = var.acr_user_image_name
+  
+  # Set the number of agent instances (1-1000)
+  instance_count        = var.user_registry_pool_count
+  
+  # Select the VM SKU
+  tier                  = "S1" # Options: S1, S2, S3, I6
+  tags = {
+    IaC = "terraform"
+  }
+}
+
 resource "azapi_update_resource" "env_abac_mode" {
   type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
   resource_id = azurerm_container_registry.env.id
