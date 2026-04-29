@@ -72,7 +72,7 @@ clusters:
     aksversion: "1.33.6"
     networkset: "networkset1"
     network_policy: "calico"
-    dns_wildcard: nginx # Options: "nginx" or "istio"
+    dns_wildcard: istio # Options: "nginx" or "istio"
     activecluster: true
     ddos_protection: true
     ContainerInsights_time: "1m"
