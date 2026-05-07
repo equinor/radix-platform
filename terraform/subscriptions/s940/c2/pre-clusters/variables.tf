@@ -79,21 +79,19 @@ variable "nodepools" {
       max_count = 16
 
     }
-    x86pipepool = {
-      vm_size   = "Standard_E16as_v5"
+    x86pipepool2 = {
+      vm_size   = "Standard_E16as_v7"
       min_count = 1
-      max_count = 16
+      max_count = 8
       node_labels = {
         "nodepooltasks" = "jobs"
       }
       node_taints = ["nodepooltasks=jobs:NoSchedule"]
-
     }
-    x86userpool = {
-      vm_size   = "Standard_E16as_v5"
-      min_count = 3
+    x86userpool2 = {
+      vm_size   = "Standard_E16as_v7"
+      min_count = 2
       max_count = 16
-
     }
   }
 }
