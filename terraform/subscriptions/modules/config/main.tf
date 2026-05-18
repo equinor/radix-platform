@@ -98,7 +98,8 @@ output "private_dns_zones_names" {
     "privatelink.web.core.windows.net",
     "privatelink.northeurope.kusto.windows.net",
     "privatelink.westeurope.kusto.windows.net",
-    "privatelink.swedencentral.kusto.windows.net"
+    "privatelink.swedencentral.kusto.windows.net",
+    "privatelink.redis.azure.net"
   ]
 }
 
