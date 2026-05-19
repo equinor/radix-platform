@@ -92,6 +92,8 @@ function environment_json() {
   local radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id)
   local dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group)
   local cacheRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw cacheRegistry)
+  local clusterIssuerUrls=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value')
+
   local json=$(cat <<EOF
   {
     "cluster_rg": "$az_resource_group_clusters",
@@ -105,7 +107,8 @@ function environment_json() {
     "ip_prefix_egress_ips": "$ip_prefix_egress_ips",
     "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
     "dns_zone_resource_group": "$dns_zone_resource_group",
-    "cache_registry": "$cacheRegistry.azurecr.io"
+    "cache_registry": "$cacheRegistry.azurecr.io",
+    "cluster_issuer_urls": $clusterIssuerUrls
   }
 EOF
 )
