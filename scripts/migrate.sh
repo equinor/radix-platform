@@ -92,6 +92,8 @@ function flux_configmap() {
       --from-literal=zone="$RADIX_ENVIRONMENT" \
       --from-literal=cacheRegistry="$RADIX_CACHE_REGISTRY" \
       --from-literal=kubernetesIssuerUrl="$(jq -r .\"$CLUSTER_NAME\" <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
+      --from-literal=clusterOidcIssuers="$(jq -r '[.[] | tostring] | join(",")' <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
+      --from-literal=clusterEgressIPs="$RADIX_CLUSTER_EGRESS_IPS" \
       )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
@@ -243,6 +245,7 @@ AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
 RADIX_CACHE_REGISTRY=$(yq '.cache_registry' <<< "$RADIX_RESOURCE_JSON")
 CLUSTER_OIDC_ISSUER_URLS=$(jq -r .cluster_issuer_urls <<< "$RADIX_RESOURCE_JSON")
+RADIX_CLUSTER_EGRESS_IPS=$(jq -r .ip_prefix_egress_ips <<< "$RADIX_RESOURCE_JSON")
 MIGRATION_STRATEGY="aa"
 STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
 RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
