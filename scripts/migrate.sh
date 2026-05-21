@@ -84,6 +84,7 @@ function flux_configmap() {
       --from-literal=prometheusName="radix-stage1" \
       --from-literal=imageRegistry="$IMAGE_REGISTRY" \
       --from-literal=pipGatewayIp="$(cat $(config_path $RADIX_ZONE) | yq .networksets.$(cat $(config_path $RADIX_ZONE) | yq .clusters.$DEST_CLUSTER.networkset).gatewayPIP)" \
+      --from-literal=ingressIP="$(cat $(config_path $RADIX_ZONE) | yq .networksets.$(cat $(config_path $RADIX_ZONE) | yq .clusters.$DEST_CLUSTER.networkset).ingressIP)" \
       --from-literal=clusterName="$CLUSTER_NAME" \
       --from-literal=clusterType="$(yq '.cluster_type' <<< "$RADIX_ZONE_YAML")" \
       --from-literal=subscriptionId="$AZ_SUBSCRIPTION_ID" \
