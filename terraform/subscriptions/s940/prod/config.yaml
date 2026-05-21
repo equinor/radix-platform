@@ -96,7 +96,6 @@ clusters:
     aksversion: "1.34.6"
     networkset: "networkset1"
     network_policy: "calico"
-    dns_wildcard: istio # Options: "nginx" or "istio"
     activecluster: true
     cluster_resource_group: "clusters"
     monitor_data_collection_rule_prefix: "MSCI-NEU-"
@@ -105,7 +104,6 @@ clusters:
     aksversion: "1.35.1"
     networkset: "networkset2"
     network_policy: "cilium"
-    dns_wildcard: istio # Options: "nginx" or "istio"
     activecluster: false
     cluster_resource_group: "clusters-c1"
     systempool: "systempool_v1"

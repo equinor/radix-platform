@@ -19,7 +19,6 @@ locals {
       active_cluster    = lookup(cluster_config, "activecluster", false)
       nginx_ip          = try(module.config.networksets[cluster_config.networkset].ingressIP, null)
       istio_ip          = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
-      dns_wildcard_type = lookup(cluster_config, "dns_wildcard", "nginx")
     }
   }
 }

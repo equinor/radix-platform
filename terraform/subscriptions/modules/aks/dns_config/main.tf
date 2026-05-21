@@ -4,8 +4,7 @@ resource "time_sleep" "wait_after_destroy" {
 
   triggers = {
     cluster_ips = jsonencode({
-      for k, v in var.clusters :
-      k => v.dns_wildcard_type == "istio" ? v.istio_ip : v.nginx_ip
+      for k, v in var.clusters : k => v.istio_ip
     })
     active_records = jsonencode(merge([
       for cluster_name, cluster in {
@@ -15,7 +14,7 @@ resource "time_sleep" "wait_after_destroy" {
         for record in ["@", "*", "*.app"] :
         "${cluster_name}-${record}" => {
           name    = record
-          ip      = cluster.dns_wildcard_type == "istio" ? cluster.istio_ip : cluster.nginx_ip
+          ip      = cluster.istio_ip
           cluster = cluster_name
         }
       }
@@ -37,7 +36,7 @@ resource "azurerm_dns_a_record" "active" {
       for record in ["@", "*", "*.app"] :
       "${cluster_name}-${record}" => {
         name    = record
-        ip      = cluster.dns_wildcard_type == "istio" ? cluster.istio_ip : cluster.nginx_ip
+        ip      = cluster.istio_ip
         cluster = cluster_name
       }
     }
@@ -62,7 +61,7 @@ resource "azurerm_dns_a_record" "cluster" {
   zone_name           = var.zone_name
   resource_group_name = var.dns_resource_group
   ttl                 = 30
-  records             = [each.value.dns_wildcard_type == "istio" ? each.value.istio_ip : each.value.nginx_ip]
+  records             = [each.value.istio_ip]
 
   depends_on = [time_sleep.wait_after_destroy]
 

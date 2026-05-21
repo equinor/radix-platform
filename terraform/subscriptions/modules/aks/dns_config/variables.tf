@@ -5,7 +5,6 @@ variable "clusters" {
     active_cluster    = bool
     nginx_ip          = optional(string)
     istio_ip          = optional(string)
-    dns_wildcard_type = string # "nginx" or "istio"
   }))
 }
 
