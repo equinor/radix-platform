@@ -80,7 +80,7 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 
 #### Step 3 Deploy base components
 
-This will deploy 3rd party components (`nginx`, `cert-manager`, `flux` etc).
+This will deploy 3rd party components (`cert-manager`, `flux` etc).
 
 Handled by script, see header in [install_base_components.sh](./install_base_components.sh) for usage.
 

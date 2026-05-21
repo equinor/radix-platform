@@ -42,8 +42,6 @@ When the cert-manager discover a new `Certificate` resource it will look at the 
 
 The DNS challenge verification process might take a minute or two to complete due to DNS propagation and caching.
 
-Until this process is complete, and `{appName}-tls-secret` is populated, then the nginx-ingress will serve default 404 backend message.
-
 
 ## Bootstrap
 Cert-Manager core is installed by Flux. (Only letsencrypt issuer is installed by its own bootstrap.sh script)
