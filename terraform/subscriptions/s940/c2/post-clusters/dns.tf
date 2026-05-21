@@ -11,7 +11,6 @@ locals {
     for cluster_name, cluster_config in module.config.cluster : cluster_name => {
       cluster_name      = cluster_name
       active_cluster    = lookup(cluster_config, "activecluster", false)
-      nginx_ip          = module.config.networksets[cluster_config.networkset].ingressIP
       istio_ip          = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
     }
   }
