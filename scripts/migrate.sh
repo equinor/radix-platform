@@ -417,33 +417,6 @@ fi
 
 if [[ $install_base_components == true ]]; then
     #######################################################################################
-    ### Install ingress-nginx
-    ###
-    echo ""
-    SELECTED_INGRESS_IP_RAW_ADDRESS=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster=="'${DEST_CLUSTER}'") | .ingressIp')
-    kubectl create namespace ingress-nginx --dry-run=client -o yaml |
-    kubectl apply -f -
-
-    kubectl create secret generic ingress-nginx-raw-ip \
-        --namespace ingress-nginx \
-        --from-literal=rawIp="$SELECTED_INGRESS_IP_RAW_ADDRESS" \
-        --dry-run=client -o yaml |
-        kubectl apply -f -
-
-    echo "controller:
-    service:
-        loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
-
-    kubectl create secret generic ingress-nginx-ip \
-        --namespace ingress-nginx \
-        --from-file=./config \
-        --dry-run=client -o yaml |
-        kubectl apply -f -
-
-    rm config
-    printf "Done.\n"
-
-    #######################################################################################
     ### Install Flux
     echo ""
     echo "Install Flux v2"

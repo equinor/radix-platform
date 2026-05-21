@@ -11,9 +11,7 @@ locals {
     for cluster_name, cluster_config in module.config.cluster : cluster_name => {
       cluster_name      = cluster_name
       active_cluster    = lookup(cluster_config, "activecluster", false)
-      nginx_ip          = module.config.networksets[cluster_config.networkset].ingressIP
       istio_ip          = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
-      dns_wildcard_type = lookup(cluster_config, "dns_wildcard", "nginx")
     }
   }
 }
@@ -36,7 +34,7 @@ resource "azurerm_dns_a_record" "extmon" {
   ttl                 = 30
   records = [{
     for k, v in local.clusters_for_dns :
-    k => (v.dns_wildcard_type == "istio" ? v.istio_ip : v.nginx_ip) if v.active_cluster
+    k => (v.istio_ip) if v.active_cluster
   }[keys({ for k, v in local.clusters_for_dns : k => v if v.active_cluster })[0]]]
 
 
