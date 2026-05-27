@@ -29,7 +29,6 @@ variable "clusters" {
 variable "networksets" {
   description = "Map of networkset configurations"
   type = map(object({
-    ingressIP  = optional(string)
-    gatewayPIP = optional(string)
+    gatewayPIP = string
   }))
 }

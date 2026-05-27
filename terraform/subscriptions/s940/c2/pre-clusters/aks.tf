@@ -87,20 +87,10 @@ locals {
       subnet_name = value.subnet.name
     }
   }
-  clusters = {
-    for key, value in module.config.cluster : key => {
-      cluster   = key
-      ingressIp = module.config.networksets[module.config.cluster[key].networkset].ingressIP
-    }
-  }
 }
 
 output "vnets" {
   value = local.flattened_vnets
-}
-
-output "clusters" {
-  value = local.clusters
 }
 
 output "oidc_issuer_url" {
