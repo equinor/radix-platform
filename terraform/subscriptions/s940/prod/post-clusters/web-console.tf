@@ -32,7 +32,7 @@ locals {
 }
 
 data "azuread_application" "webconsole" {
-  display_name = "Omnia Radix Web Console - Platform"
+  display_name = "Radix Web Console - Platform"
 }
 
 module "webconsole_redirect_uris" {

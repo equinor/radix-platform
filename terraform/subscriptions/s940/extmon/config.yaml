@@ -3,7 +3,7 @@ flux_folder: "monitoring"
 cluster_type: "production"
 subscription_shortname: "s940"
 location: "northeurope"
-developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev
+developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM RADIX Cluster Admin - dev
 zoneconfig:
 backend:
   resource_group_name: "s940-tfstate"

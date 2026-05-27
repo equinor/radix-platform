@@ -1,6 +1,6 @@
 # Radix AKS
 
-Bootstrap and teardown of Azure Kubernetes Service instances for Omnia Radix.
+Bootstrap and teardown of Azure Kubernetes Service instances for Radix.
 
 ## Components
 

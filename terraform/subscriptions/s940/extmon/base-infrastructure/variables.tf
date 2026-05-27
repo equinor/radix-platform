@@ -50,9 +50,9 @@ variable "appregistrations" {
   }))
   default = {
     # webconsole = {
-    #   display_name                 = "Omnia Radix Web Console - Extmon"
+    #   display_name                 = "Radix Web Console - Extmon"
     #   service_management_reference = "110327"
-    #   notes                        = "Omnia Radix Web Console - Extmon"
+    #   notes                        = "Radix Web Console - Extmon"
     #   app_role_assignment_required = true
     #   permissions = {
     #     msgraph = {

@@ -4,7 +4,7 @@ cluster_type: "development"
 subscription_shortname: "s941"
 location: "northeurope"
 all_ip_prefix_enviroments: ["development", "playground"]
-developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM OMNIA RADIX Cluster Admin - dev
+developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM RADIX Cluster Admin - dev
 secondary_location: "westeurope"
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"

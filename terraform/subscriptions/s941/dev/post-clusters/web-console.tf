@@ -34,7 +34,7 @@ locals {
 }
 
 data "azuread_application" "webconsole" {
-  display_name = "Omnia Radix Web Console - Development"
+  display_name = "Radix Web Console - Development"
 }
 
 module "webconsole_redirect_uris" {
