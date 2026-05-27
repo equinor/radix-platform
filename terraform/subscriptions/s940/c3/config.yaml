@@ -87,3 +87,4 @@ clusters:
     networkset: "networkset1"
     network_policy: "cilium"
     activecluster: true
+    cost_analysis: true

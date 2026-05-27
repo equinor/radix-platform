@@ -1,9 +1,9 @@
 variable "clusters" {
   description = "Map of cluster configurations with IP addresses"
   type = map(object({
-    cluster_name      = string
-    active_cluster    = bool
-    istio_ip          = string
+    cluster_name   = string
+    active_cluster = bool
+    istio_ip       = string
   }))
 }
 
