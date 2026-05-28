@@ -25,10 +25,11 @@ output "common_resource_group" {
 output "cluster_resource_group" {
   value = "clusters-${local.config.environment}"
 }
+output "public_ip_resource_group" {
+  value = lookup(lookup(local.config, "network", {}), "public_ip_resource_group", null)
+}
 output "vnet_resource_group" {
-  # Todo: Create platform resources next time eu18 is recreated
-  # Todo: Also fix terraform/subscriptions/modules/mssqldatabase/networking.tf
-  value = "cluster-vnet-hub-${local.config.environment == "platform" ? "prod" : local.config.environment}"
+  value = local.config.network.vnet_hub_resourcegroup
 }
 output "key_vault_name" {
   value = "radix-keyv-${local.config.environment}"
@@ -89,11 +90,16 @@ output "private_dns_zones_names" {
     "privatelink.queue.core.windows.net",
     "privatelink.radix.equinor.com",
     "privatelink.redis.cache.windows.net",
+    "privatelink.redisenterprise.cache.azure.net",
     "privatelink.services.ai.azure.com",
     "privatelink.table.core.windows.net",
     "privatelink.table.cosmos.azure.com",
     "privatelink.vaultcore.azure.net",
-    "privatelink.web.core.windows.net"
+    "privatelink.web.core.windows.net",
+    "privatelink.northeurope.kusto.windows.net",
+    "privatelink.westeurope.kusto.windows.net",
+    "privatelink.swedencentral.kusto.windows.net",
+    "privatelink.redis.azure.net"
   ]
 }
 
@@ -127,4 +133,12 @@ output "secondary_location" {
 
 output "testzone" {
   value = lookup(local.config, "testzone", false)
+}
+
+output "subscription_contributor" {
+  value = local.config.subscription_contributor
+}
+
+output "legal_owners" {
+  value = local.config.legal_owners
 }

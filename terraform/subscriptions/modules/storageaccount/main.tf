@@ -148,55 +148,30 @@ resource "azurerm_private_dns_a_record" "this" {
 ##
 
 resource "azurerm_storage_management_policy" "this" {
+  count              = length(var.lifecycle_policy_rules) > 0 ? 1 : 0
   storage_account_id = azurerm_storage_account.storageaccount.id
+
   dynamic "rule" {
-    for_each = (!var.testzone && var.cluster_type == "production" && strcontains(var.name, "velero")) ? [1] : []
+    for_each = var.lifecycle_policy_rules
     content {
-      name    = "Lifecycle Storageaccount"
-      enabled = true
+      name    = rule.value.name
+      enabled = rule.value.enabled
       filters {
-        blob_types = ["blockBlob", "appendBlob"]
+        blob_types = rule.value.blob_types
       }
       actions {
-        version {
-          delete_after_days_since_creation = 60
+        dynamic "version" {
+          for_each = rule.value.delete_after_days_since_creation == null ? [] : [rule.value.delete_after_days_since_creation]
+          content {
+            delete_after_days_since_creation = version.value
+          }
         }
-        base_blob {
-          delete_after_days_since_modification_greater_than = 90
-        }
-      }
-    }
-  }
-  dynamic "rule" {
-    for_each = (!var.testzone && var.cluster_type == "production") && strcontains(var.name, "log") ? [1] : []
-    content {
-      name    = "Lifecycle Storageaccount"
-      enabled = true
-      filters {
-        blob_types = ["blockBlob"]
-      }
-      actions {
-        version {
-          delete_after_days_since_creation = 60
-        }
-        base_blob {
-          delete_after_days_since_modification_greater_than       = 90
-          tier_to_cool_after_days_since_modification_greater_than = 30
-        }
-      }
-    }
-  }
-  dynamic "rule" {
-    for_each = (var.testzone || var.cluster_type == "development" || var.cluster_type == "playground") ? [1] : [] # TODO: move variable name to vars
-    content {
-      name    = "Lifecycle Storageaccount"
-      enabled = true
-      filters {
-        blob_types = ["blockBlob", "appendBlob"]
-      }
-      actions {
-        base_blob {
-          delete_after_days_since_modification_greater_than = 7
+        dynamic "base_blob" {
+          for_each = rule.value.delete_after_days_since_modification_greater_than == null && rule.value.tier_to_cool_after_days_since_modification_greater_than == null ? [] : [rule.value]
+          content {
+            delete_after_days_since_modification_greater_than       = base_blob.value.delete_after_days_since_modification_greater_than
+            tier_to_cool_after_days_since_modification_greater_than = base_blob.value.tier_to_cool_after_days_since_modification_greater_than
+          }
         }
       }
     }

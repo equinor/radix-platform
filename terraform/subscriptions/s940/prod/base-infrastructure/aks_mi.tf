@@ -28,6 +28,10 @@ module "radix_id_aks_mi" {
     rg_cluster = {
       role     = "Contributor"
       scope_id = module.resourcegroup_clusters.data.id
+    },
+    rg_cluster_c1 = {
+      role     = "Contributor"
+      scope_id = module.resourcegroup_clusters_c1.data.id
     }
   }
 }

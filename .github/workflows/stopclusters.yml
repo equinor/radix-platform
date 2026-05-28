@@ -15,13 +15,13 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: 'Clone repo'
-        uses: actions/checkout@v4 #Clone Repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: 'Terraform CLI'
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
         with:
           terraform_version: 'latest'
       - name: 'Az CLI login'
-        uses: azure/login@v2
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
         with:
           client-id: "94ad7918-e504-4132-9916-0293689cd140"
           tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"

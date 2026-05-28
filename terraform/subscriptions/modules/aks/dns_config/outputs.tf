@@ -8,7 +8,3 @@ output "cluster_records" {
   value       = azurerm_dns_a_record.cluster
 }
 
-output "extmon_records" {
-  description = "Extmon DNS records"
-  value       = azurerm_dns_a_record.extmon
-}

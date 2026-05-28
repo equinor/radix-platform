@@ -12,15 +12,27 @@ variable "storageaccounts" {
     backup                   = optional(bool, false)
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
-    lifecyclepolicy          = optional(bool, false)
+    lifecycle_policy_rules = optional(list(object({
+      name                                                    = optional(string, "Lifecycle Storageaccount")
+      enabled                                                 = optional(bool, true)
+      blob_types                                              = optional(list(string), ["blockBlob", "appendBlob"])
+      delete_after_days_since_creation                        = optional(number)
+      delete_after_days_since_modification_greater_than       = optional(number)
+      tier_to_cool_after_days_since_modification_greater_than = optional(number)
+    })), [])
   }))
   default = {
     log = {
       name = "log"
+      lifecycle_policy_rules = [{
+        delete_after_days_since_modification_greater_than = 7
+      }]
     },
     velero = {
-      name            = "velero"
-      lifecyclepolicy = true
+      name = "velero"
+      lifecycle_policy_rules = [{
+        delete_after_days_since_modification_greater_than = 7
+      }]
     }
   }
 }
@@ -97,6 +109,12 @@ variable "appregistrations" {
         }
       }
       app_roles = {
+        system-admin = {
+          Displayname = "Radix Grafana System Admins"
+          Membertype  = "User"
+          Value       = "GrafanaAdmin"
+          Description = "Grafana System Admin"
+        }
         admins = {
           Displayname = "Radix Grafana Admins"
           Membertype  = "User"
@@ -117,15 +135,11 @@ variable "appregistrations" {
         }
       }
       role_assignments = {
-        radix_platform_operators = {
-          principal_object_id = "be5526de-1b7d-4389-b1ab-a36a99ef5cc5"
-          role_key            = "admins"
+        radix_contributors = {
+          principal_object_id = "0095272d-cb0a-4284-b1b5-86787b692627"
+          role_key            = "system-admin"
         }
         radix = {
-          principal_object_id = "ec8c30af-ffb6-4928-9c5c-4abf6ae6f82e"
-          role_key            = "editors"
-        }
-        radix_playground = {
           principal_object_id = "4b8ec60e-714c-4a9d-8e0a-3e4cfb3c3d31"
           role_key            = "editors"
         }

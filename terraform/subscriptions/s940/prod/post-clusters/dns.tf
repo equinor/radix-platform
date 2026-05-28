@@ -1,3 +1,15 @@
+# data "azurerm_public_ip" "gateway_pip" {
+#   for_each            = { for k, v in module.config.networksets : k => v if try(v.gatewayPIP, null) != null }
+#   name                = each.value.gatewayPIP
+#   resource_group_name = coalesce(try(each.value.pip_resource_group, null), module.config.cluster_resource_group)
+# }
+
+data "azurerm_public_ip" "gateway_pip" {
+  for_each            = module.config.networksets
+  name                = each.value.gatewayPIP
+  resource_group_name = module.config.cluster_resource_group
+}
+
 locals {
 
   # Prepare cluster data for DNS module
@@ -5,8 +17,7 @@ locals {
     for cluster_name, cluster_config in module.config.cluster : cluster_name => {
       cluster_name      = cluster_name
       active_cluster    = lookup(cluster_config, "activecluster", false)
-      nginx_ip          = module.config.networksets[cluster_config.networkset].ingressIP
-      dns_wildcard_type = lookup(cluster_config, "dns_wildcard", "nginx")
+      istio_ip          = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
     }
   }
 }
@@ -16,4 +27,6 @@ module "dns_config" {
   clusters              = local.clusters_for_dns
   environment           = module.config.environment
   common_resource_group = module.config.common_resource_group
+  zone_name             = "radix.equinor.com"
+  dns_resource_group    = module.config.common_resource_group
 }

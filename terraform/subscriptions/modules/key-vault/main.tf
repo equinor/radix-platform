@@ -1,7 +1,7 @@
 data "azurerm_client_config" "current" {}
 
 data "azuread_group" "this" {
-  display_name     = "Radix Platform Operators"
+  display_name     = var.subscription_contributor
   security_enabled = true
 }
 
@@ -26,7 +26,7 @@ resource "azurerm_key_vault" "this" {
   tenant_id                     = data.azurerm_client_config.current.tenant_id
   soft_delete_retention_days    = var.testzone ? 7 : 90
   purge_protection_enabled      = var.testzone ? false : true
-  enable_rbac_authorization     = var.enable_rbac_authorization
+  rbac_authorization_enabled    = var.enable_rbac_authorization
   public_network_access_enabled = false
   tags = {
     IaC = "terraform"

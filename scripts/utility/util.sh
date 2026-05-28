@@ -91,6 +91,9 @@ function environment_json() {
   local ip_prefix_egress_ips=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw egress_ips)
   local radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id)
   local dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group)
+  local cacheRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw cacheRegistry)
+  local clusterIssuerUrls=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value')
+
   local json=$(cat <<EOF
   {
     "cluster_rg": "$az_resource_group_clusters",
@@ -103,7 +106,9 @@ function environment_json() {
     "ingress_prefix": "$ip_prefix_ingress",
     "ip_prefix_egress_ips": "$ip_prefix_egress_ips",
     "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
-    "dns_zone_resource_group": "$dns_zone_resource_group"
+    "dns_zone_resource_group": "$dns_zone_resource_group",
+    "cache_registry": "$cacheRegistry.azurecr.io",
+    "cluster_issuer_urls": $clusterIssuerUrls
   }
 EOF
 )
@@ -238,7 +243,7 @@ function check_installed_components() {
   REQ_FLUX_VERSION="2.7.5"
   FLUX_VERSION=$(flux --version | awk '{print $3'})
   if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
-      printf ""${yel}"Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
+      printf ""${yel}"Please install specific version ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
       exit 1
   fi
 

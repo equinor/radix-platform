@@ -1,3 +1,4 @@
+
 data "azurerm_resource_group" "common" { # Defined in Global
   name = "common"
 }
@@ -18,6 +19,12 @@ module "resourcegroup_common" {
 module "resourcegroup_clusters" {
   source   = "../../../modules/resourcegroups"
   name     = module.config.cluster_resource_group
+  location = module.config.location
+}
+
+module "resourcegroup_clusters_c1" {
+  source   = "../../../modules/resourcegroups"
+  name     = "clusters-c1"
   location = module.config.location
 }
 

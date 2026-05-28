@@ -42,18 +42,16 @@ NOTE: If there is a need to migrate to a new cluster with a different setup, ple
 
 This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
-- PIM yourself to `AZ PIM RADIX Cluster Admin - <dev or prod>` group, and `Radix Confidential Data Contributor` and `Contributor` resource for the respective subscription
+- PIM yourself to `AZ PIM RADIX Cluster Admin - <s940|s941>` group, and `Radix Confidential Data Contributor` and `Contributor` resource for the respective subscription
 - Teardown old cluster
     - Modify `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` and comment out the cluster to be removed
-    - Run `teardown.sh` in `scripts/aks/teardown.sh`
+    - Run `teardown.sh` in `scripts/aks/teardown.sh`. See file header for usage.
 - Migrate new cluster:
     - Add new cluster to `/terraform/subscriptions/<s940|s941>/<zone>/config.yaml` but do not set `activecluster` to true yet
-    - Run script by the [migrate.sh](./migrate.sh). See file header in for usage
+    - Run script by the [migrate.sh](./migrate.sh). See file header for usage.
     - Follow the procedure from the script.
 
 #### 2.1.1 Set new cluster to active
-
-The following steps should only be performed when `active-to-active` was selected as migration strategy in `migrate.sh`.
 
 Steps:
 1. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `postBuild.yaml` for the respective Radix zone.
@@ -62,7 +60,7 @@ Steps:
 
 There are seven steps to setting up a Radix cluster from scratch. These steps can be run individually when modifying an existing cluster, or sequentially when setting up a new cluster:
 
-- PIM yourself to 'AZ PIM RADIX Cluster Admin - `<dev or prod>`' and `Radix Confidential Data Contributor` for the respective subscription
+- PIM yourself to 'AZ PIM RADIX Cluster Admin - `<s940|s941>`' and `Radix Confidential Data Contributor` for the respective subscription
 - Modify the ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster
 - Create a pull request to master"
 - Monitor the github action and the result
@@ -82,7 +80,7 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 
 #### Step 3 Deploy base components
 
-This will deploy 3rd party components (`nginx`, `cert-manager`, `flux` etc).
+This will deploy 3rd party components (`cert-manager`, `flux` etc).
 
 Handled by script, see header in [install_base_components.sh](./install_base_components.sh) for usage.
 

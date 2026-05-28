@@ -1,13 +1,13 @@
 data "azurerm_network_security_group" "this" {
   for_each            = var.nsg_ids
   name                = each.key
-  resource_group_name = var.resource_group_name
+  resource_group_name = lookup(var.nsg_resource_group_names, each.key, var.resource_group_name)
 }
 
 data "azurerm_public_ip" "gateway_pip" {
   for_each            = local.nsg_to_gateway_pip
   name                = each.value
-  resource_group_name = var.resource_group_name == "clusters" ? "clusters-platform" : var.resource_group_name # TODO should be in the same RG as NSG
+  resource_group_name = var.public_ip_resource_group
 }
 
 locals {
@@ -41,29 +41,6 @@ locals {
     for nsg_name in keys(local.nsg_to_gateway_pip) :
     nsg_name => data.azurerm_public_ip.gateway_pip[nsg_name].ip_address
   }
-
-  # Extract the ingressIP from the networkset for nginx
-  nginx_lb_ips = {
-    for nsg_name, cluster_name in local.nsg_to_cluster :
-    nsg_name => var.networksets[local.cluster_to_networkset[cluster_name]].ingressIP
-    if try(var.networksets[local.cluster_to_networkset[cluster_name]].ingressIP, null) != null
-  }
-}
-
-resource "azurerm_network_security_rule" "nginx" {
-  for_each                    = local.nginx_lb_ips
-  name                        = "${each.key}-nginx"
-  priority                    = 100
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_ranges     = ["80", "443"]
-  source_address_prefix       = "*"
-  destination_address_prefix  = each.value
-  resource_group_name         = data.azurerm_network_security_group.this[each.key].resource_group_name
-  network_security_group_name = data.azurerm_network_security_group.this[each.key].name
-  description                 = "IaC = Terraform"
 }
 
 resource "azurerm_network_security_rule" "istio" {

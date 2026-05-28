@@ -2,9 +2,13 @@ environment: "playground"
 flux_folder: "playground"
 cluster_type: "playground"
 subscription_shortname: "s941"
+subscription_contributor: "AZAPPL S941 - Contributor"
+legal_owners: ["4f1754a0-e821-4f89-bdf6-0c70306fca0f"] # Mail enabled Owner of the subscription
 location: "northeurope"
 developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM RADIX Cluster Admin - dev
 secondary_location: "westeurope"
+network:
+  vnet_hub_resourcegroup: "cluster-vnet-hub-playground"
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "false"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "false"
@@ -21,7 +25,6 @@ backend:
 networksets:
   networkset1:
     vnet: "10.5.0.0"
-    ingressIP:  "20.223.26.208"
     gatewayPIP: "pip-ingress-radix-aks-playground-northeurope-003"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-001"
@@ -30,7 +33,6 @@ networksets:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-004"
   networkset2:
     vnet: "10.6.0.0"
-    ingressIP: "20.223.26.209"
     gatewayPIP: "pip-ingress-radix-aks-playground-northeurope-004"
     egress:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-005"
@@ -39,9 +41,8 @@ networksets:
       - "/subscriptions/16ede44b-1f74-40a5-b428-46cca9a5741b/resourceGroups/clusters-playground/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-playground-northeurope-008"
 clusters:
   playground-29:
-    aksversion: "1.33.6"
+    aksversion: "1.34.6"
     networkset: "networkset1"
     network_policy: "cilium"
     dns_prefix: "playground-clusters-playgro-16ede4"
-    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true

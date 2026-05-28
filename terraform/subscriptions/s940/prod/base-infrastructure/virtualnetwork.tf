@@ -36,15 +36,6 @@ module "azurerm_public_ip_prefix_egress" {
 ### This block are reserved to new network when Cluster are migrated to platform resources group
 ###
 
-module "azurerm_virtual_network_platform" {
-  source              = "../../../modules/virtualnetwork"
-  location            = module.config.location
-  enviroment          = module.config.environment
-  vnet_resource_group = "cluster-vnet-hub-platform"
-  private_dns_zones   = tolist(module.config.private_dns_zones_names)
-  depends_on          = [module.resourcegroup_vnet]
-}
-
 module "azurerm_public_ip_prefix_ingress_platform" {
   source              = "../../../modules/network_publicipprefix"
   location            = module.config.location
@@ -73,31 +64,28 @@ module "azurerm_public_ip_prefix_egress_platform" {
 module "azurerm_public_ip_prefix_egress_002" {
   source               = "../../../modules/network_publicipprefix"
   location             = module.config.location
-  resource_group_name  = module.resourcegroup_clusters.data.name
+  resource_group_name  = "clusters-c1" #TODO Will be removed when old cluster are decommissioned
   publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-002" #TODO
   pipprefix            = "radix-aks"
   pippostfix           = module.config.location
   enviroment           = "platform"
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
-  puplicipstartcounter = 17
+  puplicipstartcounter = 17 # 17 to 32 because 1 to 16 are used in ip preffix 001
 }
 
 module "azurerm_public_ip_prefix_egress_003" {
   source               = "../../../modules/network_publicipprefix"
   location             = module.config.location
-  resource_group_name  = module.resourcegroup_clusters.data.name
+  resource_group_name  = "clusters-c1" #TODO Will be removed when old cluster are decommissioned
   publicipprefixname   = "ippre-radix-aks-platform-${module.config.location}-003" #TODO
   pipprefix            = "radix-aks"
   pippostfix           = module.config.location
   enviroment           = "platform"
   prefix_length        = 28 # Max aivailable /28
   publicipcounter      = 16
-  puplicipstartcounter = 33
+  puplicipstartcounter = 33 # 33 to 48 because 17 to 32 are used in ip preffix 002
 }
-##################################################################################################
-## Reserved block C1
-##
 
 module "azurerm_public_ip_prefix_egress_004" {
   source               = "../../../modules/network_publicipprefix"

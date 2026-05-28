@@ -18,7 +18,7 @@
 # }
 
 resource "azurerm_monitor_data_collection_rule" "this" {
-  name                = var.enviroment == "platform" ? "MSCI-NEU-${var.cluster_name}" : "MSCI-${var.location}-${var.cluster_name}" #"MSCI-${var.location}-${var.cluster_name}" #TODO
+  name                = var.monitor_data_collection_rule_name
   resource_group_name = var.resource_group
   location            = var.location
   kind                = "Linux"
@@ -66,7 +66,7 @@ resource "azurerm_monitor_data_collection_rule" "this" {
       extension_json = jsonencode({
         dataCollectionSettings = {
           enableContainerLogV2   = true
-          interval               = var.enviroment == "dev" || var.enviroment == "playground" || var.enviroment == "extmon" ? "5m" : "1m"
+          interval               = var.monitor_interval
           namespaceFilteringMode = "Exclude"
           streams = [
             "Microsoft-ContainerLog",

@@ -109,9 +109,29 @@ variable "virtual_network" {
 variable "vnet_resource_group" {
   type = string
 }
-variable "lifecyclepolicy" {
-  type    = bool
-  default = false
+variable "lifecycle_policy_rules" {
+  description = "Lifecycle management rules for the storage account. Non-default values must be provided by the zone configuration."
+  type = list(object({
+    name                                                    = optional(string, "Lifecycle Storageaccount")
+    enabled                                                 = optional(bool, true)
+    blob_types                                              = optional(list(string), ["blockBlob", "appendBlob"])
+    delete_after_days_since_creation                        = optional(number)
+    delete_after_days_since_modification_greater_than       = optional(number)
+    tier_to_cool_after_days_since_modification_greater_than = optional(number)
+  }))
+  default = []
+
+  validation {
+    condition = alltrue([
+      for rule in var.lifecycle_policy_rules :
+      length(rule.blob_types) > 0 && (
+        rule.delete_after_days_since_creation != null ||
+        rule.delete_after_days_since_modification_greater_than != null ||
+        rule.tier_to_cool_after_days_since_modification_greater_than != null
+      )
+    ])
+    error_message = "Each lifecycle policy rule must define at least one blob type and one lifecycle action."
+  }
 }
 
 variable "log_analytics_id" {
@@ -122,13 +142,4 @@ variable "log_analytics_id" {
 variable "public_network_access" {
   type    = bool
   default = false
-}
-
-variable "testzone" {
-  type    = bool
-  default = false
-}
-
-variable "cluster_type" {
-  type = string
 }

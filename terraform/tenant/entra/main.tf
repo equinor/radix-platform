@@ -1,39 +1,34 @@
+#region Data Sources - Subscriptions
 data "azurerm_subscription" "current" {
 }
 
-data "azuread_group" "radix" {
-  display_name = "Radix"
-}
-
-data "azuread_group" "radix-platform-developers" {
-  display_name     = "Radix Platform Developers"
-  security_enabled = true
-}
-
-data "azuread_group" "radix-platform-operators" {
-  display_name     = "Radix Platform Operators"
-  security_enabled = true
-}
 data "azurerm_subscription" "subscriptions" {
-  for_each        = var.subscriptions
+  for_each = var.subscriptions
+
   subscription_id = each.value
 }
+#endregion Data Sources - Subscriptions
 
-resource "azurerm_role_assignment" "operator-roles" {
-  for_each = var.operator-roles
-
-  principal_id         = data.azuread_group.radix-platform-operators.id
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
-  role_definition_name = each.value.role
-}
-resource "azurerm_role_assignment" "developer-roles" {
-  for_each = var.developer-roles
-
-  principal_id         = data.azuread_group.radix-platform-developers.id
-  scope                = data.azurerm_subscription.subscriptions[each.value.subscription].id
-  role_definition_name = each.value.role
+#region Data Sources - Azure AD Groups
+data "azuread_group" "radix" {
+  display_name = "Radix Privileged Accounts"
 }
 
+data "azuread_group" "s940_contributors" {
+  display_name     = "AZAPPL S940 - Contributor"
+  security_enabled = true
+}
+
+data "azuread_group" "s941_contributors" {
+  display_name     = "AZAPPL S941 - Contributor"
+  security_enabled = true
+}
+#endregion Data Sources - Azure AD Groups
+
+#region Role Assignments
+#endregion Role Assignments
+
+#region Application Registrations
 resource "azuread_application_registration" "ar-radix-servicenow-proxy-client" {
   display_name                 = "ar-radix-servicenow-proxy-client"
   service_management_reference = "110327"
@@ -41,16 +36,18 @@ resource "azuread_application_registration" "ar-radix-servicenow-proxy-client" {
 
 #TODO - Need refinement
 resource "azuread_application" "ar-radix-servicenow-proxy-server" {
-  display_name = "ar-radix-servicenow-proxy-server"
-  identifier_uris = [
-    "api://1b4a22f1-d4a1-4b6a-81b2-fd936daf1786"
-  ]
+  display_name                 = "ar-radix-servicenow-proxy-server"
   owners                       = tolist(data.azuread_group.radix.members)
   service_management_reference = "110327"
   sign_in_audience             = "AzureADandPersonalMicrosoftAccount"
 
+  identifier_uris = [
+    "api://1b4a22f1-d4a1-4b6a-81b2-fd936daf1786"
+  ]
+
   api {
     requested_access_token_version = 2
+
     oauth2_permission_scope {
       admin_consent_description  = "Allows the app to read ServiceNow applications"
       admin_consent_display_name = "Read applications from ServiceNow"
@@ -62,6 +59,7 @@ resource "azuread_application" "ar-radix-servicenow-proxy-server" {
       value                      = "Application.Read"
     }
   }
+
   single_page_application {
     redirect_uris = [
       "http://localhost:3002/swaggerui/oauth2-redirect.html",
@@ -69,10 +67,91 @@ resource "azuread_application" "ar-radix-servicenow-proxy-server" {
   }
 }
 
+module "appreg_servicenow_client" {
+  source = "../../subscriptions/modules/app_application_registration"
+
+  displayname    = "ar-radix-servicenow-proxy-client"
+  internal_notes = null
+  permissions = {
+    msgraph = {
+      id = "00000003-0000-0000-c000-000000000000" # msgraph
+      scope_ids = [
+        "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+      ]
+    }
+  }
+  radixowners                  = data.azuread_group.radix.members
+  service_management_reference = "110327"
+  token_version                = 2
+}
+
+module "app_application_registration_swaggerui" {
+  source = "../../subscriptions/modules/app_application_registration"
+
+  displayname    = "radix-ar-swaggerui"
+  internal_notes = null
+  permissions = {
+    msgraph = {
+      id = "00000003-0000-0000-c000-000000000000" # msgraph
+      scope_ids = [
+        "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+      ]
+    }
+    kubernetes = {
+      id = "6dae42f8-4368-4678-94ff-3960e28e3630" # kubernetes
+      scope_ids = [
+        "34a47c2f-cd0d-47b4-a93c-2c41130c671c" # user.read
+      ]
+    }
+  }
+
+  radixowners                  = data.azuread_group.radix.members
+  service_management_reference = "110327"
+  token_version                = 2
+}
+
+resource "azuread_application_redirect_uris" "swaggerui" {
+  application_id = module.app_application_registration_swaggerui.azuread_application_id
+  type           = "SPA"
+
+  redirect_uris = [
+    "http://localhost:3000/swaggerui/oauth2-redirect.html",
+    "http://localhost:3001/swaggerui/oauth2-redirect.html",
+    "http://localhost:3002/swaggerui/oauth2-redirect.html",
+    "http://localhost:3003/swaggerui/oauth2-redirect.html",
+
+    # radix-api (dnsAlias: api)
+    "https://api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+
+    # radix-cost-allocation-api (dnsAlias: cost-api)
+    "https://cost-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://cost-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+
+    # radix-vulnerability-scanner-api (dnsAlias: vulnerability-scan-api)
+    "https://vulnerability-scan-api.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.c2.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.c3.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.dev.radix.equinor.com/swaggerui/oauth2-redirect.html",
+    "https://vulnerability-scan-api.playground.radix.equinor.com/swaggerui/oauth2-redirect.html",
+  ]
+}
+#endregion Application Registrations
+
+#region Custom Role Definitions
 resource "azurerm_role_definition" "dns_txt_contributor" {
   name        = "DNS TXT Contributor"
-  description = "Can manage DNS TXT records only."
   scope       = data.azurerm_subscription.current.id
+  description = "Can manage DNS TXT records only."
+
+  assignable_scopes = var.all_subscriptions
+
   permissions {
     actions = [
       "Microsoft.Network/dnsZones/TXT/*",
@@ -86,13 +165,31 @@ resource "azurerm_role_definition" "dns_txt_contributor" {
     ]
     not_actions = []
   }
+}
+
+resource "azurerm_role_definition" "radix_standard_reader" {
+  name  = "Radix Standard Reader"
+  scope = data.azurerm_subscription.current.id
+
+  permissions {
+    actions = ["*/read"]
+    not_actions = [
+      "Microsoft.OperationalInsights/workspaces/query/read",
+      "Microsoft.OperationalInsights/workspaces/query/*/read",
+      "Microsoft.OperationalInsights/workspaces/search/action"
+    ]
+  }
+
   assignable_scopes = var.all_subscriptions
 }
 
 resource "azurerm_role_definition" "radix_confidential_data_contributor" {
   name        = "Radix Confidential Data Contributor"
-  description = "Role definition to access and update KV,SA and ACR"
   scope       = data.azurerm_subscription.current.id
+  description = "Role definition to access and update KV,SA and ACR"
+
+  assignable_scopes = var.all_subscriptions
+
   permissions {
     actions = [
       "Microsoft.ContainerRegistry/registries/read",
@@ -101,34 +198,25 @@ resource "azurerm_role_definition" "radix_confidential_data_contributor" {
       "Microsoft.ContainerRegistry/registries/push/write",
       "Microsoft.KeyVault/vaults/read",
       "Microsoft.KeyVault/vaults/write",
+      "Microsoft.OperationalInsights/workspaces/read",
+      "Microsoft.OperationalInsights/workspaces/query/read",
+      "Microsoft.OperationalInsights/workspaces/query/*/read",
+      "Microsoft.OperationalInsights/workspaces/analytics/query/action",
+      "Microsoft.OperationalInsights/workspaces/search/action",
       "Microsoft.Storage/storageAccounts/blobServices/containers/delete",
       "Microsoft.Storage/storageAccounts/blobServices/containers/read",
       "Microsoft.Storage/storageAccounts/blobServices/containers/write",
       "Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action"
-      ]
-      data_actions = [
-        "Microsoft.KeyVault/vaults/secrets/*",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/move/action",
-        "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action"
-      ]
+    ]
+    data_actions = [
+      "Microsoft.KeyVault/vaults/secrets/*",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/move/action",
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action"
+    ]
     not_actions = []
   }
-  assignable_scopes = var.all_subscriptions
 }
-
-module "app_application_registration" {
-  source                             = "../../subscriptions/modules/app_application_registration"
-  for_each                           = var.appregistrations
-  displayname                        = each.value.display_name
-  internal_notes                     = each.value.notes
-  service_management_reference       = each.value.service_management_reference
-  radixowners                        = data.azuread_group.radix.members
-  permissions                        = each.value.permissions
-  implicit_id_token_issuance_enabled = each.value.implicit_id_token_issuance_enabled
-  app_role_assignment_required       = each.value.app_role_assignment_required
-  audience                           = each.value.sign_in_audience
-  token_version                      = each.value.token_version
-}
+#endregion Custom Role Definitions

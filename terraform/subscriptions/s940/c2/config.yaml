@@ -2,13 +2,22 @@ environment: "c2"
 flux_folder: "c2-production"
 cluster_type: "production"
 subscription_shortname: "s940"
+subscription_contributor: "AZAPPL S940 - Contributor"
+legal_owners: ["4f1754a0-e821-4f89-bdf6-0c70306fca0f"] # Mail enabled Owner of the subscription
 location: "westeurope"
 secondary_location: "northeurope"
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM RADIX Cluster Admin - prod
+network:
+  vnet_hub_resourcegroup: "cluster-vnet-hub-c2"
+  
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "ar-radix-networkpolicy-canary"
+
+aksconfig:
+  node_os_upgrade_channel: "None"
+  sku_tier: "Standard"
   
 backend:
   resource_group_name: "s940-tfstate"
@@ -21,7 +30,7 @@ backend:
 networksets:
   networkset1:
     vnet: "10.5.0.0"
-    ingressIP:  "20.61.119.160"
+    :  "20.61.119.160"
     gatewayPIP: "pip-ingress-radix-aks-c2-prod-004"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-001"
@@ -34,7 +43,6 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-egress-radix-aks-c2-prod-008"
   networkset2:
     vnet: "10.6.0.0"
-    ingressIP: "20.61.119.161"
     gatewayPIP: "pip-ingress-radix-aks-c2-prod-005"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c2-westeurope-001"
@@ -47,7 +55,6 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c2-westeurope-008"
   networkset3:
     vnet: "10.7.0.0"
-    ingressIP:  "20.61.119.162"
     gatewayPIP: "pip-ingress-radix-aks-c2-prod-006"
     egress:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c2-westeurope-009"
@@ -60,8 +67,11 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c2-westeurope-016"
 clusters:
   c2-11:
-    aksversion: "1.33.6"
+    aksversion: "1.34.4"
     networkset: "networkset1"
     network_policy: "calico"
-    dns_wildcard: nginx # Options: "nginx" or "istio"
     activecluster: true
+    ddos_protection: true
+    ContainerInsights_time: "1m"
+    cluster_to_hub_peering: "c2-11-to-vnet-hub"
+    hub_to_cluster_peering: "vnet-hub-to-c2-11"

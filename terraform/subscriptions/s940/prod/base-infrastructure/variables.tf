@@ -11,20 +11,36 @@ variable "storageaccounts" {
     backup                   = optional(bool, false)
     principal_id             = optional(string)
     private_endpoint         = optional(bool, false)
-    lifecyclepolicy          = optional(bool, false)
+    lifecycle_policy_rules = optional(list(object({
+      name                                                    = optional(string, "Lifecycle Storageaccount")
+      enabled                                                 = optional(bool, true)
+      blob_types                                              = optional(list(string), ["blockBlob", "appendBlob"])
+      delete_after_days_since_creation                        = optional(number)
+      delete_after_days_since_modification_greater_than       = optional(number)
+      tier_to_cool_after_days_since_modification_greater_than = optional(number)
+    })), [])
   }))
   default = {
     log = {
       name                     = "log"
       account_replication_type = "ZRS"
       backup                   = true
+      lifecycle_policy_rules = [{
+        blob_types                                              = ["blockBlob"]
+        delete_after_days_since_creation                        = 60
+        delete_after_days_since_modification_greater_than       = 90
+        tier_to_cool_after_days_since_modification_greater_than = 30
+      }]
 
     },
     velero = {
       name                     = "velero"
       account_replication_type = "GRS"
       backup                   = true
-      lifecyclepolicy          = true
+      lifecycle_policy_rules = [{
+        delete_after_days_since_creation                  = 60
+        delete_after_days_since_modification_greater_than = 90
+      }]
     }
   }
 }
@@ -101,6 +117,12 @@ variable "appregistrations" {
         }
       }
       app_roles = {
+        system-admin = {
+          Displayname = "Radix Grafana System Admins"
+          Membertype  = "User"
+          Value       = "GrafanaAdmin"
+          Description = "Grafana System Admin"
+        }
         admins = {
           Displayname = "Radix Grafana Admins"
           Membertype  = "User"
@@ -115,9 +137,9 @@ variable "appregistrations" {
         }
       }
       role_assignments = {
-        radix_platform_operators = {
-          principal_object_id = "be5526de-1b7d-4389-b1ab-a36a99ef5cc5"
-          role_key            = "admins"
+        radix_contributors = {
+          principal_object_id = "17b94e5c-3174-4efa-9b88-45980b49997b"
+          role_key            = "system-admin"
         }
         radix = {
           principal_object_id = "64b28659-4fe4-4222-8497-85dd7e43e25b"

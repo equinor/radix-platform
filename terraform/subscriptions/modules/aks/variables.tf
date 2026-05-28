@@ -15,8 +15,7 @@ variable "location" {
 }
 
 variable "dns_prefix" {
-  type    = string
-  default = ""
+  type = string
 }
 
 variable "aks_version" {
@@ -74,6 +73,17 @@ variable "network_policy" {
   description = "Specifies the data plane used for building the Kubernetes network. Currently supported values are calico, azure and cilium"
   type        = string
   default     = "calico"
+}
+
+variable "network_data_plane" {
+  description = "The AKS network data plane to use."
+  type        = string
+}
+
+variable "network_plugin_mode" {
+  description = "The AKS network plugin mode to use."
+  type        = string
+  default     = null
 }
 
 variable "outbound_ip_address_ids" {
@@ -134,5 +144,110 @@ variable "active_cluster" {
 variable "hostencryption" {
   type    = bool
   default = false
+}
 
+variable "cluster_lock" {
+  type    = bool
+  default = true
+}
+
+variable "enable_workload_identity" {
+  description = "Enable workload identity on the AKS cluster."
+  type        = bool
+  default     = false
+}
+
+variable "sku_tier" {
+  type    = string
+  default = "Standard"
+}
+
+variable "node_os_upgrade_channel" {
+  type    = string
+  default = "None"
+}
+
+variable "nsg_name" {
+  description = "Network Security Group name."
+  type        = string
+}
+
+variable "vnet_name" {
+  description = "Virtual Network name."
+  type        = string
+}
+
+variable "subnet_name" {
+  description = "Subnet name."
+  type        = string
+}
+
+variable "enable_ddos_protection_plan" {
+  description = "Enable DDoS protection plan on VNet."
+  type        = bool
+  default     = false
+}
+
+variable "ddos_protection_plan_id" {
+  description = "Resource ID of the DDoS protection plan."
+  type        = string
+  default     = "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/rg-protection-we/providers/Microsoft.Network/ddosProtectionPlans/ddos-protection"
+}
+
+variable "enable_network_lock" {
+  description = "Enable management lock on the VNet."
+  type        = bool
+  default     = false
+}
+
+variable "network_lock_name" {
+  description = "Management lock name for the VNet lock."
+  type        = string
+}
+
+variable "hub_virtual_network_name" {
+  description = "Hub virtual network name used by hub_to_cluster peering."
+  type        = string
+}
+
+variable "hub_to_cluster_peering_name" {
+  description = "Peering name for hub to cluster direction."
+  type        = string
+}
+
+variable "cluster_to_hub_peering_name" {
+  description = "Peering name for cluster to hub direction."
+  type        = string
+}
+
+variable "cluster_to_hub_resource_group" {
+  description = "Resource group of the cluster VNet for the cluster_to_hub peering."
+  type        = string
+}
+
+variable "private_dns_zone_link_name" {
+  description = "Private DNS zone virtual network link name."
+  type        = string
+}
+
+variable "monitor_data_collection_rule_name" {
+  description = "Data collection rule name."
+  type        = string
+}
+
+variable "monitor_interval" {
+  description = "Container insights collection interval."
+  type        = string
+  default     = "1m"
+
+  validation {
+    condition     = contains(["1m", "5m"], var.monitor_interval)
+    error_message = "monitor_interval must be one of: 1m, 5m."
+  }
+}
+
+variable "tags" {
+  description = "Tags to apply to the AKS cluster."
+  type        = map(string)
+  default     = {}
 }

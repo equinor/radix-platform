@@ -89,7 +89,12 @@ function flux_configmap() {
       --from-literal=subscriptionId="$AZ_SUBSCRIPTION_ID" \
       --from-literal=dnsZoneResourceGroup="$AZ_RESOURCE_GROUP_DNS" \
       --from-literal=radixIdCertManager="$RADIX_ID_CERTMANAGER_MI_CLIENT_ID" \
-      --from-literal=zone="$RADIX_ENVIRONMENT" )
+      --from-literal=zone="$RADIX_ENVIRONMENT" \
+      --from-literal=cacheRegistry="$RADIX_CACHE_REGISTRY" \
+      --from-literal=kubernetesIssuerUrl="$(jq -r .\"$CLUSTER_NAME\" <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
+      --from-literal=clusterOidcIssuers="$(jq -r '[.[] | tostring] | join(",")' <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
+      --from-literal=clusterEgressIPs="$RADIX_CLUSTER_EGRESS_IPS" \
+      )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
   echo "$CM" | KUBECTL_EXTERNAL_DIFF="colordiff -N -u" kubectl diff -f -
@@ -238,6 +243,9 @@ AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
 IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
+RADIX_CACHE_REGISTRY=$(yq '.cache_registry' <<< "$RADIX_RESOURCE_JSON")
+CLUSTER_OIDC_ISSUER_URLS=$(jq -r .cluster_issuer_urls <<< "$RADIX_RESOURCE_JSON")
+RADIX_CLUSTER_EGRESS_IPS=$(jq -r .ip_prefix_egress_ips <<< "$RADIX_RESOURCE_JSON")
 MIGRATION_STRATEGY="aa"
 STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
 RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
@@ -408,33 +416,6 @@ fi
 
 if [[ $install_base_components == true ]]; then
     #######################################################################################
-    ### Install ingress-nginx
-    ###
-    echo ""
-    SELECTED_INGRESS_IP_RAW_ADDRESS=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json clusters | jq -r '.[] | select(.cluster=="'${DEST_CLUSTER}'") | .ingressIp')
-    kubectl create namespace ingress-nginx --dry-run=client -o yaml |
-    kubectl apply -f -
-
-    kubectl create secret generic ingress-nginx-raw-ip \
-        --namespace ingress-nginx \
-        --from-literal=rawIp="$SELECTED_INGRESS_IP_RAW_ADDRESS" \
-        --dry-run=client -o yaml |
-        kubectl apply -f -
-
-    echo "controller:
-    service:
-        loadBalancerIP: $SELECTED_INGRESS_IP_RAW_ADDRESS" > config
-
-    kubectl create secret generic ingress-nginx-ip \
-        --namespace ingress-nginx \
-        --from-file=./config \
-        --dry-run=client -o yaml |
-        kubectl apply -f -
-
-    rm config
-    printf "Done.\n"
-
-    #######################################################################################
     ### Install Flux
     echo ""
     echo "Install Flux v2"
@@ -479,26 +460,21 @@ if [[ $install_base_components == true ]]; then
     echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
 fi
 
-if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
-    package="tmux"
-    checkpackage=$(dpkg -s ${package} /dev/null 2>&1 | grep Status:)
-    if [[ -n ${checkpackage} ]]; then
-        tmux new -s flux -d 'watch "kubectl get ks -A"' \; split-window -v 'watch "kubectl get hr -A"'
-        echo "Please open a new terminal window, and run following command:"
-        echo ""
-        echo "tmux a -t flux"
-        echo ""
-        echo "Hit space after every kustomizations and helmreleases is in 'Ready' state."
-        echo "(Tip: You migt need to open another terminal windows to do flux reconcile commands etc...)"
-        read -r -s -d ' '
-        tmux kill-session -t flux
-    else
-        echo "Optional: Please do 'sudo apt install ${package}' for instruction how to monitor Flux kustomizations and helmreleases before you run the migration script next time......"
-        echo "You can run it manually now in seperate terminal windows:"
-        echo "watch \"kubectl get ks -A\""
-        echo "watch \"kubectl get hr -A\""
-    fi
-
+if command -v "tmux" >/dev/null 2>&1; then
+    tmux new -s flux -d 'watch "kubectl get ks -A"' \; split-window -v 'watch "kubectl get hr -A"'
+    echo "Please open a new terminal window, and run following command:"
+    echo ""
+    echo "tmux a -t flux"
+    echo ""
+    echo "Hit space after every kustomizations and helmreleases is in 'Ready' state."
+    echo "(Tip: You migt need to open another terminal windows to do flux reconcile commands etc...)"
+    read -r -s -d ' '
+    tmux kill-session -t flux
+else
+    echo "Optional: Please install tmux for instruction how to monitor Flux kustomizations and helmreleases before you run the migration script next time......"
+    echo "You can run it manually now in seperate terminal windows:"
+    echo "watch \"kubectl get ks -A\""
+    echo "watch \"kubectl get hr -A\""
 fi
 
 # Wait for operator to be deployed from flux
@@ -581,22 +557,17 @@ spec:
   - azure
 EOF
 
-if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
-    package="tmux"
-    checkpackage=$(dpkg -s ${package} /dev/null 2>&1 | grep Status:)
-    if [[ -n ${checkpackage} ]]; then
-        tmux new -s velero -d 'watch "kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
-        echo "Please open a new terminal window, and run following command:"
-        echo ""
-        echo "tmux a -t velero"
-        echo ""
-        KILL_VELERO_WINDOWS=true
-    else
-        echo "Optional: Please do 'sudo apt install ${package}' for instruction how to monitor Velero restore in the migration script next time......"
-        echo "You can run it manually now:"
-        echo "watch \"kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems\""
-    fi
-
+if command -v "tmux" >/dev/null 2>&1; then
+    tmux new -s velero -d 'watch "kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
+    echo "Please open a new terminal window, and run following command:"
+    echo ""
+    echo "tmux a -t velero"
+    echo ""
+    KILL_VELERO_WINDOWS=true
+else
+    echo "Optional: Please install tmux for instruction how to monitor Velero restore in the migration script next time......"
+    echo "You can run it manually now:"
+    echo "watch \"kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems\""
 fi
 
 echo ""
