@@ -78,7 +78,7 @@ function flux_configmap() {
   # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
   get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
   printf "\n%s► Deploy radix-flux-config configmap in flux namespace\n"
-  CM=$(kubectl create configmap radix-flux-config -n flux-system --dry-run=client -o yaml \
+  CM=$(kubectl create configmap radix-flux-config -n flux-system --dry-run=client -o json \
       --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
       --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
       --from-literal=prometheusName="radix-stage1" \
@@ -97,8 +97,9 @@ function flux_configmap() {
       )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
-  echo "$CM" | KUBECTL_EXTERNAL_DIFF="colordiff -N -u" kubectl diff -f -
-  echo ""
+  colordiff -u -s -N <(kubectl get configmap -n flux-system radix-flux-config -ojson | jq .data) \
+     <(echo "$CM" | jq '.data')
+  echo ""     
   if [[ $USER_PROMPT == true ]]; then
     while true; do
         read -r -p "Is this correct? (Y/n) " yn
