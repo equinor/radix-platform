@@ -9,9 +9,9 @@ locals {
   # Prepare cluster data for DNS module
   clusters_for_dns = {
     for cluster_name, cluster_config in module.config.cluster : cluster_name => {
-      cluster_name      = cluster_name
-      active_cluster    = lookup(cluster_config, "activecluster", false)
-      istio_ip          = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
+      cluster_name   = cluster_name
+      active_cluster = lookup(cluster_config, "activecluster", false)
+      istio_ip       = data.azurerm_public_ip.gateway_pip[cluster_config.networkset].ip_address
     }
   }
 }
