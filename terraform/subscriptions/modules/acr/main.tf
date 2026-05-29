@@ -123,16 +123,16 @@ resource "azurerm_container_registry" "env" {
 }
 
 resource "azurerm_container_registry_agent_pool" "user_image_pool" {
-  name                  = "${var.acr_prefix_env}-zone-pool"
-  resource_group_name   = var.resource_group_name
-  location              = var.location
+  name                    = "${var.acr_prefix_env}-zone-pool"
+  resource_group_name     = var.resource_group_name
+  location                = var.location
   container_registry_name = var.acr_user_image_name
-  
+
   # Set the number of agent instances (1-1000)
-  instance_count        = var.user_registry_pool_count
-  
+  instance_count = var.user_registry_pool_count
+
   # Select the VM SKU
-  tier                  = "S1" # Options: S1, S2, S3, I6
+  tier = "S1" # Options: S1, S2, S3, I6
   tags = {
     IaC = "terraform"
   }

@@ -42,7 +42,7 @@ Velero uses Azure Blob Storage for config backup (etcd) and volume snapshots of 
 
 ## Storage setup
 
-    az account set --subscription "Omnia Radix Development"
+    az account set --subscription "Radix Development"
 
     # Create a Resource Group that will contain the backups. This is to separate permissions since velero needs Contributor access to the whole resource group.
     AZURE_BACKUP_RESOURCE_GROUP=Velero_Backups
