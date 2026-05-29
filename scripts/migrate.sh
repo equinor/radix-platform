@@ -238,7 +238,7 @@ APP_CONFIG_NAME="radix-appconfig-$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
 RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
 
 # JSON values (Generated from function environment_json which reads from terraform outputs)
-AZ_RESOURCE_DNS=$(jq -r .dnz_zone <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_DNS=$(jq -r .dns_zone <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")

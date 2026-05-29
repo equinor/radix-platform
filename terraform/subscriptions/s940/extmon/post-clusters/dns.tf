@@ -21,7 +21,7 @@ module "dns_config" {
   clusters              = local.clusters_for_dns
   environment           = module.config.environment
   common_resource_group = module.config.common_resource_group
-  zone_name             = "radix.equinor.com"
+  zone_name             = module.config.dns_zone_name
   dns_resource_group    = "common-platform"
   create_active_records = false
 }
