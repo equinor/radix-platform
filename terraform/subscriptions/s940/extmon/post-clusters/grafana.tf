@@ -1,13 +1,4 @@
-locals {
-  grafana_uris = [
-    for k, v in module.clusters.oidc_issuer_url :
-    "https://grafana.${k}.${module.config.dns_zone_name}/login/generic_oauth"
-  ]
-  grafana_uris_azuread = [
-    for k, v in module.clusters.oidc_issuer_url :
-    "https://grafana.${k}.${module.config.dns_zone_name}/login/azuread"
-  ]
-}
+
 
 data "azuread_application" "grafana-logreader" {
   display_name = module.config.grafana_ar_reader_display_name
@@ -28,10 +19,11 @@ resource "azuread_application_federated_identity_credential" "grafana-logreader"
 }
 
 module "grafana_redirect_uris" {
-  source         = "../../../modules/app_registration_redirect_uris"
-  application_id = data.azuread_application.grafana.id
-  type           = "Web"
-  redirect_uris  = concat(["https://grafana.ext-mon.${module.config.dns_zone_name}/login/generic_oauth"], ["https://grafana.ext-mon.${module.config.dns_zone_name}/login/azuread"], local.grafana_uris, local.grafana_uris_azuread)
+  source                = "../../../modules/grafana_redirect_uris"
+  application_id        = data.azuread_application.grafana.id
+  dns_zone_name         = module.config.dns_zone_name
+  cluster_names         = module.clusters.oidc_issuer_url
+  grafana_root_hostname = "grafana.ext-mon"
 }
 
 

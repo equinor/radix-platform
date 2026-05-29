@@ -1,27 +1,12 @@
-locals {
-  grafana_uris = [
-    for k, v in local.oidc_issuer_urls :
-    "https://grafana.${k}.${module.config.dns_zone_name}/login/generic_oauth"
-  ]
-  grafana_uris_azuread = [
-    for k, v in local.oidc_issuer_urls :
-    "https://grafana.${k}.${module.config.dns_zone_name}/login/azuread"
-  ]
-}
-
 data "azuread_application" "grafana" {
   display_name = "radix-ar-grafana-${module.config.environment}"
 }
 
 module "grafana_redirect_uris" {
-  source         = "../../../modules/app_registration_redirect_uris"
+  source         = "../../../modules/grafana_redirect_uris"
   application_id = data.azuread_application.grafana.id
-  type           = "Web"
-  redirect_uris  = concat(
-    ["https://grafana.${module.config.dns_zone_name}/login/generic_oauth"], 
-    ["https://grafana.${module.config.dns_zone_name}/login/azuread"], 
-    local.grafana_uris, 
-    local.grafana_uris_azuread)
+  dns_zone_name  = module.config.dns_zone_name
+  cluster_names  = local.oidc_issuer_urls
 }
 
 module "grafana_fedcred" {
