@@ -618,17 +618,9 @@ while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadat
 done
 echo ""
 
-printf "Waiting for server component in radix-api-qa namespace to get ready.\n"
+printf "Waiting for server component radix-api to get ready.\n"
 printf "If this takes forever, monitor the deployment..."
-while [[ ! $(kubectl get deployments -n radix-api-qa server -o jsonpath={.status.availableReplicas}) ]]; do 
-    printf "."
-    sleep 5
-done
-echo ""
-
-printf "Waiting for server component in radix-api-prod namespace to get ready.\n"
-printf "If this takes forever, monitor the deployment..."
-while [[ ! $(kubectl get deployments -n radix-api-prod server -o jsonpath={.status.availableReplicas}) ]]; do
+while [[ ! $(kubectl get deployments radix-api-server -o jsonpath={.status.availableReplicas}) ]]; do
     printf "."
     sleep 5
 done

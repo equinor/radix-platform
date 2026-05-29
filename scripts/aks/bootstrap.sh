@@ -145,7 +145,7 @@ printf "Done."
 ###
 
 printf "Updating local kube config with access to cluster \"%s\"... " "$CLUSTER_NAME"
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" >/dev/null
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"  >/dev/null
 
 [[ "$(kubectl config current-context)" != "$CLUSTER_NAME" ]] && exit 1
 

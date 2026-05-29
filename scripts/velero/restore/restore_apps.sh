@@ -30,7 +30,7 @@
 ###
 
 # Example: Restore into same cluster from where the backup was done
-# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-44 BACKUP_NAME=all-hourly-20251030060001 ./restore_apps.sh
+# RADIX_ZONE=dev SOURCE_CLUSTER=weekly-21 BACKUP_NAME=migration-20260527104656 ./restore_apps.sh
 
 # Example: Restore into different cluster from where the backup was done
 # RADIX_ZONE=dev  SOURCE_CLUSTER=dev-1 DEST_CLUSTER=dev-2 BACKUP_NAME=all-hourly-20250703064411 ./restore_apps.sh
