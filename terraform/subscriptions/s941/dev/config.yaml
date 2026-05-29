@@ -16,9 +16,8 @@ zoneconfig:
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"
   APP_REGISTRATION_NETWORKPOLICY_CANARY: "radix-ar-networkpolicy-canary"
 
-aksconfig: 
+aksconfig:
   dataCollectionSettings: "5m"
-
 
 backend:
   resource_group_name: "s941-tfstate"
@@ -48,7 +47,7 @@ clusters:
     network_policy: "cilium"
     hostencryption: true
     activecluster: true
-  weekly-20:
+  weekly-22:
     aksversion: "1.35.1"
     networkset: "networkset2"
     network_policy: "cilium"
