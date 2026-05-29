@@ -100,7 +100,7 @@ function environment_json() {
     "common_rg": "$az_resource_group_common",
     "velero_sa": "$velero_storage_account",
     "keyvault" : "$keyvault_name",
-    "dnz_zone": "$dns_zone_name",
+    "dns_zone": "$dns_zone_name",
     "acr": "$imageRegistry",
     "egress_prefix": "$ip_prefix_egress",
     "ingress_prefix": "$ip_prefix_ingress",

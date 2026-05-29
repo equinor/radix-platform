@@ -1,6 +1,10 @@
-variable "dnszoneprefix" {
+variable "dnszone" {
   type    = string
-  default = ""
+}
+
+variable "create_caa_records" {
+  type = bool
+  default = false
 }
 
 variable "resourcegroup_common" {

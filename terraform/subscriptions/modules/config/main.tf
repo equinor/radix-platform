@@ -49,7 +49,6 @@ output "zoneconfig" {
   value = local.config.zoneconfig
 }
 
-
 output "subscription" {
   value = local.config.backend.subscription_id
 }
@@ -141,4 +140,12 @@ output "subscription_contributor" {
 
 output "legal_owners" {
   value = local.config.legal_owners
+}
+
+output "dns_zone_name" {
+  value = local.config.dnsZone.name
+}
+
+output "dns_zone_create_caa_records" {
+  value = lookup(local.config.dnsZone, "create_caa_records", false)
 }

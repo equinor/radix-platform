@@ -1,6 +1,9 @@
 environment: "c2"
 flux_folder: "c2-production"
 cluster_type: "production"
+dnsZone:
+  name: "c2.radix.equinor.com"
+
 subscription_shortname: "s940"
 subscription_contributor: "AZAPPL S940 - Contributor"
 legal_owners: ["4f1754a0-e821-4f89-bdf6-0c70306fca0f"] # Mail enabled Owner of the subscription
@@ -9,7 +12,7 @@ secondary_location: "northeurope"
 developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM OMNIA RADIX Cluster Admin - prod
 network:
   vnet_hub_resourcegroup: "cluster-vnet-hub-c2"
-  
+ 
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"

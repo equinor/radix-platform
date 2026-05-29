@@ -1,5 +1,5 @@
 resource "azurerm_dns_zone" "this" {
-  name                = "${var.dnszoneprefix}radix.equinor.com"
+  name                = var.dnszone
   resource_group_name = var.resourcegroup_common
   tags = {
     IaC = "terraform"
@@ -15,7 +15,7 @@ output "azurerm_dns_resource_group_name" {
 }
 
 resource "azurerm_dns_caa_record" "this" {
-  for_each            = var.dnszoneprefix == "" ? { "dns_caa_record" : true } : {}
+  for_each            = var.create_caa_records ? { "dns_caa_record" : true } : {}
   name                = "@"
   zone_name           = azurerm_dns_zone.this.name
   resource_group_name = azurerm_dns_zone.this.resource_group_name
