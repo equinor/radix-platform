@@ -199,12 +199,6 @@ if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
     echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
 fi
 
-RADIX_API_ENV_VAR_SCRIPT="$WORKDIR_PATH/update_env_vars_for_radix_api.sh"
-if ! [[ -x "$RADIX_API_ENV_VAR_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The Radix API env-var script is not found or it is not executable in path $RADIX_API_ENV_VAR_SCRIPT" >&2
-fi
-
 CHECK_KEYVAULT_SECRETS="$WORKDIR_PATH/check_keyvault_secrets.sh"
 if ! [[ -x "$CHECK_KEYVAULT_SECRETS" ]]; then
     # Print to stderror
@@ -618,20 +612,13 @@ while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadat
 done
 echo ""
 
-printf "Waiting for server component in radix-api-qa namespace to get ready.\n"
+printf "Waiting for server component radix-api-server to get ready.\n"
 printf "If this takes forever, monitor the deployment..."
-while [[ ! $(kubectl get deployments -n radix-api-qa server -o jsonpath={.status.availableReplicas}) ]]; do 
+while [[ ! $(kubectl get deployments radix-api-server -o jsonpath={.status.availableReplicas}) ]]; do
     printf "."
     sleep 5
 done
 echo ""
-
-printf "Waiting for server component in radix-api-prod namespace to get ready.\n"
-printf "If this takes forever, monitor the deployment..."
-while [[ ! $(kubectl get deployments -n radix-api-prod server -o jsonpath={.status.availableReplicas}) ]]; do
-    printf "."
-    sleep 5
-done
 
 # Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
 printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
@@ -658,27 +645,6 @@ echo ""
 # else
 #     printf "ERROR: The radix-zone path is not found\n" >&2
 # fi
-
-#######################################################################################
-### Update Radix API env vars
-###
-
-
-
-echo ""
-printf "%s► Execute %s%s\n" "${grn}" "$RADIX_API_ENV_VAR_SCRIPT" "${normal}"
-(RADIX_ZONE="$RADIX_ZONE" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$RADIX_API_ENV_VAR_SCRIPT")
-wait # wait for subshell to finish
-echo ""
-
-#######################################################################################
-### Check appreg secrets
-###
-
-# printf "%s► Execute %s%s\n" "${grn}" "$CHECK_APPREG_SECRETS" "${normal}"
-# (RADIX_ZONE_ENV=${RADIX_ZONE_ENV} USER_PROMPT="$USER_PROMPT" source "$CHECK_APPREG_SECRETS")
-# wait # wait for subshell to finish
-# echo ""
 
 #######################################################################################
 ### Final post tasks
