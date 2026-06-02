@@ -568,8 +568,8 @@ fi
 echo ""
 printf "Restore into destination cluster...\n"
 printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
-# (RADIX_ZONE="$RADIX_ZONE" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
-# wait # wait for subshell to finish
+(RADIX_ZONE="$RADIX_ZONE" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
+wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
 if [[ $KILL_VELERO_WINDOWS == true ]]; then
