@@ -75,7 +75,6 @@ module "aks" {
   private_dns_zone_link_name        = "${each.key}-link"
   monitor_data_collection_rule_name = "MSCI-${module.config.location}-${each.key}"
   hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
-  cost_analysis                     = lookup(module.config.cluster[each.key], "cost_analysis", false)
 
 }
 

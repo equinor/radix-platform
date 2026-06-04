@@ -22,11 +22,6 @@ variable "aks_version" {
   type = string
 }
 
-variable "cost_analysis" {
-  type    = bool
-  default = false
-}
-
 variable "authorized_ip_ranges" {
   type = list(string)
 }
