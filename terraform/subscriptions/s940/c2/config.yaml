@@ -77,4 +77,3 @@ clusters:
     ContainerInsights_time: "1m"
     cluster_to_hub_peering: "c2-11-to-vnet-hub"
     hub_to_cluster_peering: "vnet-hub-to-c2-11"
-    cost_analysis: true

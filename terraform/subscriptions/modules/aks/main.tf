@@ -14,8 +14,8 @@ resource "azurerm_kubernetes_cluster" "this" {
   dns_prefix                       = var.dns_prefix
   kubernetes_version               = var.aks_version
   node_os_upgrade_channel          = var.node_os_upgrade_channel
-  cost_analysis_enabled            = var.cost_analysis
   sku_tier                         = var.sku_tier
+  cost_analysis_enabled            = false
   http_application_routing_enabled = false
   local_account_disabled           = true
   oidc_issuer_enabled              = true
