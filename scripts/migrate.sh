@@ -144,10 +144,7 @@ function get_variables() {
     RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
     printf "\n%s► Read terraform variables and configuration"
     RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
-RADIX_ZONE_YAML=$(cat <<EOF
-$(<$RADIX_ZONE_ENV)
-EOF
-)
+    RADIX_ZONE_YAML="$(<"$RADIX_ZONE_ENV")"
     CLUSTER_NAME="$DEST_CLUSTER"
 
     # YAML values (Input from static config.yaml from each zone)
