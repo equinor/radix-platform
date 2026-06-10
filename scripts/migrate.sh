@@ -139,6 +139,39 @@ function check_secrets_exist() {
     return 0
 }
 
+function get_variables() {
+    printf "\n%s► Read YAML configfile $RADIX_ZONE"
+    RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+    printf "\n%s► Read terraform variables and configuration"
+    RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+    CLUSTER_NAME="$DEST_CLUSTER"
+
+    # YAML values (Input from static config.yaml from each zone)
+    AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
+    AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+    AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
+    APP_CONFIG_NAME="radix-appconfig-$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
+    RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
+
+    # JSON values (Generated from function environment_json which reads from terraform outputs)
+    AZ_RESOURCE_DNS=$(jq -r .dns_zone <<< "$RADIX_RESOURCE_JSON")
+    AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+    AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
+    AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
+    AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+    IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
+    RADIX_CACHE_REGISTRY=$(yq '.cache_registry' <<< "$RADIX_RESOURCE_JSON")
+    CLUSTER_OIDC_ISSUER_URLS=$(jq -r .cluster_issuer_urls <<< "$RADIX_RESOURCE_JSON")
+    RADIX_CLUSTER_EGRESS_IPS=$(jq -r .ip_prefix_egress_ips <<< "$RADIX_RESOURCE_JSON")
+    MIGRATION_STRATEGY="aa"
+    STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
+    RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
+    login_azure "$AZ_SUBSCRIPTION_ID"
+}
 
 #######################################################################################
 ### Read Zone Config
@@ -179,13 +212,6 @@ fi
 ###
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RADIX_ZONE_PATH="${WORKDIR_PATH}/radix-zone"
-
-BOOTSTRAP_AKS_SCRIPT="$WORKDIR_PATH/aks/bootstrap.sh"
-if ! [[ -x "$BOOTSTRAP_AKS_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The bootstrap script is not found or it is not executable in path $BOOTSTRAP_AKS_SCRIPT" >&2
-fi
 
 RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
@@ -199,54 +225,13 @@ if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
     echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
 fi
 
-CHECK_KEYVAULT_SECRETS="$WORKDIR_PATH/check_keyvault_secrets.sh"
-if ! [[ -x "$CHECK_KEYVAULT_SECRETS" ]]; then
-    # Print to stderror
-    echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_KEYVAULT_SECRETS" >&2
-fi
-
-CHECK_APPREG_SECRETS="$WORKDIR_PATH/check_appreg_secrets.sh"
-if ! [[ -x "$CHECK_APPREG_SECRETS" ]]; then
-    # Print to stderror
-    echo "ERROR: The check keyvault secrets script is not found or it is not executable in path $CHECK_APPREG_SECRETS" >&2
-fi
-
 #######################################################################################
 ### Environment
 ###
-printf "\n%s► Read YAML configfile $RADIX_ZONE"
-RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
-printf "\n%s► Read terraform variables and configuration"
-RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
-RADIX_ZONE_YAML=$(cat <<EOF
-$(<$RADIX_ZONE_ENV)
-EOF
-)
-CLUSTER_NAME="$DEST_CLUSTER"
+get_variables # Populate environment variables from terraform outputs
 #######################################################################################
-# YAML values (Input from static config.yaml from each zone)
-AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
-AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
-AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
-APP_CONFIG_NAME="radix-appconfig-$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
-RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
-
-# JSON values (Generated from function environment_json which reads from terraform outputs)
-AZ_RESOURCE_DNS=$(jq -r .dns_zone <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
-IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
-RADIX_CACHE_REGISTRY=$(yq '.cache_registry' <<< "$RADIX_RESOURCE_JSON")
-CLUSTER_OIDC_ISSUER_URLS=$(jq -r .cluster_issuer_urls <<< "$RADIX_RESOURCE_JSON")
-RADIX_CLUSTER_EGRESS_IPS=$(jq -r .ip_prefix_egress_ips <<< "$RADIX_RESOURCE_JSON")
-MIGRATION_STRATEGY="aa"
-STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
-RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
-login_azure "$AZ_SUBSCRIPTION_ID"
-
-
+### Subfunctions
+###
 if [[ -n "$SUBFUNCTION" ]]; then
     case "$SUBFUNCTION" in
         flux)
@@ -260,7 +245,6 @@ if [[ -n "$SUBFUNCTION" ]]; then
             ;;
     esac
 fi
-
 #######################################################################################
 ### Check if all secrets exist in Key Vault
 ### Read from Azure App Configuration
@@ -425,7 +409,7 @@ if [[ $install_base_components == true ]]; then
         kubectl create ns flux-system 2>&1 >/dev/null
     fi
     printf "...Done"
-
+    get_variables # Populate environment variables from terraform outputs
     flux_configmap
 
     az keyvault secret download \
@@ -625,26 +609,6 @@ printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SC
 (RADIX_ZONE="$RADIX_ZONE" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
 wait # wait for subshell to finish
 echo ""
-
-#######################################################################################
-### Check keyvault secrets
-###
-
-# if [[ -d "${RADIX_ZONE_PATH}" ]]; then
-#     for filename in "${RADIX_ZONE_PATH}"/*.env; do
-#         if [[ "${filename}" == *test* ]]; then continue; fi
-#         radix_zone_env="${filename}"
-
-#         # Check keyvault secrets
-#         printf "%s► Execute %s%s\n" "${grn}" "$CHECK_KEYVAULT_SECRETS" "${normal}"
-#         (RADIX_ZONE_ENV=${radix_zone_env} USER_PROMPT="$USER_PROMPT" source "$CHECK_KEYVAULT_SECRETS")
-#         wait # wait for subshell to finish
-#         echo ""
-#     done
-#     unset radix_zone_env
-# else
-#     printf "ERROR: The radix-zone path is not found\n" >&2
-# fi
 
 #######################################################################################
 ### Final post tasks
