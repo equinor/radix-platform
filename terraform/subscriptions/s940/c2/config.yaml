@@ -77,3 +77,12 @@ clusters:
     ContainerInsights_time: "1m"
     cluster_to_hub_peering: "c2-11-to-vnet-hub"
     hub_to_cluster_peering: "vnet-hub-to-c2-11"
+  c2-24:
+    aksversion: "1.35.5"
+    networkset: "networkset2"
+    network_policy: "cilium"
+    activecluster: false
+    ddos_protection: true
+    ContainerInsights_time: "1m"
+    systempool: "systempool_v1"
+    nodepools: "nodepools_v1"
