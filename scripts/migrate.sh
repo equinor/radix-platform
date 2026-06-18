@@ -617,7 +617,7 @@ printf "%s► Modify $RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ
 printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks' %s%s\n" "${grn}" "${normal}"
 printf "%s► Execute: 'terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply -target module.dns_config' %s%s\n" "${grn}" "${normal}"
 printf "%s► Execute: 'git push & merge branch '${DEST_CLUSTER}' to master' %s%s\n" "${grn}" "${normal}"
-printf "%s► Modify: postBuild.yaml file in radix-flux to reflect 'ACTIVE_CLUSTER: ${DEST_CLUSTER}' and merge %s%s\n" "${grn}" "${normal}"
+printf "%s► Modify: clustes/<zone>/infrastructure/radix-platform/radix-acr-cleanup.yaml radix-flux to reflect 'ACTIVE_CLUSTER: ${DEST_CLUSTER}' and merge %s%s\n" "${grn}" "${normal}"
 echo ""
 printf "Post a slack message about new active cluster in $RADIX_ZONE.\n"
 printf "Done.\n"
