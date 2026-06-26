@@ -1,0 +1,41 @@
+name: Trivy IaC & Dockerfile Scanning
+permissions: {}
+
+on:
+  push:
+    branches: ["master"]
+  schedule:
+    - cron: "35 0 * * *"   # Run at 00:36 AM every Wednesday
+  workflow_dispatch:
+
+jobs:
+  trivy-scan:
+    name: Scan with Trivy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      # Required as the workflow needs to upload (write) any findings to the security tab.
+      security-events: write
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+          
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          scan-type: "config"
+          scan-ref: ./terraform
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          limit-severities-for-sarif: true
+          exit-code: "0"
+
+      - name: Upload scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@f94817b9f0deeb3871261446912ae8f854d1b675 # codeql-bundle-v2.25.1
+        with:
+          # File to upload.
+          sarif_file: 'trivy-results.sarif'
