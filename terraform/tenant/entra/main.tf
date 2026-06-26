@@ -178,6 +178,10 @@ resource "azurerm_role_definition" "radix_standard_reader" {
       "Microsoft.OperationalInsights/workspaces/query/*/read",
       "Microsoft.OperationalInsights/workspaces/search/action"
     ]
+
+    data_actions = [
+      "Microsoft.AppConfiguration/configurationStores/*/read",
+    ]
   }
 
   assignable_scopes = var.all_subscriptions
@@ -214,7 +218,8 @@ resource "azurerm_role_definition" "radix_confidential_data_contributor" {
       "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read",
       "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write",
       "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/move/action",
-      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action"
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/add/action",
+      "Microsoft.AppConfiguration/configurationStores/keyValues/write",
     ]
     not_actions = []
   }
