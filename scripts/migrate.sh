@@ -244,22 +244,12 @@ if [[ -n "$SUBFUNCTION" ]]; then
 fi
 #######################################################################################
 ### Check if all secrets exist in Key Vault
-### Read from Azure App Configuration
+### Static list
 
-config_key="base_secrets"
-secret_list=$(az appconfig kv show --name "$APP_CONFIG_NAME" --key "$config_key" --query "value" -o tsv 2>/dev/null)
-
-if [ $? -ne 0 ] || [ -z "$secret_list" ]; then
-    echo "ERROR: Failed to retrieve key '$config_key' from App Configuration '$APP_CONFIG_NAME'" >&2
-    exit 1
-fi
-
-# Parse the list into an array
-# If it's comma-separated:
-IFS=',' read -ra secrets <<< "$secret_list"
-
-# Or if it's a JSON array like ["secret1","secret2","secret3"]:
-# mapfile -t secrets < <(echo "$secret_list" | jq -r '.[]')
+secrets=(
+    "flux-github-deploy-key-private"
+    "slack-webhook"
+)
 
 check_secrets_exist "${AZ_RESOURCE_KEYVAULT}" "${secrets[@]}"
 
