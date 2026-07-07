@@ -216,9 +216,3 @@ variable "acr_prefix_env" {
   type        = string
   default     = null
 }
-
-variable "user_registry_pool_count" {
-  description = "Number of agent pools for the main ACR."
-  type        = number
-  default     = 1
-}

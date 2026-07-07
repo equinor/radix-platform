@@ -104,7 +104,6 @@ The base components include `radix-operator`, and for this component to be succe
 
 * `radix-operator` (from `master` and `release` branches in `radix-operator` project)
 * `radix-pipeline` (from `master` and `release` branches in `radix-operator` project)
-* `radix-image-builder` (from `master` and `release` branches in `radix-operator` project)
 
 
 #### Step 5 Deploy Radix applications
