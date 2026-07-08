@@ -12,7 +12,6 @@ developers: ["bed2b667-ceec-4377-83f7-46888ed23887"] # AZ PIM RADIX Cluster Admi
 zoneconfig: {}
 network:
   vnet_hub_resourcegroup: "cluster-vnet-hub-extmon"
-zoneconfig:
 backend:
   resource_group_name: "s940-tfstate"
   storage_account_name: "s940radixinfra"
