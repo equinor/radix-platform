@@ -151,7 +151,6 @@ function get_variables() {
     AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
     AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
     AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "$RADIX_ZONE_YAML")
-    APP_CONFIG_NAME="radix-appconfig-$(yq '.environment' <<< "$RADIX_ZONE_YAML")"
     RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
 
     # JSON values (Generated from function environment_json which reads from terraform outputs)
@@ -255,12 +254,11 @@ check_secrets_exist "${AZ_RESOURCE_KEYVAULT}" "${secrets[@]}"
 
 #######################################################################################
 ### Check if kubernetes-api-auth-ip-range are defined
-### Read from Azure App Configuration
-config_key="kubernetes-api-auth-ip-range"
-ip_list=$(az appconfig kv show --name "$APP_CONFIG_NAME" --key "$config_key" --query "value" -o tsv 2>/dev/null)
+### Read from radix-private docs and check if it is defined. If not, exit with error.
+ip_list=$(GH_PAGER=cat gh api repos/equinor/radix-private/contents/docs/infrastructure/kubernetes-api-auth-ip-range.txt | jq -r .content | base64 -d | tr -d '\n')
 
 if [ $? -ne 0 ] || [ -z "$ip_list" ]; then
-    echo "ERROR: Failed to retrieve key '$config_key' from App Configuration '$APP_CONFIG_NAME'" >&2
+    echo "ERROR: Failed to retrieve kubernetes-api-auth-ip-range.txt from radix-private repo" >&2
     exit 1
 fi
 
