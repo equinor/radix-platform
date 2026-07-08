@@ -149,7 +149,7 @@ variable "appregistrations" {
     cr_cicd = {
       display_name                       = "radix-cr-cicd-playground"
       service_management_reference       = "110327"
-      notes                              = "Used by radix-image-builder"
+      notes                              = "Used by radix-buildkit-builder"
       implicit_id_token_issuance_enabled = true
       permissions                        = {}
       app_roles                          = {}
