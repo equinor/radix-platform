@@ -246,3 +246,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "scalediagnostic_enabled" {
+  description = "Enable diagnostics for cluster autoscaler and karpenter events."
+  type        = bool
+  default     = false
+}
