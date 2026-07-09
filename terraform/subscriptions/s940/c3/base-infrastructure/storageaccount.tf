@@ -16,19 +16,16 @@ module "storageaccount" {
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
   backup                   = each.value.backup
-  principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
-  vault_id                 = module.backupvault.data.backupvault.id
-  policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
   subnet_id                = module.azurerm_virtual_network.azurerm_subnet_id
-  vnet_resource_group      = module.config.vnet_resource_group
+  vnet_resource_group      = module.azurerm_virtual_network.data.vnet_subnet.resource_group_name
   lifecycle_policy_rules   = each.value.lifecycle_policy_rules
   log_analytics_id         = module.loganalytics.workspace_id
   subscription_shortname   = module.config.subscription_shortname
-  depends_on               = [module.backupvault]
+  policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
+  principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
+  vault_id                 = module.backupvault.data.backupvault.id
 }
 
 output "velero_storage_account" {
   value = module.storageaccount.velero.data.name
 }
-
-
