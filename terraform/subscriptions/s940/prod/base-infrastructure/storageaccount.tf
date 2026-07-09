@@ -1,10 +1,11 @@
-data "azurerm_storage_account" "terraform_state" {
-  name                = "${module.config.subscription_shortname}radixinfra"
-  resource_group_name = module.config.backend.resource_group_name
-}
 data "azurerm_data_protection_backup_vault" "this" {
   name                = "Backupvault-${module.config.subscription_shortname}"
   resource_group_name = "common"
+}
+
+data "azurerm_storage_account" "terraform_state" {
+  name                = "${module.config.subscription_shortname}radixinfra"
+  resource_group_name = module.config.backend.resource_group_name
 }
 
 module "storageaccount" {
@@ -20,14 +21,14 @@ module "storageaccount" {
   change_feed_enabled      = each.value.change_feed_enabled
   versioning_enabled       = each.value.versioning_enabled
   backup                   = each.value.backup
-  principal_id             = data.azurerm_data_protection_backup_vault.this.identity[0].principal_id
-  vault_id                 = data.azurerm_data_protection_backup_vault.this.id
-  policyblobstorage_id     = "${data.azurerm_data_protection_backup_vault.this.id}/backupPolicies/Backuppolicy-blob"
   subnet_id                = module.azurerm_virtual_network.azurerm_subnet_id
-  vnet_resource_group      = module.config.vnet_resource_group
+  vnet_resource_group      = module.azurerm_virtual_network.data.vnet_subnet.resource_group_name
   lifecycle_policy_rules   = each.value.lifecycle_policy_rules
   log_analytics_id         = module.loganalytics.workspace_id
   subscription_shortname   = module.config.subscription_shortname
+  policyblobstorage_id     = "${data.azurerm_data_protection_backup_vault.this.id}/backupPolicies/Backuppolicy-blob"
+  principal_id             = data.azurerm_data_protection_backup_vault.this.identity[0].principal_id
+  vault_id                 = data.azurerm_data_protection_backup_vault.this.id
 }
 
 output "velero_storage_account" {

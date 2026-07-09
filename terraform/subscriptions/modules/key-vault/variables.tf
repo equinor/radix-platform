@@ -64,11 +64,6 @@ variable "environment" {
   type = string
 }
 
-variable "appconfig_sku" {
-  type    = string
-  default = "developer"
-}
-
 variable "subscription_contributor" {
   type = string
 }

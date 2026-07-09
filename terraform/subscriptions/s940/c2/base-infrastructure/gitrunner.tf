@@ -60,15 +60,6 @@ module "radix_id_gitrunner" {
     #   role     = "Managed Identity Contributor" # For Grafana Managed Identity
     #   scope_id = data.azurerm_resource_group.monitoring.id
     # }
-    # # App Configuration
-    # app_configuration_reader = {
-    #   role     = "App Configuration Data Reader" # Read app config values (data plane)
-    #   scope_id = module.keyvault.azurerm_app_configuration_id
-    # }
-    # app_configuration_contributor = {
-    #   role     = "App Configuration Contributor" # Manage app config + list keys (control plane)
-    #   scope_id = module.keyvault.azurerm_app_configuration_id
-    # }
     # #  Monitoring & Logging
     # log_analytics_contributor = {
     #   role     = "Log Analytics Contributor" # Manage workspaces and access shared keys

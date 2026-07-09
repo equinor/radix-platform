@@ -1,13 +1,3 @@
-data "azurerm_app_configuration" "this" {
-  name                = "radix-appconfig-${module.config.environment}"
-  resource_group_name = module.config.common_resource_group
-}
-
-data "azurerm_app_configuration_key" "ip_range" {
-  configuration_store_id = data.azurerm_app_configuration.this.id
-  key                    = "kubernetes-api-auth-ip-range"
-}
-
 data "azurerm_user_assigned_identity" "aks" {
   name                = "radix-id-aks-${module.config.environment}"
   resource_group_name = module.config.common_resource_group
