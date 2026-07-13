@@ -156,7 +156,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   host_encryption_enabled = var.hostencryption
   depends_on              = [azurerm_kubernetes_cluster.this]
   lifecycle {
-    ignore_changes = [upgrade_settings]
+    ignore_changes = [upgrade_settings, gpu_driver]
   }
 }
 
