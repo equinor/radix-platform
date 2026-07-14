@@ -23,6 +23,16 @@ data "azurerm_virtual_network" "hub" {
   resource_group_name = module.config.vnet_resource_group
 }
 
+data "github_repository" "radix_private" {
+  full_name = "equinor/radix-private"
+}
+
+data "github_repository_file" "aks_authorized_ip_ranges" {
+  repository = data.github_repository.radix_private.name
+  branch     = data.github_repository.radix_private.default_branch
+  file       = "docs/infrastructure/kubernetes-api-auth-ip-range.txt"
+}
+
 module "aks" {
   source                            = "../../../modules/aks"
   for_each                          = module.config.cluster
@@ -35,7 +45,7 @@ module "aks" {
   address_space                     = module.config.networksets[each.value.networkset].vnet
   enviroment                        = module.config.environment
   aks_version                       = each.value.aksversion
-  authorized_ip_ranges              = split(",", data.azurerm_app_configuration_key.ip_range.value)
+  authorized_ip_ranges              = compact(split("\n", replace(trimspace(data.github_repository_file.aks_authorized_ip_ranges.content), ",", "\n")))
   nodepools                         = var.nodepools
   systempool                        = var.systempool
   identity_aks                      = data.azurerm_user_assigned_identity.aks.id

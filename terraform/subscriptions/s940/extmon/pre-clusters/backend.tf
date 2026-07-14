@@ -1,6 +1,10 @@
 terraform {
   required_version = ">= 1.9"
   required_providers {
+    github = {
+      source  = "integrations/github"
+      version = "~> 6.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = ">= 4.1"
@@ -26,6 +30,10 @@ provider "azurerm" {
   subscription_id = "ded7ca41-37c8-4085-862f-b11d21ab341a"
   features {
   }
+}
+
+provider "github" {
+  owner = "equinor"
 }
 
 module "config" {
