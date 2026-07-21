@@ -91,6 +91,7 @@ output "private_dns_zones_names" {
     "privatelink.redis.cache.windows.net",
     "privatelink.redisenterprise.cache.azure.net",
     "privatelink.services.ai.azure.com",
+    "privatelink.servicebus.windows.net",
     "privatelink.table.core.windows.net",
     "privatelink.table.cosmos.azure.com",
     "privatelink.vaultcore.azure.net",
