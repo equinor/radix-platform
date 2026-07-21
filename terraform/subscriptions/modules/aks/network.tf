@@ -87,4 +87,5 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   resource_group_name   = var.cluster_vnet_resourcegroup
   private_dns_zone_name = each.value
   virtual_network_id    = azurerm_virtual_network.this.id
+  resolution_policy     = startswith(each.value, "privatelink.") ? lookup(var.dns_zone_resolution_policies, each.value, "Default") : null
 }

@@ -14,6 +14,8 @@ developers: ["0e0d22c6-9f03-48a5-89be-be7b060c8a32"] # AZ PIM RADIX Cluster Admi
 network:
   vnet_hub_resourcegroup: "cluster-vnet-hub-prod"
   public_ip_resource_group: "clusters-platform"
+  nxdomain_redirect:
+    - "privatelink.database.windows.net"
 zoneconfig:
   RADIX_API_REQUIRE_APP_CONFIGURATION_ITEM: "true"
   RADIX_API_REQUIRE_APP_AD_GROUPS: "true"

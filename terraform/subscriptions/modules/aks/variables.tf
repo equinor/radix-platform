@@ -225,6 +225,12 @@ variable "private_dns_zone_link_name" {
   type        = string
 }
 
+variable "dns_zone_resolution_policies" {
+  description = "Map of private DNS zone name to resolution_policy. Valid values: Default, NxDomainRedirect. Zones not listed will use Default."
+  type        = map(string)
+  default     = {}
+}
+
 variable "monitor_data_collection_rule_name" {
   description = "Data collection rule name."
   type        = string

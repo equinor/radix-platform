@@ -117,6 +117,10 @@ output "cluster" {
   value = lookup(local.config, "clusters", null)
 }
 
+output "network" {
+  value = lookup(local.config, "network", {})
+}
+
 output "networksets" {
   value = lookup(local.config, "networksets", null)
 }
