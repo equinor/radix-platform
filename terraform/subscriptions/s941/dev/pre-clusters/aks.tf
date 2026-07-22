@@ -76,7 +76,6 @@ module "aks" {
   private_dns_zone_link_name        = "${each.key}-link"
   monitor_data_collection_rule_name = "MSCI-${module.config.location}-${each.key}"
   tags                              = lookup(module.config.cluster[each.key], "activecluster", false) ? { "autostartupschedule" = "true" } : {}
-  active_cluster                    = lookup(module.config.cluster[each.key], "activecluster", false)
   hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
   cluster_lock                      = lookup(module.config.cluster[each.key], "cluster_lock", false)
 }
