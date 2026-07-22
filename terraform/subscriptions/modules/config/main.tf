@@ -58,9 +58,10 @@ output "location" {
   value = local.config.location
 }
 
-output "cluster_type" {
-  value = local.config.cluster_type
-}
+# TODO: Remove - unused output
+# output "cluster_type" {
+#   value = local.config.cluster_type
+# }
 
 output "common_resource_group" {
   value = "common-${local.config.environment}"
@@ -78,9 +79,11 @@ output "key_vault_name" {
   value = "radix-keyv-${local.config.environment}"
 }
 
-output "log_analytics_name" {
-  value = "radix-logs-${local.config.environment}"
-}
+# TODO: Remove - unused output
+# output "log_analytics_name" {
+#   value = "radix-logs-${local.config.environment}"
+# }
+
 output "log_storageaccount_name" {
   value = "radixlog${local.config.environment}"
 }
@@ -88,9 +91,10 @@ output "backend" {
   value = local.config.backend
 }
 
-output "zoneconfig" {
-  value = local.config.zoneconfig
-}
+# TODO: Remove - unused output
+# output "zoneconfig" {
+#   value = local.config.zoneconfig
+# }
 
 output "subscription" {
   value = local.config.backend.subscription_id
@@ -100,9 +104,10 @@ output "subscription_shortname" {
   value = local.config.subscription_shortname
 }
 
-output "policy_aks_diagnostics_cluster" {
-  value = "Radix-Enforce-Diagnostics-AKS-Clusters"
-}
+# TODO: Remove - unused output
+# output "policy_aks_diagnostics_cluster" {
+#   value = "Radix-Enforce-Diagnostics-AKS-Clusters"
+# }
 
 output "grafana_ar_reader_display_name" {
   value       = "radix-ar-grafana-logreader-extmon"
@@ -125,9 +130,10 @@ output "cluster" {
   value = lookup(local.config, "clusters", null)
 }
 
-output "network" {
-  value = lookup(local.config, "network", {})
-}
+# TODO: Remove - unused output
+# output "network" {
+#   value = lookup(local.config, "network", {})
+# }
 
 output "networksets" {
   value = lookup(local.config, "networksets", null)
@@ -137,17 +143,19 @@ output "ar-radix-servicenow-proxy-client" {
   value = "69031e2e-2341-4116-9dff-236fd906514b"
 }
 
-output "ar-radix-servicenow-proxy-server" {
-  value = "a898a8fa-b030-4783-9d5b-5ebcdeebdc59"
-}
+# TODO: Remove - unused output
+# output "ar-radix-servicenow-proxy-server" {
+#   value = "a898a8fa-b030-4783-9d5b-5ebcdeebdc59"
+# }
 
 output "secondary_location" {
   value = lookup(local.config, "secondary_location", false)
 }
 
-output "testzone" {
-  value = lookup(local.config, "testzone", false)
-}
+# TODO: Remove - unused output
+# output "testzone" {
+#   value = lookup(local.config, "testzone", false)
+# }
 
 output "subscription_contributor" {
   value = local.config.subscription_contributor
