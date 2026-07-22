@@ -3,64 +3,51 @@ variable "configfile" {
   default = "../config.yaml"
 }
 
+variable "private_dns_zone_names" {
+  description = "Private DNS zone names with optional resolution policies. Default is Default unless explicitly overridden."
+  type = map(object({
+    resolution_policy = optional(string, "Default") # Valid values: Default, NxDomainRedirect
+  }))
+  default = {
+    "private.radix.equinor.com"                   = {}
+    "privatelink.azconfig.io"                     = {}
+    "privatelink.azurecr.io"                      = {}
+    "privatelink.blob.core.windows.net"           = {}
+    "privatelink.cassandra.cosmos.azure.com"      = {}
+    "privatelink.cognitiveservices.azure.com"     = {}
+    "privatelink.database.windows.net"            = { resolution_policy = "NxDomainRedirect" }
+    "privatelink.dfs.core.windows.net"            = {}
+    "privatelink.documents.azure.com"             = {}
+    "privatelink.file.core.windows.net"           = {}
+    "privatelink.gremlin.cosmos.azure.com"        = {}
+    "privatelink.mariadb.database.azure.com"      = {}
+    # "privatelink.monitor.azure.com"             = {} # Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
+    "privatelink.mongo.cosmos.azure.com"          = {}
+    "privatelink.mysql.database.azure.com"        = {}
+    "privatelink.openai.azure.com"                = {}
+    "privatelink.postgres.cosmos.azure.com"       = {}
+    "privatelink.postgres.database.azure.com"     = {}
+    "privatelink.queue.core.windows.net"          = {}
+    "privatelink.radix.equinor.com"               = {}
+    "privatelink.redis.cache.windows.net"         = {}
+    "privatelink.redisenterprise.cache.azure.net" = {}
+    "privatelink.services.ai.azure.com"           = {}
+    "privatelink.servicebus.windows.net"          = {}
+    "privatelink.table.core.windows.net"          = {}
+    "privatelink.table.cosmos.azure.com"          = {}
+    "privatelink.vaultcore.azure.net"             = {}
+    "privatelink.web.core.windows.net"            = {}
+    "privatelink.northeurope.kusto.windows.net"   = {}
+    "privatelink.westeurope.kusto.windows.net"    = {}
+    "privatelink.swedencentral.kusto.windows.net" = {}
+    "privatelink.redis.azure.net"                 = {}
+    "privatelink.notebooks.azure.net"             = {}
+    "privatelink.api.azureml.ms"                  = {}
+  }
+}
+
 locals {
   config = yamldecode(file(var.configfile))
-
-  private_dns_zone_names = [
-    "private.radix.equinor.com",
-    "privatelink.azconfig.io",
-    "privatelink.azurecr.io",
-    "privatelink.blob.core.windows.net",
-    "privatelink.cassandra.cosmos.azure.com",
-    "privatelink.cognitiveservices.azure.com",
-    "privatelink.database.windows.net",
-    "privatelink.dfs.core.windows.net",
-    "privatelink.documents.azure.com",
-    "privatelink.file.core.windows.net",
-    "privatelink.gremlin.cosmos.azure.com",
-    "privatelink.mariadb.database.azure.com",
-    #"privatelink.monitor.azure.com", Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
-    "privatelink.mongo.cosmos.azure.com",
-    "privatelink.mysql.database.azure.com",
-    "privatelink.openai.azure.com",
-    "privatelink.postgres.cosmos.azure.com",
-    "privatelink.postgres.database.azure.com",
-    "privatelink.queue.core.windows.net",
-    "privatelink.radix.equinor.com",
-    "privatelink.redis.cache.windows.net",
-    "privatelink.redisenterprise.cache.azure.net",
-    "privatelink.services.ai.azure.com",
-    "privatelink.servicebus.windows.net",
-    "privatelink.table.core.windows.net",
-    "privatelink.table.cosmos.azure.com",
-    "privatelink.vaultcore.azure.net",
-    "privatelink.web.core.windows.net",
-    "privatelink.northeurope.kusto.windows.net",
-    "privatelink.westeurope.kusto.windows.net",
-    "privatelink.swedencentral.kusto.windows.net",
-    "privatelink.redis.azure.net",
-    "privatelink.notebooks.azure.net",
-    "privatelink.api.azureml.ms"
-  ]
-
-  private_dns_zone_policy_overrides = [
-    {
-      name              = "privatelink.database.windows.net"
-      resolution_policy = "NxDomainRedirect"
-    }
-  ]
-
-  # For each element in private_dns_zone_policy_overrides, create a key/value pair: zone name => resolution policy (=> means key maps to value).
-  private_dns_zone_policy_overrides_map = {
-    for override in local.private_dns_zone_policy_overrides :
-    override.name => override.resolution_policy
-  }
-
-  # For each DNS zone name, create a key/value pair: zone name => policy from overrides map, or Default if not overridden.
-  private_dns_zones_policies = {
-    for name in local.private_dns_zone_names :
-    name => lookup(local.private_dns_zone_policy_overrides_map, name, "Default")
-  }
 }
 
 output "environment" {
@@ -123,12 +110,7 @@ output "grafana_ar_reader_display_name" {
 }
 
 output "private_dns_zones_names" {
-  value = {
-    for name, resolution_policy in local.private_dns_zones_policies :
-    name => {
-      resolution_policy = resolution_policy
-    }
-  }
+  value = var.private_dns_zone_names
 }
 
 output "radix_log_api_mi_name" {
