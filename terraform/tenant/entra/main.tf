@@ -172,7 +172,13 @@ resource "azurerm_role_definition" "radix_standard_reader" {
   scope = data.azurerm_subscription.current.id
 
   permissions {
-    actions = ["*/read"]
+    actions = [
+      "*/read",
+      # Allow fetching the (tokenless) AKS user kubeconfig via `az aks get-credentials`
+      # without elevating. Deliberately excludes listClusterAdminCredential/action so the
+      # admin-cert path stays out of the standing reader role.
+      "Microsoft.ContainerService/managedClusters/listClusterUserCredential/action",
+    ]
     not_actions = [
       "Microsoft.OperationalInsights/workspaces/query/read",
       "Microsoft.OperationalInsights/workspaces/query/*/read",
