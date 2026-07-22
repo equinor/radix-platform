@@ -3,6 +3,49 @@ variable "configfile" {
   default = "../config.yaml"
 }
 
+variable "private_dns_zones" {
+  description = "Private DNS zone names with optional resolution policies. Default is Default unless explicitly overridden."
+  type = map(object({
+    resolution_policy = optional(string, "Default") # Valid values: Default, NxDomainRedirect
+  }))
+  default = {
+    "private.radix.equinor.com"                   = {}
+    "privatelink.azconfig.io"                     = {}
+    "privatelink.azurecr.io"                      = {}
+    "privatelink.blob.core.windows.net"           = {}
+    "privatelink.cassandra.cosmos.azure.com"      = {}
+    "privatelink.cognitiveservices.azure.com"     = {}
+    "privatelink.database.windows.net"            = { resolution_policy = "NxDomainRedirect" }
+    "privatelink.dfs.core.windows.net"            = {}
+    "privatelink.documents.azure.com"             = {}
+    "privatelink.file.core.windows.net"           = {}
+    "privatelink.gremlin.cosmos.azure.com"        = {}
+    "privatelink.mariadb.database.azure.com"      = {}
+    # "privatelink.monitor.azure.com"             = {} # Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
+    "privatelink.mongo.cosmos.azure.com"          = {}
+    "privatelink.mysql.database.azure.com"        = {}
+    "privatelink.openai.azure.com"                = {}
+    "privatelink.postgres.cosmos.azure.com"       = {}
+    "privatelink.postgres.database.azure.com"     = {}
+    "privatelink.queue.core.windows.net"          = {}
+    "privatelink.radix.equinor.com"               = {}
+    "privatelink.redis.cache.windows.net"         = {}
+    "privatelink.redisenterprise.cache.azure.net" = {}
+    "privatelink.services.ai.azure.com"           = {}
+    "privatelink.servicebus.windows.net"          = {}
+    "privatelink.table.core.windows.net"          = {}
+    "privatelink.table.cosmos.azure.com"          = {}
+    "privatelink.vaultcore.azure.net"             = {}
+    "privatelink.web.core.windows.net"            = {}
+    "privatelink.northeurope.kusto.windows.net"   = {}
+    "privatelink.westeurope.kusto.windows.net"    = {}
+    "privatelink.swedencentral.kusto.windows.net" = {}
+    "privatelink.redis.azure.net"                 = {}
+    "privatelink.notebooks.azure.net"             = {}
+    "privatelink.api.azureml.ms"                  = {}
+  }
+}
+
 locals {
   config = yamldecode(file(var.configfile))
 }
@@ -13,10 +56,6 @@ output "environment" {
 
 output "location" {
   value = local.config.location
-}
-
-output "cluster_type" {
-  value = local.config.cluster_type
 }
 
 output "common_resource_group" {
@@ -35,18 +74,11 @@ output "key_vault_name" {
   value = "radix-keyv-${local.config.environment}"
 }
 
-output "log_analytics_name" {
-  value = "radix-logs-${local.config.environment}"
-}
 output "log_storageaccount_name" {
   value = "radixlog${local.config.environment}"
 }
 output "backend" {
   value = local.config.backend
-}
-
-output "zoneconfig" {
-  value = local.config.zoneconfig
 }
 
 output "subscription" {
@@ -57,52 +89,13 @@ output "subscription_shortname" {
   value = local.config.subscription_shortname
 }
 
-output "policy_aks_diagnostics_cluster" {
-  value = "Radix-Enforce-Diagnostics-AKS-Clusters"
-}
-
 output "grafana_ar_reader_display_name" {
   value       = "radix-ar-grafana-logreader-extmon"
   description = "App Registration created in tenant/entra/grafana.tf. Used by grafana to query Log Analytics Workspaces"
 }
 
-output "private_dns_zones_names" {
-  value = [
-    "private.radix.equinor.com",
-    "privatelink.azconfig.io",
-    "privatelink.azurecr.io",
-    "privatelink.blob.core.windows.net",
-    "privatelink.cassandra.cosmos.azure.com",
-    "privatelink.cognitiveservices.azure.com",
-    "privatelink.database.windows.net",
-    "privatelink.dfs.core.windows.net",
-    "privatelink.documents.azure.com",
-    "privatelink.file.core.windows.net",
-    "privatelink.gremlin.cosmos.azure.com",
-    "privatelink.mariadb.database.azure.com",
-    #"privatelink.monitor.azure.com", Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
-    "privatelink.mongo.cosmos.azure.com",
-    "privatelink.mysql.database.azure.com",
-    "privatelink.openai.azure.com",
-    "privatelink.postgres.cosmos.azure.com",
-    "privatelink.postgres.database.azure.com",
-    "privatelink.queue.core.windows.net",
-    "privatelink.radix.equinor.com",
-    "privatelink.redis.cache.windows.net",
-    "privatelink.redisenterprise.cache.azure.net",
-    "privatelink.services.ai.azure.com",
-    "privatelink.servicebus.windows.net",
-    "privatelink.table.core.windows.net",
-    "privatelink.table.cosmos.azure.com",
-    "privatelink.vaultcore.azure.net",
-    "privatelink.web.core.windows.net",
-    "privatelink.northeurope.kusto.windows.net",
-    "privatelink.westeurope.kusto.windows.net",
-    "privatelink.swedencentral.kusto.windows.net",
-    "privatelink.redis.azure.net",
-    "privatelink.notebooks.azure.net",
-    "privatelink.api.azureml.ms"
-  ]
+output "private_dns_zones" {
+  value = var.private_dns_zones
 }
 
 output "radix_log_api_mi_name" {
@@ -125,16 +118,8 @@ output "ar-radix-servicenow-proxy-client" {
   value = "69031e2e-2341-4116-9dff-236fd906514b"
 }
 
-output "ar-radix-servicenow-proxy-server" {
-  value = "a898a8fa-b030-4783-9d5b-5ebcdeebdc59"
-}
-
 output "secondary_location" {
   value = lookup(local.config, "secondary_location", false)
-}
-
-output "testzone" {
-  value = lookup(local.config, "testzone", false)
 }
 
 output "subscription_contributor" {

@@ -69,14 +69,13 @@ module "aks" {
   hub_to_cluster_peering_name       = "hub-to-vnet-${each.key}"
   cluster_to_hub_peering_name       = "vnet-${each.key}-to-hub"
   monitor_interval                  = "5m"
-  dnszones                          = module.config.private_dns_zones_names
+  private_dns_zones                 = module.config.private_dns_zones
   cluster_vnet_resourcegroup        = data.azurerm_virtual_network.hub.resource_group_name
   cluster_to_hub_resource_group     = lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)
   network_lock_name                 = "vnet-${each.key}-CanNotDelete-Lock"
   private_dns_zone_link_name        = "${each.key}-link"
   monitor_data_collection_rule_name = "MSCI-${module.config.location}-${each.key}"
   tags                              = lookup(module.config.cluster[each.key], "activecluster", false) ? { "autostartupschedule" = "true" } : {}
-  active_cluster                    = lookup(module.config.cluster[each.key], "activecluster", false)
   hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
   cluster_lock                      = lookup(module.config.cluster[each.key], "cluster_lock", false)
 }

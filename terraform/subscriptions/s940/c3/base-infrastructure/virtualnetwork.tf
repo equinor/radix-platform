@@ -3,7 +3,7 @@ module "azurerm_virtual_network" {
   location            = module.config.location
   enviroment          = module.config.environment
   vnet_resource_group = module.resourcegroup_vnet.data.name
-  private_dns_zones   = tolist(module.config.private_dns_zones_names)
+  private_dns_zones   = keys(module.config.private_dns_zones)
   depends_on          = [module.resourcegroup_vnet]
 
 }
