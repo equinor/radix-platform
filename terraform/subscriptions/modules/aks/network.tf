@@ -82,10 +82,10 @@ resource "azurerm_virtual_network_peering" "cluster_to_hub" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "this" {
-  for_each              = toset(var.dnszones)
+  for_each              = var.private_dns_zones
   name                  = var.private_dns_zone_link_name
   resource_group_name   = var.cluster_vnet_resourcegroup
-  private_dns_zone_name = each.value
+  private_dns_zone_name = each.key
   virtual_network_id    = azurerm_virtual_network.this.id
-  resolution_policy     = startswith(each.value, "privatelink.") ? lookup(var.dns_zone_resolution_policies, each.value, "Default") : null
+  resolution_policy     = startswith(each.key, "privatelink.") ? each.value.resolution_policy : null
 }

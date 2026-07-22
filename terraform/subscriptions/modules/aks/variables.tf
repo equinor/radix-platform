@@ -122,18 +122,16 @@ variable "vnethub_id" {
   type = string
 }
 
-variable "dnszones" {
-  type    = list(string)
-  default = []
+variable "private_dns_zones" {
+  description = "Map of private DNS zones with optional resolution policy per zone."
+  type = map(object({
+    resolution_policy = optional(string, "Default") # Valid values: Default, NxDomainRedirect
+  }))
+  default = {}
 }
 
 variable "cluster_vnet_resourcegroup" {
   type = string
-}
-
-variable "active_cluster" {
-  type    = bool
-  default = false
 }
 
 variable "hostencryption" {
@@ -223,12 +221,6 @@ variable "cluster_to_hub_resource_group" {
 variable "private_dns_zone_link_name" {
   description = "Private DNS zone virtual network link name."
   type        = string
-}
-
-variable "dns_zone_resolution_policies" {
-  description = "Map of private DNS zone name to resolution_policy. Valid values: Default, NxDomainRedirect. Zones not listed will use Default."
-  type        = map(string)
-  default     = {}
 }
 
 variable "monitor_data_collection_rule_name" {

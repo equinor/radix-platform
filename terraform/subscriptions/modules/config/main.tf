@@ -3,7 +3,7 @@ variable "configfile" {
   default = "../config.yaml"
 }
 
-variable "private_dns_zone_names" {
+variable "private_dns_zones" {
   description = "Private DNS zone names with optional resolution policies. Default is Default unless explicitly overridden."
   type = map(object({
     resolution_policy = optional(string, "Default") # Valid values: Default, NxDomainRedirect
@@ -94,8 +94,8 @@ output "grafana_ar_reader_display_name" {
   description = "App Registration created in tenant/entra/grafana.tf. Used by grafana to query Log Analytics Workspaces"
 }
 
-output "private_dns_zones_names" {
-  value = var.private_dns_zone_names
+output "private_dns_zones" {
+  value = var.private_dns_zones
 }
 
 output "radix_log_api_mi_name" {

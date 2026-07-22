@@ -78,11 +78,7 @@ module "aks" {
   hub_virtual_network_name          = data.azurerm_virtual_network.hub.name
   hub_to_cluster_peering_name       = "hub-to-vnet-${each.key}"
   cluster_to_hub_peering_name       = "vnet-${each.key}-to-hub"
-  dnszones                          = keys(module.config.private_dns_zones_names) # Extract only the DNS zone names (map keys) from module.config.private_dns_zones_names.
-  dns_zone_resolution_policies = {
-    for name, zone in module.config.private_dns_zones_names :
-    name => zone.resolution_policy
-  }
+  private_dns_zones                 = module.config.private_dns_zones
   cluster_vnet_resourcegroup        = data.azurerm_virtual_network.hub.resource_group_name
   cluster_to_hub_resource_group     = lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)
   enable_ddos_protection_plan       = true
