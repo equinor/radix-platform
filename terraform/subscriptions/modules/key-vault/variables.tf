@@ -46,6 +46,15 @@ variable "kv_secrets_user_id" {
   default     = ""
 }
 
+variable "logic_app_managed_identity" {
+  description = "Managed identity values for Logic App access to Key Vault"
+  type = object({
+    principal_id = string
+    client_id    = string
+    id           = string
+  })
+}
+
 variable "vnet_resource_group" {
   type = string
 }
