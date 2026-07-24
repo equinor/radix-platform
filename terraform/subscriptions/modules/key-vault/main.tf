@@ -6,6 +6,10 @@ data "azurerm_client_config" "current" {}
 
 data "azurerm_subscription" "current" {}
 
+data "azurerm_resource_group" "common" {
+  name = var.resource_group_name
+}
+
 data "azuread_group" "this" {
   display_name     = var.subscription_contributor
   security_enabled = true
@@ -317,7 +321,7 @@ resource "azurerm_logic_app_action_custom" "send_slack" {
 ################################################################################
 
 resource "azurerm_role_assignment" "logic_app_eventgrid" {
-  scope              = data.azurerm_subscription.current.id
+  scope              = data.azurerm_resource_group.common.id
   role_definition_id = data.azurerm_role_definition.eventgrid_contributor.id
   principal_id       = var.logic_app_managed_identity.principal_id
 }
