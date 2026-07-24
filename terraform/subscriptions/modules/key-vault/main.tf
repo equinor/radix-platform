@@ -1,4 +1,14 @@
+################################################################################
+# Data Sources
+################################################################################
+
 data "azurerm_client_config" "current" {}
+
+data "azurerm_subscription" "current" {}
+
+data "azurerm_resource_group" "common" {
+  name = var.resource_group_name
+}
 
 data "azuread_group" "this" {
   display_name     = var.subscription_contributor
@@ -6,18 +16,29 @@ data "azuread_group" "this" {
 }
 
 data "azurerm_role_definition" "this" {
-  name = "Key Vault Secrets User"
+  name  = "Key Vault Secrets User"
+  scope = data.azurerm_subscription.current.id
 }
 
-data "azurerm_key_vault" "keyvault" {
-  name                = "radix-config-${var.environment}" # template
-  resource_group_name = var.resource_group_name
+data "azurerm_role_definition" "eventgrid_contributor" {
+  name  = "EventGrid Contributor"
+  scope = data.azurerm_subscription.current.id
 }
 
 data "azurerm_key_vault_secret" "slack_webhook" {
   name         = "slack-webhook"
-  key_vault_id = data.azurerm_key_vault.keyvault.id
+  key_vault_id = azurerm_key_vault.config.id
 }
+
+data "azurerm_subnet" "subnet" {
+  name                 = "private-links"
+  virtual_network_name = "vnet-hub"
+  resource_group_name  = var.vnet_resource_group
+}
+
+################################################################################
+# Key Vault Resources
+################################################################################
 
 resource "azurerm_key_vault" "this" {
   name                          = var.vault_name
@@ -35,22 +56,20 @@ resource "azurerm_key_vault" "this" {
     default_action = "Deny"
     ip_rules       = []
   }
-
-
   sku_name = "standard"
 }
 
 resource "azurerm_role_assignment" "this" {
   count              = var.kv_secrets_user_id != "" ? 1 : 0
   scope              = azurerm_key_vault.this.id
-  role_definition_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}${data.azurerm_role_definition.this.role_definition_id}"
+  role_definition_id = data.azurerm_role_definition.this.id
   principal_id       = var.kv_secrets_user_id
 }
 
-data "azurerm_subnet" "subnet" {
-  name                 = "private-links"
-  virtual_network_name = "vnet-hub"
-  resource_group_name  = var.vnet_resource_group
+resource "azurerm_role_assignment" "logic_app_managed_identity" {
+  scope              = azurerm_key_vault.this.id
+  role_definition_id = data.azurerm_role_definition.this.id
+  principal_id       = var.logic_app_managed_identity.principal_id
 }
 
 resource "azurerm_key_vault_access_policy" "this" {
@@ -58,6 +77,7 @@ resource "azurerm_key_vault_access_policy" "this" {
   key_vault_id = azurerm_key_vault.this.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = data.azuread_group.this.object_id
+
   certificate_permissions = [
     "Get", "List", "Update", "Create", "Import", "Delete", "Recover", "Backup", "Restore", "ManageContacts", "ManageIssuers", "GetIssuers", "ListIssuers", "SetIssuers", "DeleteIssuers"
   ]
@@ -86,6 +106,7 @@ resource "azurerm_private_endpoint" "this" {
     IaC = "terraform"
   }
 }
+
 resource "azurerm_private_dns_a_record" "this" {
   name                = azurerm_key_vault.this.name
   zone_name           = "privatelink.vaultcore.azure.net"
@@ -98,209 +119,9 @@ output "azurerm_key_vault_id" {
   value = azurerm_key_vault.this.id
 }
 
-######################################################################################
-# Logic App to monitor Key Vault events and send notifications to Slack             #
-######################################################################################
-
-resource "azurerm_eventgrid_system_topic" "this" {
-  name                   = "${var.vault_name}-topic"
-  resource_group_name    = var.resource_group_name
-  location               = var.location
-  source_arm_resource_id = azurerm_key_vault.this.id
-  topic_type             = "Microsoft.KeyVault.vaults"
-  tags = {
-    IaC = "terraform"
-  }
-}
-
-resource "azurerm_logic_app_workflow" "this" {
-  enabled  = true
-  location = var.location
-  name     = var.vault_name
-
-  parameters = {
-    "$connections" = jsonencode({
-      azureeventgrid = {
-        connectionId   = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Web/connections/azureeventgrid"
-        connectionName = "azureeventgrid"
-        id             = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/providers/Microsoft.Web/locations/${var.location}/managedApis/azureeventgrid"
-      }
-    })
-  }
-
-  resource_group_name = var.resource_group_name
-  tags = {
-    IaC = "terraform"
-  }
-
-  workflow_parameters = {
-    "$connections" = jsonencode({
-      defaultValue = {}
-      type         = "Object"
-    })
-    SlackWebhookUrl = jsonencode({
-      defaultValue = nonsensitive(data.azurerm_key_vault_secret.slack_webhook.value)
-      metadata = {
-        description = "Slack webhook URL for notifications"
-      }
-      type = "String"
-    })
-  }
-
-  workflow_schema  = "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#"
-  workflow_version = "1.0.0.0"
-}
-
-data "azurerm_managed_api" "this" {
-  name     = "azureeventgrid"
-  location = var.location
-}
-
-resource "azurerm_api_connection" "this" {
-  display_name   = "azureeventgrid-${var.environment}"
-  managed_api_id = data.azurerm_managed_api.this.id
-  name           = "azureeventgrid"
-  parameter_values = {
-    "token:grantType" = "code"
-    "token:tenantId"  = "${data.azurerm_client_config.current.tenant_id}"
-  }
-  resource_group_name = var.resource_group_name
-  tags = {
-    IaC = "terraform"
-  }
-}
-
-resource "azurerm_logic_app_trigger_custom" "this" {
-  name         = "When_a_resource_event_occurs"
-  logic_app_id = azurerm_logic_app_workflow.this.id
-  body = jsonencode(
-    {
-      inputs = {
-        body = {
-          properties = {
-            destination = {
-              endpointType = "webhook"
-              properties = {
-                endpointUrl = "@listCallbackUrl()"
-              }
-            }
-            filter = {
-              includedEventTypes = [
-                "Microsoft.KeyVault.SecretExpired",
-                "Microsoft.KeyVault.SecretNearExpiry",
-                "Microsoft.KeyVault.SecretNewVersionCreated",
-              ]
-            }
-            topic = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.KeyVault/vaults/${var.vault_name}"
-          }
-        }
-        host = {
-          connection = {
-            name = "@parameters('$connections')['azureeventgrid']['connectionId']"
-          }
-        }
-        path = "/subscriptions/@{encodeURIComponent('${data.azurerm_client_config.current.subscription_id}')}/providers/@{encodeURIComponent('Microsoft.KeyVault.vaults')}/resource/eventSubscriptions"
-        queries = {
-          x-ms-api-version = "2017-09-15-preview"
-        }
-      }
-
-      type = "ApiConnectionWebhook"
-    }
-  )
-
-}
-
-resource "azurerm_logic_app_action_custom" "this" {
-  body = jsonencode({
-    actions = {
-      Switch_EventType = {
-        cases = {
-          Expired = {
-            actions = {
-              Post_Expired = {
-                inputs = {
-                  body = {
-                    text = ":warning: A *Key Vault secret has expired!*\n*Vault:* @{items('ForEach_Events')?['data']?['vaultName']}\n*Secret:* @{items('ForEach_Events')?['data']?['objectName']}"
-                  }
-                  headers = {
-                    Content-Type = "application/json"
-                  }
-                  method = "POST"
-                  uri    = "@parameters('SlackWebhookUrl')"
-                }
-                type = "Http"
-              }
-            }
-            case = "Microsoft.KeyVault.SecretExpired"
-          }
-          NearExpiry = {
-            actions = {
-              Post_NearExpiry = {
-                inputs = {
-                  body = {
-                    text = ":hourglass_flowing_sand: A *Key Vault secret is nearing expiry!*\n*Vault:* @{items('ForEach_Events')?['data']?['vaultName']}\n*Secret:* @{items('ForEach_Events')?['data']?['objectName']}"
-                  }
-                  headers = {
-                    Content-Type = "application/json"
-                  }
-                  method = "POST"
-                  uri    = "@parameters('SlackWebhookUrl')"
-                }
-                type = "Http"
-              }
-            }
-            case = "Microsoft.KeyVault.SecretNearExpiry"
-          }
-          NewVersion = {
-            actions = {
-              Post_NewVersion = {
-                inputs = {
-                  body = {
-                    text = ":lock: A *new Key Vault secret version* was created!\n*Vault:* @{items('ForEach_Events')?['data']?['vaultName']}\n*Secret:* @{items('ForEach_Events')?['data']?['objectName']}\n*Version:* @{items('ForEach_Events')?['data']?['version']}"
-                  }
-                  headers = {
-                    Content-Type = "application/json"
-                  }
-                  method = "POST"
-                  uri    = "@parameters('SlackWebhookUrl')"
-                }
-                type = "Http"
-              }
-            }
-            case = "Microsoft.KeyVault.SecretNewVersionCreated"
-          }
-        }
-        default = {
-          actions = {
-            Post_Unknown = {
-              inputs = {
-                body = {
-                  text = ":grey_question: Received an *unhandled Key Vault event type*: @{items('ForEach_Events')?['eventType']}"
-                }
-                headers = {
-                  Content-Type = "application/json"
-                }
-                method = "POST"
-                uri    = "@parameters('SlackWebhookUrl')"
-              }
-              type = "Http"
-            }
-          }
-        }
-        expression = "@items('ForEach_Events')?['eventType']"
-        type       = "Switch"
-      }
-    }
-    foreach  = "@triggerBody()"
-    runAfter = {}
-    type     = "Foreach"
-  })
-  logic_app_id = azurerm_logic_app_workflow.this.id
-  name         = "ForEach_Events"
-}
-#######################################################################################################
-# Config keyvault for bootstrap of clusters.
+################################################################################
+# Config Key Vault for Bootstrap
+################################################################################
 
 resource "azurerm_key_vault" "config" {
   name                          = "radix-config-${var.environment}"
@@ -308,9 +129,11 @@ resource "azurerm_key_vault" "config" {
   resource_group_name           = var.resource_group_name
   tenant_id                     = data.azurerm_client_config.current.tenant_id
   public_network_access_enabled = false
-  # rbac_authorization_enabled  = var.enable_rbac_authorization
-  soft_delete_retention_days = 30
-  purge_protection_enabled   = true
+  soft_delete_retention_days    = 30
+  purge_protection_enabled      = true
+  tags = {
+    IaC = "terraform"
+  }
   network_acls {
     bypass         = "AzureServices"
     default_action = "Deny"
@@ -321,4 +144,202 @@ resource "azurerm_key_vault" "config" {
 
 output "config_keyvault_name" {
   value = azurerm_key_vault.config.name
+}
+
+################################################################################
+# Event Grid System Topic
+################################################################################
+
+resource "azurerm_eventgrid_system_topic" "this" {
+  name                   = "${var.vault_name}-topic"
+  resource_group_name    = var.resource_group_name
+  location               = var.location
+  source_resource_id     = azurerm_key_vault.this.id
+  topic_type             = "Microsoft.KeyVault.vaults"
+  tags = {
+    IaC = "terraform"
+  }
+}
+
+################################################################################
+# Logic App Workflow
+################################################################################
+
+resource "azurerm_logic_app_workflow" "this" {
+  name                = var.vault_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  workflow_parameters = {
+    SlackWebhookUrl = jsonencode({
+      defaultValue = nonsensitive(data.azurerm_key_vault_secret.slack_webhook.value)
+      metadata = {
+        description = "Slack webhook URL for notifications"
+      }
+      type = "String"
+    })
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.logic_app_managed_identity.id]
+  }
+
+  tags = {
+    IaC = "terraform"
+  }
+}
+
+resource "azurerm_logic_app_trigger_http_request" "this" {
+  name         = "When_a_webhook_request_is_received"
+  logic_app_id = azurerm_logic_app_workflow.this.id
+  schema = jsonencode({
+    type = "array"
+    items = {
+      type = "object"
+      properties = {
+        id = {
+          type = "string"
+        }
+        eventType = {
+          type = "string"
+        }
+        eventTime = {
+          type = "string"
+        }
+        data = {
+          type = "object"
+          properties = {
+            vaultName = {
+              type = "string"
+            }
+            objectName = {
+              type = "string"
+            }
+            version = {
+              type = "string"
+            }
+          }
+        }
+      }
+    }
+  })
+}
+
+resource "azurerm_logic_app_action_custom" "send_slack" {
+  name         = "Send_Slack_Notification"
+  logic_app_id = azurerm_logic_app_workflow.this.id
+  body = jsonencode({
+    type    = "Foreach"
+    foreach = "@triggerBody()"
+    actions = {
+      Switch_EventType = {
+        type       = "Switch"
+        expression = "@item()?['eventType']"
+        cases = {
+          Expired = {
+            case = "Microsoft.KeyVault.SecretExpired"
+            actions = {
+              Post_Expired = {
+                type = "Http"
+                inputs = {
+                  method = "POST"
+                  uri    = "@parameters('SlackWebhookUrl')"
+                  headers = {
+                    Content-Type = "application/json"
+                  }
+                  body = {
+                    text = ":warning: A *Key Vault secret has expired!*\n*Vault:* @{item()?['data']?['vaultName']}\n*Secret:* @{item()?['data']?['objectName']}"
+                  }
+                }
+              }
+            }
+          }
+          NearExpiry = {
+            case = "Microsoft.KeyVault.SecretNearExpiry"
+            actions = {
+              Post_NearExpiry = {
+                type = "Http"
+                inputs = {
+                  method = "POST"
+                  uri    = "@parameters('SlackWebhookUrl')"
+                  headers = {
+                    Content-Type = "application/json"
+                  }
+                  body = {
+                    text = ":hourglass_flowing_sand: A *Key Vault secret is nearing expiry!*\n*Vault:* @{item()?['data']?['vaultName']}\n*Secret:* @{item()?['data']?['objectName']}"
+                  }
+                }
+              }
+            }
+          }
+          NewVersion = {
+            case = "Microsoft.KeyVault.SecretNewVersionCreated"
+            actions = {
+              Post_NewVersion = {
+                type = "Http"
+                inputs = {
+                  method = "POST"
+                  uri    = "@parameters('SlackWebhookUrl')"
+                  headers = {
+                    Content-Type = "application/json"
+                  }
+                  body = {
+                    text = ":lock: A *new Key Vault secret version* was created!\n*Vault:* @{item()?['data']?['vaultName']}\n*Secret:* @{item()?['data']?['objectName']}\n*Version:* @{item()?['data']?['version']}"
+                  }
+                }
+              }
+            }
+          }
+        }
+        default = {
+          actions = {
+            Post_Unknown = {
+              type = "Http"
+              inputs = {
+                method = "POST"
+                uri    = "@parameters('SlackWebhookUrl')"
+                headers = {
+                  Content-Type = "application/json"
+                }
+                body = {
+                  text = ":grey_question: Received an *unhandled Key Vault event type*: @{item()?['eventType']}"
+                }
+              }
+            }
+          }
+        }
+        runAfter = {}
+      }
+    }
+    runAfter = {}
+  })
+}
+
+################################################################################
+# Event Grid Subscription and Role Assignment
+################################################################################
+
+resource "azurerm_role_assignment" "logic_app_eventgrid" {
+  scope              = data.azurerm_resource_group.common.id
+  role_definition_id = data.azurerm_role_definition.eventgrid_contributor.id
+  principal_id       = var.logic_app_managed_identity.principal_id
+}
+
+resource "azurerm_eventgrid_system_topic_event_subscription" "logic_app" {
+  name                = "${var.vault_name}-logicapp-subscription"
+  system_topic        = azurerm_eventgrid_system_topic.this.name
+  resource_group_name = var.resource_group_name
+
+  included_event_types = [
+    "Microsoft.KeyVault.SecretNearExpiry", # Fires 30 days before expiry
+    "Microsoft.KeyVault.SecretExpired",
+    "Microsoft.KeyVault.SecretNewVersionCreated",
+  ]
+
+  webhook_endpoint {
+    url                             = azurerm_logic_app_trigger_http_request.this.callback_url
+    max_events_per_batch            = 1
+    preferred_batch_size_in_kilobytes = 64
+  }
 }
