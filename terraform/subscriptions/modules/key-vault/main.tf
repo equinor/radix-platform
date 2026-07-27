@@ -297,7 +297,7 @@ resource "azurerm_logic_app_action_custom" "send_slack" {
 ################################################################################
 
 resource "azurerm_eventgrid_system_topic_event_subscription" "logic_app" {
-  name                = "${var.vault_name}-logicapp-subscription"
+  name                = "${azurerm_key_vault.this.name}-eventgrid-subscription"
   system_topic        = azurerm_eventgrid_system_topic.this.name
   resource_group_name = var.resource_group_name
 
