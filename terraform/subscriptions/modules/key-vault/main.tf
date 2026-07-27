@@ -6,10 +6,6 @@ data "azurerm_client_config" "current" {}
 
 data "azurerm_subscription" "current" {}
 
-data "azurerm_resource_group" "common" {
-  name = var.resource_group_name
-}
-
 data "azuread_group" "this" {
   display_name     = var.subscription_contributor
   security_enabled = true
