@@ -8,7 +8,8 @@ output "vault_name" {
   value       = azurerm_key_vault.this.name
 }
 
-# output "vault_uri" {
-#   description = "The URI of this Key vault."
-#   value       = azurerm_key_vault.this.vault_uri
-# }
+output "config_keyvault_name" {
+  description = "The name of the config Key Vault used for bootstrap operations."
+  value       = azurerm_key_vault.config.name
+}
+
