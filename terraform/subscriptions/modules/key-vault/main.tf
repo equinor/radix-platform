@@ -319,6 +319,11 @@ resource "azurerm_logic_app_action_custom" "respond_eventgrid_validation" {
 # Event Grid Subscription
 ################################################################################
 
+# Workflow (Key Vault -> Slack):
+# 1) Key Vault emits SecretNearExpiry/SecretExpired/SecretNewVersionCreated to the system topic (Azure internal auth).
+# 2) Event Grid pushes the event to the Logic App HTTP trigger callback URL (URL token-based webhook auth).
+# 3) Logic App loops events, maps eventType to a Slack message, and posts to Slack webhook URL (secret URL auth).
+
 resource "azurerm_eventgrid_system_topic_event_subscription" "logic_app" {
   name                = "${azurerm_key_vault.this.name}-eventgrid-subscription"
   system_topic        = azurerm_eventgrid_system_topic.this.name
