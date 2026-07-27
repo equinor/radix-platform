@@ -9,6 +9,7 @@ output "vault_name" {
 }
 
 output "config_keyvault_name" {
-  value = azurerm_key_vault.config.name
+  description = "The name of the config Key Vault used for bootstrap operations."
+  value       = azurerm_key_vault.config.name
 }
 
