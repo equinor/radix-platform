@@ -127,10 +127,6 @@ resource "azurerm_key_vault" "config" {
   sku_name = "standard"
 }
 
-output "config_keyvault_name" {
-  value = azurerm_key_vault.config.name
-}
-
 ################################################################################
 # Event Grid System Topic
 ################################################################################

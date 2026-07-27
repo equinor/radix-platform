@@ -13,7 +13,7 @@ output "vault_uri" {
   value       = azurerm_key_vault.this.vault_uri
 }
 
-# output "vault_uri" {
-#   description = "The URI of this Key vault."
-#   value       = azurerm_key_vault.this.vault_uri
-# }
+output "config_keyvault_name" {
+  value = azurerm_key_vault.config.name
+}
+
