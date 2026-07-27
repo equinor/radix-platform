@@ -292,6 +292,25 @@ resource "azurerm_logic_app_action_custom" "send_slack" {
   })
 }
 
+resource "azurerm_logic_app_action_custom" "respond_eventgrid_validation" {
+  name         = "Respond_EventGrid_Validation"
+  logic_app_id = azurerm_logic_app_workflow.this.id
+  body = jsonencode({
+    type = "Response"
+    kind = "Http"
+    inputs = {
+      statusCode = 200
+      headers = {
+        Content-Type = "application/json"
+      }
+      body = {
+        validationResponse = "@coalesce(triggerBody()?[0]?['data']?['validationCode'], '')"
+      }
+    }
+    runAfter = {}
+  })
+}
+
 ################################################################################
 # Event Grid Subscription
 ################################################################################
