@@ -16,8 +16,3 @@ output "keyvault_name" {
 output "keyvault_config_name" {
   value = module.keyvault.config_keyvault_name
 }
-
-output "keyvault_uri" {
-  description = "URI of Key Vault for Logic App to access"
-  value       = module.keyvault.vault_uri
-}
