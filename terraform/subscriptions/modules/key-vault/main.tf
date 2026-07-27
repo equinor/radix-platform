@@ -292,6 +292,10 @@ resource "azurerm_logic_app_action_custom" "send_slack" {
   })
 }
 
+# Event Grid sends a one-time SubscriptionValidationEvent challenge when creating
+# the webhook subscription. This response action must echo validationCode as
+# validationResponse, otherwise the subscription is not validated and events are
+# not delivered. It is intentionally independent from the Slack notification path.
 resource "azurerm_logic_app_action_custom" "respond_eventgrid_validation" {
   name         = "Respond_EventGrid_Validation"
   logic_app_id = azurerm_logic_app_workflow.this.id
