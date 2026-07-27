@@ -20,11 +20,6 @@ data "azurerm_role_definition" "this" {
   scope = data.azurerm_subscription.current.id
 }
 
-data "azurerm_role_definition" "eventgrid_contributor" {
-  name  = "EventGrid Contributor"
-  scope = data.azurerm_subscription.current.id
-}
-
 data "azurerm_key_vault_secret" "slack_webhook" {
   name         = "slack-webhook"
   key_vault_id = azurerm_key_vault.config.id
@@ -64,12 +59,6 @@ resource "azurerm_role_assignment" "this" {
   scope              = azurerm_key_vault.this.id
   role_definition_id = data.azurerm_role_definition.this.id
   principal_id       = var.kv_secrets_user_id
-}
-
-resource "azurerm_role_assignment" "logic_app_managed_identity" {
-  scope              = azurerm_key_vault.this.id
-  role_definition_id = data.azurerm_role_definition.this.id
-  principal_id       = var.logic_app_managed_identity.principal_id
 }
 
 resource "azurerm_key_vault_access_policy" "this" {
@@ -178,11 +167,6 @@ resource "azurerm_logic_app_workflow" "this" {
       }
       type = "String"
     })
-  }
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [var.logic_app_managed_identity.id]
   }
 
   tags = {
@@ -317,14 +301,8 @@ resource "azurerm_logic_app_action_custom" "send_slack" {
 }
 
 ################################################################################
-# Event Grid Subscription and Role Assignment
+# Event Grid Subscription
 ################################################################################
-
-resource "azurerm_role_assignment" "logic_app_eventgrid" {
-  scope              = data.azurerm_resource_group.common.id
-  role_definition_id = data.azurerm_role_definition.eventgrid_contributor.id
-  principal_id       = var.logic_app_managed_identity.principal_id
-}
 
 resource "azurerm_eventgrid_system_topic_event_subscription" "logic_app" {
   name                = "${var.vault_name}-logicapp-subscription"
