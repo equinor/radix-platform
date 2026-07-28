@@ -62,7 +62,7 @@ For any other SP see the bootstrap/teardown scripts for the components that requ
 
 Refreshing credentials for a service principal is usually a four step process for most components:
 1. Refresh secret (..."password") in Azure AD
-1. Update credentials in key vault in a reusable format (see [`template-credentials.json`](./template-credentials.json))
+1. Update credentials in the main key vault in a reusable format (see [`template-credentials.json`](./template-credentials.json)). This is the vault consumed by External Secrets in radix-flux.
 1. External Secrets reads credentials from key vault and updates Kubernetes secrets automatically for configured `ExternalSecret` resources
 1. Restart component pods only if the component does not hot-reload updated credentials
 

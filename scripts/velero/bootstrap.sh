@@ -103,7 +103,7 @@ EOF
 )
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 RADIX_ENVIRONMENT=$(yq '.radix_environment' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_main <<< "$RADIX_RESOURCE_JSON")
 AZ_VELERO_RESOURCE_GROUP=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_VELERO_STORAGE_ACCOUNT_ID=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
 #######################################################################################
