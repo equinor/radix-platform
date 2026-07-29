@@ -242,7 +242,7 @@ function check_installed_components() {
       echo -e "\nERROR: flux not found in PATH. Exiting... " >&2
       exit 1
   }
-  REQ_FLUX_VERSION="2.7.5"
+  REQ_FLUX_VERSION="2.9.3"
   FLUX_VERSION=$(flux --version | awk '{print $3'})
   if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
       printf ""${yel}"Please install specific version ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
