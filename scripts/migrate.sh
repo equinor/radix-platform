@@ -158,7 +158,7 @@ function get_variables() {
     AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
     AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
     AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
-    AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+    AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_config <<< "$RADIX_RESOURCE_JSON")
     IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
     RADIX_CACHE_REGISTRY=$(jq -r .cache_registry <<< "$RADIX_RESOURCE_JSON")
     CLUSTER_OIDC_ISSUER_URLS=$(jq -r .cluster_issuer_urls <<< "$RADIX_RESOURCE_JSON")

@@ -114,7 +114,7 @@ $(<$RADIX_ZONE_ENV)
 EOF
 )
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_main <<< "$RADIX_RESOURCE_JSON")
 DIGICERT_EXTERNAL_ACCOUNT_KV_SECRET="digicert-external-account"
 #######################################################################################
 ### Prepare az session

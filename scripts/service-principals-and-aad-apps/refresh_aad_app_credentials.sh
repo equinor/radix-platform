@@ -25,7 +25,7 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE=dev AAD_APP_NAME=demo-rbac-dev ./refresh_aad_app_credentials.sh
+# RADIX_ZONE=dev AAD_APP_NAME=demo-rbac-dev SECRET=demo-rbac ./refresh_aad_app_credentials.sh
 # This makes the JSON look like
 # {
 #   "name": "",
@@ -35,6 +35,11 @@
 #   "tenantId": "",
 #   "secretId": ""
 # }
+
+#######################################################################################
+### Typical usage
+### RADIX_ZONE={zone} AAD_APP_NAME=radix-cr-cicd-{zone} SECRET=radix-cr-cicd ./refresh_aad_app_credentials.sh
+
 
 
 #######################################################################################
@@ -57,8 +62,8 @@ hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
     exit 1
 }
-hash kubectl 2>/dev/null || {
-    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
+hash yq 2>/dev/null || {
+    echo -e "\nERROR: yq not found in PATH. Exiting... " >&2
     exit 1
 }
 printf "Done.\n"
@@ -78,7 +83,7 @@ else
 fi
 
 if [[ -z "$AAD_APP_NAME" ]]; then
-    echo "ERROR: Please provide SP_NAME" >&2
+    echo "ERROR: Please provide AAD_APP_NAME" >&2
     exit 1
 fi
 
@@ -116,7 +121,7 @@ $(<$RADIX_ZONE_ENV)
 EOF
 )
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_main <<< "$RADIX_RESOURCE_JSON")
 
 #######################################################################################
 ### Prepare az session
@@ -179,8 +184,8 @@ refresh_ad_app_and_store_credentials_in_ad_and_keyvault "$AAD_APP_NAME" "$SECRET
 ###
 
 echo ""
-echo ">> You must manually update credentials in the clusters."
-echo ">> See README for which workflow to use depending on use case."
+echo ">> Credentials in clusters are updated automatically by External Secrets when configured."
+echo ">> Verify matching ExternalSecret in radix-flux and allow time for reconcile (typically 5 minutes)."
 
 #######################################################################################
 ### END

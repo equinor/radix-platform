@@ -45,8 +45,8 @@ hash jq 2>/dev/null || {
     echo -e "\nERROR: jq not found in PATH. Exiting... " >&2
     exit 1
 }
-hash kubectl 2>/dev/null || {
-    echo -e "\nERROR: kubectl not found in PATH. Exiting... " >&2
+hash yq 2>/dev/null || {
+    echo -e "\nERROR: yq not found in PATH. Exiting... " >&2
     exit 1
 }
 printf "Done.\n"
@@ -98,7 +98,7 @@ $(<$RADIX_ZONE_ENV)
 EOF
 )
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_main <<< "$RADIX_RESOURCE_JSON")
 #######################################################################################
 ### Prepare az session
 ###
@@ -161,8 +161,8 @@ refresh_service_principal_and_store_credentials_in_ad_and_keyvault "$SP_NAME"
 ###
 
 echo ""
-echo ">> You must manually update credentials in the clusters."
-echo ">> See README for which workflow to use depending on use case."
+echo ">> Credentials in clusters are updated automatically by External Secrets when configured."
+echo ">> Verify matching ExternalSecret in radix-flux and allow time for reconcile (typically 5 minutes)."
 
 #######################################################################################
 ### END

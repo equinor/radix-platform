@@ -103,7 +103,7 @@ EOF
 )
 
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_main <<< "$RADIX_RESOURCE_JSON")
 KV_SECRET_SERVICENOW_API_KEY="servicenow-api-key"
 #######################################################################################
 ### Prepare az session

@@ -62,13 +62,9 @@ For any other SP see the bootstrap/teardown scripts for the components that requ
 
 Refreshing credentials for a service principal is usually a four step process for most components:
 1. Refresh secret (..."password") in Azure AD
-1. Update credentials in key vault in a reusable format (see [`template-credentials.json`](./template-credentials.json))
-1. Update the credentials for the component that use this SP in the cluster  
-   This process should be an automated process specific to each component,  
-   - Read the credentials from key vault, 
-   - Reformat them to how ever the component wants them using a template and...
-   - Upload them as a k8s secret into the cluster
-1. Restart the component pods to force it to read the updated k8s secret(s)
+1. Update credentials in the main key vault in a reusable format (see [`template-credentials.json`](./template-credentials.json)). This is the vault consumed by External Secrets in radix-flux.
+1. External Secrets reads credentials from key vault and updates Kubernetes secrets automatically for configured `ExternalSecret` resources
+1. Restart component pods only if the component does not hot-reload updated credentials
 
 Keep in mind the following:
 
@@ -90,14 +86,9 @@ Keep in mind the following:
    Multiple components may use the same service principal and refreshing credentials in AAD will impact all of them 
    - If yes to refresh credentials in AAD: 
      Refresh credentials in AAD and store them in keyvault by using script [`refresh_service_principal_credentials.sh`](./refresh_service_principal_credentials.sh)
-1. Manually update the credentials in the clusters for the component that use it  
-   Usually the easiest way to do this is 
-   1. Run install base components script to update k8s secrets
-   1. Delete all the running pods of the component so that k8s will redeploy them with updated k8s secret  
-      Examples:
-      - Delete all `external-dns` pods to refresh DNS credentials
-      - Delete all `cert-manager` pods to refresh DNS credentials
-      - Delete all `radix-operator` pods to refresh ACR/CICD credentials
+1. Verify the related `ExternalSecret` exists in radix-flux and references the correct key vault secret
+1. Wait for External Secrets reconciliation (typically `refreshInterval: 5m` in radix-flux)
+1. Restart component pods only if needed for applications that do not reload secrets automatically
 
 
 #### Refresh component AAD app credentials
@@ -106,10 +97,9 @@ Keep in mind the following:
    Multiple components may use the same AAD app and refreshing credentials in AAD will impact all of them
    - If yes to refresh credentials in AAD: 
      Refresh credentials in AAD and store them in keyvault by using script [`refresh_aad_app_credentials.sh`](./refresh_aad_app_credentials.sh)
-1. Manually update the credentials in the clusters for the component that use it  
-   Usually the easiest way to do this is 
-   1. Run install base components script to update k8s secrets
-   1. Delete all the running pods of the component so that k8s will redeploy them with updated k8s secret
+1. Verify the related `ExternalSecret` exists in radix-flux and references the correct key vault secret
+1. Wait for External Secrets reconciliation (typically `refreshInterval: 5m` in radix-flux)
+1. Restart component pods only if needed for applications that do not reload secrets automatically
 
 
 
