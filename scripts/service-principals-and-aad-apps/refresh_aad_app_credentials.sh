@@ -36,6 +36,11 @@
 #   "secretId": ""
 # }
 
+#######################################################################################
+### Typical usage
+### RADIX_ZONE={zone} AAD_APP_NAME=radix-cr-cicd-{zone} SECRET=radix-cr-cicd ./refresh_aad_app_credentials.sh
+
+
 
 #######################################################################################
 ### START
