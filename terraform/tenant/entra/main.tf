@@ -14,6 +14,11 @@ data "azuread_group" "radix" {
   display_name = "Radix Privileged Accounts"
 }
 
+data "azuread_group" "s612_contributors" {
+  display_name     = "AZAPPL S612 - Contributor"
+  security_enabled = true
+}
+
 data "azuread_group" "s940_contributors" {
   display_name     = "AZAPPL S940 - Contributor"
   security_enabled = true
@@ -220,3 +225,19 @@ resource "azurerm_role_definition" "radix_confidential_data_contributor" {
   }
 }
 #endregion Custom Role Definitions
+
+resource "azurerm_role_assignment" "kubernetes_list_cluster_credentials_s940" {
+  scope                = data.azurerm_subscription.subscriptions["s940"].id
+  role_definition_name = "Azure Kubernetes Service Cluster User Role"
+  principal_id         = data.azuread_group.s940_contributors.object_id
+}
+resource "azurerm_role_assignment" "kubernetes_list_cluster_credentials_s941" {
+  scope                = data.azurerm_subscription.subscriptions["s941"].id
+  role_definition_name = "Azure Kubernetes Service Cluster User Role"
+  principal_id         = data.azuread_group.s941_contributors.object_id
+}
+resource "azurerm_role_assignment" "kubernetes_list_cluster_credentials_s612" {
+  scope                = data.azurerm_subscription.subscriptions["s612"].id
+  role_definition_name = "Azure Kubernetes Service Cluster User Role"
+  principal_id         = data.azuread_group.s612_contributors.object_id
+}
