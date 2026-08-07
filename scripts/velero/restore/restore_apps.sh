@@ -154,6 +154,8 @@ EOF
 AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
+SOURCE_KUBE_CONTEXT="$SOURCE_CLUSTER"
+DEST_KUBE_CONTEXT="$DEST_CLUSTER"
 
 #######################################################################################
 ### Prepare az session
@@ -227,7 +229,7 @@ function please_wait() {
 # It takes a little while before the velero restore object has state "phase: Completed".
 function please_wait_for_restore_to_be_completed() {
   local resource="${1}"
-  local command="kubectl get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status}"
+  local command="kubectl --context $DEST_KUBE_CONTEXT get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status}"
 
   while : ; do
     status=$($command 2>/dev/null)
@@ -249,7 +251,7 @@ function please_wait_for_restore_to_be_completed() {
 
 wait_for_velero() {
   local resource="${1}"
-  local command="kubectl get $resource --namespace velero"
+  local command="kubectl --context $DEST_KUBE_CONTEXT get $resource --namespace velero"
 
   check=($($command 2>/dev/null | wc -l))
 
@@ -266,21 +268,10 @@ wait_for_velero() {
 
 stop_radix_operator() {
   printf "Stop radix-operator"
-  kubectl scale deployment radix-operator --namespace default --replicas=0
+  kubectl --context "$DEST_KUBE_CONTEXT" scale deployment radix-operator --namespace default --replicas=0
 
   printf "Waiting for radix-operator is stopped\n"
-  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -ne 0 ]]; do
-    sleep 5
-  done
-  printf " Done.\n"
-}
-
-start_radix_operator() {
-  printf "Start radix-operator"
-  kubectl scale deployment radix-operator --namespace default --replicas=1
-
-  printf "Waiting for radix-operator is started"
-  while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
+  while [[ $(kubectl --context "$DEST_KUBE_CONTEXT" get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -ne 0 ]]; do
     sleep 5
   done
   printf " Done.\n"
@@ -290,18 +281,17 @@ start_radix_operator() {
 ### Connect kubectl
 ###
 
-# Exit if cluster does not exist
-echo "Connecting kubectl to velero-destination..."
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" || {
-  # Send message to stderr
-  echo -e "ERROR: Cluster \"$DEST_CLUSTER\" not found." >&2
-  exit 0
+# Ensure destination cluster context is reachable.
+echo "Verifying kubectl access to velero-destination..."
+kubectl --context "$DEST_KUBE_CONTEXT" cluster-info >/dev/null 2>&1 || {
+  echo -e "ERROR: Cluster context \"$DEST_KUBE_CONTEXT\" not found or not accessible." >&2
+  exit 1
 }
 
 #######################################################################################
 ### Verify cluster access
 ###
-verify_cluster_access
+verify_cluster_access "$SOURCE_KUBE_CONTEXT"
 
 #######################################################################################
 ### Configure velero for restore in destinaton
@@ -324,13 +314,13 @@ PATCH_JSON="$(
 END
 )"
 
-flux suspend ks -n flux-system velero
+flux --context "$DEST_KUBE_CONTEXT" suspend ks -n flux-system velero
 wait_for_velero "BackupStorageLocation default"
-kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl --context "$DEST_KUBE_CONTEXT" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
 printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
-while [[ "$(velero backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
+while [[ "$(velero --kubecontext "$DEST_KUBE_CONTEXT" backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
   printf "."
   sleep 5
 done
@@ -349,7 +339,7 @@ stop_radix_operator
 echo ""
 echo "Restore app specific secrets..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_secret.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
+echo "$RESTORE_YAML" | kubectl --context "$DEST_KUBE_CONTEXT" apply -f -
 
 echo ""
 echo "Wait for secrets to be restored..."
@@ -362,7 +352,7 @@ please_wait_for_restore_to_be_completed "secret"
 echo ""
 echo "Restore app specific configmaps..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_configmap.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
+echo "$RESTORE_YAML" | kubectl --context "$DEST_KUBE_CONTEXT" apply -f -
 
 echo ""
 echo "Wait for configmaps to be restored..."
@@ -375,7 +365,7 @@ please_wait_for_restore_to_be_completed "configmaps"
 echo ""
 echo "Restore Radix Registration resources..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_radix_rr.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
+echo "$RESTORE_YAML" | kubectl --context "$DEST_KUBE_CONTEXT" apply -f -
 
 echo ""
 echo "Wait for Radix registration resources to be restored..."
@@ -388,16 +378,11 @@ please_wait_for_restore_to_be_completed "radix-rr"
 echo ""
 echo "Restore remaining Radix resources..."
 RESTORE_YAML="$(BACKUP_NAME="$BACKUP_NAME" envsubst '$BACKUP_NAME' <${WORKDIR_PATH}/restore_radix.yaml)"
-echo "$RESTORE_YAML" | kubectl apply -f -
+echo "$RESTORE_YAML" | kubectl --context "$DEST_KUBE_CONTEXT" apply -f -
 
 echo ""
 echo "Wait for remaining Radix resources to be restored..."
 please_wait_for_restore_to_be_completed "radix"
-
-#######################################################################################
-### Start operator to reconcile Radix resources
-###
-start_radix_operator
 
 #######################################################################################
 ### Configure velero back to normal operation in destination
@@ -421,8 +406,8 @@ END
 )"
 
 # Set velero in read/write mode
-kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
-flux resume ks -n flux-system velero
+kubectl --context "$DEST_KUBE_CONTEXT" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+flux --context "$DEST_KUBE_CONTEXT" resume ks -n flux-system velero
 
 #######################################################################################
 ### Done!
@@ -433,6 +418,6 @@ echo "All restore tasks are done!"
 
 # Print restore status
 echo "Run \"velero restore get\" to get latest status:"
-velero restore get
+velero --kubecontext "$DEST_KUBE_CONTEXT" restore get
 
 echo "Done restoring apps"

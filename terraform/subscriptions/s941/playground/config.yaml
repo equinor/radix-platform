@@ -49,3 +49,8 @@ clusters:
     network_policy: "cilium"
     dns_prefix: "playground-clusters-playgro-16ede4"
     activecluster: true
+  playground-32:
+    aksversion: "1.35.5"
+    networkset: "networkset2"
+    network_policy: "cilium"
+    activecluster: false
