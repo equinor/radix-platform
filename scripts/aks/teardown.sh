@@ -261,6 +261,10 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
+printf "%s► Modify %s%s\n" "${grn}" "${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect removal of the cluster" "${normal}"
+echo "Press 'space' to continue"
+read -r -s -d ' '
+
 # Delete the cluster
 echo ""
 echo "Deleting cluster... "

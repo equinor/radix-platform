@@ -104,7 +104,7 @@ printf "Done.\n"
 ### Verify cluster access
 ###
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
-verify_cluster_access
+verify_cluster_access "$CLUSTER_NAME"
 
 function getApiTokenResource() {
     # Get auth token for Radix API

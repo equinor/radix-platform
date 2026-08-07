@@ -145,9 +145,20 @@ function get_credentials_silent() {
 }
 
 function verify_cluster_access() {
+  local kube_context="$1"
     if [[ -n $CI ]]; then return; fi
-    printf "\nVerifying cluster access...\n"
-    kubectl cluster-info || {
+  if [[ -n "$kube_context" ]]; then
+    printf "\nVerifying cluster access for context %s...\n" "$kube_context"
+    kubectl --context "$kube_context" cluster-info || {
+      printf "ERROR: Could not access cluster context %s. Quitting...\n" "$kube_context"
+      exit 1
+    }
+    printf " OK\n"
+    return
+  fi
+
+  printf "\nVerifying cluster access...\n"
+  kubectl cluster-info || {
         printf "ERROR: Could not access cluster. Quitting...\n"
         exit 1
     }

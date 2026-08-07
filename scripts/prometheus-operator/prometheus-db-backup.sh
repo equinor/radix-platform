@@ -199,7 +199,7 @@ printf "...Done.\n"
 ### Verify cluster access
 ###
 
-verify_cluster_access
+verify_cluster_access "${SOURCE_CLUSTER}"
 
 MONITOR_NAMESPACE="monitor"
 PROMETHEUS_POD_NAME="prometheus-prometheus-operator-prometheus-0"

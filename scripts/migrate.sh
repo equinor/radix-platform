@@ -169,6 +169,16 @@ function get_variables() {
     login_azure "$AZ_SUBSCRIPTION_ID"
 }
 
+function start_radix_operator() {
+    printf "Start radix-operator"
+    kubectl --context "$DEST_CLUSTER" scale deployment radix-operator --namespace default --replicas=1
+    printf "Waiting for radix-operator is started"
+    while [[ $(kubectl --context "$DEST_CLUSTER" get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
+        sleep 5
+    done
+    printf " Done.\n"
+}
+
 #######################################################################################
 ### Read Zone Config
 ###
@@ -467,7 +477,7 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
 #######################################################################################
 ### Verify cluster access
 ###
-verify_cluster_access
+verify_cluster_access "$SOURCE_CLUSTER"
 
 [[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER" ]] && exit 1
 printf "Done.\n"
@@ -540,6 +550,14 @@ printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
 (RADIX_ZONE="$RADIX_ZONE" SOURCE_CLUSTER="$SOURCE_CLUSTER" DEST_CLUSTER="$DEST_CLUSTER" BACKUP_NAME="$BACKUP_NAME" USER_PROMPT="$USER_PROMPT" source "$RESTORE_APPS_SCRIPT")
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
+
+printf "\nPoint to destination cluster... "
+get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
+verify_cluster_access "$DEST_CLUSTER"
+[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+printf "Done.\n"
+
+start_radix_operator
 
 if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
