@@ -171,9 +171,9 @@ function get_variables() {
 
 function start_radix_operator() {
     printf "Start radix-operator"
-    kubectl scale deployment radix-operator --namespace default --replicas=1
+    kubectl --context "$DEST_CLUSTER" scale deployment radix-operator --namespace default --replicas=1
     printf "Waiting for radix-operator is started"
-    while [[ $(kubectl get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
+    while [[ $(kubectl --context "$DEST_CLUSTER" get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
         sleep 5
     done
     printf " Done.\n"
