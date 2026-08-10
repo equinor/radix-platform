@@ -160,21 +160,6 @@ function verify_cluster_access() {
   printf " OK\n"
 }
 
-function setup_cluster_access() {
-  local AZ_RESOURCE_GROUP_CLUSTERS="$1"
-  local CLUSTER_NAME="$2"
-
-  if [[ -z "$AZ_RESOURCE_GROUP_CLUSTERS" || -z "$CLUSTER_NAME" ]]; then
-      echo "ERROR: Missing AZ_RESOURCE_GROUP_CLUSTERS or CLUSTER_NAME."
-      exit 1
-  fi
-
-  get_credentials_silent "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}"
-  verify_cluster_access "$CLUSTER_NAME"
-
-  exit 0;
-}
-
 get_latest_release() {
   # retrieves latest release version from a GitHub repository. Assumes the version has format v<version>.<major_version>.<minor_version>
   # this function does not use the more convenient GitHub API in order to circumvent rate limiting
