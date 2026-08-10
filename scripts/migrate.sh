@@ -338,16 +338,7 @@ fi
 ### Connect kubectl
 ###
 
-if [[ ${BACKUP_NAME} == "migration-"* ]]; then
-    # Exit if source cluster does not exist
-    echo ""
-    echo "Verifying source cluster existence..."
-    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" || {
-        echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
-        exit 1
-    }
-    echo ""
-fi
+verify_cluster_access "$SOURCE_CLUSTER"
 
 if [[ -z "$STORAGACCOUNT" ]]; then
     echo "ERROR: Got no infomation about the Velero StorageAccount." >&2
@@ -555,7 +546,6 @@ wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
 printf "\nPoint to destination cluster... "
-get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
 verify_cluster_access "$DEST_CLUSTER"
 printf "Done.\n"
 
@@ -618,7 +608,7 @@ echo ""
 #######################################################################################
 ### Final post tasks
 ###
-
+kubectl config use-context "$DEST_CLUSTER" >/dev/null 2>&1
 printf "\n"
 printf "%sYou need to do following tasks to activate cluster:%s\n" "${yel}" "${normal}"
 printf "%s► Modify $RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) %s%s\n" "${grn}" "${normal}"

@@ -121,7 +121,7 @@ function get_credentials() {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
-
+    currentContext=$(kubectl config current-context 2>/dev/null)
     az aks get-credentials \
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -129,6 +129,7 @@ function get_credentials() {
         --only-show-errors ||
         { return; }
     kubelogin convert-kubeconfig -l azurecli
+    kubectl config use-context "$CLUSTER" >/dev/null 2>&1
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 function get_credentials_silent() {
