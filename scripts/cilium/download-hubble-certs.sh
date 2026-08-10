@@ -13,7 +13,17 @@ declare -A CERT_FILES=(
   ["ca.crt"]="tls-ca-cert-files"
 )
 
-clustername="$(kubectl config current-context)"
+if [[ -z "$CLUSTER_NAME" ]]; then
+  echo "ERROR: Please provide CLUSTER_NAME" >&2
+  exit 1
+fi
+
+clustername="$CLUSTER_NAME"
+
+kubectl --context "$clustername" cluster-info >/dev/null 2>&1 || {
+  echo "ERROR: Could not access cluster context $clustername. Quitting..." >&2
+  exit 1
+}
 
 for FILE in "${!CERT_FILES[@]}"; do
   KEY="${CERT_FILES[$FILE]}"

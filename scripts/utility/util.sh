@@ -146,42 +146,31 @@ function get_credentials_silent() {
 
 function verify_cluster_access() {
   local kube_context="$1"
-    if [[ -n $CI ]]; then return; fi
-  if [[ -n "$kube_context" ]]; then
-    printf "\nVerifying cluster access for context %s...\n" "$kube_context"
-    kubectl --context "$kube_context" cluster-info || {
-      printf "ERROR: Could not access cluster context %s. Quitting...\n" "$kube_context"
-      exit 1
-    }
-    printf " OK\n"
-    return
+  if [[ -n $CI ]]; then return; fi
+  if [[ -z "$kube_context" ]]; then
+    printf "ERROR: Missing kubernetes context. Quitting...\n"
+    exit 1
   fi
 
-  printf "\nVerifying cluster access...\n"
-  kubectl --context "$(kubectl config current-context)" cluster-info || {
-        printf "ERROR: Could not access cluster. Quitting...\n"
-        exit 1
-    }
-    printf " OK\n"
+  printf "\nVerifying cluster access for context %s...\n" "$kube_context"
+  kubectl --context "$kube_context" cluster-info || {
+    printf "ERROR: Could not access cluster context %s. Quitting...\n" "$kube_context"
+    exit 1
+  }
+  printf " OK\n"
 }
 
 function setup_cluster_access() {
   local AZ_RESOURCE_GROUP_CLUSTERS="$1"
   local CLUSTER_NAME="$2"
 
-  get_credentials_silent "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}"
-  kubectl_context="$(kubectl config current-context)"
-  if [ "${kubectl_context}" = "${CLUSTER_NAME}" ]; then
-      return 0
-  else
-      echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}"
+  if [[ -z "$AZ_RESOURCE_GROUP_CLUSTERS" || -z "$CLUSTER_NAME" ]]; then
+      echo "ERROR: Missing AZ_RESOURCE_GROUP_CLUSTERS or CLUSTER_NAME."
       exit 1
   fi
 
-  kubectl --context "$CLUSTER_NAME" cluster-info > /dev/null || {
-      echo "ERROR: Could not access cluster. Quitting..."
-      exit 1
-  }
+  get_credentials_silent "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}"
+  verify_cluster_access "$CLUSTER_NAME"
 
   exit 0;
 }

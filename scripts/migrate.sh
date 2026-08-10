@@ -368,7 +368,7 @@ terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SU
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply || exit 1
 
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+verify_cluster_access "$DEST_CLUSTER"
 
 install_base_components=true
 
@@ -478,8 +478,6 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
 ### Verify cluster access
 ###
 verify_cluster_access "$SOURCE_CLUSTER"
-
-[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER" ]] && exit 1
 printf "Done.\n"
 
 echo ""
@@ -554,7 +552,6 @@ printf "Done restoring into cluster."
 printf "\nPoint to destination cluster... "
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
 verify_cluster_access "$DEST_CLUSTER"
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
 printf "Done.\n"
 
 start_radix_operator

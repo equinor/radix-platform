@@ -13,6 +13,7 @@
 # - RADIX_ZONE          : dev|playground|prod|c2|c3
 # - SOURCE_ACR          : Source ACR login server (e.g., radixc2prod.azurecr.io)
 # - TARGET_ACR          : Target ACR login server (e.g., radixc3.azurecr.io)
+# - CLUSTER_NAME        : Target kubectl context (e.g., weekly-93)
 
 #######################################################################################
 ### Read inputs and configs
@@ -35,6 +36,11 @@ fi
 
 if [[ -z "$TARGET_ACR" ]]; then
     echo "ERROR: Please provide TARGET_ACR" >&2
+    exit 1
+fi
+
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
@@ -101,7 +107,8 @@ fi
 echo "Patching RadixDeployments to replace '${SOURCE_ACR}' with '${TARGET_ACR}'..."
 echo ""
 
-clustername="$(kubectl config current-context)"
+clustername="$CLUSTER_NAME"
+verify_cluster_access "$clustername"
 
 # Get all active RadixDeployments
 radixdeployments=$(kubectl --context "$clustername" get rd -A -o jsonpath='{range .items[?(@.status.condition=="Active")]}{.metadata.name}{" "}{.metadata.namespace}{"\n"}{end}')

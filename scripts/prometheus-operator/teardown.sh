@@ -146,20 +146,6 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
-#######################################################################################
-### CLUSTER?
-###
-
-kubectl_context="$(kubectl config current-context)"
-
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
-    echo "kubectl is ready..."
-else
-    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}" >&2
-    exit 1
-fi
-
-#######################################################################################
 ### Verify cluster access
 ###
 verify_cluster_access "$CLUSTER_NAME"

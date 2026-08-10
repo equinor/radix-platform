@@ -205,7 +205,11 @@ function create-role-and-rolebinding {
 
     role_path="$1"
     rolebinding_path="$2"
-    clustername="${CLUSTER_NAME:-$(kubectl config current-context)}"
+    if [[ -z "$CLUSTER_NAME" ]]; then
+        echo -e "ERROR: CLUSTER_NAME must be set before creating role/rolebinding." >&2
+        exit 1
+    fi
+    clustername="$CLUSTER_NAME"
 
     printf "Creating role...\n"
     kubectl --context "$clustername" apply -f "${role_path}" || {

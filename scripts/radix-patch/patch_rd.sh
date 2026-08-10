@@ -5,8 +5,18 @@
 # The purpose of the shell script is to patch RadixDeployments to cater for changes in the Radix operator
 # so that no customer application is broken
 
-clustername="$(kubectl config current-context)"
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
+    exit 1
+fi
+
+clustername="$CLUSTER_NAME"
 DESTINATION_CLUSTER="$clustername"
+
+kubectl --context "$clustername" cluster-info >/dev/null 2>&1 || {
+    echo "ERROR: Could not access cluster context $clustername. Quitting..." >&2
+    exit 1
+}
 
 echo ""
 echo "WARNING!"
