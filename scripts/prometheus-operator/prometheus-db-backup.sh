@@ -358,17 +358,6 @@ kubectl --context "${SOURCE_CLUSTER}" delete pv pv-prometheus-backup
 
 printf "%s► Starting restore job %s\n" "${grn}" "${normal}"
 
-#Change to destination
-echo "Connecting kubectl to destination..."
-# Exit if cluster does not exist
-printf "Connecting kubectl..."
-get_credentials "${AZ_RESOURCE_GROUP_CLUSTERS}" "${DEST_CLUSTER}" || {
-    # Send message to stderr
-    echo -e "ERROR: Cluster \"${DEST_CLUSTER}\" not found." >&2
-    exit 0
-}
-printf "...Done.\n"
-
 kubectl --context "${DEST_CLUSTER}" apply --filename ${YAML_PV_FILE}
 kubectl --context "${DEST_CLUSTER}" apply --filename ${YAML_PVC_FILE}
 
