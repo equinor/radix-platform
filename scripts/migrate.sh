@@ -76,9 +76,9 @@ function login_azure() {
 }
 function flux_configmap() {
   # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
-  get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
+    verify_cluster_access "$DEST_CLUSTER"
   printf "\n%s► Deploy radix-flux-config configmap in flux namespace\n"
-  CM=$(kubectl create configmap radix-flux-config -n flux-system --dry-run=client -o json \
+    CM=$(kubectl --context "$DEST_CLUSTER" create configmap radix-flux-config -n flux-system --dry-run=client -o json \
       --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
       --from-literal=appAliasBaseURL="app.$AZ_RESOURCE_DNS" \
       --from-literal=prometheusName="radix-stage1" \
@@ -97,7 +97,7 @@ function flux_configmap() {
       )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
-  colordiff -u -s -N <(kubectl get configmap -n flux-system radix-flux-config -ojson | jq .data) \
+    colordiff -u -s -N <(kubectl --context "$DEST_CLUSTER" get configmap -n flux-system radix-flux-config -ojson | jq .data) \
      <(echo "$CM" | jq '.data')
   echo ""     
   if [[ $USER_PROMPT == true ]]; then
@@ -105,7 +105,7 @@ function flux_configmap() {
         read -r -p "Is this correct? (Y/n) " yn
         case $yn in
         [Yy]*) 
-            kubectl replace --force -f - <<< "$CM"
+            kubectl --context "$DEST_CLUSTER" replace --force -f - <<< "$CM"
             break
             ;;
         [Nn]*)
@@ -167,6 +167,16 @@ function get_variables() {
     STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
     RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
     login_azure "$AZ_SUBSCRIPTION_ID"
+}
+
+function start_radix_operator() {
+    printf "Start radix-operator"
+    kubectl --context "$DEST_CLUSTER" scale deployment radix-operator --namespace default --replicas=1
+    printf "Waiting for radix-operator is started"
+    while [[ $(kubectl --context "$DEST_CLUSTER" get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
+        sleep 5
+    done
+    printf " Done.\n"
 }
 
 #######################################################################################
@@ -231,6 +241,10 @@ get_variables # Populate environment variables from terraform outputs
 if [[ -n "$SUBFUNCTION" ]]; then
     case "$SUBFUNCTION" in
         flux)
+            get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null || {
+                echo "ERROR: Unable to fetch credentials for cluster $DEST_CLUSTER" >&2
+                exit 1
+            }
             flux_configmap
             exit 0
             ;;
@@ -324,16 +338,7 @@ fi
 ### Connect kubectl
 ###
 
-if [[ ${BACKUP_NAME} == "migration-"* ]]; then
-    # Exit if source cluster does not exist
-    echo ""
-    echo "Verifying source cluster existence..."
-    get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" || {
-        echo -e "ERROR: Source cluster \"$SOURCE_CLUSTER\" not found." >&2
-        exit 1
-    }
-    echo ""
-fi
+verify_cluster_access "$SOURCE_CLUSTER"
 
 if [[ -z "$STORAGACCOUNT" ]]; then
     echo "ERROR: Got no infomation about the Velero StorageAccount." >&2
@@ -358,7 +363,7 @@ terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SU
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply || exit 1
 
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
-[[ "$(kubectl config current-context)" != "$DEST_CLUSTER" ]] && exit 1
+verify_cluster_access "$DEST_CLUSTER"
 
 install_base_components=true
 
@@ -390,8 +395,8 @@ if [[ $install_base_components == true ]]; then
     echo "Creating \"radix-flux-config\"..."
 
     printf "\nWorking on namespace flux-system"
-    if [[ $(kubectl get namespace flux-system 2>&1) == *"Error"* ]]; then
-        kubectl create ns flux-system 2>&1 >/dev/null
+    if [[ $(kubectl --context "$DEST_CLUSTER" get namespace flux-system 2>&1) == *"Error"* ]]; then
+        kubectl --context "$DEST_CLUSTER" create ns flux-system 2>&1 >/dev/null
     fi
     printf "...Done"
     get_variables # Populate environment variables from terraform outputs
@@ -409,6 +414,7 @@ if [[ $install_base_components == true ]]; then
     --branch="$FLUX_BRANCH" \
     --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
     --components-extra=image-reflector-controller,image-automation-controller \
+    --context="$DEST_CLUSTER" \
     --version="v$FLUX_VERSION" \
     --silent
     if [[ "$?" != "0" ]]; then
@@ -425,7 +431,7 @@ if [[ $install_base_components == true ]]; then
 fi
 
 if command -v "tmux" >/dev/null 2>&1; then
-    tmux new -s flux -d 'watch "kubectl get ks -A"' \; split-window -v 'watch "kubectl get hr -A"'
+    tmux new -s flux -d 'watch "kubectl --context '"$DEST_CLUSTER"' get ks -A"' \; split-window -v 'watch "kubectl --context '"$DEST_CLUSTER"' get hr -A"'
     echo "Please open a new terminal window, and run following command:"
     echo ""
     echo "tmux a -t flux"
@@ -437,15 +443,15 @@ if command -v "tmux" >/dev/null 2>&1; then
 else
     echo "Optional: Please install tmux for instruction how to monitor Flux kustomizations and helmreleases before you run the migration script next time......"
     echo "You can run it manually now in seperate terminal windows:"
-    echo "watch \"kubectl get ks -A\""
-    echo "watch \"kubectl get hr -A\""
+    echo "watch \"kubectl --context $DEST_CLUSTER get ks -A\""
+    echo "watch \"kubectl --context $DEST_CLUSTER get hr -A\""
 fi
 
 # Wait for operator to be deployed from flux
 echo ""
 echo "Waiting for radix-operator to be deployed by flux-operator so that it can handle migrated apps"
 echo "If this lasts forever, are you migrating to a cluster without base components installed?"
-while [[ "$(kubectl get deploy radix-operator 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl --context "$DEST_CLUSTER" get deploy radix-operator 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
@@ -455,7 +461,7 @@ printf " Done."
 echo ""
 echo "Waiting for velero to be deployed by flux-operator so that it can handle restore into cluster from backup"
 echo "If this lasts forever, are you migrating to a cluster without base components installed? (Tip: Allow 5 minutes. Try 'fluxctl sync' to force syncing flux repo)"
-while [[ "$(kubectl get deploy velero --namespace velero 2>&1)" == *"Error"* ]]; do
+while [[ "$(kubectl --context "$DEST_CLUSTER" get deploy velero --namespace velero 2>&1)" == *"Error"* ]]; do
     printf "."
     sleep 5
 done
@@ -467,15 +473,13 @@ get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$SOURCE_CLUSTER" >/dev/null
 #######################################################################################
 ### Verify cluster access
 ###
-verify_cluster_access
-
-[[ "$(kubectl config current-context)" != "$SOURCE_CLUSTER" ]] && exit 1
+verify_cluster_access "$SOURCE_CLUSTER"
 printf "Done.\n"
 
 echo ""
 
 printf "Making sure Velero backupstoragelocation are set for $SOURCE_CLUSTER... "
-kubectl patch backupstoragelocation default --namespace velero --type merge --dry-run=client --patch "$(cat <<EOF
+kubectl --context "$SOURCE_CLUSTER" patch backupstoragelocation default --namespace velero --type merge --dry-run=client --patch "$(cat <<EOF
 {
   "spec": {
     "objectStorage": {
@@ -487,7 +491,7 @@ EOF
 )"
 
 printf "Making backup of source cluster... "
-cat <<EOF | kubectl apply --filename -
+cat <<EOF | kubectl --context "$SOURCE_CLUSTER" apply --filename -
 apiVersion: velero.io/v1
 kind: Backup
 metadata:
@@ -522,7 +526,7 @@ spec:
 EOF
 
 if command -v "tmux" >/dev/null 2>&1; then
-    tmux new -s velero -d 'watch "kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
+    tmux new -s velero -d 'watch "kubectl --context '"$DEST_CLUSTER"' get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems"'
     echo "Please open a new terminal window, and run following command:"
     echo ""
     echo "tmux a -t velero"
@@ -531,7 +535,7 @@ if command -v "tmux" >/dev/null 2>&1; then
 else
     echo "Optional: Please install tmux for instruction how to monitor Velero restore in the migration script next time......"
     echo "You can run it manually now:"
-    echo "watch \"kubectl get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems\""
+    echo "watch \"kubectl --context $DEST_CLUSTER get restores.velero.io -n velero -o custom-columns=name:.metadata.name,status:.status.phase,restored:.status.progress.itemsRestored,total:.status.progress.totalItems\""
 fi
 
 echo ""
@@ -541,13 +545,19 @@ printf "%s► Execute %s%s\n" "${grn}" "$RESTORE_APPS_SCRIPT" "${normal}"
 wait # wait for subshell to finish
 printf "Done restoring into cluster."
 
+printf "\nPoint to destination cluster... "
+verify_cluster_access "$DEST_CLUSTER"
+printf "Done.\n"
+
+start_radix_operator
+
 if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
 fi
 
 OAUTH2_CLIENT_ID=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw app_webconsole_client_id)
 
-kubectl patch configmap env-vars-web --namespace radix-web-console-qa --type merge --patch "$(cat <<EOF
+kubectl --context "$DEST_CLUSTER" patch configmap env-vars-web --namespace radix-web-console-qa --type merge --patch "$(cat <<EOF
 {
   "data": {
     "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
@@ -559,7 +569,7 @@ kubectl patch configmap env-vars-web --namespace radix-web-console-qa --type mer
 EOF
 )"
 
-kubectl patch configmap env-vars-web --namespace radix-web-console-prod --type merge --patch "$(cat <<EOF
+kubectl --context "$DEST_CLUSTER" patch configmap env-vars-web --namespace radix-web-console-prod --type merge --patch "$(cat <<EOF
 {
   "data": {
     "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
@@ -571,11 +581,11 @@ kubectl patch configmap env-vars-web --namespace radix-web-console-prod --type m
 EOF
 )"
 
-kubectl rollout restart deployment -n radix-web-console-qa web
-kubectl rollout restart deployment -n radix-web-console-prod web
+kubectl --context "$DEST_CLUSTER" rollout restart deployment -n radix-web-console-qa web
+kubectl --context "$DEST_CLUSTER" rollout restart deployment -n radix-web-console-prod web
 
 printf "Waiting for radix-networkpolicy-canary environments..."
-while [[ ! $(kubectl get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
+while [[ ! $(kubectl --context "$DEST_CLUSTER" get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
     printf "."
     sleep 5
 done
@@ -583,7 +593,7 @@ echo ""
 
 printf "Waiting for server component radix-api-server to get ready.\n"
 printf "If this takes forever, monitor the deployment..."
-while [[ ! $(kubectl get deployments radix-api-server -o jsonpath={.status.availableReplicas}) ]]; do
+while [[ ! $(kubectl --context "$DEST_CLUSTER" get deployments radix-api-server -o jsonpath={.status.availableReplicas}) ]]; do
     printf "."
     sleep 5
 done
@@ -598,7 +608,7 @@ echo ""
 #######################################################################################
 ### Final post tasks
 ###
-
+kubectl config use-context "$DEST_CLUSTER" >/dev/null 2>&1
 printf "\n"
 printf "%sYou need to do following tasks to activate cluster:%s\n" "${yel}" "${normal}"
 printf "%s► Modify $RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect active cluster (activecluster: true) %s%s\n" "${grn}" "${normal}"

@@ -104,7 +104,7 @@ printf "Done.\n"
 ### Verify cluster access
 ###
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME"
-verify_cluster_access
+verify_cluster_access "$CLUSTER_NAME"
 
 function getApiTokenResource() {
     # Get auth token for Radix API
@@ -279,7 +279,7 @@ function restartAllEnvironments() {
     getApiToken || return 1
     getAppEnvironments && getSecret
     for app_env in $APP_ENVIRONMENTS; do
-        kubectl rollout restart deployment -n radix-networkpolicy-canary-${app_env} web
+        kubectl --context "$CLUSTER_NAME" rollout restart deployment -n radix-networkpolicy-canary-${app_env} web
     done
 }
 

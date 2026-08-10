@@ -198,47 +198,6 @@ function add-federated-gh-credentials {
     printf "Done!\n"
 }
 
-function create-role-and-rolebinding {
-    local role_path
-    local rolebinding_path
-
-    role_path="$1"
-    rolebinding_path="$2"
-
-    printf "Creating role...\n"
-    kubectl apply -f "${role_path}" || {
-        echo -e "ERROR: Could not create role." >&2
-        exit 1
-    }
-    printf "Done\n"
-
-    printf "Creating rolebinding...\n"
-    kubectl apply -f "${rolebinding_path}" || {
-        echo -e "ERROR: Could not create rolebinding." >&2
-        exit 1
-    }
-    printf "Done\n"
-}
-
-# function set-kv-policy {
-#     local object_id
-#     local permissions
-
-#     object_id=$1
-#     permissions=$2
-
-#     printf "Creating vault access policy on %s for %s...\n" "${AZ_RESOURCE_KEYVAULT}" "${object_id}"
-#     az keyvault set-policy \
-#         --name "${AZ_RESOURCE_KEYVAULT}" \
-#         --secret-permissions ${permissions} \
-#         --object-id "${object_id}" \
-#         --only-show-errors >/dev/null || {
-#         echo -e "ERROR: Could not create vault access policy on ${AZ_RESOURCE_KEYVAULT}." >&2
-#         exit 1
-#     }
-#     printf "Done\n"
-# }
-
 function create-az-role {
     local name
     local description

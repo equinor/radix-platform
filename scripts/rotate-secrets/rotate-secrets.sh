@@ -60,8 +60,8 @@ printf "Done.\n"
 assert_cli_tools || exit 1
 has_env_name "CLUSTER_NAME" || exit 1
 prepare_azure_session || exit 1
-setup_cluster_access  "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" ||
-  { echo "ERROR: Unable to connect to cluster" >&2; exit 1; }
+verify_cluster_access "$CLUSTER_NAME" ||
+  { echo "ERROR: Unable to connect to cluster ${CLUSTER_NAME}" >&2; exit 1; }
 
 
 #######################################################################################

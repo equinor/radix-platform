@@ -169,7 +169,7 @@ printf "...Done.\n"
 #######################################################################################
 ### Verify cluster access
 ###
-verify_cluster_access
+verify_cluster_access "$CLUSTER_NAME"
 
 #######################################################################################
 ### MAIN
@@ -187,17 +187,17 @@ printf "...Done.\n"
 
 # Step 1.6: Making sure the v1 webhook is really gone
 printf "\nMaking sure the v1 webhook is really gone..."
-kubectl delete apiservice v1.helm.fluxcd.io 2>&1 >/dev/null
+kubectl --context "$CLUSTER_NAME" delete apiservice v1.helm.fluxcd.io 2>&1 >/dev/null
 printf "...Done.\n"
 
 # Step 2: Delete the repo credentials
 printf "\nDelete the repo credentials..."
-kubectl delete secret "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
+kubectl --context "$CLUSTER_NAME" delete secret "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
 printf "...Done.\n"
 
 # Step 3: Remove all the custom resource definitions
 printf "\nDelete all the custom resource definitions..."
-kubectl delete -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
+kubectl --context "$CLUSTER_NAME" delete -f "$FLUX_HELM_CRD_PATH" 2>&1 >/dev/null
 printf "...Done.\n"
 
 

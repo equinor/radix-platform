@@ -146,23 +146,9 @@ if [[ $USER_PROMPT == true ]]; then
     echo ""
 fi
 
-#######################################################################################
-### CLUSTER?
-###
-
-kubectl_context="$(kubectl config current-context)"
-
-if [ "$kubectl_context" = "$CLUSTER_NAME" ] || [ "$kubectl_context" = "${CLUSTER_NAME}" ]; then
-    echo "kubectl is ready..."
-else
-    echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}" >&2
-    exit 1
-fi
-
-#######################################################################################
 ### Verify cluster access
 ###
-verify_cluster_access
+verify_cluster_access "$CLUSTER_NAME"
 
 #######################################################################################
 ### MAIN
@@ -171,14 +157,14 @@ verify_cluster_access
 helm uninstall kube-prometheus-stack
 
 # CRDs created by this chart are not removed by default and should be manually cleaned up:
-kubectl delete crd alertmanagerconfigs.monitoring.coreos.com
-kubectl delete crd alertmanagers.monitoring.coreos.com
-kubectl delete crd podmonitors.monitoring.coreos.com
-kubectl delete crd probes.monitoring.coreos.com
-kubectl delete crd prometheuses.monitoring.coreos.com
-kubectl delete crd prometheusrules.monitoring.coreos.com
-kubectl delete crd servicemonitors.monitoring.coreos.com
-kubectl delete crd thanosrulers.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd alertmanagerconfigs.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd alertmanagers.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd podmonitors.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd probes.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd prometheuses.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd prometheusrules.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd servicemonitors.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd thanosrulers.monitoring.coreos.com
 
 #######################################################################################
 ### END

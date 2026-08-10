@@ -13,6 +13,7 @@
 # - RADIX_ZONE          : dev|playground|prod|c2|c3
 # - SOURCE_ACR          : Source ACR login server (e.g., radixc2prod.azurecr.io)
 # - TARGET_ACR          : Target ACR login server (e.g., radixc3.azurecr.io)
+# - CLUSTER_NAME        : Target kubectl context (e.g., weekly-93)
 
 #######################################################################################
 ### Read inputs and configs
@@ -35,6 +36,11 @@ fi
 
 if [[ -z "$TARGET_ACR" ]]; then
     echo "ERROR: Please provide TARGET_ACR" >&2
+    exit 1
+fi
+
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
@@ -101,8 +107,10 @@ fi
 echo "Patching RadixDeployments to replace '${SOURCE_ACR}' with '${TARGET_ACR}'..."
 echo ""
 
+verify_cluster_access "$CLUSTER_NAME"
+
 # Get all active RadixDeployments
-radixdeployments=$(kubectl get rd -A -o jsonpath='{range .items[?(@.status.condition=="Active")]}{.metadata.name}{" "}{.metadata.namespace}{"\n"}{end}')
+radixdeployments=$(kubectl --context "$CLUSTER_NAME" get rd -A -o jsonpath='{range .items[?(@.status.condition=="Active")]}{.metadata.name}{" "}{.metadata.namespace}{"\n"}{end}')
 
 if [ -z "$radixdeployments" ]; then
     echo "No active RadixDeployments found."
@@ -121,13 +129,13 @@ while IFS= read -r line; do
     echo "Processing: $rd_name in namespace $rd_namespace"
     
     # Get the current RadixDeployment spec
-    kubectl get rd "$rd_name" -n "$rd_namespace" -o json | \
+    kubectl --context "$CLUSTER_NAME" get rd "$rd_name" -n "$rd_namespace" -o json | \
     jq --arg search "$SOURCE_ACR" --arg replace "$TARGET_ACR" '
         # Update images in all components
         .spec.components[]?.image |= sub($search; $replace) |
         # Update images in all jobs
         .spec.jobs[]?.image |= sub($search; $replace)
-    ' | kubectl apply -f -
+    ' | kubectl --context "$CLUSTER_NAME" apply -f -
     
     if [ $? -eq 0 ]; then
         echo "  ✓ Successfully patched $rd_name"

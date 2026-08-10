@@ -129,7 +129,7 @@ printf "...Done.\n"
 #######################################################################################
 ### Verify cluster access
 ###
-verify_cluster_access
+verify_cluster_access "$CLUSTER_NAME"
 
 #######################################################################################
 ### Functions
@@ -151,33 +151,33 @@ function updateSecret() {
     PROXY_SERVICENOW_CLIENT_SECRET=$SERVICENOW_CLIENT_SECRET
     " > radix-servicenow-proxy-secrets.env
 
-    RADIX_SERVICENOW_PROXY_SECRET_NAME_QA=$(kubectl get secret --namespace "radix-servicenow-proxy-qa" --selector radix-component="api" -ojson | jq -r .items[0].metadata.name)
+    RADIX_SERVICENOW_PROXY_SECRET_NAME_QA=$(kubectl --context "$CLUSTER_NAME" get secret --namespace "radix-servicenow-proxy-qa" --selector radix-component="api" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$RADIX_SERVICENOW_PROXY_SECRET_NAME_QA" ]]; then
         echo "ERROR: Could not get secret for api component in radix-vulnerability-scanner-api-qa." >&2
     else
-        kubectl create secret generic "$RADIX_SERVICENOW_PROXY_SECRET_NAME_QA" --namespace radix-servicenow-proxy-qa \
+        kubectl --context "$CLUSTER_NAME" create secret generic "$RADIX_SERVICENOW_PROXY_SECRET_NAME_QA" --namespace radix-servicenow-proxy-qa \
             --from-env-file=./radix-servicenow-proxy-secrets.env \
             --dry-run=client -o yaml |
-            kubectl apply -f -
+            kubectl --context "$CLUSTER_NAME" apply -f -
     fi
 
-    RADIX_SERVICENOW_PROXY_SECRET_NAME_PROD=$(kubectl get secret --namespace "radix-servicenow-proxy-prod" --selector radix-component="api" -ojson | jq -r .items[0].metadata.name)
+    RADIX_SERVICENOW_PROXY_SECRET_NAME_PROD=$(kubectl --context "$CLUSTER_NAME" get secret --namespace "radix-servicenow-proxy-prod" --selector radix-component="api" -ojson | jq -r .items[0].metadata.name)
 
     if [[ -z "$RADIX_SERVICENOW_PROXY_SECRET_NAME_PROD" ]]; then
         echo "ERROR: Could not get secret for api component in radix-servicenow-proxy-prod." >&2
     else
-        kubectl create secret generic "$RADIX_SERVICENOW_PROXY_SECRET_NAME_PROD" --namespace radix-servicenow-proxy-prod \
+        kubectl --context "$CLUSTER_NAME" create secret generic "$RADIX_SERVICENOW_PROXY_SECRET_NAME_PROD" --namespace radix-servicenow-proxy-prod \
             --from-env-file=./radix-servicenow-proxy-secrets.env \
             --dry-run=client -o yaml |
-            kubectl apply -f -
+            kubectl --context "$CLUSTER_NAME" apply -f -
     fi
 
     rm radix-servicenow-proxy-secrets.env
 
     echo "Restarting radix-servicenow-proxy... "
-    kubectl rollout restart deployment -n radix-servicenow-proxy-qa
-    kubectl rollout restart deployment -n radix-servicenow-proxy-prod
+    kubectl --context "$CLUSTER_NAME" rollout restart deployment -n radix-servicenow-proxy-qa
+    kubectl --context "$CLUSTER_NAME" rollout restart deployment -n radix-servicenow-proxy-prod
 
     echo "Secret updated"
 }

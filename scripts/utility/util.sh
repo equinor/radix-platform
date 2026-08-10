@@ -121,7 +121,7 @@ function get_credentials() {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
-
+    currentContext=$(kubectl config current-context 2>/dev/null)
     az aks get-credentials \
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -129,6 +129,7 @@ function get_credentials() {
         --only-show-errors ||
         { return; }
     kubelogin convert-kubeconfig -l azurecli
+    kubectl config use-context "$CLUSTER" >/dev/null 2>&1
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 function get_credentials_silent() {
@@ -145,34 +146,19 @@ function get_credentials_silent() {
 }
 
 function verify_cluster_access() {
-    if [[ -n $CI ]]; then return; fi
-    printf "\nVerifying cluster access...\n"
-    kubectl cluster-info || {
-        printf "ERROR: Could not access cluster. Quitting...\n"
-        exit 1
-    }
-    printf " OK\n"
-}
-
-function setup_cluster_access() {
-  local AZ_RESOURCE_GROUP_CLUSTERS="$1"
-  local CLUSTER_NAME="$2"
-
-  get_credentials_silent "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER_NAME}"
-  kubectl_context="$(kubectl config current-context)"
-  if [ "${kubectl_context}" = "${CLUSTER_NAME}" ]; then
-      return 0
-  else
-      echo "ERROR: Please set your kubectl current-context to be ${CLUSTER_NAME}"
-      exit 1
+  local kube_context="$1"
+  if [[ -n $CI ]]; then return; fi
+  if [[ -z "$kube_context" ]]; then
+    printf "ERROR: Missing kubernetes context. Quitting...\n"
+    exit 1
   fi
 
-  kubectl cluster-info > /dev/null || {
-      echo "ERROR: Could not access cluster. Quitting..."
-      exit 1
+  printf "\nVerifying cluster access for context %s...\n" "$kube_context"
+  kubectl --context "$kube_context" cluster-info || {
+    printf "ERROR: Could not access cluster context %s. Quitting...\n" "$kube_context"
+    exit 1
   }
-
-  exit 0;
+  printf " OK\n"
 }
 
 get_latest_release() {
