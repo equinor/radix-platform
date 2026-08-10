@@ -20,9 +20,9 @@
 # - RADIX_ZONE          : dev | playground | prod | c2
 # - SOURCE_CLUSTER      : Example: "test-2", "weekly-93"
 # - BACKUP_NAME         : Example: all-hourly-20190703064411
+# - DEST_CLUSTER        : Example: "test-2", "weekly-93"
 
 # Optional:
-# - DEST_CLUSTER        : Example: "test-2", "weekly-93"
 # - USER_PROMPT         : Is human interaction is required to run script? true/false. Default is true.
 
 #######################################################################################
@@ -130,10 +130,8 @@ if [[ -z "$BACKUP_NAME" ]]; then
   exit 1
 fi
 
-# Optional inputs
-
 if [[ -z "$DEST_CLUSTER" ]]; then
-  DEST_CLUSTER="$SOURCE_CLUSTER"
+   echo "ERROR: Please provide DEST_CLUSTER." >&2
 fi
 
 if [[ -z "$USER_PROMPT" ]]; then

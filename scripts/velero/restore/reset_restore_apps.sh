@@ -5,6 +5,7 @@
 ###
 
 # Reset the destination cluster found in kubectl current context for anything the restore_apps.sh script produced.
+# Reset the destination cluster provided in CLUSTER_NAME for anything the restore_apps.sh script produced.
 
 #######################################################################################
 ### HOW TO USE
@@ -91,7 +92,7 @@ printf "...Done.\n"
 ### GO! GO! GO!
 ###
 
-DESTINATION_CLUSTER="$(kubectl --context "$CLUSTER_NAME" config current-context)"
+verify_cluster_access "$CLUSTER_NAME"
 
 echo ""
 echo "WARNING!"
@@ -99,7 +100,7 @@ echo "This script is a tool for testing restore operations in a development clus
 echo "The intention is to reset the destination cluster for anything the restore_apps.sh script produced."
 echo "You cannot undo the actions performed by this script."
 echo ""
-echo "Current cluster is: $DESTINATION_CLUSTER"
+echo "Current cluster is: $CLUSTER_NAME"
 echo ""
 
 while true; do
@@ -117,12 +118,12 @@ done
 
 echo ""
 echo "Removing all rr..."
-kubectl --context "$DESTINATION_CLUSTER" delete rr --all
+kubectl --context "$CLUSTER_NAME" delete rr --all
 
 # wait until all radix app namespaces are gone
 echo ""
 printf "Waiting for all radix app namespaces to be deleted..."
-while [[ "$(kubectl --context "$DESTINATION_CLUSTER" get namespace --selector='radix-app' --output=name)" != "" ]]; do
+while [[ "$(kubectl --context "$CLUSTER_NAME" get namespace --selector='radix-app' --output=name)" != "" ]]; do
    printf "."
    sleep 2
 done
@@ -130,7 +131,7 @@ printf " Done.\n"
 
 echo ""
 echo "Removing all restore sets..."
-kubectl --context "$DESTINATION_CLUSTER" delete restore --all --namespace velero
+kubectl --context "$CLUSTER_NAME" delete restore --all --namespace velero
 
 echo ""
 echo "Configure velero back to normal operation in destination..."
@@ -149,7 +150,7 @@ PATCH_JSON="$(
 END
 )"
 # Set velero in read/write mode
-kubectl --context "$DESTINATION_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl --context "$CLUSTER_NAME" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
 echo "All done & gone!"
