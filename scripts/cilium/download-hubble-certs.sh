@@ -18,10 +18,8 @@ if [[ -z "$CLUSTER_NAME" ]]; then
   exit 1
 fi
 
-clustername="$CLUSTER_NAME"
-
-kubectl --context "$clustername" cluster-info >/dev/null 2>&1 || {
-  echo "ERROR: Could not access cluster context $clustername. Quitting..." >&2
+kubectl --context "$LUSTER_NAME" cluster-info >/dev/null 2>&1 || {
+  echo "ERROR: Could not access cluster context $LUSTER_NAME. Quitting..." >&2
   exit 1
 }
 
@@ -30,7 +28,7 @@ for FILE in "${!CERT_FILES[@]}"; do
   JSONPATH="{.data['${FILE//./\\.}']}"
 
   # Retrieve the secret and decode it
-  kubectl --context "$clustername" get secret hubble-relay-client-certs -n kube-system \
+  kubectl --context "$LUSTER_NAME" get secret hubble-relay-client-certs -n kube-system \
     -o jsonpath="${JSONPATH}" | \
     base64 -d > "$CERT_DIR/$FILE"
 
