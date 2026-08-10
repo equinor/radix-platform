@@ -76,7 +76,7 @@ function login_azure() {
 }
 function flux_configmap() {
   # Create configmap for Flux v2 to use for variable substitution. (https://fluxcd.io/docs/components/kustomize/kustomization/#variable-substitution)
-  get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null
+    verify_cluster_access "$DEST_CLUSTER"
   printf "\n%s► Deploy radix-flux-config configmap in flux namespace\n"
     CM=$(kubectl --context "$DEST_CLUSTER" create configmap radix-flux-config -n flux-system --dry-run=client -o json \
       --from-literal=dnsZone="$AZ_RESOURCE_DNS" \
@@ -241,6 +241,10 @@ get_variables # Populate environment variables from terraform outputs
 if [[ -n "$SUBFUNCTION" ]]; then
     case "$SUBFUNCTION" in
         flux)
+            get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null || {
+                echo "ERROR: Unable to fetch credentials for cluster $DEST_CLUSTER" >&2
+                exit 1
+            }
             flux_configmap
             exit 0
             ;;
@@ -419,6 +423,7 @@ if [[ $install_base_components == true ]]; then
     --branch="$FLUX_BRANCH" \
     --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
     --components-extra=image-reflector-controller,image-automation-controller \
+    --context="$DEST_CLUSTER" \
     --version="v$FLUX_VERSION" \
     --silent
     if [[ "$?" != "0" ]]; then
