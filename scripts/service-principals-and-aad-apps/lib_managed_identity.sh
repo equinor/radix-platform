@@ -201,19 +201,21 @@ function add-federated-gh-credentials {
 function create-role-and-rolebinding {
     local role_path
     local rolebinding_path
+    local clustername
 
     role_path="$1"
     rolebinding_path="$2"
+    clustername="${CLUSTER_NAME:-$(kubectl config current-context)}"
 
     printf "Creating role...\n"
-    kubectl apply -f "${role_path}" || {
+    kubectl --context "$clustername" apply -f "${role_path}" || {
         echo -e "ERROR: Could not create role." >&2
         exit 1
     }
     printf "Done\n"
 
     printf "Creating rolebinding...\n"
-    kubectl apply -f "${rolebinding_path}" || {
+    kubectl --context "$clustername" apply -f "${rolebinding_path}" || {
         echo -e "ERROR: Could not create rolebinding." >&2
         exit 1
     }

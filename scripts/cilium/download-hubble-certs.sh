@@ -13,12 +13,14 @@ declare -A CERT_FILES=(
   ["ca.crt"]="tls-ca-cert-files"
 )
 
+clustername="$(kubectl config current-context)"
+
 for FILE in "${!CERT_FILES[@]}"; do
   KEY="${CERT_FILES[$FILE]}"
   JSONPATH="{.data['${FILE//./\\.}']}"
 
   # Retrieve the secret and decode it
-  kubectl get secret hubble-relay-client-certs -n kube-system \
+  kubectl --context "$clustername" get secret hubble-relay-client-certs -n kube-system \
     -o jsonpath="${JSONPATH}" | \
     base64 -d > "$CERT_DIR/$FILE"
 

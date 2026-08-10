@@ -5,7 +5,8 @@
 # The purpose of the shell script is to patch RadixDeployments to cater for changes in the Radix operator
 # so that no customer application is broken
 
-DESTINATION_CLUSTER="$(kubectl config current-context)"
+clustername="$(kubectl config current-context)"
+DESTINATION_CLUSTER="$clustername"
 
 echo ""
 echo "WARNING!"
@@ -39,11 +40,11 @@ while read -r line; do
         for replica in $(echo $replicas | sed "s/,/ /g")
         do
             if [[ ""${replica}"" == "0" ]]; then
-                $(kubectl patch rd $name -p "[{'op': 'replace', 'path': "/spec/components/$index/replicas",'value': 1}]" --type json -n $namespace 2>&1 >/dev/null)
+                $(kubectl --context "$clustername" patch rd $name -p "[{'op': 'replace', 'path': "/spec/components/$index/replicas",'value': 1}]" --type json -n $namespace 2>&1 >/dev/null)
                 echo "Patched $name in $namespace"
             fi
 
             index=$((index+1))
         done      
     fi
-done <<< "$(kubectl get rd --all-namespaces -o custom-columns=':metadata.name, :metadata.namespace, :spec.components[*].replicas, :status.condition' | grep 'Active')"
+done <<< "$(kubectl --context "$clustername" get rd --all-namespaces -o custom-columns=':metadata.name, :metadata.namespace, :spec.components[*].replicas, :status.condition' | grep 'Active')"

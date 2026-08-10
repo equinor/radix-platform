@@ -171,14 +171,14 @@ verify_cluster_access "$CLUSTER_NAME"
 helm uninstall kube-prometheus-stack
 
 # CRDs created by this chart are not removed by default and should be manually cleaned up:
-kubectl delete crd alertmanagerconfigs.monitoring.coreos.com
-kubectl delete crd alertmanagers.monitoring.coreos.com
-kubectl delete crd podmonitors.monitoring.coreos.com
-kubectl delete crd probes.monitoring.coreos.com
-kubectl delete crd prometheuses.monitoring.coreos.com
-kubectl delete crd prometheusrules.monitoring.coreos.com
-kubectl delete crd servicemonitors.monitoring.coreos.com
-kubectl delete crd thanosrulers.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd alertmanagerconfigs.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd alertmanagers.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd podmonitors.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd probes.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd prometheuses.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd prometheusrules.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd servicemonitors.monitoring.coreos.com
+kubectl --context "$CLUSTER_NAME" delete crd thanosrulers.monitoring.coreos.com
 
 #######################################################################################
 ### END

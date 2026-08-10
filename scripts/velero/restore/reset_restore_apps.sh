@@ -91,7 +91,7 @@ printf "...Done.\n"
 ### GO! GO! GO!
 ###
 
-DESTINATION_CLUSTER="$(kubectl config current-context)"
+DESTINATION_CLUSTER="$(kubectl --context "$CLUSTER_NAME" config current-context)"
 
 echo ""
 echo "WARNING!"
@@ -117,12 +117,12 @@ done
 
 echo ""
 echo "Removing all rr..."
-kubectl delete rr --all
+kubectl --context "$DESTINATION_CLUSTER" delete rr --all
 
 # wait until all radix app namespaces are gone
 echo ""
 printf "Waiting for all radix app namespaces to be deleted..."
-while [[ "$(kubectl get namespace --selector='radix-app' --output=name)" != "" ]]; do
+while [[ "$(kubectl --context "$DESTINATION_CLUSTER" get namespace --selector='radix-app' --output=name)" != "" ]]; do
    printf "."
    sleep 2
 done
@@ -130,7 +130,7 @@ printf " Done.\n"
 
 echo ""
 echo "Removing all restore sets..."
-kubectl delete restore --all --namespace velero
+kubectl --context "$DESTINATION_CLUSTER" delete restore --all --namespace velero
 
 echo ""
 echo "Configure velero back to normal operation in destination..."
@@ -149,7 +149,7 @@ PATCH_JSON="$(
 END
 )"
 # Set velero in read/write mode
-kubectl patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl --context "$DESTINATION_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
 
 echo ""
 echo "All done & gone!"

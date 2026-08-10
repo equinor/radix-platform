@@ -158,7 +158,7 @@ function verify_cluster_access() {
   fi
 
   printf "\nVerifying cluster access...\n"
-  kubectl cluster-info || {
+  kubectl --context "$(kubectl config current-context)" cluster-info || {
         printf "ERROR: Could not access cluster. Quitting...\n"
         exit 1
     }
@@ -178,7 +178,7 @@ function setup_cluster_access() {
       exit 1
   fi
 
-  kubectl cluster-info > /dev/null || {
+  kubectl --context "$CLUSTER_NAME" cluster-info > /dev/null || {
       echo "ERROR: Could not access cluster. Quitting..."
       exit 1
   }

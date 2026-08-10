@@ -279,7 +279,7 @@ function restartAllEnvironments() {
     getApiToken || return 1
     getAppEnvironments && getSecret
     for app_env in $APP_ENVIRONMENTS; do
-        kubectl rollout restart deployment -n radix-networkpolicy-canary-${app_env} web
+        kubectl --context "$CLUSTER_NAME" rollout restart deployment -n radix-networkpolicy-canary-${app_env} web
     done
 }
 

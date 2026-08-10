@@ -141,7 +141,7 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 
-kubectl -n flux-system delete secret flux-system >/dev/null
+kubectl --context "$CLUSTER_NAME" -n flux-system delete secret flux-system >/dev/null
 ssh-keygen -t ed25519 -f ./$FLUX_PRIVATE_KEY_NAME -N "" -q >/dev/null
 flux create secret git flux-system --url=ssh://git@github.com/equinor/radix-flux.git --private-key-file=./$FLUX_PRIVATE_KEY_NAME >/dev/null
 SECRET_VALUES=$(<$FLUX_PRIVATE_KEY_NAME)
@@ -190,7 +190,7 @@ if [[ $show_instructions == true ]]; then
   echo ""
   echo "3. Run the following command to boostrap flux with the new key:"
   echo ""
-  echo "kubectl -n flux-system delete secret flux-system"
+    echo "kubectl --context <context-name> -n flux-system delete secret flux-system"
   echo ""
   echo "flux bootstrap git \\"
   echo "--private-key-file="$FLUX_PRIVATE_KEY_NAME" \\"
