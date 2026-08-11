@@ -79,7 +79,8 @@ function environment_json() {
   elif [[ $RADIX_ZONE == "prod" ]] || [[ $RADIX_ZONE == "c2" ]] || [[ $RADIX_ZONE == "c3" ]] || [[ $RADIX_ZONE == "extmon" ]] ; then
     local AZ_SUBSCRIPTION_NAME="s940"
   fi
-  local terraform=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init) >&2
+  terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init >&2
+  terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init >&2
   local az_resource_group_clusters=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
   local az_resource_group_common=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_common)
   local velero_storage_account=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
@@ -129,7 +130,7 @@ function get_credentials() {
         --only-show-errors ||
         { return; }
     kubelogin convert-kubeconfig -l azurecli
-    kubectl config use-context "$CLUSTER" >/dev/null 2>&1
+    kubectl config use-context "$currentContext" >/dev/null 2>&1
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 function get_credentials_silent() {

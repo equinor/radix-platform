@@ -22,10 +22,10 @@
 ### HOW TO USE
 ###
 
-# RADIX_ZONE=dev CLUSTER_NAME=weekly-49 ./teardown.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
+# RADIX_ZONE=dev CLUSTER_NAME=weekly-31 ./teardown.sh > >(tee -a /tmp/stdout.log) 2> >(tee -a /tmp/stderr.log >&2)
 #
 # or without log:
-# RADIX_ZONE=dev CLUSTER_NAME=weekly-24 ./teardown.sh
+# RADIX_ZONE=dev CLUSTER_NAME=weekly-31 ./teardown.sh
 
 #######################################################################################
 ### START
