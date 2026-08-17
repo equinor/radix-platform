@@ -225,12 +225,6 @@ if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
 fi
 
-UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT="$WORKDIR_PATH/cicd-canary/update_secret_for_networkpolicy_canary.sh"
-if ! [[ -x "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" ]]; then
-    # Print to stderror
-    echo "ERROR: The update networkpolicy canary secret script is not found or it is not executable in path $UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" >&2
-fi
-
 #######################################################################################
 ### Environment
 ###
@@ -597,12 +591,6 @@ while [[ ! $(kubectl --context "$DEST_CLUSTER" get deployments radix-api-server 
     printf "."
     sleep 5
 done
-echo ""
-
-# Update networkpolicy canary with HTTP password to access endpoint for scheduling batch job
-printf "\n%s► Execute %s%s\n" "${grn}" "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT" "${normal}"
-(RADIX_ZONE="$RADIX_ZONE" CLUSTER_NAME="$DEST_CLUSTER" STAGING="$STAGING" source "$UPDATE_NETWORKPOLICY_CANARY_SECRET_SCRIPT")
-wait # wait for subshell to finish
 echo ""
 
 #######################################################################################
