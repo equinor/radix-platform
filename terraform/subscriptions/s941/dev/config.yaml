@@ -49,9 +49,9 @@ clusters:
     network_policy: "cilium"
     hostencryption: true
     activecluster: true
-  weekly-33:
-    aksversion: "1.35.5"
-    networkset: "networkset1"
-    network_policy: "cilium"
-    hostencryption: true
-    activecluster: false
+  # weekly-33:
+  #   aksversion: "1.35.5"
+  #   networkset: "networkset1"
+  #   network_policy: "cilium"
+  #   hostencryption: true
+  #   activecluster: false
