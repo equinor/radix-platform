@@ -30,6 +30,10 @@ set -Eeuo pipefail
 # Continue an existing backup incrementally:
 # RADIX_ZONE=dev CLUSTER="weekly-33" BACKUP_NAME="prometheus-backup-20260820143000" ./prometheus-db-backup.sh
 
+# Monitor the backup Job:
+# kubectl --context "${CLUSTER}" logs -n monitor -l job-name=prometheus-backup-upload --all-containers --prefix -f
+# kubectl --context "${CLUSTER}" get pods -n monitor -l job-name=prometheus-backup-upload -w
+
 #######################################################################################
 ### START
 ###
@@ -47,7 +51,6 @@ yel=$'\e[1;33m'
 gry=$'\e[2;37m'
 normal=$(tput sgr0)
 
-PROMETHEUS_PATCHED=false
 FLUX_SUSPENDED=false
 
 function cleanup_backup() {
@@ -55,25 +58,6 @@ function cleanup_backup() {
 
     set +e
     printf "\n%s► Clean up temporary backup resources %s\n" "${grn}" "${normal}"
-
-    if [[ ${PROMETHEUS_PATCHED} == true ]]; then
-        kubectl --context "${CLUSTER}" patch prometheus prometheus-operator-prometheus \
-            --namespace "${MONITOR_NAMESPACE}" \
-            --type merge \
-            --patch '{"spec":{"enableAdminAPI":null}}'
-
-        printf "Waiting for Prometheus to be Ready after reverting admin API..."
-        for _ in {1..60}; do
-            if [[ $(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
-                --namespace "${MONITOR_NAMESPACE}" \
-                --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' 2>/dev/null) == "True" ]]; then
-                break
-            fi
-            printf "."
-            sleep 5
-        done
-        printf "\n"
-    fi
 
     if [[ ${FLUX_SUSPENDED} == true ]]; then
         flux --context "${CLUSTER}" resume helmrelease kube-prometheus-stack \
@@ -157,7 +141,7 @@ fi
 ###
 printf "\n%s► Read YAML configfile $RADIX_ZONE"
 RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
-printf "\n%s► Read terraform variables and configuration"
+printf "\n%s► Read terraform variables and configuration\n"
 RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
 RADIX_ZONE_YAML=$(cat <<EOF
 $(<$RADIX_ZONE_ENV)
@@ -173,6 +157,7 @@ else
     fi
     BACKUP_MODE="incremental"
 fi
+MANIFEST_TIMESTAMP=$(date -u '+%Y%m%d%H%M%S')
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
 RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
@@ -185,6 +170,7 @@ BACKUP_CONTAINER="${CLUSTER}"
 BACKUP_PREFIX="backups"
 BACKUP_DATA_PREFIX="${BACKUP_PREFIX}/${BACKUP_NAME}"
 MANIFEST_BLOB_NAME="${BACKUP_PREFIX}/${BACKUP_NAME}/manifest.json"
+HISTORY_MANIFEST_BLOB_NAME="${BACKUP_PREFIX}/${BACKUP_NAME}/manifest${MANIFEST_TIMESTAMP}.json"
 TMP_DIR=$(mktemp -d)
 LOCAL_MANIFEST_FILE="${TMP_DIR}/${BACKUP_NAME}.manifest.json"
 
@@ -222,6 +208,20 @@ if ! az ad group member check \
     -o tsv 2>/dev/null | grep -qx true; then
     echo -e "" >&2
     printf "%s► Activate %s in Azure PIM and re-run the script.%s\n" "${red}" "${PIM_GROUP_NAME}" "${normal}" >&2
+    exit 1
+else
+    printf "Done.\n"
+fi
+
+printf "Checking that logged in AAD user is Owner of ${AZ_SUBSCRIPTION_ID} subscription... "
+if ! az role assignment list \
+    --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}" \
+    --assignee "$(az ad signed-in-user show --query id -o tsv)" \
+    --include-inherited true \
+    --query '[?roleDefinitionName==`Owner`].roleDefinitionName' \
+    -o tsv | grep -qx 'Owner'; then
+    echo -e "ERROR: Logged in user is not Owner of ${AZ_SUBSCRIPTION_ID} subscription. Owner access is required before assigning RBAC roles to the managed identity." >&2
+    echo -e "Activate the subscription Owner role and re-run the script." >&2
     exit 1
 else
     printf "Done.\n"
@@ -323,32 +323,36 @@ done
 printf "Done.\n"
 
 printf "%s► Enable Prometheus Admin API %s\n" "${grn}" "${normal}"
-flux --context "${CLUSTER}" suspend helmrelease kube-prometheus-stack --namespace ${MONITOR_NAMESPACE}
-FLUX_SUSPENDED=true
+PROMETHEUS_ADMIN_API_ENABLED=$(kubectl --context "${CLUSTER}" get prometheus prometheus-operator-prometheus \
+    --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={.spec.enableAdminAPI}')
+if [[ ${PROMETHEUS_ADMIN_API_ENABLED} == "true" ]]; then
+    printf "Prometheus Admin API is already enabled; keeping the current Pod.\n"
+else
+    flux --context "${CLUSTER}" suspend helmrelease kube-prometheus-stack --namespace ${MONITOR_NAMESPACE}
+    FLUX_SUSPENDED=true
 
-PROMETHEUS_POD_UID_BEFORE=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
-    --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={.metadata.uid}' 2>/dev/null || true)
-
-kubectl --context "${CLUSTER}" patch prometheus prometheus-operator-prometheus \
-    --namespace ${MONITOR_NAMESPACE} \
-    --type merge \
-    --patch '{"spec":{"enableAdminAPI":true}}' # Enable Admin API to allow TSDB snapshots
-PROMETHEUS_PATCHED=true
-
-printf "Waiting for Prometheus to be replaced and ready with admin API enabled..."
-while true; do
-    PROMETHEUS_POD_UID_AFTER=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
+    PROMETHEUS_POD_UID_BEFORE=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
         --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={.metadata.uid}' 2>/dev/null || true)
-    PROMETHEUS_READY=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
-        --namespace "${MONITOR_NAMESPACE}" \
-        --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || true)
-    if [[ -n ${PROMETHEUS_POD_UID_AFTER} && ${PROMETHEUS_POD_UID_AFTER} != "${PROMETHEUS_POD_UID_BEFORE}" && ${PROMETHEUS_READY} == "True" ]]; then
-        break
-    fi
-    printf "."
-    sleep 5
-done
-printf "Done.\n"
+
+    kubectl --context "${CLUSTER}" patch prometheus prometheus-operator-prometheus \
+        --namespace ${MONITOR_NAMESPACE} \
+        --type merge \
+        --patch '{"spec":{"enableAdminAPI":true}}' # Enable Admin API to allow TSDB snapshots
+    printf "Waiting for Prometheus to be replaced and ready with admin API enabled..."
+    while true; do
+        PROMETHEUS_POD_UID_AFTER=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
+            --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={.metadata.uid}' 2>/dev/null || true)
+        PROMETHEUS_READY=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
+            --namespace "${MONITOR_NAMESPACE}" \
+            --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || true)
+        if [[ -n ${PROMETHEUS_POD_UID_AFTER} && ${PROMETHEUS_POD_UID_AFTER} != "${PROMETHEUS_POD_UID_BEFORE}" && ${PROMETHEUS_READY} == "True" ]]; then
+            break
+        fi
+        printf "."
+        sleep 5
+    done
+    printf "Done.\n"
+fi
 
 PROMETHEUS_NODE_NAME=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
     --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={.spec.nodeName}')
@@ -373,6 +377,18 @@ spec:
       nodeName: ${PROMETHEUS_NODE_NAME}
       serviceAccountName: ${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}
       restartPolicy: Never
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/instance
+                      operator: In
+                      values:
+                        - prometheus-operator-prometheus
+                topologyKey: kubernetes.io/hostname
       initContainers:
         - name: trigger-snapshot
           image: curlimages/curl
@@ -411,14 +427,36 @@ spec:
                 aarch64) AZCOPY_URL=https://aka.ms/downloadazcopy-v10-linux-arm64 ;;
                 *) echo "ERROR: Unsupported architecture: \$(uname -m)" >&2; exit 1 ;;
               esac
-              curl -sL "\${AZCOPY_URL}" -o /tmp/azcopy.tar.gz
+              curl -fsSL "\${AZCOPY_URL}" -o /tmp/azcopy.tar.gz
               tar -xzf /tmp/azcopy.tar.gz -C /tmp
               AZCOPY_BIN=\$(find /tmp -maxdepth 1 -type d -name 'azcopy_linux_*')/azcopy
-              SOURCE_SIZE=\$(du -sh /prometheus/snapshots | awk '{print \$1}')
+                            CURRENT_SNAPSHOT_DIR=\$(find /prometheus/snapshots -mindepth 1 -maxdepth 1 -type d | sort | tail -1)
+                            if [ -z "\${CURRENT_SNAPSHOT_DIR}" ]; then
+                                echo "ERROR: No Prometheus snapshot directory found under /prometheus/snapshots." >&2
+                                exit 1
+                            fi
+                            SOURCE_SIZE=\$(du -sh "\${CURRENT_SNAPSHOT_DIR}" | awk '{print \$1}')
               echo "Syncing snapshot (\${SOURCE_SIZE}) directly to Blob Storage..."
-              "\${AZCOPY_BIN}" sync /prometheus/snapshots "${AZCOPY_BLOB_URL}" --delete-destination=false
-              echo "TOTAL_SIZE_BYTES=\$(du -sb /prometheus/snapshots | awk '{print \$1}')"
-              echo "FILE_COUNT=\$(find /prometheus/snapshots -type f | wc -l)"
+                            UPLOAD_STARTED_AT=\$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+                            UPLOAD_START_SECONDS=\$(date '+%s')
+                            if ! "\${AZCOPY_BIN}" sync "\${CURRENT_SNAPSHOT_DIR}" "${AZCOPY_BLOB_URL}" --delete-destination=true --exclude-pattern=manifest*.json > /tmp/azcopy-sync.log 2>&1; then
+                                cat /tmp/azcopy-sync.log >&2
+                                exit 1
+                            fi
+                            cat /tmp/azcopy-sync.log
+                            UPLOAD_COMPLETED_AT=\$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+                            UPLOAD_DURATION_SECONDS=\$((\$(date '+%s') - UPLOAD_START_SECONDS))
+                            UPLOADED_SIZE_BYTES=\$(grep -E 'Total Number of Bytes Transferred:' /tmp/azcopy-sync.log | tail -1 | awk '{print \$NF}')
+                            if ! echo "\${UPLOADED_SIZE_BYTES}" | grep -Eq '^[0-9]+$'; then
+                                echo "ERROR: Could not determine bytes transferred from AzCopy output." >&2
+                                exit 1
+                            fi
+                            echo "UPLOAD_STARTED_AT=\${UPLOAD_STARTED_AT}"
+                            echo "UPLOAD_COMPLETED_AT=\${UPLOAD_COMPLETED_AT}"
+                            echo "UPLOAD_DURATION_SECONDS=\${UPLOAD_DURATION_SECONDS}"
+                            echo "UPLOADED_SIZE_BYTES=\${UPLOADED_SIZE_BYTES}"
+                            echo "TOTAL_SIZE_BYTES=\$(du -sb "\${CURRENT_SNAPSHOT_DIR}" | awk '{print \$1}')"
+                            echo "FILE_COUNT=\$(find "\${CURRENT_SNAPSHOT_DIR}" -type f | wc -l)"
               rm -rf /prometheus/snapshots
           volumeMounts:
             - name: prometheus-data
@@ -429,6 +467,7 @@ spec:
           persistentVolumeClaim:
             claimName: ${PROMETHEUS_PVC_NAME}
 EOF
+printf "Monitor the backup Job with:\n%skubectl logs -n monitor -l job-name=prometheus-backup-upload --context %s --all-containers --prefix -f%s\n" "${grn}" "${CLUSTER}" "${normal}"
 printf "Waiting for AzCopy sync Job..."
 while true; do
         AZCOPY_JOB_STATUS=$(kubectl --context "${CLUSTER}" get job prometheus-backup-upload \
@@ -458,11 +497,22 @@ AZCOPY_LOGS=$(kubectl --context "${CLUSTER}" logs job/prometheus-backup-upload \
         --namespace "${MONITOR_NAMESPACE}" --container azcopy)
 TOTAL_SIZE_BYTES=$(grep -oE 'TOTAL_SIZE_BYTES=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
 FILE_COUNT=$(grep -oE 'FILE_COUNT=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
+UPLOAD_STARTED_AT=$(grep -oE 'UPLOAD_STARTED_AT=[0-9T:-]+Z' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
+UPLOAD_COMPLETED_AT=$(grep -oE 'UPLOAD_COMPLETED_AT=[0-9T:-]+Z' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
+UPLOAD_DURATION_SECONDS=$(grep -oE 'UPLOAD_DURATION_SECONDS=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
+UPLOADED_SIZE_BYTES=$(grep -oE 'UPLOADED_SIZE_BYTES=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
 if [[ -z ${FILE_COUNT} || ${FILE_COUNT} -eq 0 ]]; then
     echo "ERROR: AzCopy synced zero files; refusing to record an empty backup." >&2
     echo "${AZCOPY_LOGS}" >&2
     exit 1
 fi
+jq -e -n \
+    --arg started_at "${UPLOAD_STARTED_AT}" \
+    --arg completed_at "${UPLOAD_COMPLETED_AT}" \
+    --argjson duration_seconds "${UPLOAD_DURATION_SECONDS}" \
+    --argjson uploaded_size_bytes "${UPLOADED_SIZE_BYTES}" \
+    '{upload_started_at: $started_at, upload_completed_at: $completed_at, upload_duration_seconds: $duration_seconds, uploaded_size_bytes: $uploaded_size_bytes}' \
+    >/dev/null
 jq -n \
     --arg backup_name "${BACKUP_NAME}" \
     --arg backup_mode "${BACKUP_MODE}" \
@@ -470,10 +520,15 @@ jq -n \
     --arg storage_account "${AZ_VELERO_STORAGE_ACCOUNT}" \
     --arg container "${BACKUP_CONTAINER}" \
     --arg blob "${BACKUP_DATA_PREFIX}" \
+    --arg manifest_timestamp "${MANIFEST_TIMESTAMP}" \
+    --arg upload_started_at "${UPLOAD_STARTED_AT}" \
+    --arg upload_completed_at "${UPLOAD_COMPLETED_AT}" \
     --arg updated_at "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
     --argjson total_size_bytes "${TOTAL_SIZE_BYTES}" \
     --argjson file_count "${FILE_COUNT}" \
-    '{backup_name: $backup_name, backup_mode: $backup_mode, source_cluster: $source_cluster, storage_account: $storage_account, container: $container, blob: $blob, total_size_bytes: $total_size_bytes, file_count: $file_count, updated_at: $updated_at}' \
+    --argjson uploaded_size_bytes "${UPLOADED_SIZE_BYTES}" \
+    --argjson upload_duration_seconds "${UPLOAD_DURATION_SECONDS}" \
+    '{backup_name: $backup_name, backup_mode: $backup_mode, source_cluster: $source_cluster, storage_account: $storage_account, container: $container, blob: $blob, manifest_timestamp: $manifest_timestamp, total_size_bytes: $total_size_bytes, total_size_gb: ((($total_size_bytes / 1000000000) * 100 | round) / 100), file_count: $file_count, uploaded_size_bytes: $uploaded_size_bytes, uploaded_size_gb: ((($uploaded_size_bytes / 1000000000) * 100 | round) / 100), upload_duration_seconds: $upload_duration_seconds, upload_started_at: $upload_started_at, upload_completed_at: $upload_completed_at, updated_at: $updated_at}' \
     > "${LOCAL_MANIFEST_FILE}"
 
 printf "%s► Upload backup manifest to %s/%s %s\n" "${grn}" "${BACKUP_CONTAINER}" "${MANIFEST_BLOB_NAME}" "${normal}"
@@ -486,6 +541,15 @@ az storage blob upload \
     --account-name "${AZ_VELERO_STORAGE_ACCOUNT}" \
     --container-name "${BACKUP_CONTAINER}" \
     --name "${MANIFEST_BLOB_NAME}" \
+    --file "${LOCAL_MANIFEST_FILE}" \
+    --auth-mode login \
+    --overwrite true \
+    --only-show-errors > /dev/null
+printf "%s► Upload timestamped manifest history to %s/%s %s\n" "${grn}" "${BACKUP_CONTAINER}" "${HISTORY_MANIFEST_BLOB_NAME}" "${normal}"
+az storage blob upload \
+    --account-name "${AZ_VELERO_STORAGE_ACCOUNT}" \
+    --container-name "${BACKUP_CONTAINER}" \
+    --name "${HISTORY_MANIFEST_BLOB_NAME}" \
     --file "${LOCAL_MANIFEST_FILE}" \
     --auth-mode login \
     --overwrite true \

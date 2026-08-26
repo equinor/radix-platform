@@ -2,160 +2,164 @@
 
 ## Prometheus database backup and restore
 
-`prometheus-db-backup.sh` stores a Prometheus TSDB snapshot in Azure Blob
-Storage. `prometheus-db-restore.sh` restores a selected snapshot later into a
-new or replacement cluster. Each script uses a temporary Azure managed disk
-only while transferring the archive.
+The backup and restore scripts store Prometheus TSDB snapshot files directly in
+Azure Blob Storage. Velero and temporary staging disks are not used.
 
-Create a backup:
+### Backup
 
-```sh
-RADIX_ZONE=dev CLUSTER=weekly-33 ./prometheus-db-backup.sh
-```
-
-Restore a named backup:
+Run a new backup with an automatic timestamp:
 
 ```sh
-RADIX_ZONE=dev BACKUP_CLUSTER=weekly-33 CLUSTER=weekly-34 \
-BACKUP_NAME=prometheus-backup-20260820143000 ./prometheus-db-restore.sh
+RADIX_ZONE=dev CLUSTER="weekly-34" ./prometheus-db-backup.sh
 ```
 
-The cluster must already have `kube-prometheus-stack` installed and
-the Prometheus data PVC name expected by
-`prometheus-restore-job.yaml`.
+Continue an existing backup incrementally by reusing its `BACKUP_NAME`:
 
-### Prometheus Migration
-
-This describes the previous single-run backup and restore flow. It remains as a
-reference for the temporary-disk staging mechanism, but is no longer performed
-by `prometheus-db-backup.sh`.
-
-#### Prometheus Backup Flow
-
-```mermaid
-flowchart TD
-    start([Start]) --> validate[Validate tools, inputs,<br/>Azure session, and access]
-    validate --> ready{Source Prometheus ready<br/>and disk usage <= 50%?}
-    ready -- No --> stop([Stop])
-    ready -- Yes --> disk[Create temporary<br/>managed disk]
-    disk --> mount[Create source PV/PVC<br/>and mount /backup]
-    mount --> snapshot[Create Prometheus TSDB snapshot]
-    snapshot --> hook[Velero pre-hook archives<br/>/prometheus/snapshots]
-    hook --> backup[Start Velero backup]
-    backup --> wait[Wait until backup is Completed]
-    wait --> cleanup[Restore source settings<br/>and remove source resources]
-    cleanup --> handoff[(Retained temporary disk<br/>contains prometheusbackup.tar)]
+```sh
+RADIX_ZONE=dev CLUSTER="weekly-34" \
+BACKUP_NAME="prometheus-backup-20260825110832" \
+./prometheus-db-backup.sh
 ```
 
-#### Prometheus Restore Flow
-
-```mermaid
-flowchart TD
-    handoff[(Temporary disk<br/>contains prometheusbackup.tar)] --> setup[Apply PV/PVC in destination]
-    setup --> pause[Pause Flux and scale<br/>Prometheus to zero]
-    pause --> restore[Restore job extracts archive into<br/>the Prometheus data PVC]
-    restore --> cleanup[Delete restore Job, PVC, PV,<br/>and temporary disk]
-    cleanup --> complete([Scale Prometheus up<br/>and complete])
-```
-
-The archive is created by the pre-hook after the Prometheus snapshot job has
-completed. The destination restore job reads the archive from the same Azure
-disk and extracts it into the destination Prometheus data PVC. The final PVC
-and PV deletion removes the retained temporary disk through the PV reclaim
-policy.
-
-### Durable backup and delayed restore
-
-To migrate at a later time, split the current script into a backup script and
-a restore script. Store the archive in the cluster's existing Velero container,
-under `backups/prometheus/`. The zone's Velero storage account is available to
-scripts as `velero_sa` through `environment_json` and is named
-`radixvelero{environment}`.
-
-For example, a backup from `weekly-33` in the development environment is
-stored at:
+Each run creates a full Prometheus snapshot, but `azcopy sync` transfers only
+new or changed files to the existing Blob folder. The backup is stored in the
+cluster's zone storage account:
 
 ```text
-radixvelerodev / weekly-33 / backups / prometheus / prometheus-backup-20260820143000.tar
+<cluster>/<backup-name>/
+        <Prometheus snapshot files>
+        manifest.json
+        manifestYYYYMMDDHHMMSS.json
 ```
 
-The layout of the `weekly-33` container is then:
+The manifest records both the snapshot size (`total_size_bytes` and
+`total_size_gb`) and the actual data transferred by AzCopy
+(`uploaded_size_bytes` and `uploaded_size_gb`), along with
+`upload_duration_seconds`, `upload_started_at`, and `upload_completed_at`.
+Gigabytes use decimal units: $1$ GB = $1,000,000,000 bytes.
+`manifest.json` is overwritten with the latest run, while each timestamped
+manifest is retained as run history.
 
-```text
-backups/                Velero-managed backup data
-    prometheus/           Prometheus TSDB archives managed by these scripts
-        prometheus-backup-<timestamp>.tar
-        prometheus-backup-<timestamp>.manifest.json
-restores/               Velero-managed restore data
-```
+The Prometheus snapshot API still creates a timestamped snapshot directory on
+the PVC, but the backup Job syncs the contents of that directory into the Blob
+backup root. Reusing the same `BACKUP_NAME` therefore lets `azcopy sync` compare
+the same Blob paths across runs. Files that no longer exist in the latest
+snapshot are deleted from that backup root so a restore mirrors the newest
+snapshot state.
+
+The backup Job runs these steps in order:
 
 ```mermaid
 flowchart TD
-    subgraph backup[1. prometheus-db-backup.sh]
-        preflight[Validate inputs, Azure access,<br/>PIM role, and cluster]
-        staging[Create temporary Azure disk,<br/>PV, and PVC]
-        prepare[Pause Flux and patch Prometheus:<br/>Admin API, /backup, backup sidecar]
-        snapshot[Create TSDB snapshot]
-        archive[Velero pre-hook in backup sidecar:<br/>archive /prometheus/snapshots]
-        copy[AzCopy Job uploads prometheusbackup.tar<br/>with workload identity]
-        checksum[Calculate SHA-256 and write manifest]
-        upload[Upload archive and manifest to Blob Storage]
-        cleanup[Restore Prometheus CR and Flux;<br/>wait for /backup to detach]
-        delete[Delete temporary job, PVC, PV, and disk]
-        preflight --> staging --> prepare --> snapshot --> archive --> copy --> checksum --> upload --> cleanup --> delete
-    end
+        preflight[Validate Azure, cluster, and identity access]
+        admin[Pause Flux and enable Prometheus Admin API]
+        job[Create prometheus-backup-upload Job]
+        snapshot[trigger-snapshot initContainer calls the Prometheus snapshot API]
+        sync[AzCopy sync reads the current snapshot directory]
+        blob[(Azure Blob Storage: <cluster>/<backup-name>/)]
+        cleanup[Delete snapshot Job, restore Admin API, resume Flux]
+        preflight --> admin --> job --> snapshot --> sync --> blob --> cleanup
+```
 
-    subgraph storage[Azure Blob Storage]
-        blob[(radixvelero env<br/>current cluster container<br/>backups/prometheus/prometheus-backup-timestamp.tar<br/>backups/prometheus/prometheus-backup-timestamp.manifest.json)]
-    end
+Monitor a running backup:
 
-    subgraph restore[2. prometheus-db-restore.sh]
-        select[Select backup ID and cluster]
-        verify[Download manifest and verify checksum]
-        stagingRestore[Create temporary disk, PV, and PVC]
-        download[Copy archive to temporary PVC]
+```sh
+kubectl --context "${CLUSTER}" logs -n monitor \
+    -l job-name=prometheus-backup-upload --all-containers --prefix -f
+kubectl --context "${CLUSTER}" get pods -n monitor \
+    -l job-name=prometheus-backup-upload -w
+```
+
+### Restore
+
+Restore within one zone:
+
+```sh
+RADIX_ZONE=dev \
+BACKUP_CLUSTER="weekly-33" \
+DEST_CLUSTER="weekly-34" \
+BACKUP_NAME="prometheus-backup-20260820143000" \
+./prometheus-db-restore.sh
+```
+
+Restore from Playground to Dev:
+
+```sh
+RADIX_ZONE=dev \
+BACKUP_ZONE=playground \
+BACKUP_CLUSTER="playground-29" \
+DEST_CLUSTER="weekly-34" \
+BACKUP_NAME="prometheus-backup-20260825110832" \
+./prometheus-db-restore.sh
+```
+
+For a cross-zone restore, the destination identity must be able to read the
+source storage account. In the example above:
+
+```text
+Destination identity: radix-id-prometheus-backup-dev
+Source account:       radixveleroplayground
+Required role:        Storage Blob Data Reader
+```
+
+The Dev destination VNet must also reach the Playground Blob endpoint through
+a Private Endpoint and resolve it through `privatelink.blob.core.windows.net`.
+The restore ServiceAccount is:
+
+```text
+monitor/prometheus-backup-uploader
+```
+
+The restore process is:
+
+```mermaid
+flowchart TD
+        select[Select BACKUP_ZONE, BACKUP_CLUSTER, DEST_CLUSTER, and BACKUP_NAME]
+        verify[Read source manifest and locate restore source]
         stop[Pause Flux and scale Prometheus to zero]
-        extract[Restore job extracts archive into Prometheus data PVC]
-        restoreCleanup[Restore original replica count and Flux;<br/>delete temporary job, PVC, PV, and disk]
-        select --> verify --> stagingRestore --> download --> stop --> extract --> restoreCleanup
-    end
-
-    upload --> blob
-    blob --> verify
-
-    cleanup --> released{Backup volume released?}
-    released -- Yes --> delete
-    released -- No --> preserve[Preserve PV and disk for recovery]
+        wipe[Delete existing files from the Prometheus data directory]
+        download[AzCopy copy snapshot contents directly to /prometheus]
+        owner[Set ownership to the Prometheus UID and GID]
+        start[Restore replicas and resume Flux]
+        ready[Wait for prometheus-prometheus-operator-prometheus-0 to become Ready]
+        select --> verify --> stop --> wipe --> download --> owner --> start --> ready
 ```
 
-Both scripts use strict error handling and cleanup traps. On a failed backup,
-the source Prometheus configuration and Flux release are restored before the
-staging storage is removed. If the source Pod does not release the temporary
-`/backup` volume, the script preserves the PV and disk instead of forcing a
-detach that could leave a stale CSI attachment.
+    Before a cross-zone restore, the script displays the Private Endpoint, Private
+    DNS, connection verification, and RBAC create commands. After the restore is
+    complete and Prometheus is Ready, it displays optional commands to remove the
+    Private DNS zone group, Private Endpoint, and temporary Blob Reader role. The
+    cleanup commands are never executed by the script.
 
-The scripts should use an immutable backup ID, for example
-`prometheus-backup-YYYYMMDDHHMMSS`, as the Blob filename prefix. The restore
-script must require that ID and cluster rather than selecting the newest backup
-automatically.
+The destination data PVC is mounted by Prometheus as:
 
-#### Why Blob Storage
+```text
+PVC:     prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0
+Mount:   /prometheus
+SubPath: prometheus-db
+```
 
-| Benefit | Temporary managed disk | Blob Storage |
-| --- | --- | --- |
-| Restore later | Deleted by the current migration flow | Retained until lifecycle policy removes it |
-| Restore to a new cluster | Requires the source disk to remain available | Any authorized cluster can download the selected backup |
-| Cost for inactive backups | Charges as provisioned disk capacity | Charges for stored bytes and selected access tier |
-| Backup catalogue | No durable metadata | Cluster container, Blob prefix, and manifests identify each backup |
-| Integrity verification | No persistent record | Store a SHA-256 checksum in the manifest |
-| Retention | Manual disk management | Lifecycle policies can expire or tier old backups |
+The restore deletes the existing contents of that `prometheus-db` subpath,
+copies the snapshot files directly into `/prometheus`, skips `manifest.json`,
+corrects ownership, and does not create an `old` directory or a temporary disk.
+Backups created with the older timestamp-folder layout are still supported; the
+restore script selects the newest timestamped snapshot folder when needed.
 
-Use Azure AD data-plane authorization (`--auth-mode login` from the operator,
-or a workload identity for uploader/downloader jobs) rather than storage account
-keys. The existing Velero `BackupStorageLocation` already targets this storage
-account and source-cluster container through the configured private network
-path. The new uploader and downloader still need explicit Blob data-plane
-authorization; a `BackupStorageLocation` does not itself grant another job
-permission to upload or download blobs.
+Monitor a running restore:
+
+```sh
+kubectl --context "${DEST_CLUSTER}" logs -n monitor \
+    -l job-name=prometheus-restore --all-containers --prefix -f
+kubectl --context "${DEST_CLUSTER}" get pods -n monitor \
+    -l job-name=prometheus-restore -w
+kubectl --context "${DEST_CLUSTER}" exec -n monitor \
+    -l job-name=prometheus-restore -c azcopy -- du -sh /prometheus
+```
+
+Both scripts use Azure Workload Identity for in-cluster AzCopy. The workload
+identity ServiceAccount requires a federated credential with the destination
+cluster OIDC issuer, subject
+`system:serviceaccount:monitor:prometheus-backup-uploader`, and audience
+`api://AzureADTokenExchange`.
 
 <!-- topk(5,radix_operator_request_sum) -->

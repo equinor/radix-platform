@@ -29,3 +29,20 @@ module "storageaccount" {
 output "velero_storage_account" {
   value = module.storageaccount.velero.data.name
 }
+
+module "radix_id_prometheus_backup_mi" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-prometheus-backup-${module.config.environment}"
+  location            = module.config.location
+  resource_group_name = module.resourcegroup_common.data.name
+  roleassignments = {
+    storage_blob_data_contributor = {
+      role     = "Storage Blob Data Contributor"
+      scope_id = module.storageaccount.velero.data.id
+    }
+  }
+}
+
+output "radix_id_prometheus_backup_mi_client_id" {
+  value = module.radix_id_prometheus_backup_mi.client-id
+}
