@@ -87,6 +87,7 @@ module "aks" {
   private_dns_zone_link_name        = "${each.key}-link"
   monitor_data_collection_rule_name = "${lookup(module.config.cluster[each.key], "monitor_data_collection_rule_prefix", "MSCI-${module.config.location}-")}${each.key}"
   hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
+  upgrade_override                   = lookup(module.config.cluster[each.key], "upgrade_override", null)
   scalediagnostic_enabled           = lookup(module.config.cluster[each.key], "scalediagnostic_enabled", false)
 }
 

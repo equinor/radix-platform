@@ -26,9 +26,18 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   workload_identity_enabled = var.enable_workload_identity
+  dynamic "upgrade_override" {
+    for_each = var.upgrade_override == null ? [] : [var.upgrade_override]
+    content {
+      force_upgrade_enabled = upgrade_override.value.force_upgrade_enabled
+      effective_until       = try(upgrade_override.value.effective_until, null)
+    }
+  }
+
   lifecycle {
     ignore_changes = [
-      default_node_pool[0].upgrade_settings
+      default_node_pool[0].upgrade_settings,
+      default_node_pool[0].temporary_name_for_rotation
     ]
   }
 
@@ -156,7 +165,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   host_encryption_enabled = var.hostencryption
   depends_on              = [azurerm_kubernetes_cluster.this]
   lifecycle {
-    ignore_changes = [upgrade_settings, gpu_driver]
+    ignore_changes = [upgrade_settings, gpu_driver, temporary_name_for_rotation]
   }
 }
 

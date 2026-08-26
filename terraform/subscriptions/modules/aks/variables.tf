@@ -160,6 +160,14 @@ variable "node_os_upgrade_channel" {
   default = "None"
 }
 
+variable "upgrade_override" {
+  type = object({
+    force_upgrade_enabled = bool
+    effective_until       = optional(string)
+  })
+  default = null
+}
+
 variable "nsg_name" {
   description = "Network Security Group name."
   type        = string
