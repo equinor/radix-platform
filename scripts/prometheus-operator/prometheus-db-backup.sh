@@ -53,7 +53,7 @@ normal=$(tput sgr0)
 
 FLUX_SUSPENDED=false
 
-function cleanup_backup() {
+function resume_prometheus() {
     local exit_code=$?
 
     set +e
@@ -65,9 +65,6 @@ function cleanup_backup() {
         flux --context "${CLUSTER}" reconcile helmrelease kube-prometheus-stack \
             --namespace "${MONITOR_NAMESPACE}"
     fi
-
-    kubectl --context "${CLUSTER}" delete job prometheus-backup-upload \
-        --namespace "${MONITOR_NAMESPACE}" --ignore-not-found
 
     return "${exit_code}"
 }
@@ -295,7 +292,7 @@ PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT="prometheus-backup-uploader"
 PROMETHEUS_POD_NAME="prometheus-prometheus-operator-prometheus-0"
 PROMETHEUS_PVC_NAME="prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
 
-trap 'cleanup_backup; rm -rf "${TMP_DIR}"' EXIT
+trap 'resume_prometheus; rm -rf "${TMP_DIR}"' EXIT
 
 if [[ -n "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" && "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" != "null" ]]; then
         if ! kubectl --context "${CLUSTER}" get serviceaccount "${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}" \
@@ -556,7 +553,7 @@ az storage blob upload \
     --only-show-errors > /dev/null
 printf "Done.\n"
 
-cleanup_backup
+resume_prometheus
 trap - EXIT
 rm -rf "${TMP_DIR}"
 
