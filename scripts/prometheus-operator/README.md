@@ -57,7 +57,7 @@ flowchart TD
         snapshot[trigger-snapshot initContainer calls the Prometheus snapshot API]
         sync[AzCopy sync reads the current snapshot directory]
         blob[(Azure Blob Storage: <cluster>/<backup-name>/)]
-        cleanup[Delete snapshot Job, restore Admin API, resume Flux]
+        cleanup[Delete snapshot Job, resume Flux]
         preflight --> admin --> job --> snapshot --> sync --> blob --> cleanup
 ```
 
