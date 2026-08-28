@@ -263,19 +263,6 @@ else
   printf "Done.\n"
 fi
 
-printf "Checking that logged in AAD user is Owner of ${AZ_SUBSCRIPTION_ID} subscription... "
-if ! az role assignment list \
-  --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}" \
-  --assignee "$(az ad signed-in-user show --query id -o tsv)" \
-  --include-inherited true \
-  --query '[?roleDefinitionName==`Owner`].roleDefinitionName' \
-  -o tsv | grep -qx 'Owner'; then
-  echo -e "ERROR: Logged in user is not Owner of ${AZ_SUBSCRIPTION_ID} subscription. Owner access is required before assigning RBAC roles to the managed identity." >&2
-  echo -e "Activate the subscription Owner role and re-run the script." >&2
-  exit 1
-else
-  printf "Done.\n"
-fi
 
 echo ""
 echo "Prometheus database restore will use the following configuration:"
