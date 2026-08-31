@@ -84,6 +84,7 @@ function environment_json() {
   local az_resource_group_clusters=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
   local az_resource_group_common=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_common)
   local velero_storage_account=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
+  local radix_id_prometheus_backup_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_prometheus_backup_mi_client_id 2>/dev/null || true)
   local keyvault_config=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_config_name)
   local keyvault_main=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_name)
   local dns_zone_name=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_name)
@@ -101,6 +102,7 @@ function environment_json() {
     "cluster_rg": "$az_resource_group_clusters",
     "common_rg": "$az_resource_group_common",
     "velero_sa": "$velero_storage_account",
+    "radix_id_prometheus_backup_mi_client_id": "$radix_id_prometheus_backup_mi_client_id",
     "keyvault_config" : "$keyvault_config",
     "keyvault_main" : "$keyvault_main",
     "dns_zone": "$dns_zone_name",
@@ -148,7 +150,6 @@ function get_credentials_silent() {
 
 function verify_cluster_access() {
   local kube_context="$1"
-  if [[ -n $CI ]]; then return; fi
   if [[ -z "$kube_context" ]]; then
     printf "ERROR: Missing kubernetes context. Quitting...\n"
     exit 1

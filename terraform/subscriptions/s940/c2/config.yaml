@@ -77,6 +77,7 @@ clusters:
     cluster_to_hub_peering: "c2-11-to-vnet-hub"
     hub_to_cluster_peering: "vnet-hub-to-c2-11"
     scalediagnostic_enabled: true
+    hostencryption: false
   c2-24:
     aksversion: "1.35.5"
     networkset: "networkset2"
@@ -87,3 +88,4 @@ clusters:
     systempool: "systempool_v1"
     nodepools: "nodepools_v1"
     scalediagnostic_enabled: true
+

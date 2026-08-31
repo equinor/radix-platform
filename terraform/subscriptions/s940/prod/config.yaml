@@ -108,6 +108,9 @@ clusters:
     network_policy: "cilium"
     activecluster: false
     cluster_resource_group: "clusters-c1"
+    hostencryption: true
+    upgrade_override:
+      force_upgrade_enabled: false
     systempool: "systempool_v1"
     nodepools: "nodepools_v1"
     scalediagnostic_enabled: true

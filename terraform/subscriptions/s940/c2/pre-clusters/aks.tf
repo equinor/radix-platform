@@ -86,7 +86,7 @@ module "aks" {
   network_lock_name                 = "vnet-${each.key}-CanNotDelete-Lock"
   private_dns_zone_link_name        = "${each.key}-link"
   monitor_data_collection_rule_name = "MSCI-${module.config.location}-${each.key}"
-  hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
+  hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", true)
   scalediagnostic_enabled           = lookup(module.config.cluster[each.key], "scalediagnostic_enabled", false)
 }
 
