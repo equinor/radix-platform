@@ -150,7 +150,6 @@ function get_credentials_silent() {
 
 function verify_cluster_access() {
   local kube_context="$1"
-  if [[ -n ${CI:-} ]]; then return; fi
   if [[ -z "$kube_context" ]]; then
     printf "ERROR: Missing kubernetes context. Quitting...\n"
     exit 1
