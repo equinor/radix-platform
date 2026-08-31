@@ -28,17 +28,7 @@ cluster's zone storage account:
 ```text
 <cluster>/<backup-name>/
         <Prometheus snapshot files>
-        manifest.json
-        manifestYYYYMMDDHHMMSS.json
 ```
-
-The manifest records both the snapshot size (`total_size_bytes` and
-`total_size_gb`) and the actual data transferred by AzCopy
-(`uploaded_size_bytes` and `uploaded_size_gb`), along with
-`upload_duration_seconds`, `upload_started_at`, and `upload_completed_at`.
-Gigabytes use decimal units: $1$ GB = $1,000,000,000 bytes.
-`manifest.json` is overwritten with the latest run, while each timestamped
-manifest is retained as run history.
 
 The Prometheus snapshot API still creates a timestamped snapshot directory on
 the PVC, but the backup Job syncs the contents of that directory into the Blob
@@ -57,7 +47,7 @@ flowchart TD
         snapshot[trigger-snapshot initContainer calls the Prometheus snapshot API]
         sync[AzCopy sync reads the current snapshot directory]
         blob[(Azure Blob Storage: <cluster>/<backup-name>/)]
-        cleanup[Delete snapshot Job, resume Flux]
+        cleanup[Resume Flux]
         preflight --> admin --> job --> snapshot --> sync --> blob --> cleanup
 ```
 
@@ -115,7 +105,7 @@ The restore process is:
 ```mermaid
 flowchart TD
         select[Select BACKUP_ZONE, BACKUP_CLUSTER, DEST_CLUSTER, and BACKUP_NAME]
-        verify[Read source manifest and locate restore source]
+        verify[Locate restore source]
         stop[Pause Flux and scale Prometheus to zero]
         wipe[Delete existing files from the Prometheus data directory]
         download[AzCopy copy snapshot contents directly to /prometheus]
@@ -140,8 +130,10 @@ SubPath: prometheus-db
 ```
 
 The restore deletes the existing contents of that `prometheus-db` subpath,
-copies the snapshot files directly into `/prometheus`, skips `manifest.json`,
-corrects ownership, and does not create an `old` directory or a temporary disk.
+copies the snapshot files directly into `/prometheus`, corrects ownership, and
+does not create an `old` directory or a temporary disk. The backup and restore
+Jobs remain in the cluster after completion so their logs can be inspected.
+Before a new run, the existing Job with the same name is deleted and recreated.
 Backups created with the older timestamp-folder layout are still supported; the
 restore script selects the newest timestamped snapshot folder when needed.
 

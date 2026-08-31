@@ -37,7 +37,7 @@
 # SOURCE_STORAGE_ID=$(az storage account show --name radixveleroplayground --resource-group common-playground --query id --output tsv)
 # az network private-endpoint create --resource-group cluster-vnet-hub-dev --name pe-radixveleroplayground-from-dev --vnet-name vnet-hub --subnet private-links --private-connection-resource-id "${SOURCE_STORAGE_ID}" --group-id blob --connection-name radixveleroplayground-from-dev
 ## Link the Blob Private DNS zone to the Dev hub VNet:
-# az network private-endpoint dns-zone-group create --resource-group cluster-vnet-hub-dev --endpoint-name pe-radixveleroplayground-from-dev --name default --private-dns-zone privatelink.blob.core.windows.net
+# az network private-endpoint dns-zone-group create --resource-group cluster-vnet-hub-dev --endpoint-name pe-radixveleroplayground-from-dev --name default --zone-name blob --private-dns-zone privatelink.blob.core.windows.net
 ## Verify that the source storage account connection is approved:
 # az network private-endpoint-connection list --id "${SOURCE_STORAGE_ID}" --query "[?properties.privateEndpoint.id && properties.privateLinkServiceConnectionState.status=='Approved'].{endpoint:properties.privateEndpoint.id,status:properties.privateLinkServiceConnectionState.status}" --output table
 ## Add the temporary permission before the restore:
@@ -69,22 +69,16 @@ grn=$'\e[1;32m'
 gry=$'\e[2;37m'
 normal=$(tput sgr0)
 
-RESTORE_JOB_CREATED=false
 PROMETHEUS_SCALED_DOWN=false
 FLUX_SUSPENDED=false
 ORIGINAL_PROMETHEUS_REPLICAS=1
 PROMETHEUS_POD_NAME="prometheus-prometheus-operator-prometheus-0"
 
-function cleanup_restore() {
+function resume_prometheus() {
   local exit_code=$?
 
   set +e
   printf "\n%s► Clean up temporary restore resources %s\n" "${grn}" "${normal}"
-
-  if [[ ${RESTORE_JOB_CREATED} == true ]]; then
-    kubectl --context "${DEST_CLUSTER}" delete job prometheus-restore \
-      --namespace "${MONITOR_NAMESPACE}" --ignore-not-found --wait=true
-  fi
 
   if [[ ${PROMETHEUS_SCALED_DOWN} == true ]]; then
     kubectl --context "${DEST_CLUSTER}" patch prometheus "${PROMETHEUS_NAME}" \
@@ -153,38 +147,53 @@ function subscription_name() {
   fi
 }
 
+
+#######################################################################################
+### Environment
+###
+printf "\n%s► Read YAML configfile $RADIX_ZONE"
+RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
+printf "\n%s► Read terraform variables and configuration\n"
+RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
+RADIX_ZONE_YAML=$(cat <<EOF
+$(<$RADIX_ZONE_ENV)
+EOF
+)
+
+
 MONITOR_NAMESPACE="monitor"
 PROMETHEUS_NAME="prometheus-operator-prometheus"
 PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT="prometheus-backup-uploader"
 PROMETHEUS_PVC_NAME="prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
 BACKUP_PREFIX="backups"
 BACKUP_DATA_PREFIX="${BACKUP_PREFIX}/${BACKUP_NAME}"
-MANIFEST_BLOB_NAME="${BACKUP_PREFIX}/${BACKUP_NAME}/manifest.json"
-TMP_DIR=$(mktemp -d)
-LOCAL_MANIFEST_FILE="${TMP_DIR}/${BACKUP_NAME}.manifest.json"
-
-printf "\n%s► Read YAML configfile %s" "${grn}" "${RADIX_ZONE}"
-RADIX_ZONE_ENV=$(config_path "${RADIX_ZONE}")
-printf "\n%s► Read terraform variables and configuration%s\n" "${grn}" "${normal}"
 RADIX_SUBSCRIPTION_NAME=$(subscription_name "${RADIX_ZONE}")
 BACKUP_SUBSCRIPTION_NAME=$(subscription_name "${BACKUP_ZONE}")
 RADIX_BASE_INFRASTRUCTURE_PATH="${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/${RADIX_SUBSCRIPTION_NAME}/${RADIX_ZONE}/base-infrastructure"
 BACKUP_BASE_INFRASTRUCTURE_PATH="${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/${BACKUP_SUBSCRIPTION_NAME}/${BACKUP_ZONE}/base-infrastructure"
-terraform -chdir="${RADIX_BASE_INFRASTRUCTURE_PATH}" init >&2
-if [[ ${BACKUP_BASE_INFRASTRUCTURE_PATH} != "${RADIX_BASE_INFRASTRUCTURE_PATH}" ]]; then
-  terraform -chdir="${BACKUP_BASE_INFRASTRUCTURE_PATH}" init >&2
-fi
+# terraform -chdir="${RADIX_BASE_INFRASTRUCTURE_PATH}" init >&2
+# if [[ ${BACKUP_BASE_INFRASTRUCTURE_PATH} != "${RADIX_BASE_INFRASTRUCTURE_PATH}" ]]; then
+#   terraform -chdir="${BACKUP_BASE_INFRASTRUCTURE_PATH}" init >&2
+# fi
 RADIX_ZONE_YAML=$(<"${RADIX_ZONE_ENV}")
+AZ_TENANT_ID=$(az account show --query tenantId --output tsv)
+# YAML values (Input from static config.yaml from each zone)
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "${RADIX_ZONE_YAML}")
 AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "${RADIX_ZONE_YAML}")
 RADIX_ENVIRONMENT=$(yq '.environment' <<< "${RADIX_ZONE_YAML}")
 AZ_SUBSCRIPTION_NAME=$(yq '.subscription_shortname' <<< "${RADIX_ZONE_YAML}")
-AZ_TENANT_ID=$(az account show --query tenantId --output tsv)
-AZ_RESOURCE_GROUP_CLUSTERS=$(terraform -chdir="${RADIX_BASE_INFRASTRUCTURE_PATH}" output -raw az_resource_group_clusters)
-AZ_RESOURCE_GROUP_COMMON=$(terraform -chdir="${RADIX_BASE_INFRASTRUCTURE_PATH}" output -raw az_resource_group_common)
-AZ_BACKUP_STORAGE_ACCOUNT=$(terraform -chdir="${BACKUP_BASE_INFRASTRUCTURE_PATH}" output -raw velero_storage_account)
-AZ_BACKUP_RESOURCE_GROUP_COMMON=$(terraform -chdir="${BACKUP_BASE_INFRASTRUCTURE_PATH}" output -raw az_resource_group_common)
-PROMETHEUS_BACKUP_MI_CLIENT_ID=$(terraform -chdir="${RADIX_BASE_INFRASTRUCTURE_PATH}" output -raw radix_id_prometheus_backup_mi_client_id)
+
+# JSON values (Generated from function environment_json which reads from terraform outputs)
+if [[ ${BACKUP_ZONE} == "${RADIX_ZONE}" ]]; then
+  BACKUP_RESOURCE_JSON="${RADIX_RESOURCE_JSON}"
+else
+  BACKUP_RESOURCE_JSON=$(environment_json "${BACKUP_ZONE}")
+fi
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_BACKUP_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$BACKUP_RESOURCE_JSON")
+AZ_BACKUP_STORAGE_ACCOUNT=$(jq -r .velero_sa <<< "$BACKUP_RESOURCE_JSON")
+PROMETHEUS_BACKUP_MI_CLIENT_ID=$(jq -r .radix_id_prometheus_backup_mi_client_id <<< "$RADIX_RESOURCE_JSON")
 PROMETHEUS_BACKUP_MI_NAME="radix-id-prometheus-backup-${RADIX_ZONE}"
 
 if [[ ${BACKUP_ZONE_EXPLICIT} == true && ${BACKUP_ZONE} != "${RADIX_ZONE}" ]]; then
@@ -197,7 +206,7 @@ if [[ ${BACKUP_ZONE_EXPLICIT} == true && ${BACKUP_ZONE} != "${RADIX_ZONE}" ]]; t
   printf "%s Optional commands to complete the task:%s\n" "${normal}" "${normal}"
   printf "%s # SOURCE_STORAGE_ID=\$(az storage account show --name ${AZ_BACKUP_STORAGE_ACCOUNT} --resource-group ${AZ_BACKUP_RESOURCE_GROUP_COMMON} --query id --output tsv)%s\n" "${grn}" "${normal}"
   printf "%s # az network private-endpoint create --resource-group cluster-vnet-hub-${RADIX_ZONE} --name pe-${AZ_BACKUP_STORAGE_ACCOUNT}-from-${RADIX_ZONE} --vnet-name vnet-hub --subnet private-links --private-connection-resource-id \"\${SOURCE_STORAGE_ID}\" --group-id blob --connection-name ${AZ_BACKUP_STORAGE_ACCOUNT}-from-${RADIX_ZONE}%s\n" "${grn}" "${normal}"
-  printf "%s # az network private-endpoint dns-zone-group create --resource-group cluster-vnet-hub-${RADIX_ZONE} --endpoint-name pe-${AZ_BACKUP_STORAGE_ACCOUNT}-from-${RADIX_ZONE} --name default --private-dns-zone privatelink.blob.core.windows.net%s\n" "${grn}" "${normal}"
+  printf "%s # az network private-endpoint dns-zone-group create --resource-group cluster-vnet-hub-${RADIX_ZONE} --endpoint-name pe-${AZ_BACKUP_STORAGE_ACCOUNT}-from-${RADIX_ZONE} --name default --zone-name blob --private-dns-zone privatelink.blob.core.windows.net%s\n" "${grn}" "${normal}"
   printf "%s # az network private-endpoint-connection list --id \"\${SOURCE_STORAGE_ID}\" --query \"[?properties.privateEndpoint.id && properties.privateLinkServiceConnectionState.status=='Approved'].{endpoint:properties.privateEndpoint.id,status:properties.privateLinkServiceConnectionState.status}\" --output table%s\n" "${grn}" "${normal}"
   printf "%s # DEST_IDENTITY_PRINCIPAL_ID=\$(az identity show --name ${PROMETHEUS_BACKUP_MI_NAME} --resource-group ${AZ_RESOURCE_GROUP_COMMON} --query principalId --output tsv)%s\n" "${grn}" "${normal}"
   printf "%s # az role assignment create --assignee-object-id \"\${DEST_IDENTITY_PRINCIPAL_ID}\" --assignee-principal-type ServicePrincipal --role \"Storage Blob Data Reader\" --scope \"\${SOURCE_STORAGE_ID}\"%s\n" "${grn}" "${normal}"
@@ -218,19 +227,15 @@ BLOB_NAMES=$(az storage blob list \
   --auth-mode login \
   --output tsv)
 BACKUP_SNAPSHOT_BLOB_PREFIX=$(awk -F/ 'NF >= 4 && $3 ~ /^[0-9]{8}T[0-9]{6}Z-/ {print $1 "/" $2 "/" $3}' <<< "${BLOB_NAMES}" | sort -u | tail -1)
-FLATTENED_SNAPSHOT_EXISTS=$(awk -F/ 'NF >= 3 && $3 != "manifest.json" && $3 !~ /^[0-9]{8}T[0-9]{6}Z-/ {found=1} END {if (found) print "true"}' <<< "${BLOB_NAMES}")
-if [[ ${FLATTENED_SNAPSHOT_EXISTS} == "true" ]]; then
-  RESTORE_BLOB_PREFIX="${BACKUP_DATA_PREFIX}"
-  RESTORE_BLOB_LAYOUT="flattened"
-elif [[ -n "${BACKUP_SNAPSHOT_BLOB_PREFIX}" ]]; then
+if [[ -n "${BACKUP_SNAPSHOT_BLOB_PREFIX}" ]]; then
   RESTORE_BLOB_PREFIX="${BACKUP_SNAPSHOT_BLOB_PREFIX}"
   RESTORE_BLOB_LAYOUT="legacy snapshot folder"
 else
-  echo "ERROR: No Prometheus snapshot files found under ${BACKUP_CLUSTER}/${BACKUP_DATA_PREFIX}." >&2
-  exit 1
+  RESTORE_BLOB_PREFIX="${BACKUP_DATA_PREFIX}"
+  RESTORE_BLOB_LAYOUT="backup root"
 fi
 
-trap 'cleanup_restore; rm -rf "${TMP_DIR}"' EXIT
+trap 'resume_prometheus' EXIT
 
 printf "\nLogging in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
@@ -284,59 +289,19 @@ if [[ ${USER_PROMPT} == true ]]; then
     esac
 fi
 
-printf "%s► Download and verify backup manifest %s\n" "${grn}" "${normal}"
-printf "Downloading backup manifest... "
-az storage blob download \
-    --account-name "${AZ_BACKUP_STORAGE_ACCOUNT}" \
-    --container-name "${BACKUP_CLUSTER}" \
-    --name "${MANIFEST_BLOB_NAME}" \
-    --file "${LOCAL_MANIFEST_FILE}" \
-    --auth-mode login \
-    --only-show-errors > /dev/null
-printf "Done.\n"
-
-MANIFEST_BACKUP_NAME=$(jq -r .backup_name "${LOCAL_MANIFEST_FILE}")
-MANIFEST_BACKUP_CLUSTER=$(jq -r .source_cluster "${LOCAL_MANIFEST_FILE}")
-MANIFEST_FILE_COUNT=$(jq -r .file_count "${LOCAL_MANIFEST_FILE}")
-MANIFEST_TOTAL_SIZE_BYTES=$(jq -r .total_size_bytes "${LOCAL_MANIFEST_FILE}")
-
-if [[ ${MANIFEST_BACKUP_NAME} != "${BACKUP_NAME}" || ${MANIFEST_BACKUP_CLUSTER} != "${BACKUP_CLUSTER}" || ! ${MANIFEST_FILE_COUNT} =~ ^[0-9]+$ ]]; then
-    echo "ERROR: Backup manifest does not match the requested backup." >&2
-    exit 1
-fi
-printf "Manifest reports %s files, %s bytes.\n" "${MANIFEST_FILE_COUNT}" "${MANIFEST_TOTAL_SIZE_BYTES}"
-
 printf "%s► Connect to cluster %s\n" "${grn}" "${normal}"
 get_credentials "${AZ_RESOURCE_GROUP_CLUSTERS}" "${DEST_CLUSTER}" >/dev/null
 verify_cluster_access "${DEST_CLUSTER}"
 
-if [[ -n "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" && "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" != "null" ]]; then
-    if ! kubectl --context "${DEST_CLUSTER}" get serviceaccount "${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}" \
-        --namespace "${MONITOR_NAMESPACE}" >/dev/null 2>&1; then
-        cat <<EOF | kubectl --context "${DEST_CLUSTER}" apply --filename -
+cat <<EOF | kubectl --context "${DEST_CLUSTER}" apply --filename -
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: ${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}
-  namespace: ${MONITOR_NAMESPACE}
+  namespace: monitor
+  annotations:
+    azure.workload.identity/client-id: ${PROMETHEUS_BACKUP_MI_CLIENT_ID}
 EOF
-    fi
-    kubectl --context "${DEST_CLUSTER}" annotate serviceaccount "${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}" \
-        --namespace "${MONITOR_NAMESPACE}" \
-        "azure.workload.identity/client-id=${PROMETHEUS_BACKUP_MI_CLIENT_ID}" \
-        --overwrite
-fi
-
-    PROMETHEUS_BACKUP_CONFIGURED_CLIENT_ID=$(kubectl --context "${DEST_CLUSTER}" \
-      get serviceaccount "${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}" \
-      --namespace "${MONITOR_NAMESPACE}" \
-      --output json 2>/dev/null | jq -r '.metadata.annotations["azure.workload.identity/client-id"] // empty' || true)
-    if [[ -z "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" || "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" == "null" || \
-      ${PROMETHEUS_BACKUP_CONFIGURED_CLIENT_ID} != "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" ]]; then
-      echo "ERROR: Destination ServiceAccount ${MONITOR_NAMESPACE}/${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT} is not configured with the destination managed identity." >&2
-      echo "Expected client ID: ${PROMETHEUS_BACKUP_MI_CLIENT_ID:-missing}; configured: ${PROMETHEUS_BACKUP_CONFIGURED_CLIENT_ID:-missing}" >&2
-      exit 1
-    fi
 
 PROMETHEUS_SECURITY_CONTEXT_JSON=$(kubectl --context "${DEST_CLUSTER}" get statefulset prometheus-prometheus-operator-prometheus \
   --namespace "${MONITOR_NAMESPACE}" --output json | jq -c '.spec.template.spec.securityContext')
@@ -417,7 +382,7 @@ spec:
               echo "Removing old Prometheus data..."
               find /prometheus -mindepth 1 -delete
               echo "Copying backup files from Blob Storage..."
-              "\${AZCOPY_BIN}" copy "${AZCOPY_BLOB_URL}" /prometheus --recursive=true --exclude-pattern=manifest*.json
+              "\${AZCOPY_BIN}" copy "${AZCOPY_BLOB_URL}" /prometheus --recursive=true
               if [ -z "\$(find /prometheus -type f -print -quit)" ]; then
                 echo "ERROR: Restore produced no files in /prometheus." >&2
                 exit 1
@@ -434,7 +399,6 @@ spec:
           persistentVolumeClaim:
             claimName: ${PROMETHEUS_PVC_NAME}
 EOF
-RESTORE_JOB_CREATED=true
 printf "Monitor the restore Job with:\n%skubectl logs -n monitor -l job-name=prometheus-restore --context %s --all-containers --prefix -f%s\n" "${grn}" "${DEST_CLUSTER}" "${normal}"
 
 printf "Waiting for Prometheus restore job to complete..."
@@ -462,9 +426,8 @@ while true; do
 done
 printf "Done.\n"
 
-cleanup_restore
+resume_prometheus
 trap - EXIT
-rm -rf "${TMP_DIR}"
 
 printf "Waiting for Prometheus to start after restore..."
 for _ in {1..60}; do

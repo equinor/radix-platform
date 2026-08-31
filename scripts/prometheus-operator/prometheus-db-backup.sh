@@ -154,7 +154,6 @@ else
     fi
     BACKUP_MODE="incremental"
 fi
-MANIFEST_TIMESTAMP=$(date -u '+%Y%m%d%H%M%S')
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
 RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
@@ -166,10 +165,6 @@ PROMETHEUS_BACKUP_MI_CLIENT_ID=$(jq -r .radix_id_prometheus_backup_mi_client_id 
 BACKUP_CONTAINER="${CLUSTER}"
 BACKUP_PREFIX="backups"
 BACKUP_DATA_PREFIX="${BACKUP_PREFIX}/${BACKUP_NAME}"
-MANIFEST_BLOB_NAME="${BACKUP_PREFIX}/${BACKUP_NAME}/manifest.json"
-HISTORY_MANIFEST_BLOB_NAME="${BACKUP_PREFIX}/${BACKUP_NAME}/manifest${MANIFEST_TIMESTAMP}.json"
-TMP_DIR=$(mktemp -d)
-LOCAL_MANIFEST_FILE="${TMP_DIR}/${BACKUP_NAME}.manifest.json"
 
 #######################################################################################
 ### Prepare az session
@@ -205,20 +200,6 @@ if ! az ad group member check \
     -o tsv 2>/dev/null | grep -qx true; then
     echo -e "" >&2
     printf "%s► Activate %s in Azure PIM and re-run the script.%s\n" "${red}" "${PIM_GROUP_NAME}" "${normal}" >&2
-    exit 1
-else
-    printf "Done.\n"
-fi
-
-printf "Checking that logged in AAD user is Owner of ${AZ_SUBSCRIPTION_ID} subscription... "
-if ! az role assignment list \
-    --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}" \
-    --assignee "$(az ad signed-in-user show --query id -o tsv)" \
-    --include-inherited true \
-    --query '[?roleDefinitionName==`Owner`].roleDefinitionName' \
-    -o tsv | grep -qx 'Owner'; then
-    echo -e "ERROR: Logged in user is not Owner of ${AZ_SUBSCRIPTION_ID} subscription. Owner access is required before assigning RBAC roles to the managed identity." >&2
-    echo -e "Activate the subscription Owner role and re-run the script." >&2
     exit 1
 else
     printf "Done.\n"
@@ -292,24 +273,17 @@ PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT="prometheus-backup-uploader"
 PROMETHEUS_POD_NAME="prometheus-prometheus-operator-prometheus-0"
 PROMETHEUS_PVC_NAME="prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
 
-trap 'resume_prometheus; rm -rf "${TMP_DIR}"' EXIT
+trap 'resume_prometheus' EXIT
 
-if [[ -n "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" && "${PROMETHEUS_BACKUP_MI_CLIENT_ID}" != "null" ]]; then
-        if ! kubectl --context "${CLUSTER}" get serviceaccount "${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}" \
-                --namespace "${MONITOR_NAMESPACE}" >/dev/null 2>&1; then
-                cat <<EOF | kubectl --context "${CLUSTER}" apply --filename -
+cat <<EOF | kubectl --context "${CLUSTER}" apply --filename -
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-    name: ${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}
-    namespace: ${MONITOR_NAMESPACE}
+  name: ${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}
+  namespace: monitor
+  annotations:
+    azure.workload.identity/client-id: ${PROMETHEUS_BACKUP_MI_CLIENT_ID}
 EOF
-        fi
-        kubectl --context "${CLUSTER}" annotate serviceaccount "${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}" \
-                --namespace "${MONITOR_NAMESPACE}" \
-                "azure.workload.identity/client-id=${PROMETHEUS_BACKUP_MI_CLIENT_ID}" \
-                --overwrite
-fi
 
 echo ""
 printf "Waiting for Prometheus pod to be Ready..."
@@ -436,7 +410,7 @@ spec:
               echo "Syncing snapshot (\${SOURCE_SIZE}) directly to Blob Storage..."
                             UPLOAD_STARTED_AT=\$(date -u '+%Y-%m-%dT%H:%M:%SZ')
                             UPLOAD_START_SECONDS=\$(date '+%s')
-                            if ! "\${AZCOPY_BIN}" sync "\${CURRENT_SNAPSHOT_DIR}" "${AZCOPY_BLOB_URL}" --delete-destination=true --exclude-pattern=manifest*.json > /tmp/azcopy-sync.log 2>&1; then
+                            if ! "\${AZCOPY_BIN}" sync "\${CURRENT_SNAPSHOT_DIR}" "${AZCOPY_BLOB_URL}" --delete-destination=true > /tmp/azcopy-sync.log 2>&1; then
                                 cat /tmp/azcopy-sync.log >&2
                                 exit 1
                             fi
@@ -490,72 +464,9 @@ while true; do
 done
 printf "Done.\n"
 
-AZCOPY_LOGS=$(kubectl --context "${CLUSTER}" logs job/prometheus-backup-upload \
-        --namespace "${MONITOR_NAMESPACE}" --container azcopy)
-TOTAL_SIZE_BYTES=$(grep -oE 'TOTAL_SIZE_BYTES=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
-FILE_COUNT=$(grep -oE 'FILE_COUNT=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
-UPLOAD_STARTED_AT=$(grep -oE 'UPLOAD_STARTED_AT=[0-9T:-]+Z' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
-UPLOAD_COMPLETED_AT=$(grep -oE 'UPLOAD_COMPLETED_AT=[0-9T:-]+Z' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
-UPLOAD_DURATION_SECONDS=$(grep -oE 'UPLOAD_DURATION_SECONDS=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
-UPLOADED_SIZE_BYTES=$(grep -oE 'UPLOADED_SIZE_BYTES=[0-9]+' <<< "${AZCOPY_LOGS}" | tail -1 | cut -d= -f2)
-if [[ -z ${FILE_COUNT} || ${FILE_COUNT} -eq 0 ]]; then
-    echo "ERROR: AzCopy synced zero files; refusing to record an empty backup." >&2
-    echo "${AZCOPY_LOGS}" >&2
-    exit 1
-fi
-jq -e -n \
-    --arg started_at "${UPLOAD_STARTED_AT}" \
-    --arg completed_at "${UPLOAD_COMPLETED_AT}" \
-    --argjson duration_seconds "${UPLOAD_DURATION_SECONDS}" \
-    --argjson uploaded_size_bytes "${UPLOADED_SIZE_BYTES}" \
-    '{upload_started_at: $started_at, upload_completed_at: $completed_at, upload_duration_seconds: $duration_seconds, uploaded_size_bytes: $uploaded_size_bytes}' \
-    >/dev/null
-jq -n \
-    --arg backup_name "${BACKUP_NAME}" \
-    --arg backup_mode "${BACKUP_MODE}" \
-    --arg source_cluster "${CLUSTER}" \
-    --arg storage_account "${AZ_VELERO_STORAGE_ACCOUNT}" \
-    --arg container "${BACKUP_CONTAINER}" \
-    --arg blob "${BACKUP_DATA_PREFIX}" \
-    --arg manifest_timestamp "${MANIFEST_TIMESTAMP}" \
-    --arg upload_started_at "${UPLOAD_STARTED_AT}" \
-    --arg upload_completed_at "${UPLOAD_COMPLETED_AT}" \
-    --arg updated_at "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
-    --argjson total_size_bytes "${TOTAL_SIZE_BYTES}" \
-    --argjson file_count "${FILE_COUNT}" \
-    --argjson uploaded_size_bytes "${UPLOADED_SIZE_BYTES}" \
-    --argjson upload_duration_seconds "${UPLOAD_DURATION_SECONDS}" \
-    '{backup_name: $backup_name, backup_mode: $backup_mode, source_cluster: $source_cluster, storage_account: $storage_account, container: $container, blob: $blob, manifest_timestamp: $manifest_timestamp, total_size_bytes: $total_size_bytes, total_size_gb: ((($total_size_bytes / 1000000000) * 100 | round) / 100), file_count: $file_count, uploaded_size_bytes: $uploaded_size_bytes, uploaded_size_gb: ((($uploaded_size_bytes / 1000000000) * 100 | round) / 100), upload_duration_seconds: $upload_duration_seconds, upload_started_at: $upload_started_at, upload_completed_at: $upload_completed_at, updated_at: $updated_at}' \
-    > "${LOCAL_MANIFEST_FILE}"
-
-printf "%s► Upload backup manifest to %s/%s %s\n" "${grn}" "${BACKUP_CONTAINER}" "${MANIFEST_BLOB_NAME}" "${normal}"
-az storage container show \
-    --name "${BACKUP_CONTAINER}" \
-    --account-name "${AZ_VELERO_STORAGE_ACCOUNT}" \
-    --auth-mode login \
-    --only-show-errors > /dev/null
-az storage blob upload \
-    --account-name "${AZ_VELERO_STORAGE_ACCOUNT}" \
-    --container-name "${BACKUP_CONTAINER}" \
-    --name "${MANIFEST_BLOB_NAME}" \
-    --file "${LOCAL_MANIFEST_FILE}" \
-    --auth-mode login \
-    --overwrite true \
-    --only-show-errors > /dev/null
-printf "%s► Upload timestamped manifest history to %s/%s %s\n" "${grn}" "${BACKUP_CONTAINER}" "${HISTORY_MANIFEST_BLOB_NAME}" "${normal}"
-az storage blob upload \
-    --account-name "${AZ_VELERO_STORAGE_ACCOUNT}" \
-    --container-name "${BACKUP_CONTAINER}" \
-    --name "${HISTORY_MANIFEST_BLOB_NAME}" \
-    --file "${LOCAL_MANIFEST_FILE}" \
-    --auth-mode login \
-    --overwrite true \
-    --only-show-errors > /dev/null
-printf "Done.\n"
-
 resume_prometheus
 trap - EXIT
-rm -rf "${TMP_DIR}"
+printf "Done.\n"
 
 echo ""
 printf "%sPrometheus Backup done!%s\n" "${grn}" "${normal}"
