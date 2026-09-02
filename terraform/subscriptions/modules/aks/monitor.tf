@@ -18,10 +18,10 @@
 # }
 
 resource "azurerm_monitor_diagnostic_setting" "scalediagnostic" {
-  count = var.scalediagnostic_enabled ? 1 : 0
-  name               = "Radix-Scale-Diagnostics"
-  target_resource_id = azurerm_kubernetes_cluster.this.id
-  log_analytics_workspace_id = var.defender_workspace_id
+  count                          = var.scalediagnostic_enabled ? 1 : 0
+  name                           = "Radix-Scale-Diagnostics"
+  target_resource_id             = azurerm_kubernetes_cluster.this.id
+  log_analytics_workspace_id     = var.defender_workspace_id
   log_analytics_destination_type = "Dedicated"
 
   enabled_log {

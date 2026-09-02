@@ -114,3 +114,4 @@ clusters:
     systempool: "systempool_v1"
     nodepools: "nodepools_v1"
     scalediagnostic_enabled: true
+    node_os_planned_updates_enabled: true

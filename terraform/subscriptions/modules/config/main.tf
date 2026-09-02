@@ -9,18 +9,18 @@ variable "private_dns_zones" {
     resolution_policy = optional(string, "Default") # Valid values: Default, NxDomainRedirect
   }))
   default = {
-    "private.radix.equinor.com"                   = {}
-    "privatelink.azconfig.io"                     = {}
-    "privatelink.azurecr.io"                      = {}
-    "privatelink.blob.core.windows.net"           = {}
-    "privatelink.cassandra.cosmos.azure.com"      = {}
-    "privatelink.cognitiveservices.azure.com"     = {}
-    "privatelink.database.windows.net"            = { resolution_policy = "NxDomainRedirect" }
-    "privatelink.dfs.core.windows.net"            = {}
-    "privatelink.documents.azure.com"             = {}
-    "privatelink.file.core.windows.net"           = {}
-    "privatelink.gremlin.cosmos.azure.com"        = {}
-    "privatelink.mariadb.database.azure.com"      = {}
+    "private.radix.equinor.com"               = {}
+    "privatelink.azconfig.io"                 = {}
+    "privatelink.azurecr.io"                  = {}
+    "privatelink.blob.core.windows.net"       = {}
+    "privatelink.cassandra.cosmos.azure.com"  = {}
+    "privatelink.cognitiveservices.azure.com" = {}
+    "privatelink.database.windows.net"        = { resolution_policy = "NxDomainRedirect" }
+    "privatelink.dfs.core.windows.net"        = {}
+    "privatelink.documents.azure.com"         = {}
+    "privatelink.file.core.windows.net"       = {}
+    "privatelink.gremlin.cosmos.azure.com"    = {}
+    "privatelink.mariadb.database.azure.com"  = {}
     # "privatelink.monitor.azure.com"             = {} # Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
     "privatelink.mongo.cosmos.azure.com"          = {}
     "privatelink.mysql.database.azure.com"        = {}

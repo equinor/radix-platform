@@ -87,14 +87,17 @@ variable "outbound_ip_address_ids" {
 
 variable "nodepools" {
   type = map(object({
-    vm_size         = string
-    min_count       = number
-    max_count       = number
-    node_count      = optional(number, 1)
-    node_labels     = optional(map(string))
-    node_taints     = optional(list(string), [])
-    os_disk_type    = optional(string, "Managed")
-    nodepool_os_sku = optional(string, "Ubuntu")
+    vm_size                       = string
+    min_count                     = number
+    max_count                     = number
+    node_count                    = optional(number, 1)
+    node_labels                   = optional(map(string))
+    node_taints                   = optional(list(string), [])
+    os_disk_type                  = optional(string, "Managed")
+    nodepool_os_sku               = optional(string, "Ubuntu")
+    max_surge                     = optional(string, "33%")
+    drain_timeout_in_minutes      = optional(number, 1440)
+    node_soak_duration_in_minutes = optional(number, 10)
 
   }))
 }
@@ -158,6 +161,19 @@ variable "sku_tier" {
 variable "node_os_upgrade_channel" {
   type    = string
   default = "None"
+}
+
+variable "maintenance_window_node_os" {
+  description = "Monthly maintenance window for automatic node OS upgrades. Set to null to leave the maintenance window unscheduled."
+  type = object({
+    week_index  = string # First, Second, Third, Fourth or Last
+    day_of_week = string
+    duration    = optional(number, 6)
+    start_time  = optional(string, "00:00")
+    # Norway is UTC+1 (CET) / UTC+2 during DST (CEST); AKS only accepts a fixed offset, so this doesn't auto-adjust for DST.
+    utc_offset = optional(string, "+01:00")
+  })
+  default = null
 }
 
 variable "upgrade_override" {

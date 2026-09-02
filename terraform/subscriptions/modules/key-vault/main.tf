@@ -132,11 +132,11 @@ resource "azurerm_key_vault" "config" {
 ################################################################################
 
 resource "azurerm_eventgrid_system_topic" "this" {
-  name                   = "${var.vault_name}-topic"
-  resource_group_name    = var.resource_group_name
-  location               = var.location
-  source_resource_id     = azurerm_key_vault.this.id
-  topic_type             = "Microsoft.KeyVault.vaults"
+  name                = "${var.vault_name}-topic"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  source_resource_id  = azurerm_key_vault.this.id
+  topic_type          = "Microsoft.KeyVault.vaults"
   tags = {
     IaC = "terraform"
   }
@@ -336,8 +336,8 @@ resource "azurerm_eventgrid_system_topic_event_subscription" "logic_app" {
   ]
 
   webhook_endpoint {
-    url                             = azurerm_logic_app_trigger_http_request.this.callback_url
-    max_events_per_batch            = 1
+    url                               = azurerm_logic_app_trigger_http_request.this.callback_url
+    max_events_per_batch              = 1
     preferred_batch_size_in_kilobytes = 64
   }
 }
