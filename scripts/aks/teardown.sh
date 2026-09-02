@@ -106,7 +106,6 @@ fi
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/lib_clusterlist.sh
 
 # Optional inputs
 if [[ -z "$USER_PROMPT" ]]; then
