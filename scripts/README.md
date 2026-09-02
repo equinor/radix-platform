@@ -54,7 +54,7 @@ This scripts takes care of bootstrapping new cluster (if it hasn't been created 
 #### 2.1.1 Set new cluster to active
 
 Steps:
-1. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `postBuild.yaml` for the respective Radix zone.
+1. In [radix-flux](https://github.com/equinor/radix-flux): Set `ACTIVE_CLUSTER` to the new cluster name in `clusters/<zone>/infrastructure/radix-platform/radix-acr-cleanup.yaml` for the respective Radix zone.
 
 ### 2.2 Setting up a cluster from scratch
 
