@@ -93,9 +93,8 @@ module "aks" {
   hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
   upgrade_override                  = lookup(module.config.cluster[each.key], "upgrade_override", null)
   scalediagnostic_enabled           = lookup(module.config.cluster[each.key], "scalediagnostic_enabled", false)
-  # Node OS Planned Maintenance is off by default; set node_os_planned_updates_enabled: true per cluster in config.yaml to opt in
   node_os_upgrade_channel           = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", false) ? "NodeImage" : "None"
-  maintenance_window_node_os        = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", false) ? {
+  maintenance_window_node_os = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", false) ? {
     week_index  = local.node_os_maintenance_week_index
     day_of_week = local.node_os_maintenance_day_of_week
   } : null

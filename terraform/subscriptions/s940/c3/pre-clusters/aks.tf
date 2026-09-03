@@ -83,7 +83,7 @@ module "aks" {
   hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", false)
   scalediagnostic_enabled           = lookup(module.config.cluster[each.key], "scalediagnostic_enabled", false)
   node_os_upgrade_channel           = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", true) ? "NodeImage" : "None"
-  maintenance_window_node_os        = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", true) ? {
+  maintenance_window_node_os = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", true) ? {
     week_index  = local.node_os_maintenance_week_index
     day_of_week = local.node_os_maintenance_day_of_week
   } : null
