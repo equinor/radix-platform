@@ -19,17 +19,15 @@ variable "systempool" {
 
 variable "nodepools" {
   type = map(object({
-    vm_size                       = string
-    min_count                     = number
-    max_count                     = number
-    node_count                    = optional(number, 1)
-    node_labels                   = optional(map(string))
-    node_taints                   = optional(list(string), [])
-    os_disk_type                  = optional(string, "Managed")
-    nodepool_os_sku               = optional(string, "Ubuntu")
-    max_surge                     = optional(string, "33%")
-    drain_timeout_in_minutes      = optional(number, 1440)
-    node_soak_duration_in_minutes = optional(number, 10)
+    vm_size                  = string
+    min_count                = number
+    max_count                = number
+    node_count               = optional(number, 1)
+    node_labels              = optional(map(string))
+    node_taints              = optional(list(string), [])
+    os_disk_type             = optional(string, "Managed")
+    nodepool_os_sku          = optional(string, "Ubuntu")
+    max_surge                = optional(string, "33%")
   }))
   default = {
     memory2v1 = {
@@ -95,12 +93,11 @@ variable "nodepools" {
       nodepool_os_sku = "AzureLinux"
     }
     x86userpool = {
-      vm_size                       = "Standard_B8as_v2"
-      min_count                     = 1
-      max_count                     = 16
-      nodepool_os_sku               = "AzureLinux"
-      max_surge                     = "5"
-      node_soak_duration_in_minutes = 10
+      vm_size         = "Standard_B8as_v2"
+      min_count       = 1
+      max_count       = 16
+      nodepool_os_sku = "AzureLinux"
+      max_surge       = "5"
     }
   }
 }

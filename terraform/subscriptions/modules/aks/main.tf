@@ -179,8 +179,8 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   depends_on              = [azurerm_kubernetes_cluster.this]
   upgrade_settings {
     max_surge                     = each.value.max_surge
-    drain_timeout_in_minutes      = each.value.drain_timeout_in_minutes
-    node_soak_duration_in_minutes = each.value.node_soak_duration_in_minutes
+    drain_timeout_in_minutes      = 1440
+    node_soak_duration_in_minutes = 10
   }
   lifecycle {
     ignore_changes = [gpu_driver, temporary_name_for_rotation]

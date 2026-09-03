@@ -87,17 +87,15 @@ variable "outbound_ip_address_ids" {
 
 variable "nodepools" {
   type = map(object({
-    vm_size                       = string
-    min_count                     = number
-    max_count                     = number
-    node_count                    = optional(number, 1)
-    node_labels                   = optional(map(string))
-    node_taints                   = optional(list(string), [])
-    os_disk_type                  = optional(string, "Managed")
-    nodepool_os_sku               = optional(string, "Ubuntu")
-    max_surge                     = optional(string, "33%")
-    drain_timeout_in_minutes      = optional(number, 1440)
-    node_soak_duration_in_minutes = optional(number, 10)
+    vm_size                  = string
+    min_count                = number
+    max_count                = number
+    node_count               = optional(number, 1)
+    node_labels              = optional(map(string))
+    node_taints              = optional(list(string), [])
+    os_disk_type             = optional(string, "Managed")
+    nodepool_os_sku          = optional(string, "Ubuntu")
+    max_surge                = optional(string, "33%")
 
   }))
 }
