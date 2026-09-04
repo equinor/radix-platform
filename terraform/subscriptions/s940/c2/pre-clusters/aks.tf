@@ -43,6 +43,10 @@ locals {
     nodepools    = var.nodepools
     nodepools_v1 = var.nodepools_v1
   }
+
+  # Node OS maintenance runs on the third Thursday of the month
+  node_os_maintenance_week_index  = "Third"
+  node_os_maintenance_day_of_week = "Thursday"
 }
 
 module "aks" {
@@ -88,6 +92,27 @@ module "aks" {
   monitor_data_collection_rule_name = "MSCI-${module.config.location}-${each.key}"
   hostencryption                    = lookup(module.config.cluster[each.key], "hostencryption", true)
   scalediagnostic_enabled           = lookup(module.config.cluster[each.key], "scalediagnostic_enabled", false)
+  node_os_upgrade_channel           = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", false) ? "NodeImage" : "None"
+  maintenance_window_node_os = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", false) ? {
+    week_index  = local.node_os_maintenance_week_index
+    day_of_week = local.node_os_maintenance_day_of_week
+  } : null
+}
+
+module "maintenance_alert" {
+  source                     = "../../../modules/maintenance-alert"
+  for_each                   = module.config.cluster
+  cluster_name               = each.key
+  enabled                    = lookup(module.config.cluster[each.key], "node_os_planned_updates_enabled", false)
+  resource_group_name        = lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)
+  location                   = module.config.location
+  log_analytics_workspace_id = data.azurerm_log_analytics_workspace.containers.id
+  key_vault_name             = "radix-config-${module.config.environment}"
+  key_vault_resource_group   = module.config.common_resource_group
+  email_address              = "radix@statoilsrm.onmicrosoft.com"
+  week_index                 = local.node_os_maintenance_week_index
+  day_of_week                = local.node_os_maintenance_day_of_week
+  days_before                = 7
 }
 
 locals {

@@ -1,9 +1,9 @@
 variable "dnszone" {
-  type    = string
+  type = string
 }
 
 variable "create_caa_records" {
-  type = bool
+  type    = bool
   default = false
 }
 

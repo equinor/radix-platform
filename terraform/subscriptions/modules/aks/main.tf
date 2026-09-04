@@ -34,6 +34,19 @@ resource "azurerm_kubernetes_cluster" "this" {
     }
   }
 
+  dynamic "maintenance_window_node_os" {
+    for_each = var.maintenance_window_node_os == null ? [] : [var.maintenance_window_node_os]
+    content {
+      frequency   = "RelativeMonthly"
+      interval    = 1
+      duration    = maintenance_window_node_os.value.duration
+      week_index  = maintenance_window_node_os.value.week_index
+      day_of_week = maintenance_window_node_os.value.day_of_week
+      start_time  = maintenance_window_node_os.value.start_time
+      utc_offset  = maintenance_window_node_os.value.utc_offset
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       default_node_pool[0].upgrade_settings,
@@ -164,8 +177,13 @@ resource "azurerm_kubernetes_cluster_node_pool" "this" {
   zones                   = []
   host_encryption_enabled = var.hostencryption
   depends_on              = [azurerm_kubernetes_cluster.this]
+  upgrade_settings {
+    max_surge                     = each.value.max_surge
+    drain_timeout_in_minutes      = 1440
+    node_soak_duration_in_minutes = 10
+  }
   lifecycle {
-    ignore_changes = [upgrade_settings, gpu_driver, temporary_name_for_rotation]
+    ignore_changes = [gpu_driver, temporary_name_for_rotation]
   }
 }
 
