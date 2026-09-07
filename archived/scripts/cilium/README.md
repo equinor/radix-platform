@@ -1,6 +1,6 @@
 # Work in progress!
 
-Started cililum-26 with these network options:
+Started cilium-26 with these network options:
 
     AKS_NETWORK_OPTIONS=(
         --network-plugin "azure"
@@ -16,7 +16,7 @@ k get pods -n kube-system -l k8s-app=hubble-relay
 # NAME                            READY   STATUS    RESTARTS   AGE
 # hubble-relay-55b65f695c-6bnwk   1/1     Running   0          4m9s
 ```
-Level 7 / DNS & HTTP visiblity:
+Level 7 / DNS & HTTP visibility:
 https://docs.cilium.io/en/latest/observability/visibility/#layer-7-protocol-visibility
 
 Note: We should enable --hubble-redact-enabled to redact sensitive http data like query/headers/auth cookies etc

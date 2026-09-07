@@ -33,7 +33,7 @@ _Store credentials in a reusable format_
 All credentials should be stored in radix key vault as json using the schema provided by the [`template-credentials.json`](./template-credentials.json) file.  
 
 _Component bootstrap and teardown should include handling component credentials_  
-Components that require service principals and/or aad apps should handle this is part of their own bootstrap/teardown process.  
+Components that require service principals and/or aad apps should handle this as part of their own bootstrap/teardown process.  
 
 
 ## Prerequisites
@@ -69,14 +69,14 @@ Refreshing credentials for a service principal is usually a four step process fo
 Keep in mind the following:
 
 - _Service principals != Azure AD apps_  
-  Service principals and az ad apps are two related, not identical, beasts that must handled slightly differently when refreshing their credentials in Azure AD.  
+  Service principals and az ad apps are two related, not identical, beasts that must be handled slightly differently when refreshing their credentials in Azure AD.  
 
 - _Cluster service principal and Cluster Azure AD app (rbac integration)_  
-  Update credentials for a component versus updating credentials for AKS are two separate processess.  
+  Update credentials for a component versus updating credentials for AKS are two separate processes.  
 
 - _Multiple components may use the same service principal_  
   In this case you only need to refresh the service principal credentials _once_ in both Azure AD and the key vault.  
-  Then it is simply a case of updating the credentials for each component that depend on that service principle in the cluster using the updated credentials found in the keyvault.
+  Then it is simply a case of updating the credentials for each component that depend on that service principal in the cluster using the updated credentials found in the keyvault.
 
 
 #### Refresh component service principals credentials
@@ -110,7 +110,7 @@ See [README.md](../servicenow-proxy/README.md)
 
 ## Delete a service principal and related stored credentials
 
-Use script [`delete_service_principal_and_stored_credentials.sh.sh`](./delete_service_principal_and_stored_credentials.sh.sh)
+Use script [`delete_service_principal_and_stored_credentials.sh`](./delete_service_principal_and_stored_credentials.sh)
 
 
 

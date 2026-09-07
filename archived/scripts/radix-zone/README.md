@@ -1,7 +1,7 @@
 # Radix zones
 
 A radix-zone is a grouping of clusters where each group is identified by domain name, and where the "active" cluster in each group has control of the group/zone dns.   
-This allow us to run radix fully (logical app urls etc) in each radix-zone.  
+This allows us to run radix fully (logical app urls etc) in each radix-zone.  
 
 Examples:
 
@@ -34,7 +34,7 @@ Each radix-zone is defined by a config file in the form of a bash shell env var 
 This config should hold all env vars necessary to be able to run all radix provisioning scripts (bootstrap, teardown, etc) in that radix-zone.  
 
 Those radix-zones that require their own infrastructure components also have their own infrastructure bootstrap and teardown bash scripts.  
-These scripts should be stored in a directory which name correnspond with the radix-zone, `./{name}-infrastructure/`  
+These scripts should be stored in a directory which name corresponds with the radix-zone, `./{name}-infrastructure/`  
 Note that the scripts should be idempotent. Any change in infrastructure should be managed by updating and rerunning the scripts.
 
 Example radix-zone "playground":  
@@ -66,7 +66,7 @@ You can now continue bootstrapping additional radix-zones, or bootstrap radix cl
 
 ### Prerequisites  
 
-- The radix-zones `prod` and `dev`, and their corrensponding infrastructure, must be available
+- The radix-zones `prod` and `dev`, and their corresponding infrastructure, must be available
 - You must have the role `owner` for the azure subscription that will host the radix-zone to be able to create the required azure resources
 - You must be able to delegate domain from the `prod` dns zone
 

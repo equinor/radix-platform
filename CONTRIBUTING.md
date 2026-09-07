@@ -24,7 +24,7 @@ The team love thorough bug reports - no it's not a joke!
 ### For **feature request**  
 - Brief description of the feature
 - What problem/issue will this solve
-- A sort of Definition of Done - "How should it look when finsihed"
+- A sort of Definition of Done - "How should it look when finished"
   
 ### When submitting a fix using a Pull Request (PR)  
 
@@ -32,6 +32,6 @@ The team love thorough bug reports - no it's not a joke!
 - Once, you have a local copy (after forking) you can make edits to the code, make formatting changes, reorganise the code, add documentation etc …  
 - After you have made the changes, you have to create a pull request  
 
-We will review the pull request and if it appropriate and there are no clashes or vulnerabilities, it will be merged to the main code  
+We will review the pull request and if it is appropriate and there are no clashes or vulnerabilities, it will be merged to the main code  
 
 Voila! you have contributed to a piece of software and the cycle repeats.

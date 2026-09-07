@@ -9,12 +9,12 @@ Example
 # When Velero run a restore then it will create a "restore" custom resource in the velero namespace.
 # View warnings and errors for a restore job using the client
 velero restore describe backupname-1234
-# Which more or less corrensponds to
+# Which more or less corresponds to
 kubectl describe -n velero restore/backupname-1234
 ```
 
 
-## Velero custom resouces
+## Velero custom resources
 
 ```sh
 

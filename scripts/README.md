@@ -7,13 +7,13 @@ Each environment (`prod`, `dev`) has multiple clusters that use shared infrastru
 ## Prerequisites
 
 - ~~You must have the Azure role `Owner` for the Azure subscription that is the infrastructure environment~~
-- You must have the Azure role `Contributer` for the Azure subscription that is the infrastructure environment
+- You must have the Azure role `Contributor` for the Azure subscription that is the infrastructure environment
 - Be able to run `bash` scripts (linux/macOs)
 - Clone this repo
 - `cd scripts`
 - `az login` into the correct subscription
 
-The following applications tools/applications are required to run the platform scripts:
+The following tools/applications are required to run the platform scripts:
 
 * [az](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/)
@@ -40,7 +40,7 @@ A cluster can be set up in two different ways. Either by migrating from an exist
 
 NOTE: If there is a need to migrate to a new cluster with a different setup, please run through the bootstrap and installation of base components described below
 
-This scripts takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
+This script takes care of bootstrapping new cluster (if it hasn't been created beforehand with base-components installed) install base components and migrate Radix resources to new cluster.
 
 - PIM yourself to `AZ PIM RADIX Cluster Admin - <s940|s941>` group, and `Radix Confidential Data Contributor` and `Contributor` resource for the respective subscription
 - Teardown old cluster
@@ -62,9 +62,9 @@ There are seven steps to setting up a Radix cluster from scratch. These steps ca
 
 - PIM yourself to 'AZ PIM RADIX Cluster Admin - `<s940|s941>`' and `Radix Confidential Data Contributor` for the respective subscription
 - Modify the ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster
-- Create a pull request to master"
+- Create a pull request to master
 - Monitor the github action and the result
-- After approval, run the GitHub Action 'AKS Apply', and tick of the 'Terraform Apply' checkbox
+- After approval, run the GitHub Action 'AKS Apply', and tick off the 'Terraform Apply' checkbox
 - Navigate to ./terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters
 - Execute ```terraform apply```
 - Deploy base components

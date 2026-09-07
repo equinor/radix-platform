@@ -15,7 +15,7 @@ Head to the [public website](https://www.radix.equinor.com/) and check the guide
 
 ## Help!
 
-Contact us on Equinor Slack on [#omnia_radix_support](https://equinor.slack.com/messages/CBKM6N2JY/). We are also available on [#omnia_radix](https://equinor.slack.com/messages/C8U7XGGAJ/) for general inquires.
+Contact us on Equinor Slack on [#omnia_radix_support](https://equinor.slack.com/messages/CBKM6N2JY/). We are also available on [#omnia_radix](https://equinor.slack.com/messages/C8U7XGGAJ/) for general inquiries.
 
 
 Bugs and feature requests can be submitted using the [issue tracker in this repo](https://github.com/equinor/radix/issues). If you are external to Equinor, read these [**contributing**](./contributing.md) guidelines.
