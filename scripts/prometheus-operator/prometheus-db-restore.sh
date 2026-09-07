@@ -337,7 +337,7 @@ fi
 printf "Done.\n"
 
 printf "%s► Restore Prometheus database directly from Blob Storage with AzCopy workload identity %s\n" "${grn}" "${normal}"
-AZCOPY_BLOB_URL="https://${AZ_BACKUP_STORAGE_ACCOUNT}.blob.core.windows.net/${BACKUP_CLUSTER}/${RESTORE_BLOB_PREFIX}/*"
+AZCOPY_BLOB_URL="https://${AZ_BACKUP_STORAGE_ACCOUNT}.blob.core.windows.net/${BACKUP_CLUSTER}/${RESTORE_BLOB_PREFIX}"
 kubectl --context "${DEST_CLUSTER}" delete job prometheus-restore \
     --namespace "${MONITOR_NAMESPACE}" --ignore-not-found --wait=true
 cat <<EOF | kubectl --context "${DEST_CLUSTER}" apply --filename -
@@ -379,10 +379,8 @@ spec:
               curl -sL "\${AZCOPY_URL}" -o /tmp/azcopy.tar.gz
               tar -xzf /tmp/azcopy.tar.gz -C /tmp
               AZCOPY_BIN=\$(find /tmp -maxdepth 1 -type d -name 'azcopy_linux_*')/azcopy
-              echo "Removing old Prometheus data..."
-              find /prometheus -mindepth 1 -delete
-              echo "Copying backup files from Blob Storage..."
-              "\${AZCOPY_BIN}" copy "${AZCOPY_BLOB_URL}" /prometheus --recursive=true
+              echo "Syncing backup files from Blob Storage (unchanged TSDB blocks are skipped)..."
+              "\${AZCOPY_BIN}" sync "${AZCOPY_BLOB_URL}" /prometheus --delete-destination=true --recursive=true
               if [ -z "\$(find /prometheus -type f -print -quit)" ]; then
                 echo "ERROR: Restore produced no files in /prometheus." >&2
                 exit 1
