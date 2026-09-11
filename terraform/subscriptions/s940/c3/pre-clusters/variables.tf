@@ -4,10 +4,11 @@ variable "systempool" {
     tags      = optional(map(string))
     min_nodes = number
     max_nodes = number
+    os_sku    = optional(string, "AzureLinux")
   })
 
   default = {
-    vm_size = "Standard_E16as_v4"
+    vm_size = "Standard_E16as_v7"
     tags = {
       "nodepool" = "systempool"
     }
@@ -25,7 +26,7 @@ variable "nodepools" {
     node_labels              = optional(map(string))
     node_taints              = optional(list(string), [])
     os_disk_type             = optional(string, "Managed")
-    nodepool_os_sku          = optional(string, "Ubuntu")
+    nodepool_os_sku          = optional(string, "AzureLinux")
     max_surge                = optional(string, "33%")
   }))
   default = {
@@ -79,8 +80,8 @@ variable "nodepools" {
       min_count = 1
       max_count = 16
     }
-    x86pipepool2 = {
-      vm_size   = "Standard_E16as_v6"
+    x86pipepool = {
+      vm_size   = "Standard_E16as_v7"
       min_count = 1
       max_count = 32
       node_labels = {
@@ -88,8 +89,8 @@ variable "nodepools" {
       }
       node_taints = ["nodepooltasks=jobs:NoSchedule"]
     }
-    x86userpool2 = {
-      vm_size   = "Standard_E16as_v6"
+    x86userpool = {
+      vm_size   = "Standard_E16as_v7"
       min_count = 1
       max_count = 32
       max_surge = "5"
