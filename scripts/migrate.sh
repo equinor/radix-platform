@@ -93,7 +93,9 @@ function flux_configmap() {
       --from-literal=cacheRegistry="$RADIX_CACHE_REGISTRY" \
       --from-literal=kubernetesIssuerUrl="$(jq -r .\"$CLUSTER_NAME\" <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
       --from-literal=clusterOidcIssuers="$(jq -r '[.[] | tostring] | join(",")' <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
+      --from-literal=clusterOidcIssuersJson="$(jq -c '[.[] | tostring]' <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
       --from-literal=clusterEgressIPs="$RADIX_CLUSTER_EGRESS_IPS" \
+      --from-literal=clusterEgressIPsJson="$(jq -Rc 'split(",") | map(select(length > 0))' <<< "$RADIX_CLUSTER_EGRESS_IPS")" \
       )
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
@@ -146,6 +148,8 @@ function get_variables() {
     RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
     RADIX_ZONE_YAML="$(<"$RADIX_ZONE_ENV")"
     CLUSTER_NAME="$DEST_CLUSTER"
+    
+    echo $RADIX_RESOURCE_JSON
 
     # YAML values (Input from static config.yaml from each zone)
     AZ_RADIX_ZONE_LOCATION=$(yq '.location' <<< "$RADIX_ZONE_YAML")
