@@ -385,6 +385,18 @@ spec:
                 echo "ERROR: Restore produced no files in /prometheus." >&2
                 exit 1
               fi
+              # A block synced from a backup taken mid-compaction can lack meta.json;
+              # Prometheus cannot load it, so remove it now instead of on every startup.
+              for block_dir in /prometheus/*/; do
+                block_dir=\${block_dir%/}
+                case "\$(basename "\${block_dir}")" in
+                  wal|chunks_head) continue ;;
+                esac
+                if [ ! -f "\${block_dir}/meta.json" ]; then
+                  echo "WARNING: Removing incomplete restored block \$(basename "\${block_dir}") (no meta.json)." >&2
+                  rm -rf "\${block_dir}"
+                fi
+              done
               echo "Correcting file ownership..."
               chown -R ${PROMETHEUS_RUN_AS_USER}:${PROMETHEUS_RUN_AS_GROUP} /prometheus
               echo "FILE_COUNT=\$(find /prometheus -type f | wc -l)"

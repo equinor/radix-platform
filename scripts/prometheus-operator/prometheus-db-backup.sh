@@ -406,6 +406,18 @@ spec:
                                 echo "ERROR: No Prometheus snapshot directory found under /prometheus/snapshots." >&2
                                 exit 1
                             fi
+                            # The snapshot API can catch a block mid-write (compaction in flight); such
+                            # blocks lack meta.json and are unusable, so drop them before upload.
+                            for block_dir in "\${CURRENT_SNAPSHOT_DIR}"/*/; do
+                                block_dir=\${block_dir%/}
+                                case "\$(basename "\${block_dir}")" in
+                                    wal|chunks_head) continue ;;
+                                esac
+                                if [ ! -f "\${block_dir}/meta.json" ]; then
+                                    echo "WARNING: Dropping incomplete snapshot block \$(basename "\${block_dir}") (no meta.json)." >&2
+                                    rm -rf "\${block_dir}"
+                                fi
+                            done
                             SOURCE_SIZE=\$(du -sh "\${CURRENT_SNAPSHOT_DIR}" | awk '{print \$1}')
               echo "Syncing snapshot (\${SOURCE_SIZE}) directly to Blob Storage..."
                             UPLOAD_STARTED_AT=\$(date -u '+%Y-%m-%dT%H:%M:%SZ')
