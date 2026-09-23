@@ -180,7 +180,7 @@ variable "nodepools_v1" {
     armpipepool = {
       vm_size   = "Standard_E16ps_v6"
       min_count = 1
-      max_count = 2
+      max_count = 8
       node_labels = {
         "nodepooltasks" = "jobs"
       }
@@ -189,13 +189,13 @@ variable "nodepools_v1" {
     armuserpool = {
       vm_size   = "Standard_E16ps_v6"
       min_count = 1
-      max_count = 4
+      max_count = 16
 
     }
     x86pipepool = {
       vm_size   = "Standard_E16as_v7"
-      min_count = 1
-      max_count = 2
+      min_count = 7
+      max_count = 50
       node_labels = {
         "nodepooltasks" = "jobs"
       }
@@ -204,8 +204,8 @@ variable "nodepools_v1" {
     }
     x86userpool = {
       vm_size   = "Standard_E16as_v7"
-      min_count = 1
-      max_count = 2
+      min_count = 16
+      max_count = 100
       max_surge = "5"
     }
     monitorpool = {
