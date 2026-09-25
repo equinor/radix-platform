@@ -420,22 +420,26 @@ spec:
                 echo "ERROR: No Prometheus snapshot directory found for validation." >&2
                 exit 1
               fi
-              ln -sfn "\${snapshot_dir}" /prometheus/backup-validation
+              ln -sfn "\${snapshot_dir}" /validation/backup-validation
           volumeMounts:
             - name: prometheus-data
               mountPath: /prometheus
               subPath: prometheus-db
+            - name: validation-state
+              mountPath: /validation
         - name: validate-snapshot
           image: ${PROMETHEUS_IMAGE}
           command:
             - /bin/promtool
             - tsdb
-            - verify
-            - /prometheus/backup-validation
+            - dump
+            - /validation/backup-validation
           volumeMounts:
             - name: prometheus-data
               mountPath: /prometheus
               subPath: prometheus-db
+            - name: validation-state
+              mountPath: /validation
       containers:
         - name: azcopy
           image: mcr.microsoft.com/azure-cli:latest
@@ -514,6 +518,8 @@ spec:
         - name: prometheus-data
           persistentVolumeClaim:
             claimName: ${PROMETHEUS_PVC_NAME}
+        - name: validation-state
+          emptyDir: {}
 EOF
 printf "Monitor the backup Job with:\n%skubectl logs -n monitor -l job-name=prometheus-backup-upload --context %s --all-containers --prefix -f%s\n" "${grn}" "${CLUSTER}" "${normal}"
 printf "Waiting for AzCopy sync Job..."
