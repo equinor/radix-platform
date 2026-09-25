@@ -433,6 +433,7 @@ spec:
             - /bin/promtool
             - tsdb
             - dump
+            - --sandbox-dir-root=/validation
             - /validation/backup-validation
           volumeMounts:
             - name: prometheus-data
