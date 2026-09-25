@@ -408,20 +408,30 @@ spec:
             - --retry-connrefused
             - -XPOST
             - http://prometheus-operator-prometheus.${MONITOR_NAMESPACE}.svc:9090/api/v1/admin/tsdb/snapshot
-        - name: validate-snapshot
-          image: ${PROMETHEUS_IMAGE}
+        - name: prepare-validation
+          image: curlimages/curl
           command:
             - sh
             - -c
             - |
               set -e
-              SNAPSHOT_DIR=\$(find /prometheus/snapshots -mindepth 1 -maxdepth 1 -type d | sort | tail -1)
-              if [ -z "\${SNAPSHOT_DIR}" ]; then
+              snapshot_dir=\$(find /prometheus/snapshots -mindepth 1 -maxdepth 1 -type d | sort | tail -1)
+              if [ -z "\${snapshot_dir}" ]; then
                 echo "ERROR: No Prometheus snapshot directory found for validation." >&2
                 exit 1
               fi
-              echo "Validating Prometheus TSDB snapshot \${SNAPSHOT_DIR} with promtool..."
-              promtool tsdb verify "\${SNAPSHOT_DIR}"
+              ln -sfn "\${snapshot_dir}" /prometheus/backup-validation
+          volumeMounts:
+            - name: prometheus-data
+              mountPath: /prometheus
+              subPath: prometheus-db
+        - name: validate-snapshot
+          image: ${PROMETHEUS_IMAGE}
+          command:
+            - /bin/promtool
+            - tsdb
+            - verify
+            - /prometheus/backup-validation
           volumeMounts:
             - name: prometheus-data
               mountPath: /prometheus
