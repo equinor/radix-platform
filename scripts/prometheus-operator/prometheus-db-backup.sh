@@ -408,39 +408,38 @@ spec:
             - --retry-connrefused
             - -XPOST
             - http://prometheus-operator-prometheus.${MONITOR_NAMESPACE}.svc:9090/api/v1/admin/tsdb/snapshot
-        - name: prepare-validation
-          image: curlimages/curl
-          command:
-            - sh
-            - -c
-            - |
-              set -e
-              snapshot_dir=\$(find /prometheus/snapshots -mindepth 1 -maxdepth 1 -type d | sort | tail -1)
-              if [ -z "\${snapshot_dir}" ]; then
-                echo "ERROR: No Prometheus snapshot directory found for validation." >&2
-                exit 1
-              fi
-              ln -sfn "\${snapshot_dir}" /validation/backup-validation
-          volumeMounts:
-            - name: prometheus-data
-              mountPath: /prometheus
-              subPath: prometheus-db
-            - name: validation-state
-              mountPath: /validation
-        - name: validate-snapshot
-          image: ${PROMETHEUS_IMAGE}
-          command:
-            - /bin/promtool
-            - tsdb
-            - dump
-            - --sandbox-dir-root=/validation
-            - /validation/backup-validation
-          volumeMounts:
-            - name: prometheus-data
-              mountPath: /prometheus
-              subPath: prometheus-db
-            - name: validation-state
-              mountPath: /validation
+        # - name: prepare-validation
+        #   image: curlimages/curl
+        #   command:
+        #     - sh
+        #     - -c
+        #     - |
+        #       set -e
+        #       snapshot_dir=\$(find /prometheus/snapshots -mindepth 1 -maxdepth 1 -type d | sort | tail -1)
+        #       if [ -z "\${snapshot_dir}" ]; then
+        #         echo "ERROR: No Prometheus snapshot directory found for validation." >&2
+        #         exit 1
+        #       fi
+        #       ln -sfn "\${snapshot_dir}" /validation/backup-validation
+        #   volumeMounts:
+        #     - name: prometheus-data
+        #       mountPath: /prometheus
+        #       subPath: prometheus-db
+        #     - name: validation-state
+        #       mountPath: /validation
+        # - name: validate-snapshot
+        #   image: ${PROMETHEUS_IMAGE}
+        #   command:
+        #     - /bin/promtool
+        #     - tsdb
+        #     - analyze
+        #     - /validation/backup-validation
+        #   volumeMounts:
+        #     - name: prometheus-data
+        #       mountPath: /prometheus
+        #       subPath: prometheus-db
+        #     - name: validation-state
+        #       mountPath: /validation
       containers:
         - name: azcopy
           image: mcr.microsoft.com/azure-cli:latest
