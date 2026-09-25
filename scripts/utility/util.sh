@@ -95,7 +95,8 @@ function environment_json() {
   local radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id)
   local dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group)
   local cacheRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw cacheRegistry)
-  local clusterIssuerUrls=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value')
+    local clusterIssuerUrls=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value')
+    local cluster_resource_groups=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json cluster_resource_groups 2>/dev/null || echo '{}')
 
   local json=$(cat <<EOF
   {
@@ -113,6 +114,7 @@ function environment_json() {
     "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
     "dns_zone_resource_group": "$dns_zone_resource_group",
     "cache_registry": "$cacheRegistry.azurecr.io",
+      "cluster_resource_groups": $cluster_resource_groups,
     "cluster_issuer_urls": $clusterIssuerUrls
   }
 EOF
@@ -124,6 +126,10 @@ function get_credentials() {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
+    if [[ "$CLUSTER" == c1-* ]]; then
+        AZ_RESOURCE_GROUP_CLUSTERS="clusters-c1"
+    fi
+    printf "Using cluster resource group %s...\n" "$AZ_RESOURCE_GROUP_CLUSTERS"
     currentContext=$(kubectl config current-context 2>/dev/null)
     az aks get-credentials \
         --overwrite-existing \

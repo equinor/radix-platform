@@ -54,6 +54,38 @@
 # kubectl --context "${DEST_CLUSTER}" exec -n monitor -l job-name=prometheus-restore -c azcopy -- find /prometheus -type f | wc -l
 # Use the actual Pod name if kubectl cannot select by label:
 # kubectl --context "${DEST_CLUSTER}" get pods -n monitor -l job-name=prometheus-restore
+# Create a one-hour debug pod with the same Prometheus data mount:
+# kubectl --context "${DEST_CLUSTER}" run prometheus-restore-debug \
+#   --namespace monitor \
+#   --image prom/prometheus:main-busybox \
+#   --restart=Never \
+#   --overrides "$(cat <<EOF
+# {
+#   "spec": {
+#     "containers": [{
+#       "name": "prometheus-restore-debug",
+#       "image": "prom/prometheus:main-busybox",
+#       "command": ["sh", "-c", "sleep 3600"],
+#       "volumeMounts": [{
+#         "name": "prometheus-data",
+#         "mountPath": "/prometheus",
+#         "subPath": "prometheus-db"
+#       }]
+#     }],
+#     "volumes": [{
+#       "name": "prometheus-data",
+#       "persistentVolumeClaim": {
+#         "claimName": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
+#       }
+#     }]
+#   }
+# }
+# EOF
+# )"
+# Inspect the mounted data:
+# kubectl --context "${DEST_CLUSTER}" exec -n monitor prometheus-restore-debug -- find /prometheus -maxdepth 2 -type f -ls
+# Delete the debug pod:
+# kubectl --context "${DEST_CLUSTER}" delete pod -n monitor prometheus-restore-debug
 
 #######################################################################################
 ### START
@@ -189,7 +221,7 @@ if [[ ${BACKUP_ZONE} == "${RADIX_ZONE}" ]]; then
 else
   BACKUP_RESOURCE_JSON=$(environment_json "${BACKUP_ZONE}")
 fi
-AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r --arg cluster "${DEST_CLUSTER}" '.cluster_resource_groups[$cluster] // .cluster_rg' <<< "$RADIX_RESOURCE_JSON")
 AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
 AZ_BACKUP_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$BACKUP_RESOURCE_JSON")
 AZ_BACKUP_STORAGE_ACCOUNT=$(jq -r .velero_sa <<< "$BACKUP_RESOURCE_JSON")
@@ -226,6 +258,10 @@ BLOB_NAMES=$(az storage blob list \
   --query '[].name' \
   --auth-mode login \
   --output tsv)
+if [[ -z ${BLOB_NAMES} ]]; then
+  echo "ERROR: No blobs found under ${BACKUP_CLUSTER}/${BACKUP_DATA_PREFIX}/." >&2
+  exit 1
+fi
 BACKUP_SNAPSHOT_BLOB_PREFIX=$(awk -F/ 'NF >= 4 && $3 ~ /^[0-9]{8}T[0-9]{6}Z-/ {print $1 "/" $2 "/" $3}' <<< "${BLOB_NAMES}" | sort -u | tail -1)
 if [[ -n "${BACKUP_SNAPSHOT_BLOB_PREFIX}" ]]; then
   RESTORE_BLOB_PREFIX="${BACKUP_SNAPSHOT_BLOB_PREFIX}"
@@ -337,7 +373,7 @@ fi
 printf "Done.\n"
 
 printf "%s► Restore Prometheus database directly from Blob Storage with AzCopy workload identity %s\n" "${grn}" "${normal}"
-AZCOPY_BLOB_URL="https://${AZ_BACKUP_STORAGE_ACCOUNT}.blob.core.windows.net/${BACKUP_CLUSTER}/${RESTORE_BLOB_PREFIX}"
+AZCOPY_BLOB_URL="https://${AZ_BACKUP_STORAGE_ACCOUNT}.blob.core.windows.net/${BACKUP_CLUSTER}/${RESTORE_BLOB_PREFIX}/"
 kubectl --context "${DEST_CLUSTER}" delete job prometheus-restore \
     --namespace "${MONITOR_NAMESPACE}" --ignore-not-found --wait=true
 cat <<EOF | kubectl --context "${DEST_CLUSTER}" apply --filename -
@@ -347,7 +383,7 @@ metadata:
   name: prometheus-restore
   namespace: ${MONITOR_NAMESPACE}
 spec:
-  backoffLimit: 0
+  backoffLimit: 3
   template:
     metadata:
       labels:
@@ -379,21 +415,25 @@ spec:
               curl -sL "\${AZCOPY_URL}" -o /tmp/azcopy.tar.gz
               tar -xzf /tmp/azcopy.tar.gz -C /tmp
               AZCOPY_BIN=\$(find /tmp -maxdepth 1 -type d -name 'azcopy_linux_*')/azcopy
-              echo "Syncing backup files from Blob Storage (unchanged TSDB blocks are skipped)..."
-              "\${AZCOPY_BIN}" sync "${AZCOPY_BLOB_URL}" /prometheus --delete-destination=true --recursive=true
+              echo "Clearing the destination Prometheus data directory..."
+              find /prometheus -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+              echo "Copying backup files from Blob Storage..."
+              "\${AZCOPY_BIN}" copy "${AZCOPY_BLOB_URL}*" "/prometheus/" --recursive=true --check-md5=FailIfDifferentOrMissing
               if [ -z "\$(find /prometheus -type f -print -quit)" ]; then
                 echo "ERROR: Restore produced no files in /prometheus." >&2
                 exit 1
               fi
-              # A block synced from a backup taken mid-compaction can lack meta.json;
-              # Prometheus cannot load it, so remove it now instead of on every startup.
+              # A block synced from a backup taken mid-compaction can have missing,
+              # empty, or invalid metadata; Prometheus cannot load such a block.
               for block_dir in /prometheus/*/; do
                 block_dir=\${block_dir%/}
                 case "\$(basename "\${block_dir}")" in
                   wal|chunks_head) continue ;;
                 esac
-                if [ ! -f "\${block_dir}/meta.json" ]; then
-                  echo "WARNING: Removing incomplete restored block \$(basename "\${block_dir}") (no meta.json)." >&2
+                if [ ! -s "\${block_dir}/meta.json" ] || \
+                    ! jq -e '(.ulid | type == "string") and (.minTime | type == "number") and (.maxTime | type == "number")' \
+                      "\${block_dir}/meta.json" >/dev/null 2>&1; then
+                  echo "WARNING: Removing incomplete restored block \$(basename "\${block_dir}") (invalid meta.json)." >&2
                   rm -rf "\${block_dir}"
                 fi
               done
