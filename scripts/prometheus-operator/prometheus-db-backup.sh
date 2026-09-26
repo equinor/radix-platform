@@ -30,10 +30,6 @@ set -Eeuo pipefail
 # Continue an existing backup incrementally:
 # RADIX_ZONE=dev CLUSTER="weekly-33" BACKUP_NAME="prometheus-backup-20260820143000" ./prometheus-db-backup.sh
 
-# Monitor the backup Job:
-# kubectl --context "${CLUSTER}" logs -n monitor -l job-name=prometheus-backup-upload --all-containers --prefix -f
-# kubectl --context "${CLUSTER}" get pods -n monitor -l job-name=prometheus-backup-upload -w
-
 #######################################################################################
 ### START
 ###
@@ -327,6 +323,12 @@ fi
 
 PROMETHEUS_NODE_NAME=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
     --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={.spec.nodeName}')
+PROMETHEUS_IMAGE=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
+  --namespace "${MONITOR_NAMESPACE}" --output json | jq -r '.spec.containers[] | select(.name == "prometheus") | .image')
+if [[ -z "${PROMETHEUS_IMAGE}" || "${PROMETHEUS_IMAGE}" == "null" ]]; then
+  echo "ERROR: Could not determine the Prometheus container image for TSDB validation." >&2
+  exit 1
+fi
 
 printf "%s► Create Prometheus TSDB snapshot and sync to Blob Storage with AzCopy workload identity (%s backup) %s\n" "${grn}" "${BACKUP_MODE}" "${normal}"
 AZCOPY_BLOB_URL="https://${AZ_VELERO_STORAGE_ACCOUNT}.blob.core.windows.net/${BACKUP_CONTAINER}/${BACKUP_DATA_PREFIX}"
@@ -373,6 +375,38 @@ spec:
             - --retry-connrefused
             - -XPOST
             - http://prometheus-operator-prometheus.${MONITOR_NAMESPACE}.svc:9090/api/v1/admin/tsdb/snapshot
+        # - name: prepare-validation
+        #   image: curlimages/curl
+        #   command:
+        #     - sh
+        #     - -c
+        #     - |
+        #       set -e
+        #       snapshot_dir=\$(find /prometheus/snapshots -mindepth 1 -maxdepth 1 -type d | sort | tail -1)
+        #       if [ -z "\${snapshot_dir}" ]; then
+        #         echo "ERROR: No Prometheus snapshot directory found for validation." >&2
+        #         exit 1
+        #       fi
+        #       ln -sfn "\${snapshot_dir}" /validation/backup-validation
+        #   volumeMounts:
+        #     - name: prometheus-data
+        #       mountPath: /prometheus
+        #       subPath: prometheus-db
+        #     - name: validation-state
+        #       mountPath: /validation
+        # - name: validate-snapshot
+        #   image: ${PROMETHEUS_IMAGE}
+        #   command:
+        #     - /bin/promtool
+        #     - tsdb
+        #     - analyze
+        #     - /validation/backup-validation
+        #   volumeMounts:
+        #     - name: prometheus-data
+        #       mountPath: /prometheus
+        #       subPath: prometheus-db
+        #     - name: validation-state
+        #       mountPath: /validation
       containers:
         - name: azcopy
           image: mcr.microsoft.com/azure-cli:latest
@@ -407,14 +441,16 @@ spec:
                                 exit 1
                             fi
                             # The snapshot API can catch a block mid-write (compaction in flight); such
-                            # blocks lack meta.json and are unusable, so drop them before upload.
+                            # blocks can have missing, empty, or invalid metadata and are unusable.
                             for block_dir in "\${CURRENT_SNAPSHOT_DIR}"/*/; do
                                 block_dir=\${block_dir%/}
                                 case "\$(basename "\${block_dir}")" in
                                     wal|chunks_head) continue ;;
                                 esac
-                                if [ ! -f "\${block_dir}/meta.json" ]; then
-                                    echo "WARNING: Dropping incomplete snapshot block \$(basename "\${block_dir}") (no meta.json)." >&2
+                                if [ ! -s "\${block_dir}/meta.json" ] || \
+                                    ! jq -e '(.ulid | type == "string") and (.minTime | type == "number") and (.maxTime | type == "number")' \
+                                      "\${block_dir}/meta.json" >/dev/null 2>&1; then
+                                    echo "WARNING: Dropping incomplete snapshot block \$(basename "\${block_dir}") (invalid meta.json)." >&2
                                     rm -rf "\${block_dir}"
                                 fi
                             done
@@ -422,7 +458,7 @@ spec:
               echo "Syncing snapshot (\${SOURCE_SIZE}) directly to Blob Storage..."
                             UPLOAD_STARTED_AT=\$(date -u '+%Y-%m-%dT%H:%M:%SZ')
                             UPLOAD_START_SECONDS=\$(date '+%s')
-                            if ! "\${AZCOPY_BIN}" sync "\${CURRENT_SNAPSHOT_DIR}" "${AZCOPY_BLOB_URL}" --delete-destination=true > /tmp/azcopy-sync.log 2>&1; then
+                            if ! "\${AZCOPY_BIN}" sync "\${CURRENT_SNAPSHOT_DIR}" "${AZCOPY_BLOB_URL}" --delete-destination=true --put-md5 > /tmp/azcopy-sync.log 2>&1; then
                                 cat /tmp/azcopy-sync.log >&2
                                 exit 1
                             fi
@@ -449,6 +485,8 @@ spec:
         - name: prometheus-data
           persistentVolumeClaim:
             claimName: ${PROMETHEUS_PVC_NAME}
+        - name: validation-state
+          emptyDir: {}
 EOF
 printf "Monitor the backup Job with:\n%skubectl logs -n monitor -l job-name=prometheus-backup-upload --context %s --all-containers --prefix -f%s\n" "${grn}" "${CLUSTER}" "${normal}"
 printf "Waiting for AzCopy sync Job..."
