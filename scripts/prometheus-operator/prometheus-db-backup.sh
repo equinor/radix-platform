@@ -30,39 +30,6 @@ set -Eeuo pipefail
 # Continue an existing backup incrementally:
 # RADIX_ZONE=dev CLUSTER="weekly-33" BACKUP_NAME="prometheus-backup-20260820143000" ./prometheus-db-backup.sh
 
-# Monitor the backup Job:
-# kubectl --context "${CLUSTER}" logs -n monitor -l job-name=prometheus-backup-upload --all-containers --prefix -f
-# kubectl --context "${CLUSTER}" get pods -n monitor -l job-name=prometheus-backup-upload -w
-# Create a one-hour debug pod with the same Prometheus data mount:
-# kubectl run prometheus-backup-debug \
-#   --namespace monitor \
-#   --image prom/prometheus:main-busybox \
-#   --restart=Never \
-#   --overrides "$(cat <<EOF
-# {
-#   "spec": {
-#     "containers": [{
-#       "name": "prometheus-backup-debug",
-#       "image": "prom/prometheus:main-busybox",
-#       "command": ["sh", "-c", "sleep 3600"],
-#       "volumeMounts": [{
-#         "name": "prometheus-data",
-#         "mountPath": "/prometheus",
-#         "subPath": "prometheus-db"
-#       }]
-#     }],
-#     "volumes": [{
-#       "name": "prometheus-data",
-#       "persistentVolumeClaim": {
-#         "claimName": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
-#       }
-#     }]
-#   }
-# }
-# EOF
-# )"
-
-
 #######################################################################################
 ### START
 ###
