@@ -46,17 +46,16 @@
 ## Remove the permission after the restore:
 # az role assignment delete --assignee-object-id "${DEST_IDENTITY_PRINCIPAL_ID}" --role "Storage Blob Data Reader" --scope "${SOURCE_STORAGE_ID}"
 
-## Monitor the restore before starting it:
-# kubectl --context "${DEST_CLUSTER}" get job prometheus-restore -n monitor -w
-# kubectl --context "${DEST_CLUSTER}" logs -n monitor -l job-name=prometheus-restore --all-containers --prefix -f
-# kubectl --context "${DEST_CLUSTER}" get pods -n monitor -l job-name=prometheus-restore -w
-# kubectl --context "${DEST_CLUSTER}" exec -n monitor -l job-name=prometheus-restore -c azcopy -- du -sh /prometheus
-# kubectl --context "${DEST_CLUSTER}" exec -n monitor -l job-name=prometheus-restore -c azcopy -- find /prometheus -type f | wc -l
-# Use the actual Pod name if kubectl cannot select by label:
-# kubectl --context "${DEST_CLUSTER}" get pods -n monitor -l job-name=prometheus-restore
-## The debug-container stays alive for 30 minutes after azcopy finishes; exec into it to inspect /prometheus:
-# kubectl --context "${DEST_CLUSTER}" exec -it -n monitor <podname> -c debug-container -- bash
-
+## Troublehooting the restore
+# If you find that restore jobs completes and the data appears to be synced, but Prometheus fails to start due to missing or corrupted TSDB blocks, you can inspect the restored data:
+# kubectl --context "${DEST_CLUSTER}" exec -it -n monitor -l=job-name: prometheus-restore -c debug-container -- sh
+# Once inside the debug container, you can inspect the restored data under /prometheus:
+# promtool tsdb list /prometheus/
+# If promtool reports missing or corrupted blocks, you can delete the folder (blocks) under /prometheus and re-run the restore job again.
+# After the restore job completes successfully, you check again the promtool output to ensure that all TSDB blocks are valid:
+# This ensures that the restored Prometheus TSDB is consistent and ready for use.
+# Note: The debug container is ephemeral and will be terminated after the restore job completes.
+# Delete the job in monitor namespace, and hopefully promote a clean state for Prometheus to start successfully.
 #######################################################################################
 ### START
 ###
@@ -396,25 +395,25 @@ spec:
               tar -xzf /tmp/azcopy.tar.gz -C /tmp
               AZCOPY_BIN=\$(find /tmp -maxdepth 1 -type d -name 'azcopy_linux_*')/azcopy
               echo "Copying backup files from Blob Storage..."
-              "\${AZCOPY_BIN}" sync "${AZCOPY_BLOB_URL}*" "/prometheus/" --delete-destination=true --recursive=true --check-md5=FailIfDifferentOrMissing
+              "\${AZCOPY_BIN}" sync "${AZCOPY_BLOB_URL}" "/prometheus/" --delete-destination=true --recursive=true --check-md5=FailIfDifferentOrMissing
               if [ -z "\$(find /prometheus -type f -print -quit)" ]; then
                 echo "ERROR: Restore produced no files in /prometheus." >&2
                 exit 1
               fi
               # A block synced from a backup taken mid-compaction can have missing,
               # empty, or invalid metadata; Prometheus cannot load such a block.
-              for block_dir in /prometheus/*/; do
-                block_dir=\${block_dir%/}
-                case "\$(basename "\${block_dir}")" in
-                  wal|chunks_head) continue ;;
-                esac
-                if [ ! -s "\${block_dir}/meta.json" ] || \
-                    ! jq -e '(.ulid | type == "string") and (.minTime | type == "number") and (.maxTime | type == "number")' \
-                      "\${block_dir}/meta.json" >/dev/null 2>&1; then
-                  echo "WARNING: Removing incomplete restored block \$(basename "\${block_dir}") (invalid meta.json)." >&2
-                  rm -rf "\${block_dir}"
-                fi
-              done
+              # for block_dir in /prometheus/*/; do
+              #   block_dir=\${block_dir%/}
+              #   case "\$(basename "\${block_dir}")" in
+              #     wal|chunks_head) continue ;;
+              #   esac
+              #   if [ ! -s "\${block_dir}/meta.json" ] || \
+              #       ! jq -e '(.ulid | type == "string") and (.minTime | type == "number") and (.maxTime | type == "number")' \
+              #         "\${block_dir}/meta.json" >/dev/null 2>&1; then
+              #     echo "WARNING: Removing incomplete restored block \$(basename "\${block_dir}") (invalid meta.json)." >&2
+              #     rm -rf "\${block_dir}"
+              #   fi
+              # done
               echo "Correcting file ownership..."
               chown -R ${PROMETHEUS_RUN_AS_USER}:${PROMETHEUS_RUN_AS_GROUP} /prometheus
               echo "FILE_COUNT=\$(find /prometheus -type f | wc -l)"
@@ -424,7 +423,10 @@ spec:
               mountPath: /prometheus
               subPath: prometheus-db
         - name: debug-container
-          image: alpine:latest
+          image: prom/prometheus:latest-busybox
+          securityContext:
+            runAsUser: ${PROMETHEUS_RUN_AS_USER}
+            runAsGroup: ${PROMETHEUS_RUN_AS_GROUP}
           command:
             - sh
             - -c
