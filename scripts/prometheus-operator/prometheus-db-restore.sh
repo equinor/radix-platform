@@ -415,10 +415,8 @@ spec:
               curl -sL "\${AZCOPY_URL}" -o /tmp/azcopy.tar.gz
               tar -xzf /tmp/azcopy.tar.gz -C /tmp
               AZCOPY_BIN=\$(find /tmp -maxdepth 1 -type d -name 'azcopy_linux_*')/azcopy
-              echo "Clearing the destination Prometheus data directory..."
-              find /prometheus -mindepth 1 -maxdepth 1 -exec rm -rf {} +
               echo "Copying backup files from Blob Storage..."
-              "\${AZCOPY_BIN}" copy "${AZCOPY_BLOB_URL}*" "/prometheus/" --recursive=true --check-md5=FailIfDifferentOrMissing
+              "\${AZCOPY_BIN}" sync "${AZCOPY_BLOB_URL}*" "/prometheus/" --delete-destination=true --recursive=true --check-md5=FailIfDifferentOrMissing
               if [ -z "\$(find /prometheus -type f -print -quit)" ]; then
                 echo "ERROR: Restore produced no files in /prometheus." >&2
                 exit 1
@@ -440,6 +438,24 @@ spec:
               echo "Correcting file ownership..."
               chown -R ${PROMETHEUS_RUN_AS_USER}:${PROMETHEUS_RUN_AS_GROUP} /prometheus
               echo "FILE_COUNT=\$(find /prometheus -type f | wc -l)"
+              touch /prometheus/.restore-complete
+          volumeMounts:
+            - name: prometheus-data
+              mountPath: /prometheus
+              subPath: prometheus-db
+        - name: debug-delay
+          image: alpine:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for azcopy container to finish..."
+              until [ -f /prometheus/.restore-complete ]; do
+                sleep 5
+              done
+              echo "azcopy finished. Keeping pod alive for 30 more minutes for debugging..."
+              sleep 1800
+              rm -f /prometheus/.restore-complete
           volumeMounts:
             - name: prometheus-data
               mountPath: /prometheus
