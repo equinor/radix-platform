@@ -126,9 +126,6 @@ function get_credentials() {
     printf "\nRunning az aks get-credentials...\n"
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
-    if [[ "$CLUSTER" == c1-* ]]; then
-        AZ_RESOURCE_GROUP_CLUSTERS="clusters-c1"
-    fi
     printf "Using cluster resource group %s...\n" "$AZ_RESOURCE_GROUP_CLUSTERS"
     currentContext=$(kubectl config current-context 2>/dev/null)
     az aks get-credentials \
