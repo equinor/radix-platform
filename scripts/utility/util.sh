@@ -114,7 +114,7 @@ function environment_json() {
     "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
     "dns_zone_resource_group": "$dns_zone_resource_group",
     "cache_registry": "$cacheRegistry.azurecr.io",
-      "cluster_resource_groups": $cluster_resource_groups,
+    "cluster_resource_groups": $cluster_resource_groups,
     "cluster_issuer_urls": $clusterIssuerUrls
   }
 EOF
