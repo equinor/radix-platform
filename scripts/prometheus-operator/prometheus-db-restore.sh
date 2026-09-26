@@ -391,6 +391,16 @@ spec:
     spec:
       serviceAccountName: ${PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT}
       restartPolicy: Never
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: agentpool
+                    operator: In
+                    values:
+                      - monitorpool
       containers:
         - name: azcopy
           image: mcr.microsoft.com/azure-cli:latest
