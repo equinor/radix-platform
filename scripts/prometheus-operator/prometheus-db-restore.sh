@@ -54,38 +54,8 @@
 # kubectl --context "${DEST_CLUSTER}" exec -n monitor -l job-name=prometheus-restore -c azcopy -- find /prometheus -type f | wc -l
 # Use the actual Pod name if kubectl cannot select by label:
 # kubectl --context "${DEST_CLUSTER}" get pods -n monitor -l job-name=prometheus-restore
-# Create a one-hour debug pod with the same Prometheus data mount:
-# kubectl --context "${DEST_CLUSTER}" run prometheus-restore-debug \
-#   --namespace monitor \
-#   --image prom/prometheus:main-busybox \
-#   --restart=Never \
-#   --overrides "$(cat <<EOF
-# {
-#   "spec": {
-#     "containers": [{
-#       "name": "prometheus-restore-debug",
-#       "image": "prom/prometheus:main-busybox",
-#       "command": ["sh", "-c", "sleep 3600"],
-#       "volumeMounts": [{
-#         "name": "prometheus-data",
-#         "mountPath": "/prometheus",
-#         "subPath": "prometheus-db"
-#       }]
-#     }],
-#     "volumes": [{
-#       "name": "prometheus-data",
-#       "persistentVolumeClaim": {
-#         "claimName": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
-#       }
-#     }]
-#   }
-# }
-# EOF
-# )"
-# Inspect the mounted data:
-# kubectl --context "${DEST_CLUSTER}" exec -n monitor prometheus-restore-debug -- find /prometheus -maxdepth 2 -type f -ls
-# Delete the debug pod:
-# kubectl --context "${DEST_CLUSTER}" delete pod -n monitor prometheus-restore-debug
+## The debug-container stays alive for 30 minutes after azcopy finishes; exec into it to inspect /prometheus:
+# kubectl --context "${DEST_CLUSTER}" exec -it -n monitor <podname> -c debug-container -- bash
 
 #######################################################################################
 ### START
@@ -453,7 +423,7 @@ spec:
             - name: prometheus-data
               mountPath: /prometheus
               subPath: prometheus-db
-        - name: debug-delay
+        - name: debug-container
           image: alpine:latest
           command:
             - sh
