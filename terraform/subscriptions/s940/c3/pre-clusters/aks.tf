@@ -125,3 +125,10 @@ output "vnets" {
 output "oidc_issuer_url" {
   value = module.clusters.oidc_issuer_url
 }
+
+output "cluster_resource_groups" {
+  value = {
+    for cluster_name, cluster_config in module.config.cluster :
+    cluster_name => lookup(cluster_config, "cluster_resource_group", module.config.cluster_resource_group)
+  }
+}
