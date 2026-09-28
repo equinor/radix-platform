@@ -102,8 +102,8 @@ variable "nodepools" {
     }
     x86pipepool2 = {
       vm_size   = "Standard_E16as_v7"
-      min_count = 7
-      max_count = 50
+      min_count = 1
+      max_count = 30
       node_labels = {
         "nodepooltasks" = "jobs"
       }
@@ -111,7 +111,7 @@ variable "nodepools" {
     }
     x86userpool = {
       vm_size   = "Standard_E16as_v5"
-      min_count = 16
+      min_count = 1
       max_count = 100
       max_surge = "5"
     }
@@ -194,18 +194,32 @@ variable "nodepools_v1" {
     }
     x86pipepool = {
       vm_size   = "Standard_E16as_v7"
-      min_count = 7
+      min_count = 1
       max_count = 50
       node_labels = {
         "nodepooltasks" = "jobs"
       }
       node_taints = ["nodepooltasks=jobs:NoSchedule"]
-
     }
+    x86pipepool5 = {
+      vm_size   = "Standard_E16as_v5"
+      min_count = 1
+      max_count = 10
+      node_labels = {
+        "nodepooltasks" = "jobs"
+      }
+      node_taints = ["nodepooltasks=jobs:NoSchedule"]
+    }    
     x86userpool = {
       vm_size   = "Standard_E16as_v7"
-      min_count = 16
+      min_count = 1
       max_count = 100
+      max_surge = "5"
+    }
+    x86userpool5 = {
+      vm_size   = "Standard_E16as_v5"
+      min_count = 1
+      max_count = 20
       max_surge = "5"
     }
     monitorpool = {
