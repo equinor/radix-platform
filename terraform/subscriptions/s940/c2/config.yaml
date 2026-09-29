@@ -63,18 +63,6 @@ networksets:
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c2-westeurope-015"
       - "/subscriptions/ded7ca41-37c8-4085-862f-b11d21ab341a/resourceGroups/clusters-c2/providers/Microsoft.Network/publicIPAddresses/pip-radix-aks-c2-westeurope-016"
 clusters:
-  c2-11:
-    aksversion: "1.34.4"
-    networkset: "networkset1"
-    network_policy: "calico"
-    activecluster: false
-    ddos_protection: true
-    ContainerInsights_time: "1m"
-    cluster_to_hub_peering: "c2-11-to-vnet-hub"
-    hub_to_cluster_peering: "vnet-hub-to-c2-11"
-    scalediagnostic_enabled: true
-    hostencryption: false
-    node_os_planned_updates_enabled: true
   c2-24:
     aksversion: "1.35.5"
     networkset: "networkset2"
