@@ -109,13 +109,17 @@ source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 # Required inputs
 
-if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]] || [[ ${MODE:-} == "DR" ]]
-then
-    echo "RADIX_ZONE: $RADIX_ZONE"    
-else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
-    exit 1
+if [[ -z "${RADIX_ZONE:-}" ]]; then
+  echo "ERROR: Please provide RADIX_ZONE." >&2
+  exit 1
 fi
+
+if [[ ! $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]] && [[ ${MODE:-} != "DR" ]]; then
+  echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
+  exit 1
+fi
+
+echo "RADIX_ZONE: $RADIX_ZONE"
 
 if [[ ${MODE:-} == "DR" ]]; then
   dr_zone_message "$RADIX_ZONE"
@@ -277,6 +281,53 @@ stop_radix_operator() {
   printf " Done.\n"
 }
 
+VELERO_SUSPENDED=false
+BACKUP_LOCATION_PATCHED=false
+
+cleanup_velero_configuration() {
+  local cleanup_exit_code=0
+  local patch_json
+
+  if [[ $BACKUP_LOCATION_PATCHED == true ]]; then
+    patch_json="$(
+      cat <<END
+{
+  "spec": {
+    "accessMode": "ReadWrite",
+    "objectStorage": {
+      "bucket": "$DEST_CLUSTER"
+    }
+  }
+}
+END
+    )"
+    if kubectl --context "$DEST_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$patch_json"; then
+      BACKUP_LOCATION_PATCHED=false
+    else
+      cleanup_exit_code=1
+    fi
+  fi
+
+  if [[ $VELERO_SUSPENDED == true ]]; then
+    if flux --context "$DEST_CLUSTER" resume ks -n flux-system velero; then
+      VELERO_SUSPENDED=false
+    else
+      cleanup_exit_code=1
+    fi
+  fi
+
+  return "$cleanup_exit_code"
+}
+
+handle_exit() {
+  local exit_code=$?
+
+  trap - EXIT
+  set +e
+  cleanup_velero_configuration
+  exit "$exit_code"
+}
+
 #######################################################################################
 ### Verify cluster access
 ###
@@ -304,9 +355,13 @@ PATCH_JSON="$(
 END
 )"
 
+trap 'handle_exit' EXIT
+
 flux --context "$DEST_CLUSTER" suspend ks -n flux-system velero
+VELERO_SUSPENDED=true
 wait_for_velero "BackupStorageLocation default"
 kubectl --context "$DEST_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$PATCH_JSON"
+BACKUP_LOCATION_PATCHED=true
 
 echo ""
 printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
@@ -381,23 +436,8 @@ please_wait_for_restore_to_be_completed "radix"
 echo ""
 echo "Configure velero back to normal operation in destination..."
 
-# Set velero in destination to read destination backup location
-PATCH_JSON="$(
-  cat <<END
-{
-    "spec": {
-       "accessMode":"ReadWrite",
-       "objectStorage": {
-            "bucket": "$DEST_CLUSTER"
-       }
-    }
- }
-END
-)"
-
-# Set velero in read/write mode
-kubectl --context "$DEST_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$PATCH_JSON"
-flux --context "$DEST_CLUSTER" resume ks -n flux-system velero
+trap - EXIT
+cleanup_velero_configuration
 
 #######################################################################################
 ### Done!
