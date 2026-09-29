@@ -154,10 +154,23 @@ printf "Updating Docker auth in keyvault... "
 KV_EXPIRATION_TIME=${KV_EXPIRATION_TIME:-'+1 year'}
 if EXPIRY_DATE=$(date -d "$KV_EXPIRATION_TIME" -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
     :
-elif EXPIRY_DATE=$(date -v+1y -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
-    :
+elif [[ $KV_EXPIRATION_TIME =~ ^\+([0-9]+)[[:space:]]+(year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds)$ ]]; then
+    BSD_DATE_AMOUNT=${BASH_REMATCH[1]}
+    case ${BASH_REMATCH[2]} in
+        year | years) BSD_DATE_UNIT=y ;;
+        month | months) BSD_DATE_UNIT=m ;;
+        week | weeks) BSD_DATE_UNIT=w ;;
+        day | days) BSD_DATE_UNIT=d ;;
+        hour | hours) BSD_DATE_UNIT=H ;;
+        minute | minutes) BSD_DATE_UNIT=M ;;
+        second | seconds) BSD_DATE_UNIT=S ;;
+    esac
+    if ! EXPIRY_DATE=$(date "-v+${BSD_DATE_AMOUNT}${BSD_DATE_UNIT}" -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+        echo "ERROR: Unable to compute expiry date for '$KV_EXPIRATION_TIME' with the installed date implementation." >&2
+        exit 1
+    fi
 else
-    echo "ERROR: Unable to compute expiry date: unsupported date implementation." >&2
+    echo "ERROR: Unable to compute expiry date for '$KV_EXPIRATION_TIME' with the installed date implementation." >&2
     exit 1
 fi
 
