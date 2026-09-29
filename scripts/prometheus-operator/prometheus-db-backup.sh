@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+set -euo pipefail
 
 #######################################################################################
 ### PURPOSE
@@ -45,24 +45,32 @@ red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 gry=$'\e[2;37m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 FLUX_SUSPENDED=false
 
-function resume_prometheus() {
-    local exit_code=$?
+function cleanup_prometheus() {
+    local cleanup_exit_code=0
 
-    set +e
     printf "\n%s► Clean up temporary backup resources %s\n" "${grn}" "${normal}"
 
     if [[ ${FLUX_SUSPENDED} == true ]]; then
         flux --context "${CLUSTER}" resume helmrelease kube-prometheus-stack \
-            --namespace "${MONITOR_NAMESPACE}"
+            --namespace "${MONITOR_NAMESPACE}" || cleanup_exit_code=1
         flux --context "${CLUSTER}" reconcile helmrelease kube-prometheus-stack \
-            --namespace "${MONITOR_NAMESPACE}"
+            --namespace "${MONITOR_NAMESPACE}" || cleanup_exit_code=1
     fi
 
-    return "${exit_code}"
+    return "${cleanup_exit_code}"
+}
+
+function handle_exit() {
+    local exit_code=$?
+
+    trap - EXIT
+    set +e
+    cleanup_prometheus
+    exit "${exit_code}"
 }
 
 echo ""
@@ -120,7 +128,7 @@ fi
 
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 # Optional inputs
 
@@ -269,7 +277,7 @@ PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT="prometheus-backup-uploader"
 PROMETHEUS_POD_NAME="prometheus-prometheus-operator-prometheus-0"
 PROMETHEUS_PVC_NAME="prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
 
-trap 'resume_prometheus' EXIT
+trap 'handle_exit' EXIT
 
 cat <<EOF | kubectl --context "${CLUSTER}" apply --filename -
 apiVersion: v1
@@ -514,8 +522,8 @@ while true; do
 done
 printf "Done.\n"
 
-resume_prometheus
 trap - EXIT
+cleanup_prometheus
 printf "Done.\n"
 
 echo ""

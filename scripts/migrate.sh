@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -44,11 +46,11 @@
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -57,7 +59,7 @@ else
 fi
 
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 check_installed_components
 
 #######################################################################################
@@ -100,7 +102,10 @@ function flux_configmap() {
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
     colordiff -u -s -N <(kubectl --context "$DEST_CLUSTER" get configmap -n flux-system radix-flux-config -ojson | jq .data) \
-     <(echo "$CM" | jq '.data')
+        <(echo "$CM" | jq '.data') || {
+        local diff_exit_code=$?
+        [[ $diff_exit_code -eq 1 ]] || return "$diff_exit_code"
+    }
   echo ""     
   if [[ $USER_PROMPT == true ]]; then
     while true; do
@@ -185,33 +190,33 @@ function start_radix_operator() {
 ### Read Zone Config
 ###
 
-if [[ -z "$DEST_CLUSTER" ]]; then
+if [[ -z "${DEST_CLUSTER:-}" ]]; then
     echo "ERROR: Please provide DEST_CLUSTER" >&2
     exit 1
 fi
 
+SUBFUNCTION=${SUBFUNCTION:-}
 if [[ -z "$SUBFUNCTION" ]]; then
-  if [[ -z "$SOURCE_CLUSTER" ]]; then
-    echo "ERROR: Please provide SOURCE_CLUSTER" >&2
-    exit 1
+    if [[ -z "${SOURCE_CLUSTER:-}" ]]; then
+        echo "ERROR: Please provide SOURCE_CLUSTER" >&2
+        exit 1
+    fi
 fi
 
-fi
-
-if [[ -z "$FLUX_BRANCH" ]]; then
+if [[ -z "${FLUX_BRANCH:-}" ]]; then
     FLUX_BRANCH="master"
 
 fi
 
 # Optional inputs
 
-if [[ -z "$USER_PROMPT" ]]; then
+if [[ -z "${USER_PROMPT:-}" ]]; then
     USER_PROMPT=true
 fi
 
 # Script vars
 
-if [[ -z "$BACKUP_NAME" ]]; then
+if [[ -z "${BACKUP_NAME:-}" ]]; then
     BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
 fi
 
@@ -225,6 +230,7 @@ RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
+    exit 1
 fi
 
 #######################################################################################
@@ -265,10 +271,12 @@ check_secrets_exist "${AZ_RESOURCE_KEYVAULT}" "${secrets[@]}"
 #######################################################################################
 ### Check if kubernetes-api-auth-ip-range are defined
 ### Read from radix-private docs and check if it is defined. If not, exit with error.
-ip_list=$(GH_PAGER=cat gh api repos/equinor/radix-private/contents/docs/infrastructure/kubernetes-api-auth-ip-range.txt | jq -r .content | base64 -d | tr -d '\n')
-
-if [ $? -ne 0 ] || [ -z "$ip_list" ]; then
+if ! ip_list=$(GH_PAGER=cat gh api repos/equinor/radix-private/contents/docs/infrastructure/kubernetes-api-auth-ip-range.txt | jq -r .content | base64 -d | tr -d '\n'); then
     echo "ERROR: Failed to retrieve kubernetes-api-auth-ip-range.txt from radix-private repo" >&2
+    exit 1
+fi
+if [[ -z "$ip_list" ]]; then
+    echo "ERROR: kubernetes-api-auth-ip-range.txt is empty" >&2
     exit 1
 fi
 
@@ -278,8 +286,7 @@ fi
 ###
 
 printf "Verifying that logged in AAD user has Radix Confidential Data Contributor on scope of ${AZ_SUBSCRIPTION_ID}... "
-az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Radix Confidential Data Contributor\$"
-if [[ "$?" != "0" ]]; then
+if ! az role assignment list --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}" --assignee "$(az ad signed-in-user show --query id -o tsv)" --query '[].roleDefinitionName' -o tsv | grep -E '^Radix Confidential Data Contributor$'; then
   echo -e "ERROR: Logged in user is not Radix Confidential Data Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is Azure resource activated?" >&2
   echo -e "Make sure you have enabled AZ PIM RADIX Cluster Admin - ${RADIX_ENVIRONMENT} role" >&2
   exit 1
@@ -404,27 +411,28 @@ if [[ $install_base_components == true ]]; then
     --file "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
 
     echo "Installing flux with your flux version: v$FLUX_VERSION"
-    flux bootstrap git \
-    --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
-    --url="ssh://git@github.com/equinor/radix-flux" \
-    --branch="$FLUX_BRANCH" \
-    --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
-    --components-extra=image-reflector-controller,image-automation-controller \
-    --context="$DEST_CLUSTER" \
-    --version="v$FLUX_VERSION" \
-    --silent
-    if [[ "$?" != "0" ]]; then
+    if ! flux bootstrap git \
+        --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
+        --url="ssh://git@github.com/equinor/radix-flux" \
+        --branch="$FLUX_BRANCH" \
+        --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
+        --components-extra=image-reflector-controller,image-automation-controller \
+        --context="$DEST_CLUSTER" \
+        --version="v$FLUX_VERSION" \
+        --silent; then
         printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
-        rm "$FLUX_PRIVATE_KEY_NAME"
+        rm -f "$FLUX_PRIVATE_KEY_NAME"
         exit 1
     else
-        rm "$FLUX_PRIVATE_KEY_NAME"
+        rm -f "$FLUX_PRIVATE_KEY_NAME"
         echo " Done."
     fi
 
     echo -e ""
     echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
 fi
+
+KILL_VELERO_WINDOWS=false
 
 if command -v "tmux" >/dev/null 2>&1; then
     tmux new -s flux -d 'watch "kubectl --context '"$DEST_CLUSTER"' get ks -A"' \; split-window -v 'watch "kubectl --context '"$DEST_CLUSTER"' get hr -A"'

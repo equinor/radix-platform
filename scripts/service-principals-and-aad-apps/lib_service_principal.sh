@@ -37,16 +37,17 @@ function update_service_principal_credentials_in_az_keyvault() {
     local tmp_file_path
     local template_path
     local script_dir_path
+    local expires=()
 
     name="$1"
     id="$2"
     password="$3"
-    description="$4"
-    secret_id="$5"
-    expiration_date="$6"
+    description="${4:-}"
+    secret_id="${5:-}"
+    expiration_date="${6:-}"
     secretkey="$7"
 
-    tenantId="$(az ad sp show --id ${id} --query appOwnerOrganizationId --output tsv)"
+    tenantId="$(az ad sp show --id "${id}" --query appOwnerOrganizationId --output tsv)"
     script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     template_path="${script_dir_path}/template-credentials.json"
 
@@ -70,11 +71,11 @@ function update_service_principal_credentials_in_az_keyvault() {
     # cat "${tmp_file_path}"
 
     if [[ -n ${expiration_date} ]]; then
-        expires="--expires "${expiration_date}""
+        expires=(--expires "${expiration_date}")
     fi
 
     # Upload to keyvault
-    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${secretkey}" --file "${tmp_file_path}" ${expires} 2>&1 >/dev/null
+    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${secretkey}" --file "${tmp_file_path}" ${expires[@]+"${expires[@]}"} 2>&1 >/dev/null
 
     # Clean up
     rm -rf "$tmp_file_path"
@@ -91,13 +92,14 @@ function update_app_credentials_in_az_keyvault() {
     local tmp_file_path
     local template_path
     local script_dir_path
+    local expires=()
 
     name="$1"
     id="$2"
     password="$3"
-    description="$4"
-    secret_id="$5"
-    expiration_date="$6"
+    description="${4:-}"
+    secret_id="${5:-}"
+    expiration_date="${6:-}"
     keyvault="$7"
     # tenantId="$(az ad app show --id ${id} --query appOwnerOrganizationId --output tsv)"
     script_dir_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -123,12 +125,11 @@ function update_app_credentials_in_az_keyvault() {
     # cat "${tmp_file_path}"
 
     if [[ -n ${expiration_date} ]]; then
-        expires="--expires ${expiration_date}"
-        echo "${expires}"
+        expires=(--expires "${expiration_date}")
     fi
 
     # Upload to keyvault
-    az keyvault secret set --vault-name "${keyvault}" --name "${name}" --file "${tmp_file_path}" ${expires} 2>&1 >/dev/null
+    az keyvault secret set --vault-name "${keyvault}" --name "${name}" --file "${tmp_file_path}" ${expires[@]+"${expires[@]}"} 2>&1 >/dev/null
 
     # Clean up
     rm -rf "$tmp_file_path"
@@ -144,7 +145,7 @@ function update_ad_app_owners() {
     local id
 
     name="$1"
-    ad_group="$2"
+    ad_group="${2:-}"
 
     if [[ -z ${ad_group} ]]; then
         ad_group="Radix"
@@ -160,7 +161,7 @@ function update_ad_app_owners() {
     while IFS=$'\t' read -r -a line; do
         user_object_id=${line[0]}
         user_email=${line[1]}
-        if [[ ! ${app_owners[@]} =~ ${user_object_id} ]]; then
+        if [[ ! ${app_owners} =~ ${user_object_id} ]]; then
             printf "Adding ${user_email} to ${name}..."
             az ad app owner add --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
             printf " Done.\n"
@@ -171,7 +172,7 @@ function update_ad_app_owners() {
     while IFS=$'\t' read -r -a line; do
         user_object_id=${line[0]}
         user_email=${line[1]}
-        if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
+        if [[ ! ${ad_group_users} =~ ${user_object_id} ]]; then
             printf "Removing ${user_email} from ${name}"
             az ad app owner remove --id "${id}" --owner-object-id "${user_object_id}" --output none --only-show-errors
             printf " Done.\n"
@@ -193,7 +194,7 @@ function update_service_principal_owners() {
     local id
 
     name="$1"
-    ad_group="$2"
+    ad_group="${2:-}"
 
     if [[ -z ${ad_group} ]]; then
         ad_group="Radix"
@@ -205,12 +206,12 @@ function update_service_principal_owners() {
 
     ad_group_users=$(az ad group member list --group "${ad_group}" --query "[].[id,userPrincipalName]" --output tsv --only-show-errors)
 
-    sp_owners=$(az ad sp owner list --id ${sp_obj_id} --query "[?[].accountEnabled==true].[id,userPrincipalName]" --output tsv --only-show-errors)
+    sp_owners=$(az ad sp owner list --id "${sp_obj_id}" --query "[?[].accountEnabled==true].[id,userPrincipalName]" --output tsv --only-show-errors)
 
     while IFS=$'\t' read -r -a line; do
         user_object_id=${line[0]}
         user_email=${line[1]}
-        if [[ ! ${sp_owners[@]} =~ ${user_object_id} ]]; then
+        if [[ ! ${sp_owners} =~ ${user_object_id} ]]; then
             printf "Adding ${user_email} to ${name}..."
             az rest --method POST --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/\$ref \
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
@@ -222,7 +223,7 @@ function update_service_principal_owners() {
     while IFS=$'\t' read -r -a line; do
         user_object_id=${line[0]}
         user_email=${line[1]}
-        if [[ ! ${ad_group_users[@]} =~ ${user_object_id} ]]; then
+        if [[ ! ${ad_group_users} =~ ${user_object_id} ]]; then
             echo "Removing ${user_email} from ${name}..."
             az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/$sp_obj_id/owners/$user_object_id/\$ref \
                 --headers Content-Type=application/json --body "{\"@odata.id\": \"https://graph.microsoft.com/v1.0/users/$user_object_id\"}"
@@ -259,7 +260,7 @@ function create_service_principal_and_store_credentials() {
     local id
 
     name="$1"
-    description="$2"
+    description="${2:-}"
 
     printf "Working on \"${name}\": Creating service principal..."
 
@@ -296,12 +297,12 @@ function create_service_principal_and_store_credentials() {
 function create_app_registration_and_service_principal() {
     local name # Input 1, string
 
-    name="$1"
-
     if [[ -z ${1:+x} ]]; then
         echo "ERROR: Missing required argument #1 for app name. Quitting..." >&2
         return 1
     fi
+
+    name="$1"
 
     printf "\nCreate AAD app registration and service principal "${name}"... "
     app_id="$(az ad app list --filter "displayname eq '${name}'" --only-show-errors --query [0].appId -o tsv)"
@@ -337,7 +338,7 @@ function set_app_registration_identifier_uris {
     local app_id
 
     name="$1"
-    identifier_uris="$2"
+    identifier_uris="${2:-}"
 
     printf "\nUpdating identifierUris for app "${name}"... "
 
@@ -409,11 +410,12 @@ function gh_federated_credentials() {
     local app_id
     local SUBSCRIPTION_ID
     local ENVIRONMENT
+    local env_arg=()
 
     REPO=$1
     app_id=$2
     SUBSCRIPTION_ID=$3
-    ENVIRONMENT=$4
+    ENVIRONMENT=${4:-}
 
     if ! gh auth status >/dev/null 2>&1; then
         echo "You need to login: "
@@ -422,20 +424,20 @@ function gh_federated_credentials() {
 
     if [[ -n $ENVIRONMENT ]]; then
         gh api --method PUT "repos/equinor/${REPO}/environments/${ENVIRONMENT}" 2>&1 >/dev/null
-        env_arg=$'--env '$ENVIRONMENT''
+        env_arg=(--env "$ENVIRONMENT")
     fi
 
     echo 'Updating GitHub secrets...'
-    gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" ${env_arg}
-    gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" ${env_arg}
-    gh secret set 'AZURE_TENANT_ID' --body $(az account show --query tenantId -otsv) --repo "equinor/${REPO}" ${env_arg}
+    gh secret set 'AZURE_CLIENT_ID' --body "$app_id" --repo "equinor/${REPO}" ${env_arg[@]+"${env_arg[@]}"}
+    gh secret set 'AZURE_SUBSCRIPTION_ID' --body "$SUBSCRIPTION_ID" --repo "equinor/${REPO}" ${env_arg[@]+"${env_arg[@]}"}
+    gh secret set 'AZURE_TENANT_ID' --body "$(az account show --query tenantId -otsv)" --repo "equinor/${REPO}" ${env_arg[@]+"${env_arg[@]}"}
 }
 
 function create_federated_credentials() {
     local APP_NAME="$1"
     local SUBSCRIPTION_ID="$2"
     export REPO="$3"
-    export ENVIRONMENT="$4"
+    export ENVIRONMENT="${4:-}"
     local CONFIG="$5"
 
     printf "Working on \"%s\"\n" "${APP_NAME}"
@@ -463,7 +465,7 @@ function create_oidc_and_federated_credentials() {
     APP_NAME="$1"
     export SUBSCRIPTION_ID="$2"
     export REPO="$3"
-    export ENVIRONMENT="$4"
+    export ENVIRONMENT="${4:-}"
 
     printf "Working on \"%s\"\n" "${APP_NAME}"
     wait_for_pim_app_developer_role
@@ -512,7 +514,7 @@ function refresh_service_principal_and_store_credentials_in_ad_and_keyvault() {
     local id
 
     name="$1"
-    description="$2"
+    description="${2:-}"
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 
@@ -538,7 +540,7 @@ function refresh_ad_app_and_store_credentials_in_ad_and_keyvault() {
 
     name="$1"
     secretkey="$2"
-    description="$3"
+    description="${3:-}"
 
     printf "Working on \"${name}\": Appending new credentials in Azure AD..."
 

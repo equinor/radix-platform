@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 # PURPOSE
 #
@@ -11,11 +13,12 @@
 # RADIX_ZONE=dev CLUSTER_NAME="weekly-01" ./rotatekey.sh 
 #######################################################################################
 
-# set -euo pipefail
+yel=$'\e[1;33m'
+normal=$(tput sgr0 2>/dev/null || true)
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -23,7 +26,7 @@ else
     exit 1
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
+if [[ -z "${CLUSTER_NAME:-}" ]]; then
    echo "ERROR: Please provide CLUSTER_NAME" >&2
    exit 1
 fi
@@ -58,7 +61,7 @@ fi
 ### Read Zone Config
 ###
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 #######################################################################################
 ### Environment
@@ -141,12 +144,20 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 
-kubectl --context "$CLUSTER_NAME" -n flux-system delete secret flux-system >/dev/null
-ssh-keygen -t ed25519 -f ./$FLUX_PRIVATE_KEY_NAME -N "" -q >/dev/null
-flux create secret git flux-system --url=ssh://git@github.com/equinor/radix-flux.git --private-key-file=./$FLUX_PRIVATE_KEY_NAME >/dev/null
+kubectl --context "$CLUSTER_NAME" -n flux-system delete secret flux-system --ignore-not-found >/dev/null
+trap 'rm -f "./${FLUX_PRIVATE_KEY_NAME}" "./${FLUX_PRIVATE_KEY_NAME}.pub"' EXIT
+ssh-keygen -t ed25519 -f "./$FLUX_PRIVATE_KEY_NAME" -N "" -q >/dev/null
+flux create secret git flux-system --url=ssh://git@github.com/equinor/radix-flux.git --private-key-file="./$FLUX_PRIVATE_KEY_NAME" >/dev/null
 SECRET_VALUES=$(<$FLUX_PRIVATE_KEY_NAME)
-EXPIRATION_DATE=$(date -u -d "+1 year" +"%Y-%m-%dT%H:%M:%SZ")
-az keyvault secret set --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" --output none || exit
+if EXPIRATION_DATE=$(date -d '+1 year' -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+    :
+elif EXPIRATION_DATE=$(date -v+1y -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+    :
+else
+    echo "ERROR: Unable to compute expiration date: unsupported date implementation." >&2
+    exit 1
+fi
+az keyvault secret set --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" --output none
 TODAY_DATE=$(date -u +"%Y-%m-%d")
 echo ""
 echo ""
@@ -155,8 +166,8 @@ echo ""
 echo "Name:        $RADIX_ZONE-$TODAY_DATE"
 echo "Deploy Key:  $(awk '{print $1, $2}' ./$FLUX_PRIVATE_KEY_NAME.pub)"
 echo "Note:        Tick the 'Allow write access' checkbox"
-rm ./$FLUX_PRIVATE_KEY_NAME
-rm ./$FLUX_PRIVATE_KEY_NAME.pub
+rm -f "./$FLUX_PRIVATE_KEY_NAME" "./$FLUX_PRIVATE_KEY_NAME.pub"
+trap - EXIT
 
 show_instructions=true
 if [[ $USER_PROMPT == true ]]; then

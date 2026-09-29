@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -42,7 +44,7 @@ echo "Start bootstrap aks instance... "
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
@@ -60,7 +62,7 @@ hash jq 2>/dev/null || {
 
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.67.0"
-if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+if [[ $(version "$AZ_CLI") -lt $(version "$MIN_AZ_CLI") ]]; then
     printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI.${normal}\n"
     exit 1
 fi
@@ -86,7 +88,7 @@ printf "Done.\n"
 ### Read inputs and configs
 ###
 
-if [[ -z "$RADIX_ZONE_ENV" ]]; then
+if [[ -z "${RADIX_ZONE_ENV:-}" ]]; then
     echo "ERROR: Please provide RADIX_ZONE_ENV" >&2
     exit 1
 else
@@ -97,7 +99,7 @@ else
     source "$RADIX_ZONE_ENV"
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
+if [[ -z "${CLUSTER_NAME:-}" ]]; then
     echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi

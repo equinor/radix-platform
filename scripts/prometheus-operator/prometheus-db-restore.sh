@@ -60,7 +60,7 @@
 ### START
 ###
 
-set -Eeuo pipefail
+set -euo pipefail
 
 echo ""
 echo "Start Prometheus Database Restore..."
@@ -68,34 +68,42 @@ echo "Start Prometheus Database Restore..."
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 gry=$'\e[2;37m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 PROMETHEUS_SCALED_DOWN=false
 FLUX_SUSPENDED=false
 ORIGINAL_PROMETHEUS_REPLICAS=1
 PROMETHEUS_POD_NAME="prometheus-prometheus-operator-prometheus-0"
 
-function resume_prometheus() {
-  local exit_code=$?
+function cleanup_prometheus() {
+  local cleanup_exit_code=0
 
-  set +e
   printf "\n%s► Clean up temporary restore resources %s\n" "${grn}" "${normal}"
 
   if [[ ${PROMETHEUS_SCALED_DOWN} == true ]]; then
     kubectl --context "${DEST_CLUSTER}" patch prometheus "${PROMETHEUS_NAME}" \
       --namespace "${MONITOR_NAMESPACE}" \
       --type merge \
-      --patch "{\"spec\":{\"replicas\":${ORIGINAL_PROMETHEUS_REPLICAS}}}"
+      --patch "{\"spec\":{\"replicas\":${ORIGINAL_PROMETHEUS_REPLICAS}}}" || cleanup_exit_code=1
   fi
 
   if [[ ${FLUX_SUSPENDED} == true ]]; then
     flux --context "${DEST_CLUSTER}" resume helmrelease kube-prometheus-stack \
-      --namespace "${MONITOR_NAMESPACE}"
+      --namespace "${MONITOR_NAMESPACE}" || cleanup_exit_code=1
     flux --context "${DEST_CLUSTER}" reconcile helmrelease kube-prometheus-stack \
-      --namespace "${MONITOR_NAMESPACE}"
+      --namespace "${MONITOR_NAMESPACE}" || cleanup_exit_code=1
   fi
 
-  return "${exit_code}"
+  return "${cleanup_exit_code}"
+}
+
+function handle_exit() {
+  local exit_code=$?
+
+  trap - EXIT
+  set +e
+  cleanup_prometheus
+  exit "${exit_code}"
 }
 
 printf "\nCheck for neccesary executables... "
@@ -240,7 +248,7 @@ else
   RESTORE_BLOB_LAYOUT="backup root"
 fi
 
-trap 'resume_prometheus' EXIT
+trap 'handle_exit' EXIT
 
 printf "\nLogging in to Azure if not already logged in... "
 az account show >/dev/null || az login >/dev/null
@@ -474,8 +482,8 @@ while true; do
 done
 printf "Done.\n"
 
-resume_prometheus
 trap - EXIT
+cleanup_prometheus
 
 printf "Waiting for Prometheus to start after restore..."
 for _ in {1..60}; do

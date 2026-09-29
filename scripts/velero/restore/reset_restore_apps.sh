@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -37,7 +39,7 @@ echo ""
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -45,14 +47,14 @@ else
     exit 1
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
+if [[ -z "${CLUSTER_NAME:-}" ]]; then
    echo "ERROR: Please provide CLUSTER_NAME" >&2
    exit 1
 fi
 
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 #######################################################################################
 ### Environment
@@ -143,14 +145,14 @@ PATCH_JSON="$(
     "spec": {
       "accessMode":"ReadWrite",
        "objectStorage": {
-            "bucket": "$SOURCE_CLUSTER"
+            "bucket": "$CLUSTER_NAME"
        }
     }
  }
 END
 )"
 # Set velero in read/write mode
-kubectl --context "$CLUSTER_NAME" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl --context "$CLUSTER_NAME" patch BackupStorageLocation default --namespace velero --type merge --patch "$PATCH_JSON"
 
 echo ""
 echo "All done & gone!"

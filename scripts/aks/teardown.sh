@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -41,7 +43,7 @@ echo "Start teardown of aks instance... "
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 
@@ -64,7 +66,7 @@ hash uuidgen 2>/dev/null || {
 
 AZ_CLI=$(az version --output json | jq -r '."azure-cli"')
 MIN_AZ_CLI="2.41.0"
-if [ $(version $AZ_CLI) -lt $(version "$MIN_AZ_CLI") ]; then
+if [[ $(version "$AZ_CLI") -lt $(version "$MIN_AZ_CLI") ]]; then
     printf ""${yel}"Please update az cli to ${MIN_AZ_CLI}. You got version $AZ_CLI."${normal}"\n"
     exit 1
 fi
@@ -90,7 +92,7 @@ printf "Done.\n"
 ### Read inputs and configs
 ###
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -98,27 +100,31 @@ else
     exit 1
 fi
 
-if [[ -z "$CLUSTER_NAME" ]]; then
+if [[ -z "${CLUSTER_NAME:-}" ]]; then
     echo "ERROR: Please provide CLUSTER_NAME" >&2
     exit 1
 fi
 
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 # Optional inputs
-if [[ -z "$USER_PROMPT" ]]; then
+if [[ -z "${USER_PROMPT:-}" ]]; then
     USER_PROMPT=true
 fi
 
-if [[ -z "$HUB_PEERING_NAME" ]]; then
+if [[ -z "${HUB_PEERING_NAME:-}" ]]; then
     HUB_PEERING_NAME=hub-to-${CLUSTER_NAME}
 fi
 
-if [[ -z "$VNET_DNS_LINK" ]]; then
+if [[ -z "${VNET_DNS_LINK:-}" ]]; then
     VNET_DNS_LINK=$CLUSTER_NAME-link
 fi
+
+VNET_NAME="vnet-${CLUSTER_NAME}"
+CLUSTERLOCK=""
+VNETLOCK=""
 
 #######################################################################################
 ### Environment
@@ -149,7 +155,7 @@ printf "Done.\n"
 #######################################################################################
 ### Check if cluster or network resources are locked and not running
 ###
-CLUSTER_EXIST=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "name" -o tsv 2>/dev/null)
+CLUSTER_EXIST=$(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${CLUSTER_NAME}" --query "name" -o tsv 2>/dev/null || true)
 if [ -n "$CLUSTER_EXIST" ]; then
     POWERSTATE=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "powerState.code" --output tsv)
     if [[ $POWERSTATE != "Stopped" ]]; then
@@ -232,7 +238,7 @@ echo -e ""
 echo -e "   > WHAT:"
 echo -e "   -------------------------------------------------------------------"
 echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
-if [[ ${IP_EXISTS} ]]; then
+if [[ ${IP_EXISTS:-} ]]; then
     echo -e "   -  TEST_CLUSTER_PUBLIC_IP_ADDRESS   : $TEST_CLUSTER_PUBLIC_IP_ADDRESS"
 fi
 echo -e ""

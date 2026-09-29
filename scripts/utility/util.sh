@@ -3,7 +3,7 @@
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 function dr_zone_message() {
   local env="$1"
@@ -73,32 +73,41 @@ function config_path() {
 
 function environment_json() {
   local RADIX_ZONE="$1"
+  local AZ_SUBSCRIPTION_NAME
   RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
   if [[ $RADIX_ZONE == "dev" ]] || [[ $RADIX_ZONE == "playground" ]]; then
-    local AZ_SUBSCRIPTION_NAME="s941"
+    AZ_SUBSCRIPTION_NAME="s941"
   elif [[ $RADIX_ZONE == "prod" ]] || [[ $RADIX_ZONE == "c2" ]] || [[ $RADIX_ZONE == "c3" ]] || [[ $RADIX_ZONE == "extmon" ]] ; then
-    local AZ_SUBSCRIPTION_NAME="s940"
+    AZ_SUBSCRIPTION_NAME="s940"
+  else
+    echo "ERROR: Unsupported RADIX_ZONE=$RADIX_ZONE" >&2
+    return 1
   fi
   terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" init >&2
   terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init >&2
-  local az_resource_group_clusters=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
-  local az_resource_group_common=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_common)
-  local velero_storage_account=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
-  local radix_id_prometheus_backup_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_prometheus_backup_mi_client_id 2>/dev/null || true)
-  local keyvault_config=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_config_name)
-  local keyvault_main=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_name)
-  local dns_zone_name=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_name)
-  local imageRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw imageRegistry)
-  local ip_prefix_egress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .egress)
-  local ip_prefix_ingress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .ingress)
-  local ip_prefix_egress_ips=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw egress_ips)
-  local radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id)
-  local dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group)
-  local cacheRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw cacheRegistry)
-    local clusterIssuerUrls=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value')
-    local cluster_resource_groups=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json cluster_resource_groups 2>/dev/null || echo '{}')
+  local az_resource_group_clusters az_resource_group_common velero_storage_account
+  local radix_id_prometheus_backup_mi_client_id keyvault_config keyvault_main dns_zone_name
+  local imageRegistry ip_prefix_egress ip_prefix_ingress ip_prefix_egress_ips
+  local radix_id_certmanager_mi_client_id dns_zone_resource_group cacheRegistry
+  local clusterIssuerUrls cluster_resource_groups json
+  az_resource_group_clusters=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_clusters)
+  az_resource_group_common=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw az_resource_group_common)
+  velero_storage_account=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw velero_storage_account)
+  radix_id_prometheus_backup_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_prometheus_backup_mi_client_id 2>/dev/null || true)
+  keyvault_config=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_config_name)
+  keyvault_main=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw keyvault_name)
+  dns_zone_name=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_name)
+  imageRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw imageRegistry)
+  ip_prefix_egress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .egress)
+  ip_prefix_ingress=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -json public_ip_prefix_names | jq -r .ingress)
+  ip_prefix_egress_ips=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw egress_ips)
+  radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id)
+  dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group)
+  cacheRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw cacheRegistry)
+  clusterIssuerUrls=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json | jq -r '.oidc_issuer_url.value')
+  cluster_resource_groups=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json cluster_resource_groups 2>/dev/null || echo '{}')
 
-  local json=$(cat <<EOF
+  json=$(cat <<EOF
   {
     "cluster_rg": "$az_resource_group_clusters",
     "common_rg": "$az_resource_group_common",
@@ -127,7 +136,8 @@ function get_credentials() {
     local AZ_RESOURCE_GROUP_CLUSTERS="$1"
     local CLUSTER="$2"
     printf "Using cluster resource group %s...\n" "$AZ_RESOURCE_GROUP_CLUSTERS"
-    currentContext=$(kubectl config current-context 2>/dev/null)
+    local currentContext
+    currentContext=$(kubectl config current-context 2>/dev/null || true)
     az aks get-credentials \
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
@@ -135,7 +145,9 @@ function get_credentials() {
         --only-show-errors ||
         { return; }
     kubelogin convert-kubeconfig -l azurecli
-    kubectl config use-context "$currentContext" >/dev/null 2>&1
+    if [[ -n "$currentContext" ]]; then
+        kubectl config use-context "$currentContext" >/dev/null 2>&1
+    fi
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
 function get_credentials_silent() {
@@ -145,8 +157,7 @@ function get_credentials_silent() {
     az aks get-credentials \
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-        --name "$CLUSTER"
-        { return; }
+        --name "$CLUSTER" || return
     kubelogin convert-kubeconfig -l azurecli
     # TODO: if we get ResourceNotFound, don't print message. if we get any other error, like instructions to log in with browser, do print error
 }
