@@ -553,8 +553,6 @@ printf "\nPoint to destination cluster... "
 verify_cluster_access "$DEST_CLUSTER"
 printf "Done.\n"
 
-start_radix_operator
-
 if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
 fi
@@ -585,23 +583,8 @@ kubectl --context "$DEST_CLUSTER" patch configmap env-vars-web --namespace radix
 EOF
 )"
 
-kubectl --context "$DEST_CLUSTER" rollout restart deployment -n radix-web-console-qa web
-kubectl --context "$DEST_CLUSTER" rollout restart deployment -n radix-web-console-prod web
+start_radix_operator
 
-printf "Waiting for radix-networkpolicy-canary environments..."
-while [[ ! $(kubectl --context "$DEST_CLUSTER" get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
-    printf "."
-    sleep 5
-done
-echo ""
-
-printf "Waiting for server component radix-api-server to get ready.\n"
-printf "If this takes forever, monitor the deployment..."
-while [[ ! $(kubectl --context "$DEST_CLUSTER" get deployments radix-api-server -o jsonpath={.status.availableReplicas}) ]]; do
-    printf "."
-    sleep 5
-done
-echo ""
 
 #######################################################################################
 ### Final post tasks
