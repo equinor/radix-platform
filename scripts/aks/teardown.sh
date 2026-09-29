@@ -179,7 +179,7 @@ if [[ "${CLUSTER}" ]]; then
         --subscription "$AZ_SUBSCRIPTION_ID" \
         --resource-type Microsoft.ContainerService/managedClusters \
         --resource "$CLUSTER_NAME" \
-        --query [].name \
+        --query "[].name" \
         --output tsv \
         --only-show-errors)"
 fi
@@ -197,7 +197,7 @@ if [[ "${VNET}" ]]; then
         --subscription "$AZ_SUBSCRIPTION_ID" \
         --resource-type Microsoft.Network/virtualNetworks \
         --resource "$VNET_NAME" \
-        --query [].name \
+        --query "[].name" \
         --output tsv \
         --only-show-errors)"
 fi
