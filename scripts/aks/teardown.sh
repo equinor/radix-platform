@@ -272,15 +272,19 @@ read -r -s -d ' '
 
 # Delete the cluster
 echo ""
-echo "Deleting cluster... "
-az aks delete \
-    --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
-    --name "$CLUSTER_NAME" \
-    --subscription "$AZ_SUBSCRIPTION_ID" \
-    --yes \
-    --output none \
-    --only-show-errors
-echo "Done."
+if [[ -n "$CLUSTER_EXIST" ]]; then
+    echo "Deleting cluster... "
+    az aks delete \
+        --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
+        --name "$CLUSTER_NAME" \
+        --subscription "$AZ_SUBSCRIPTION_ID" \
+        --yes \
+        --output none \
+        --only-show-errors
+    echo "Done."
+else
+    echo "Cluster does not exist; skipping deletion."
+fi
 
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply -target module.aks[\"${CLUSTER_NAME}\"].azurerm_kubernetes_cluster_node_pool.this
