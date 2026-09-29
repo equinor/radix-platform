@@ -75,10 +75,12 @@ function update_service_principal_credentials_in_az_keyvault() {
     fi
 
     # Upload to keyvault
-    az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${secretkey}" --file "${tmp_file_path}" ${expires[@]+"${expires[@]}"} 2>&1 >/dev/null
+    if ! az keyvault secret set --vault-name "${AZ_RESOURCE_KEYVAULT}" --name "${secretkey}" --file "${tmp_file_path}" ${expires[@]+"${expires[@]}"} 2>&1 >/dev/null; then
+        rm -f "$tmp_file_path"
+        return 1
+    fi
 
-    # Clean up
-    rm -rf "$tmp_file_path"
+    rm -f "$tmp_file_path"
 }
 
 function update_app_credentials_in_az_keyvault() {
