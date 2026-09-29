@@ -353,7 +353,7 @@ CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STO
 echo ""
 # echo "You need to create a pull request to make ready for new cluster"
 printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
-git checkout -b $DEST_CLUSTER &> /dev/null
+git checkout -b $DEST_CLUSTER > /dev/null
 printf "%s► Modify %s%s\n" "${grn}" "${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
 echo "DO NOT alter the 'activecluster' value yet.."
 echo "Press 'space' to continue"
