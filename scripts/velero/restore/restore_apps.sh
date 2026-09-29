@@ -365,7 +365,7 @@ BACKUP_LOCATION_PATCHED=true
 
 echo ""
 printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
-while [[ "$(velero --kubecontext "$DEST_CLUSTER" backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
+while ! velero --kubecontext "$DEST_CLUSTER" backup describe "$BACKUP_NAME" >/dev/null 2>&1; do
   printf "."
   sleep 5
 done
