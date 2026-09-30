@@ -144,10 +144,10 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 
-kubectl --context "$CLUSTER_NAME" -n flux-system delete secret flux-system --ignore-not-found >/dev/null
 trap 'rm -f "./${FLUX_PRIVATE_KEY_NAME}" "./${FLUX_PRIVATE_KEY_NAME}.pub"' EXIT
 ssh-keygen -t ed25519 -f "./$FLUX_PRIVATE_KEY_NAME" -N "" -q >/dev/null
-flux create secret git flux-system --url=ssh://git@github.com/equinor/radix-flux.git --private-key-file="./$FLUX_PRIVATE_KEY_NAME" >/dev/null
+flux create secret git flux-system --url=ssh://git@github.com/equinor/radix-flux.git --private-key-file="./$FLUX_PRIVATE_KEY_NAME" --export |
+    kubectl --context "$CLUSTER_NAME" apply -f - >/dev/null
 SECRET_VALUES=$(<$FLUX_PRIVATE_KEY_NAME)
 if EXPIRATION_DATE=$(date -d '+1 year' -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
     :
