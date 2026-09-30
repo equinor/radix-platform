@@ -155,7 +155,12 @@ printf "Done.\n"
 #######################################################################################
 ### Check if cluster or network resources are locked and not running
 ###
-CLUSTER_EXIST=$(az aks show --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --name "${CLUSTER_NAME}" --query "name" -o tsv 2>/dev/null || true)
+CLUSTER_EXIST=$(az aks list \
+    --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" \
+    --subscription "${AZ_SUBSCRIPTION_ID}" \
+    --query "[?name=='${CLUSTER_NAME}'].name" \
+    --output tsv \
+    --only-show-errors)
 if [ -n "$CLUSTER_EXIST" ]; then
     POWERSTATE=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "powerState.code" --output tsv)
     if [[ $POWERSTATE != "Stopped" ]]; then
