@@ -164,6 +164,11 @@ cleanup() {
     rm -f "$FLUX_SECRET_BACKUP"
     exit "$exit_code"
 }
+if [[ -e "./${FLUX_PRIVATE_KEY_NAME}" || -e "./${FLUX_PRIVATE_KEY_NAME}.pub" ]]; then
+    echo "ERROR: Refusing to overwrite existing Flux key files." >&2
+    rm -f "$FLUX_SECRET_BACKUP"
+    exit 1
+fi
 trap cleanup EXIT
 
 ssh-keygen -t ed25519 -f "./$FLUX_PRIVATE_KEY_NAME" -N "" -q >/dev/null
