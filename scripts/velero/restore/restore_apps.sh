@@ -234,8 +234,12 @@ function please_wait_for_restore_to_be_completed() {
   local command=(kubectl --context "$DEST_CLUSTER" get restore --namespace velero "$BACKUP_NAME-$resource" -o 'jsonpath={.status}')
   local status itemsRestored totalItems progress phase
 
-  while : ; do
-    status=$("${command[@]}" 2>/dev/null || echo '{}')
+  while true; do
+    if ! status=$("${command[@]}" 2>&1); then
+      printf '\nERROR: Failed to query Velero restore "%s-%s":\n%s\n' \
+        "$BACKUP_NAME" "$resource" "$status" >&2
+      return 1
+    fi
 
     itemsRestored=$(jq -r '.progress.itemsRestored // "null"' <<< "$status")
     if [[ $itemsRestored != 'null' ]]; then
@@ -247,7 +251,7 @@ function please_wait_for_restore_to_be_completed() {
     phase=$(jq -r '.phase // ""' <<< "$status")
     case $phase in
       Completed)
-        break
+        return 0
         ;;
       Failed|FailedValidation|PartiallyFailed)
         printf '\nERROR: Velero restore "%s-%s" finished with phase "%s".\n' "$BACKUP_NAME" "$resource" "$phase" >&2
