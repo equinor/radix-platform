@@ -294,7 +294,7 @@ printf "Waiting for Prometheus pod to be Ready..."
 PROMETHEUS_READY=false
 for _ in {1..360}; do
   if ! PROMETHEUS_READY_STATUS=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
-    --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}'); then
+    --namespace "${MONITOR_NAMESPACE}" --ignore-not-found --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}'); then
     echo "ERROR: Failed to query Prometheus pod readiness." >&2
     exit 1
   fi
