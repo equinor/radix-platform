@@ -144,8 +144,8 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 
-trap 'rm -f "./${FLUX_PRIVATE_KEY_NAME}" "./${FLUX_PRIVATE_KEY_NAME}.pub"' EXIT
 ssh-keygen -t ed25519 -f "./$FLUX_PRIVATE_KEY_NAME" -N "" -q >/dev/null
+trap 'rm -f "./${FLUX_PRIVATE_KEY_NAME}" "./${FLUX_PRIVATE_KEY_NAME}.pub"' EXIT
 flux create secret git flux-system --url=ssh://git@github.com/equinor/radix-flux.git --private-key-file="./$FLUX_PRIVATE_KEY_NAME" --export |
     kubectl --context "$CLUSTER_NAME" apply -f - >/dev/null
 SECRET_VALUES=$(<$FLUX_PRIVATE_KEY_NAME)
