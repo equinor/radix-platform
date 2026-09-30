@@ -144,8 +144,12 @@ if [[ $USER_PROMPT == true ]]; then
 fi
 
 FLUX_SECRET_BACKUP=$(mktemp)
-kubectl --context "$CLUSTER_NAME" -n flux-system get secret flux-system -o json |
-    jq 'del(.metadata.creationTimestamp, .metadata.managedFields, .metadata.resourceVersion, .metadata.uid)' > "$FLUX_SECRET_BACKUP"
+if ! kubectl --context "$CLUSTER_NAME" -n flux-system get secret flux-system -o json |
+    jq 'del(.metadata.creationTimestamp, .metadata.managedFields, .metadata.resourceVersion, .metadata.uid)' > "$FLUX_SECRET_BACKUP"; then
+    echo "ERROR: Failed to back up the existing Flux secret." >&2
+    rm -f "$FLUX_SECRET_BACKUP"
+    exit 1
+fi
 FLUX_SECRET_REPLACED=false
 cleanup() {
     exit_code=$?
