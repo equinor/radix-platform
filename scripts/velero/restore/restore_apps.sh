@@ -228,7 +228,7 @@ function please_wait() {
   echo "Done."
 }
 
-# It takes a little while before the velero restore object has state "phase: Completed".
+# It takes a little while before the velero restore object reaches a terminal phase.
 function please_wait_for_restore_to_be_completed() {
   local resource="${1}"
   local command=(kubectl --context "$DEST_CLUSTER" get restore --namespace velero "$BACKUP_NAME-$resource" -o 'jsonpath={.status}')
@@ -245,9 +245,15 @@ function please_wait_for_restore_to_be_completed() {
     fi
     
     phase=$(jq -r '.phase // ""' <<< "$status")
-    if [[ $phase == 'Completed' ]]; then
-      break
-    fi
+    case $phase in
+      Completed)
+        break
+        ;;
+      Failed|FailedValidation|PartiallyFailed)
+        printf '\nERROR: Velero restore "%s-%s" finished with phase "%s".\n' "$BACKUP_NAME" "$resource" "$phase" >&2
+        return 1
+        ;;
+    esac
     sleep 2
   done
 }
