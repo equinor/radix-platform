@@ -262,7 +262,7 @@ printf "Connecting kubectl..."
 get_credentials "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER}" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"${CLUSTER}\" not found." >&2
-    exit 0
+    exit 1
 }
 printf "...Done.\n"
 
@@ -291,10 +291,24 @@ EOF
 
 echo ""
 printf "Waiting for Prometheus pod to be Ready..."
-while [[ $(kubectl --context "${CLUSTER}" get pods ${PROMETHEUS_POD_NAME} --namespace ${MONITOR_NAMESPACE} --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+PROMETHEUS_READY=false
+for _ in {1..360}; do
+  if ! PROMETHEUS_READY_STATUS=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
+    --namespace "${MONITOR_NAMESPACE}" --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}'); then
+    echo "ERROR: Failed to query Prometheus pod readiness." >&2
+    exit 1
+  fi
+  if [[ ${PROMETHEUS_READY_STATUS} == "True" ]]; then
+    PROMETHEUS_READY=true
+    break
+  fi
     printf "."
     sleep 5
 done
+if [[ ${PROMETHEUS_READY} != true ]]; then
+  echo "ERROR: Prometheus pod did not become Ready within 30 minutes." >&2
+  exit 1
+fi
 printf "Done.\n"
 
 printf "%s► Enable Prometheus Admin API %s\n" "${grn}" "${normal}"

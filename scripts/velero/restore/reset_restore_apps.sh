@@ -86,7 +86,7 @@ printf "Connecting kubectl..."
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$CLUSTER_NAME" || {
    # Send message to stderr
    echo -e "ERROR: Cluster \"$CLUSTER_NAME\" not found." >&2
-   exit 0
+   exit 1
 }
 printf "...Done.\n"
 
@@ -125,10 +125,22 @@ kubectl --context "$CLUSTER_NAME" delete rr --all
 # wait until all radix app namespaces are gone
 echo ""
 printf "Waiting for all radix app namespaces to be deleted..."
-while [[ "$(kubectl --context "$CLUSTER_NAME" get namespace --selector='radix-app' --output=name)" != "" ]]; do
+RADIX_APP_NAMESPACES=""
+for _ in {1..720}; do
+   if ! RADIX_APP_NAMESPACES=$(kubectl --context "$CLUSTER_NAME" get namespace --selector='radix-app' --output=name); then
+      echo "ERROR: Failed to query Radix application namespaces." >&2
+      exit 1
+   fi
+   if [[ -z ${RADIX_APP_NAMESPACES} ]]; then
+      break
+   fi
    printf "."
-   sleep 2
+   sleep 5
 done
+if [[ -n ${RADIX_APP_NAMESPACES} ]]; then
+   echo "ERROR: Radix application namespaces were not deleted within 60 minutes." >&2
+   exit 1
+fi
 printf " Done.\n"
 
 echo ""

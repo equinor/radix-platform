@@ -165,7 +165,7 @@ if [ -n "$CLUSTER_EXIST" ]; then
     POWERSTATE=$(az aks show --resource-group ${AZ_RESOURCE_GROUP_CLUSTERS} --name ${CLUSTER_NAME} --query "powerState.code" --output tsv)
     if [[ $POWERSTATE != "Stopped" ]]; then
         printf ""${yel}"Please stop cluster ${CLUSTER_NAME} before teardown."${normal}"\n"
-        exit 0
+        exit 1
     fi
 fi
 
@@ -225,7 +225,7 @@ if [ -n "$CLUSTERLOCK" ] || [ -n "$VNETLOCK" ]; then
     fi
     echo -e "   -------------------------------------------------------------------"
     printf "One or more resources are locked prior to teardown. Please resolve and re-run script.\n"
-    exit 0
+    exit 1
 fi
 
 #######################################################################################

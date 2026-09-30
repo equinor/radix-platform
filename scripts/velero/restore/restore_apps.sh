@@ -261,19 +261,21 @@ function please_wait_for_restore_to_be_completed() {
 wait_for_velero() {
   local resource="${1}"
   local command=(kubectl --context "$DEST_CLUSTER" get $resource --namespace velero)
-  local check
-
-  check=$( { "${command[@]}" 2>/dev/null || true; } | wc -l)
 
   printf "Waiting for %s..." "$resource"
 
-  while [[ $check -lt 2 ]]; do
-    check=$( { "${command[@]}" 2>/dev/null || true; } | wc -l)
+  for _ in {1..360}; do
+    if "${command[@]}" >/dev/null 2>&1; then
+      printf " Done.\n"
+      return 0
+    fi
     printf "."
     sleep 5
   done
 
-  printf " Done.\n"
+  printf '\nERROR: Timed out waiting for %s (30 minutes). Last query result:\n' "$resource" >&2
+  "${command[@]}" >&2 || true
+  return 1
 }
 
 stop_radix_operator() {
@@ -371,10 +373,20 @@ BACKUP_LOCATION_PATCHED=true
 
 echo ""
 printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
-while ! velero --kubecontext "$DEST_CLUSTER" backup describe "$BACKUP_NAME" >/dev/null 2>&1; do
+BACKUP_AVAILABLE=false
+for _ in {1..360}; do
+  if velero --kubecontext "$DEST_CLUSTER" backup describe "$BACKUP_NAME" >/dev/null 2>&1; then
+    BACKUP_AVAILABLE=true
+    break
+  fi
   printf "."
   sleep 5
 done
+if [[ $BACKUP_AVAILABLE != true ]]; then
+  echo "ERROR: Backup \"$BACKUP_NAME\" was not available within 30 minutes." >&2
+  velero --kubecontext "$DEST_CLUSTER" backup describe "$BACKUP_NAME" >&2 || true
+  exit 1
+fi
 printf " Done.\n"
 
 #######################################################################################

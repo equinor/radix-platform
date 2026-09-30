@@ -180,10 +180,44 @@ function start_radix_operator() {
     printf "Start radix-operator"
     kubectl --context "$DEST_CLUSTER" scale deployment radix-operator --namespace default --replicas=1
     printf "Waiting for radix-operator is started"
-    while [[ $(kubectl --context "$DEST_CLUSTER" get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
+    RADIX_OPERATOR_STARTED=false
+    for _ in {1..120}; do
+        if ! RADIX_OPERATOR_PODS=$(kubectl --context "$DEST_CLUSTER" get pods \
+            --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name); then
+            echo "ERROR: Failed to query radix-operator pods." >&2
+            return 1
+        fi
+        if [[ -n ${RADIX_OPERATOR_PODS} ]]; then
+            RADIX_OPERATOR_STARTED=true
+            break
+        fi
+        printf "."
         sleep 5
     done
+    if [[ ${RADIX_OPERATOR_STARTED} != true ]]; then
+        echo "ERROR: radix-operator did not start within 10 minutes." >&2
+        return 1
+    fi
     printf " Done.\n"
+}
+
+function wait_for_deployment() {
+    local deployment="$1"
+    local namespace="$2"
+    local last_error=""
+
+    for _ in {1..120}; do
+        if last_error=$(kubectl --context "$DEST_CLUSTER" get deployment "$deployment" \
+            --namespace "$namespace" 2>&1); then
+            return 0
+        fi
+        printf "."
+        sleep 5
+    done
+
+    printf '\nERROR: Deployment %s/%s was not available within 10 minutes: %s\n' \
+        "$namespace" "$deployment" "$last_error" >&2
+    return 1
 }
 
 #######################################################################################
@@ -455,20 +489,14 @@ fi
 echo ""
 echo "Waiting for radix-operator to be deployed by flux-operator so that it can handle migrated apps"
 echo "If this lasts forever, are you migrating to a cluster without base components installed?"
-while [[ "$(kubectl --context "$DEST_CLUSTER" get deploy radix-operator 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
+wait_for_deployment radix-operator default
 printf " Done."
 
 # Wait for velero to be deployed from flux
 echo ""
 echo "Waiting for velero to be deployed by flux-operator so that it can handle restore into cluster from backup"
 echo "If this lasts forever, are you migrating to a cluster without base components installed? (Tip: Allow 5 minutes. Try 'fluxctl sync' to force syncing flux repo)"
-while [[ "$(kubectl --context "$DEST_CLUSTER" get deploy velero --namespace velero 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
+wait_for_deployment velero velero
 
 echo ""
 printf "Point to source cluster... "
