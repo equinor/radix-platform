@@ -30,27 +30,6 @@ function dr_zone_message() {
   echo ""
 }
 
-function check_secrets_exist() {
-    local keyvault_name="$1"
-    shift
-    local keys=("$@")
-    local missing_secrets=()
-    
-    for key in "${keys[@]}"; do
-        if ! az keyvault secret show --vault-name "$keyvault_name" --name "$key" &>/dev/null; then
-            missing_secrets+=("$key")
-        fi
-    done
-    
-    if [ ${#missing_secrets[@]} -gt 0 ]; then
-        echo "ERROR: Missing secrets in Key Vault '$keyvault_name': ${missing_secrets[*]}" >&2
-        return 1
-    fi
-    
-    return 0
-}
-
-
 function config_path() {
   local env="$1"
   RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
