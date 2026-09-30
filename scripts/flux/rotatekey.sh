@@ -143,11 +143,29 @@ if [[ $USER_PROMPT == true ]]; then
     done
 fi
 
+FLUX_SECRET_BACKUP=$(mktemp)
+kubectl --context "$CLUSTER_NAME" -n flux-system get secret flux-system -o json |
+    jq 'del(.metadata.creationTimestamp, .metadata.managedFields, .metadata.resourceVersion, .metadata.uid)' > "$FLUX_SECRET_BACKUP"
+FLUX_SECRET_REPLACED=false
+cleanup() {
+    exit_code=$?
+    trap - EXIT
+
+    rm -f "./${FLUX_PRIVATE_KEY_NAME}" "./${FLUX_PRIVATE_KEY_NAME}.pub"
+    if [[ $exit_code -ne 0 && $FLUX_SECRET_REPLACED == true ]]; then
+        echo "Restoring the previous Flux secret..." >&2
+        kubectl --context "$CLUSTER_NAME" apply -f "$FLUX_SECRET_BACKUP" >/dev/null ||
+            echo "ERROR: Failed to restore the previous Flux secret." >&2
+    fi
+    rm -f "$FLUX_SECRET_BACKUP"
+    exit "$exit_code"
+}
+trap cleanup EXIT
 
 ssh-keygen -t ed25519 -f "./$FLUX_PRIVATE_KEY_NAME" -N "" -q >/dev/null
-trap 'rm -f "./${FLUX_PRIVATE_KEY_NAME}" "./${FLUX_PRIVATE_KEY_NAME}.pub"' EXIT
 flux create secret git flux-system --url=ssh://git@github.com/equinor/radix-flux.git --private-key-file="./$FLUX_PRIVATE_KEY_NAME" --export |
     kubectl --context "$CLUSTER_NAME" apply -f - >/dev/null
+FLUX_SECRET_REPLACED=true
 SECRET_VALUES=$(<$FLUX_PRIVATE_KEY_NAME)
 if EXPIRATION_DATE=$(date -d '+1 year' -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
     :
@@ -167,6 +185,7 @@ echo "Name:        $RADIX_ZONE-$TODAY_DATE"
 echo "Deploy Key:  $(awk '{print $1, $2}' ./$FLUX_PRIVATE_KEY_NAME.pub)"
 echo "Note:        Tick the 'Allow write access' checkbox"
 rm -f "./$FLUX_PRIVATE_KEY_NAME" "./$FLUX_PRIVATE_KEY_NAME.pub"
+rm -f "$FLUX_SECRET_BACKUP"
 trap - EXIT
 
 show_instructions=true
