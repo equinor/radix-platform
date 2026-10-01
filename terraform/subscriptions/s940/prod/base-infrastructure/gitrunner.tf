@@ -95,10 +95,10 @@ module "radix_id_gitrunner" {
       role     = "Radix Privatelink rbac-${module.config.subscription_shortname}"
       scope_id = "/subscriptions/${module.config.subscription}"
     }
-    lock_operator = {
-      role     = "Locks Contributor"
-      scope_id = "${data.azurerm_resource_group.clusters.id}" #TODO
-    }
+    # lock_operator = {
+    #   role     = "Locks Contributor"
+    #   scope_id = "${data.azurerm_resource_group.clusters.id}" #TODO
+    # }
   }
   federated_credentials = {
     radix-id-gitrunner = {
