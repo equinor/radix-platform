@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+set -euo pipefail
 
 #######################################################################################
 ### PURPOSE
@@ -45,24 +45,32 @@ red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
 gry=$'\e[2;37m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 FLUX_SUSPENDED=false
 
-function resume_prometheus() {
-    local exit_code=$?
+function cleanup_prometheus() {
+    local cleanup_exit_code=0
 
-    set +e
     printf "\n%s► Clean up temporary backup resources %s\n" "${grn}" "${normal}"
 
     if [[ ${FLUX_SUSPENDED} == true ]]; then
         flux --context "${CLUSTER}" resume helmrelease kube-prometheus-stack \
-            --namespace "${MONITOR_NAMESPACE}"
+            --namespace "${MONITOR_NAMESPACE}" || cleanup_exit_code=1
         flux --context "${CLUSTER}" reconcile helmrelease kube-prometheus-stack \
-            --namespace "${MONITOR_NAMESPACE}"
+            --namespace "${MONITOR_NAMESPACE}" || cleanup_exit_code=1
     fi
 
-    return "${exit_code}"
+    return "${cleanup_exit_code}"
+}
+
+function handle_exit() {
+    local exit_code=$?
+
+    trap - EXIT
+    set +e
+    cleanup_prometheus
+    exit "${exit_code}"
 }
 
 echo ""
@@ -120,7 +128,7 @@ fi
 
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 # Optional inputs
 
@@ -254,7 +262,7 @@ printf "Connecting kubectl..."
 get_credentials "${AZ_RESOURCE_GROUP_CLUSTERS}" "${CLUSTER}" || {
     # Send message to stderr
     echo -e "ERROR: Cluster \"${CLUSTER}\" not found." >&2
-    exit 0
+    exit 1
 }
 printf "...Done.\n"
 
@@ -269,7 +277,7 @@ PROMETHEUS_BACKUP_UPLOADER_SERVICE_ACCOUNT="prometheus-backup-uploader"
 PROMETHEUS_POD_NAME="prometheus-prometheus-operator-prometheus-0"
 PROMETHEUS_PVC_NAME="prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0"
 
-trap 'resume_prometheus' EXIT
+trap 'handle_exit' EXIT
 
 cat <<EOF | kubectl --context "${CLUSTER}" apply --filename -
 apiVersion: v1
@@ -283,10 +291,24 @@ EOF
 
 echo ""
 printf "Waiting for Prometheus pod to be Ready..."
-while [[ $(kubectl --context "${CLUSTER}" get pods ${PROMETHEUS_POD_NAME} --namespace ${MONITOR_NAMESPACE} --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+PROMETHEUS_READY=false
+for _ in {1..360}; do
+  if ! PROMETHEUS_READY_STATUS=$(kubectl --context "${CLUSTER}" get pod "${PROMETHEUS_POD_NAME}" \
+    --namespace "${MONITOR_NAMESPACE}" --ignore-not-found --output 'jsonpath={..status.conditions[?(@.type=="Ready")].status}'); then
+    echo "ERROR: Failed to query Prometheus pod readiness." >&2
+    exit 1
+  fi
+  if [[ ${PROMETHEUS_READY_STATUS} == "True" ]]; then
+    PROMETHEUS_READY=true
+    break
+  fi
     printf "."
     sleep 5
 done
+if [[ ${PROMETHEUS_READY} != true ]]; then
+  echo "ERROR: Prometheus pod did not become Ready within 30 minutes." >&2
+  exit 1
+fi
 printf "Done.\n"
 
 printf "%s► Enable Prometheus Admin API %s\n" "${grn}" "${normal}"
@@ -514,8 +536,8 @@ while true; do
 done
 printf "Done.\n"
 
-resume_prometheus
 trap - EXIT
+cleanup_prometheus
 printf "Done.\n"
 
 echo ""

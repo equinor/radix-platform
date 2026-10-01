@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -65,7 +67,6 @@
 #######################################################################################
 ### START
 ###
-set +x
 
 echo ""
 echo "Start restore apps... "
@@ -101,40 +102,45 @@ echo ""
 
 WORKDIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 #######################################################################################
 ### Read inputs and configs
 ###
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]] || [[ $MODE=DR ]]
-then
-    echo "RADIX_ZONE: $RADIX_ZONE"    
-else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
-    exit 1
+if [[ -z "${RADIX_ZONE:-}" ]]; then
+  echo "ERROR: Please provide RADIX_ZONE." >&2
+  exit 1
 fi
 
-if [[ $MODE == "DR" ]]; then
-  dr_zone_message $RADIX_ZONE
+if [[ ! $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]] && [[ ${MODE:-} != "DR" ]]; then
+  echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
+  exit 1
 fi
 
-if [[ -z "$SOURCE_CLUSTER" ]]; then
+echo "RADIX_ZONE: $RADIX_ZONE"
+
+if [[ ${MODE:-} == "DR" ]]; then
+  dr_zone_message "$RADIX_ZONE"
+fi
+
+if [[ -z "${SOURCE_CLUSTER:-}" ]]; then
   echo "ERROR: Please provide SOURCE_CLUSTER." >&2
   exit 1
 fi
 
-if [[ -z "$BACKUP_NAME" ]]; then
+if [[ -z "${BACKUP_NAME:-}" ]]; then
   echo "ERROR: Please provide BACKUP_NAME." >&2
   exit 1
 fi
 
-if [[ -z "$DEST_CLUSTER" ]]; then
-   echo "ERROR: Please provide DEST_CLUSTER." >&2
+if [[ -z "${DEST_CLUSTER:-}" ]]; then
+  echo "ERROR: Please provide DEST_CLUSTER." >&2
+  exit 1
 fi
 
-if [[ -z "$USER_PROMPT" ]]; then
+if [[ -z "${USER_PROMPT:-}" ]]; then
   USER_PROMPT=true
 fi
 
@@ -222,44 +228,59 @@ function please_wait() {
   echo "Done."
 }
 
-# It takes a little while before the velero restore object has state "phase: Completed".
+# It takes a little while before the velero restore object reaches a terminal phase.
 function please_wait_for_restore_to_be_completed() {
   local resource="${1}"
-  local command="kubectl --context $DEST_CLUSTER get restore --namespace velero $BACKUP_NAME-$resource -o jsonpath={.status}"
+  local command=(kubectl --context "$DEST_CLUSTER" get restore --namespace velero "$BACKUP_NAME-$resource" -o 'jsonpath={.status}')
+  local status itemsRestored totalItems progress phase
 
-  while : ; do
-    status=$($command 2>/dev/null)
+  while true; do
+    if ! status=$("${command[@]}" 2>&1); then
+      printf '\nWARNING: Failed to query Velero restore "%s-%s"; retrying:\n%s\n' \
+        "$BACKUP_NAME" "$resource" "$status" >&2
+      sleep 2
+      continue
+    fi
 
-    itemsRestored=$(jq .progress.itemsRestored -r <(echo "$status"))
+    itemsRestored=$(jq -r '.progress.itemsRestored // "null"' <<< "$status")
     if [[ $itemsRestored != 'null' ]]; then
-      totalItems=$(jq .progress.totalItems -r <(echo "$status"))
+      totalItems=$(jq -r '.progress.totalItems // "null"' <<< "$status")
       progress="Progress: $itemsRestored of $totalItems items\r"
-      echo -ne $progress
+      echo -ne "$progress"
     fi
     
-    phase=$(jq .phase -r <(echo "$status"))
-    if [[ $phase == 'Completed' ]]; then
-      break
-    fi
+    phase=$(jq -r '.phase // ""' <<< "$status")
+    case $phase in
+      Completed)
+        return 0
+        ;;
+      Failed|FailedValidation|PartiallyFailed)
+        printf '\nERROR: Velero restore "%s-%s" finished with phase "%s".\n' "$BACKUP_NAME" "$resource" "$phase" >&2
+        return 1
+        ;;
+    esac
     sleep 2
   done
 }
 
 wait_for_velero() {
   local resource="${1}"
-  local command="kubectl --context $DEST_CLUSTER get $resource --namespace velero"
-
-  check=($($command 2>/dev/null | wc -l))
+  local command=(kubectl --context "$DEST_CLUSTER" get $resource --namespace velero)
 
   printf "Waiting for %s..." "$resource"
 
-  while [[ $check -lt 2 ]]; do
-    check=($($command 2>/dev/null | wc -l))
+  for _ in {1..360}; do
+    if "${command[@]}" >/dev/null 2>&1; then
+      printf " Done.\n"
+      return 0
+    fi
     printf "."
     sleep 5
   done
 
-  printf " Done.\n"
+  printf '\nERROR: Timed out waiting for %s (30 minutes). Last query result:\n' "$resource" >&2
+  "${command[@]}" >&2 || true
+  return 1
 }
 
 stop_radix_operator() {
@@ -271,6 +292,53 @@ stop_radix_operator() {
     sleep 5
   done
   printf " Done.\n"
+}
+
+VELERO_SUSPENDED=false
+BACKUP_LOCATION_PATCHED=false
+
+cleanup_velero_configuration() {
+  local cleanup_exit_code=0
+  local patch_json
+
+  if [[ $BACKUP_LOCATION_PATCHED == true ]]; then
+    patch_json="$(
+      cat <<END
+{
+  "spec": {
+    "accessMode": "ReadWrite",
+    "objectStorage": {
+      "bucket": "$DEST_CLUSTER"
+    }
+  }
+}
+END
+    )"
+    if kubectl --context "$DEST_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$patch_json"; then
+      BACKUP_LOCATION_PATCHED=false
+    else
+      cleanup_exit_code=1
+    fi
+  fi
+
+  if [[ $VELERO_SUSPENDED == true ]]; then
+    if flux --context "$DEST_CLUSTER" resume ks -n flux-system velero; then
+      VELERO_SUSPENDED=false
+    else
+      cleanup_exit_code=1
+    fi
+  fi
+
+  return "$cleanup_exit_code"
+}
+
+handle_exit() {
+  local exit_code=$?
+
+  trap - EXIT
+  set +e
+  cleanup_velero_configuration
+  exit "$exit_code"
 }
 
 #######################################################################################
@@ -300,16 +368,30 @@ PATCH_JSON="$(
 END
 )"
 
+trap 'handle_exit' EXIT
+
 flux --context "$DEST_CLUSTER" suspend ks -n flux-system velero
+VELERO_SUSPENDED=true
 wait_for_velero "BackupStorageLocation default"
-kubectl --context "$DEST_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
+kubectl --context "$DEST_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$PATCH_JSON"
+BACKUP_LOCATION_PATCHED=true
 
 echo ""
 printf "Wait for backup \"%s\" to be available in destination cluster \"%s\" before we can restore..." "$BACKUP_NAME" "$DEST_CLUSTER"
-while [[ "$(velero --kubecontext "$DEST_CLUSTER" backup describe $BACKUP_NAME 2>&1)" == *"error"* ]]; do
+BACKUP_AVAILABLE=false
+for _ in {1..360}; do
+  if velero --kubecontext "$DEST_CLUSTER" backup describe "$BACKUP_NAME" >/dev/null 2>&1; then
+    BACKUP_AVAILABLE=true
+    break
+  fi
   printf "."
   sleep 5
 done
+if [[ $BACKUP_AVAILABLE != true ]]; then
+  echo "ERROR: Backup \"$BACKUP_NAME\" was not available within 30 minutes." >&2
+  velero --kubecontext "$DEST_CLUSTER" backup describe "$BACKUP_NAME" >&2 || true
+  exit 1
+fi
 printf " Done.\n"
 
 #######################################################################################
@@ -377,23 +459,8 @@ please_wait_for_restore_to_be_completed "radix"
 echo ""
 echo "Configure velero back to normal operation in destination..."
 
-# Set velero in destination to read destination backup location
-PATCH_JSON="$(
-  cat <<END
-{
-    "spec": {
-       "accessMode":"ReadWrite",
-       "objectStorage": {
-            "bucket": "$DEST_CLUSTER"
-       }
-    }
- }
-END
-)"
-
-# Set velero in read/write mode
-kubectl --context "$DEST_CLUSTER" patch BackupStorageLocation default --namespace velero --type merge --patch "$(echo $PATCH_JSON)"
-flux --context "$DEST_CLUSTER" resume ks -n flux-system velero
+trap - EXIT
+cleanup_velero_configuration
 
 #######################################################################################
 ### Done!

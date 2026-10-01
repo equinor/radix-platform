@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -44,11 +46,11 @@
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 yel=$'\e[1;33m'
-normal=$(tput sgr0)
+normal=$(tput sgr0 2>/dev/null || true)
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -57,7 +59,7 @@ else
 fi
 
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 check_installed_components
 
 #######################################################################################
@@ -100,7 +102,10 @@ function flux_configmap() {
   echo ""
   printf "%s%s\n" "${grn}" "$CM" "${normal}"
     colordiff -u -s -N <(kubectl --context "$DEST_CLUSTER" get configmap -n flux-system radix-flux-config -ojson | jq .data) \
-     <(echo "$CM" | jq '.data')
+        <(echo "$CM" | jq '.data') || {
+        local diff_exit_code=$?
+        [[ $diff_exit_code -eq 1 ]] || return "$diff_exit_code"
+    }
   echo ""     
   if [[ $USER_PROMPT == true ]]; then
     while true; do
@@ -160,7 +165,7 @@ function get_variables() {
     AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
     AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
     AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
-    AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_config <<< "$RADIX_RESOURCE_JSON")
+    AZ_RESOURCE_KEYVAULT_CONFIG=$(jq -r .keyvault_config <<< "$RADIX_RESOURCE_JSON")
     IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
     RADIX_CACHE_REGISTRY=$(jq -r .cache_registry <<< "$RADIX_RESOURCE_JSON")
     CLUSTER_OIDC_ISSUER_URLS=$(jq -r .cluster_issuer_urls <<< "$RADIX_RESOURCE_JSON")
@@ -175,43 +180,77 @@ function start_radix_operator() {
     printf "Start radix-operator"
     kubectl --context "$DEST_CLUSTER" scale deployment radix-operator --namespace default --replicas=1
     printf "Waiting for radix-operator is started"
-    while [[ $(kubectl --context "$DEST_CLUSTER" get pods --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name | wc -l) -eq 0 ]]; do
+    RADIX_OPERATOR_STARTED=false
+    for _ in {1..120}; do
+        if ! RADIX_OPERATOR_PODS=$(kubectl --context "$DEST_CLUSTER" get pods \
+            --selector='app.kubernetes.io/name=radix-operator' --namespace default -o name); then
+            echo "ERROR: Failed to query radix-operator pods." >&2
+            return 1
+        fi
+        if [[ -n ${RADIX_OPERATOR_PODS} ]]; then
+            RADIX_OPERATOR_STARTED=true
+            break
+        fi
+        printf "."
         sleep 5
     done
+    if [[ ${RADIX_OPERATOR_STARTED} != true ]]; then
+        echo "ERROR: radix-operator did not start within 10 minutes." >&2
+        return 1
+    fi
     printf " Done.\n"
+}
+
+function wait_for_deployment() {
+    local deployment="$1"
+    local namespace="$2"
+    local last_error=""
+
+    for _ in {1..120}; do
+        if last_error=$(kubectl --context "$DEST_CLUSTER" get deployment "$deployment" \
+            --namespace "$namespace" 2>&1); then
+            return 0
+        fi
+        printf "."
+        sleep 5
+    done
+
+    printf '\nERROR: Deployment %s/%s was not available within 10 minutes: %s\n' \
+        "$namespace" "$deployment" "$last_error" >&2
+    return 1
 }
 
 #######################################################################################
 ### Read Zone Config
 ###
 
-if [[ -z "$DEST_CLUSTER" ]]; then
+if [[ -z "${DEST_CLUSTER:-}" ]]; then
     echo "ERROR: Please provide DEST_CLUSTER" >&2
     exit 1
 fi
 
+SUBFUNCTION=${SUBFUNCTION:-}
 if [[ -z "$SUBFUNCTION" ]]; then
-  if [[ -z "$SOURCE_CLUSTER" ]]; then
-    echo "ERROR: Please provide SOURCE_CLUSTER" >&2
-    exit 1
+    if [[ -z "${SOURCE_CLUSTER:-}" ]]; then
+        echo "ERROR: Please provide SOURCE_CLUSTER" >&2
+        exit 1
+    fi
 fi
 
-fi
-
-if [[ -z "$FLUX_BRANCH" ]]; then
+if [[ -z "${FLUX_BRANCH:-}" ]]; then
     FLUX_BRANCH="master"
 
 fi
 
 # Optional inputs
 
-if [[ -z "$USER_PROMPT" ]]; then
+if [[ -z "${USER_PROMPT:-}" ]]; then
     USER_PROMPT=true
 fi
 
 # Script vars
 
-if [[ -z "$BACKUP_NAME" ]]; then
+if [[ -z "${BACKUP_NAME:-}" ]]; then
     BACKUP_NAME="migration-$(date '+%Y%m%d%H%M%S')"
 fi
 
@@ -225,6 +264,7 @@ RESTORE_APPS_SCRIPT="$WORKDIR_PATH/velero/restore/restore_apps.sh"
 if ! [[ -x "$RESTORE_APPS_SCRIPT" ]]; then
     # Print to stderror
     echo "ERROR: The restore apps script is not found or it is not executable in path $RESTORE_APPS_SCRIPT" >&2
+    exit 1
 fi
 
 #######################################################################################
@@ -260,15 +300,17 @@ secrets=(
     "slack-webhook"
 )
 
-check_secrets_exist "${AZ_RESOURCE_KEYVAULT}" "${secrets[@]}"
+check_secrets_exist "${AZ_RESOURCE_KEYVAULT_CONFIG}" "${secrets[@]}"
 
 #######################################################################################
 ### Check if kubernetes-api-auth-ip-range are defined
 ### Read from radix-private docs and check if it is defined. If not, exit with error.
-ip_list=$(GH_PAGER=cat gh api repos/equinor/radix-private/contents/docs/infrastructure/kubernetes-api-auth-ip-range.txt | jq -r .content | base64 -d | tr -d '\n')
-
-if [ $? -ne 0 ] || [ -z "$ip_list" ]; then
+if ! ip_list=$(GH_PAGER=cat gh api repos/equinor/radix-private/contents/docs/infrastructure/kubernetes-api-auth-ip-range.txt | jq -r .content | base64 -d | tr -d '\n'); then
     echo "ERROR: Failed to retrieve kubernetes-api-auth-ip-range.txt from radix-private repo" >&2
+    exit 1
+fi
+if [[ -z "$ip_list" ]]; then
+    echo "ERROR: kubernetes-api-auth-ip-range.txt is empty" >&2
     exit 1
 fi
 
@@ -278,8 +320,7 @@ fi
 ###
 
 printf "Verifying that logged in AAD user has Radix Confidential Data Contributor on scope of ${AZ_SUBSCRIPTION_ID}... "
-az role assignment list --scope /subscriptions/${AZ_SUBSCRIPTION_ID} --assignee "$(az ad signed-in-user show --query id -o tsv)" --query [].roleDefinitionName -o tsv | grep -E "^Radix Confidential Data Contributor\$"
-if [[ "$?" != "0" ]]; then
+if ! az role assignment list --scope "/subscriptions/${AZ_SUBSCRIPTION_ID}" --assignee "$(az ad signed-in-user show --query id -o tsv)" --query '[].roleDefinitionName' -o tsv | grep -E '^Radix Confidential Data Contributor$'; then
   echo -e "ERROR: Logged in user is not Radix Confidential Data Contributor on scope of ${AZ_SUBSCRIPTION_ID} subscription. Is Azure resource activated?" >&2
   echo -e "Make sure you have enabled AZ PIM RADIX Cluster Admin - ${RADIX_ENVIRONMENT} role" >&2
   exit 1
@@ -346,7 +387,7 @@ CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STO
 echo ""
 # echo "You need to create a pull request to make ready for new cluster"
 printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
-git checkout -b $DEST_CLUSTER &> /dev/null
+git checkout -b $DEST_CLUSTER > /dev/null
 printf "%s► Modify %s%s\n" "${grn}" "${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
 echo "DO NOT alter the 'activecluster' value yet.."
 echo "Press 'space' to continue"
@@ -386,7 +427,7 @@ if [[ $install_base_components == true ]]; then
     echo "Install Flux v2"
     echo ""
     FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
-    FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
+    FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT_CONFIG")"
 
     echo "Creating \"radix-flux-config\"..."
 
@@ -399,32 +440,33 @@ if [[ $install_base_components == true ]]; then
     flux_configmap
 
     az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --vault-name "$AZ_RESOURCE_KEYVAULT_CONFIG" \
     --name "$FLUX_PRIVATE_KEY_NAME" \
     --file "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
 
     echo "Installing flux with your flux version: v$FLUX_VERSION"
-    flux bootstrap git \
-    --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
-    --url="ssh://git@github.com/equinor/radix-flux" \
-    --branch="$FLUX_BRANCH" \
-    --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
-    --components-extra=image-reflector-controller,image-automation-controller \
-    --context="$DEST_CLUSTER" \
-    --version="v$FLUX_VERSION" \
-    --silent
-    if [[ "$?" != "0" ]]; then
+    if ! flux bootstrap git \
+        --private-key-file="$FLUX_PRIVATE_KEY_NAME" \
+        --url="ssh://git@github.com/equinor/radix-flux" \
+        --branch="$FLUX_BRANCH" \
+        --path="clusters/$(yq '.flux_folder' <<< "$RADIX_ZONE_YAML")" \
+        --components-extra=image-reflector-controller,image-automation-controller \
+        --context="$DEST_CLUSTER" \
+        --version="v$FLUX_VERSION" \
+        --silent; then
         printf "\nERROR: flux bootstrap git failed. Exiting...\n" >&2
-        rm "$FLUX_PRIVATE_KEY_NAME"
+        rm -f "$FLUX_PRIVATE_KEY_NAME"
         exit 1
     else
-        rm "$FLUX_PRIVATE_KEY_NAME"
+        rm -f "$FLUX_PRIVATE_KEY_NAME"
         echo " Done."
     fi
 
     echo -e ""
     echo -e "A Flux service has been provisioned in the cluster to follow the GitOps way of thinking."
 fi
+
+KILL_VELERO_WINDOWS=false
 
 if command -v "tmux" >/dev/null 2>&1; then
     tmux new -s flux -d 'watch "kubectl --context '"$DEST_CLUSTER"' get ks -A"' \; split-window -v 'watch "kubectl --context '"$DEST_CLUSTER"' get hr -A"'
@@ -447,20 +489,14 @@ fi
 echo ""
 echo "Waiting for radix-operator to be deployed by flux-operator so that it can handle migrated apps"
 echo "If this lasts forever, are you migrating to a cluster without base components installed?"
-while [[ "$(kubectl --context "$DEST_CLUSTER" get deploy radix-operator 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
+wait_for_deployment radix-operator default
 printf " Done."
 
 # Wait for velero to be deployed from flux
 echo ""
 echo "Waiting for velero to be deployed by flux-operator so that it can handle restore into cluster from backup"
 echo "If this lasts forever, are you migrating to a cluster without base components installed? (Tip: Allow 5 minutes. Try 'fluxctl sync' to force syncing flux repo)"
-while [[ "$(kubectl --context "$DEST_CLUSTER" get deploy velero --namespace velero 2>&1)" == *"Error"* ]]; do
-    printf "."
-    sleep 5
-done
+wait_for_deployment velero velero
 
 echo ""
 printf "Point to source cluster... "
@@ -545,55 +581,12 @@ printf "\nPoint to destination cluster... "
 verify_cluster_access "$DEST_CLUSTER"
 printf "Done.\n"
 
-start_radix_operator
-
 if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
 fi
 
-OAUTH2_CLIENT_ID=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw app_webconsole_client_id)
+start_radix_operator
 
-kubectl --context "$DEST_CLUSTER" patch configmap env-vars-web --namespace radix-web-console-qa --type merge --patch "$(cat <<EOF
-{
-  "data": {
-    "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
-    "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
-    "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
-    "SERVICENOW_PROXY_SCOPES": "1b4a22f1-d4a1-4b6a-81b2-fd936daf1786/Application.Read"
-  }
-}
-EOF
-)"
-
-kubectl --context "$DEST_CLUSTER" patch configmap env-vars-web --namespace radix-web-console-prod --type merge --patch "$(cat <<EOF
-{
-  "data": {
-    "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
-    "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
-    "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
-    "SERVICENOW_PROXY_SCOPES": "1b4a22f1-d4a1-4b6a-81b2-fd936daf1786/Application.Read"
-  }
-}
-EOF
-)"
-
-kubectl --context "$DEST_CLUSTER" rollout restart deployment -n radix-web-console-qa web
-kubectl --context "$DEST_CLUSTER" rollout restart deployment -n radix-web-console-prod web
-
-printf "Waiting for radix-networkpolicy-canary environments..."
-while [[ ! $(kubectl --context "$DEST_CLUSTER" get radixenvironments --output jsonpath='{.items[?(.metadata.labels.radix-app=="radix-networkpolicy-canary")].metadata.name}') ]]; do
-    printf "."
-    sleep 5
-done
-echo ""
-
-printf "Waiting for server component radix-api-server to get ready.\n"
-printf "If this takes forever, monitor the deployment..."
-while [[ ! $(kubectl --context "$DEST_CLUSTER" get deployments radix-api-server -o jsonpath={.status.availableReplicas}) ]]; do
-    printf "."
-    sleep 5
-done
-echo ""
 
 #######################################################################################
 ### Final post tasks

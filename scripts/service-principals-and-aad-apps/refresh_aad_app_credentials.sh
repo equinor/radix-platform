@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -74,7 +76,7 @@ printf "Done.\n"
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -82,17 +84,17 @@ else
     exit 1
 fi
 
-if [[ -z "$AAD_APP_NAME" ]]; then
+if [[ -z "${AAD_APP_NAME:-}" ]]; then
     echo "ERROR: Please provide AAD_APP_NAME" >&2
     exit 1
 fi
 
-if [[ -z "$SECRET" ]]; then
+if [[ -z "${SECRET:-}" ]]; then
     echo "ERROR: Please provide SECRET" >&2
     exit 1
 fi
 
-if [[ -z "$USER_PROMPT" ]]; then
+if [[ -z "${USER_PROMPT:-}" ]]; then
     USER_PROMPT=true
 fi
 
@@ -107,7 +109,7 @@ fi
 
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 #######################################################################################
 ### Environment
@@ -159,7 +161,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
         [Yy]*) break ;;
         [Nn]*)
