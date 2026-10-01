@@ -236,9 +236,10 @@ function please_wait_for_restore_to_be_completed() {
 
   while true; do
     if ! status=$("${command[@]}" 2>&1); then
-      printf '\nERROR: Failed to query Velero restore "%s-%s":\n%s\n' \
+      printf '\nWARNING: Failed to query Velero restore "%s-%s"; retrying:\n%s\n' \
         "$BACKUP_NAME" "$resource" "$status" >&2
-      return 1
+      sleep 2
+      continue
     fi
 
     itemsRestored=$(jq -r '.progress.itemsRestored // "null"' <<< "$status")
