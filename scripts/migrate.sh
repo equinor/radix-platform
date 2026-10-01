@@ -585,32 +585,6 @@ if [[ $KILL_VELERO_WINDOWS == true ]]; then
     tmux kill-session -t velero
 fi
 
-OAUTH2_CLIENT_ID=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw app_webconsole_client_id)
-
-kubectl --context "$DEST_CLUSTER" patch configmap env-vars-web --namespace radix-web-console-qa --type merge --patch "$(cat <<EOF
-{
-  "data": {
-    "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
-    "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
-    "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
-    "SERVICENOW_PROXY_SCOPES": "1b4a22f1-d4a1-4b6a-81b2-fd936daf1786/Application.Read"
-  }
-}
-EOF
-)"
-
-kubectl --context "$DEST_CLUSTER" patch configmap env-vars-web --namespace radix-web-console-prod --type merge --patch "$(cat <<EOF
-{
-  "data": {
-    "CMDB_CI_URL": "https://equinor.service-now.com/selfservice?id=form&table=cmdb_ci_business_app&sys_id={CIID}",
-    "OAUTH2_AUTHORITY": "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
-    "OAUTH2_CLIENT_ID": "${OAUTH2_CLIENT_ID}",
-    "SERVICENOW_PROXY_SCOPES": "1b4a22f1-d4a1-4b6a-81b2-fd936daf1786/Application.Read"
-  }
-}
-EOF
-)"
-
 start_radix_operator
 
 
