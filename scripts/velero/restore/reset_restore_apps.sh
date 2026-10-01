@@ -150,21 +150,5 @@ kubectl --context "$CLUSTER_NAME" delete restore --all --namespace velero
 echo ""
 echo "Configure velero back to normal operation in destination..."
 
-# Set velero in destination to read destination backup location
-PATCH_JSON="$(
-   cat <<END
-{
-    "spec": {
-      "accessMode":"ReadWrite",
-       "objectStorage": {
-            "bucket": "$CLUSTER_NAME"
-       }
-    }
- }
-END
-)"
-# Set velero in read/write mode
-kubectl --context "$CLUSTER_NAME" patch BackupStorageLocation default --namespace velero --type merge --patch "$PATCH_JSON"
-
 echo ""
 echo "All done & gone!"
