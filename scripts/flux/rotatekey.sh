@@ -51,7 +51,7 @@ hash yq 2>/dev/null || {
 }
 
 
-REQ_FLUX_VERSION="2.6.4"
+REQ_FLUX_VERSION="2.9.3"
 FLUX_VERSION=$(flux --version | awk '{print $3'})
 if [[ "$FLUX_VERSION" != "${REQ_FLUX_VERSION}" ]]; then
     printf "${yel}Please update flux cli to ${REQ_FLUX_VERSION}. You got version $FLUX_VERSION${normal}\n"
@@ -76,7 +76,7 @@ EOF
 )
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_main <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_KEYVAULT_CONFIG=$(jq -r .keyvault_config <<< "$RADIX_RESOURCE_JSON")
 FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
 
 #######################################################################################
@@ -116,7 +116,7 @@ echo -e "   -  CLUSTER_NAME                     : $CLUSTER_NAME"
 echo -e "   -  AZ_RESOURCE_GROUP_CLUSTERS       : $AZ_RESOURCE_GROUP_CLUSTERS"
 echo -e "   -  Namespace secret                 : flux-system"
 echo -e "   -  namespace                        : flux-system"
-echo -e "   -  KEY Vault                        : $AZ_RESOURCE_KEYVAULT"
+echo -e "   -  KEY Vault                        : $AZ_RESOURCE_KEYVAULT_CONFIG"
 echo -e "   -  Secret                           : $FLUX_PRIVATE_KEY_NAME"
 echo -e ""
 echo -e "   > WHO:"
@@ -184,7 +184,7 @@ else
     echo "ERROR: Unable to compute expiration date: unsupported date implementation." >&2
     exit 1
 fi
-az keyvault secret set --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" --output none
+az keyvault secret set --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT_CONFIG" --value "$SECRET_VALUES" --expires "$EXPIRATION_DATE" --output none
 TODAY_DATE=$(date -u +"%Y-%m-%d")
 echo ""
 echo ""
@@ -218,7 +218,7 @@ if [[ $show_instructions == true ]]; then
   echo "1. Run the following command to download the secret from keyvault and save it to a file named $FLUX_PRIVATE_KEY_NAME"
   echo ""
   echo "az keyvault secret download \\"
-  echo "--vault-name "$AZ_RESOURCE_KEYVAULT" \\"
+  echo "--vault-name "$AZ_RESOURCE_KEYVAULT_CONFIG" \\"
   echo "--name "$FLUX_PRIVATE_KEY_NAME" \\"
   echo "--file "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null"
   echo ""

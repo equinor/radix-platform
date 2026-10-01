@@ -165,7 +165,7 @@ function get_variables() {
     AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
     AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
     AZ_RESOURCE_GROUP_DNS=$(jq -r .dns_zone_resource_group <<< "$RADIX_RESOURCE_JSON")
-    AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_config <<< "$RADIX_RESOURCE_JSON")
+    AZ_RESOURCE_KEYVAULT_CONFIG=$(jq -r .keyvault_config <<< "$RADIX_RESOURCE_JSON")
     IMAGE_REGISTRY=$(jq -r .acr <<< "$RADIX_RESOURCE_JSON")
     RADIX_CACHE_REGISTRY=$(jq -r .cache_registry <<< "$RADIX_RESOURCE_JSON")
     CLUSTER_OIDC_ISSUER_URLS=$(jq -r .cluster_issuer_urls <<< "$RADIX_RESOURCE_JSON")
@@ -300,7 +300,7 @@ secrets=(
     "slack-webhook"
 )
 
-check_secrets_exist "${AZ_RESOURCE_KEYVAULT}" "${secrets[@]}"
+check_secrets_exist "${AZ_RESOURCE_KEYVAULT_CONFIG}" "${secrets[@]}"
 
 #######################################################################################
 ### Check if kubernetes-api-auth-ip-range are defined
@@ -427,7 +427,7 @@ if [[ $install_base_components == true ]]; then
     echo "Install Flux v2"
     echo ""
     FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
-    FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT")"
+    FLUX_PRIVATE_KEY="$(az keyvault secret show --name "$FLUX_PRIVATE_KEY_NAME" --vault-name "$AZ_RESOURCE_KEYVAULT_CONFIG")"
 
     echo "Creating \"radix-flux-config\"..."
 
@@ -440,7 +440,7 @@ if [[ $install_base_components == true ]]; then
     flux_configmap
 
     az keyvault secret download \
-    --vault-name "$AZ_RESOURCE_KEYVAULT" \
+    --vault-name "$AZ_RESOURCE_KEYVAULT_CONFIG" \
     --name "$FLUX_PRIVATE_KEY_NAME" \
     --file "$FLUX_PRIVATE_KEY_NAME" 2>&1 >/dev/null
 
