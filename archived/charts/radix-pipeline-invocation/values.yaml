@@ -1,9 +1,0 @@
-# Name must match name of a RadixRegistration
-name: radix-github-webhook
-cloneURL: git@github.com:equinor/radix-github-webhook.git
-cloneBranch: master
-
-containerRegistry: xx
-imageTag: xx
-
-pipelineImageTag: latest
