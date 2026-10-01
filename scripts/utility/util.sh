@@ -122,7 +122,7 @@ function get_credentials() {
         --overwrite-existing \
         --resource-group "$AZ_RESOURCE_GROUP_CLUSTERS" \
         --name "$CLUSTER" \
-      --only-show-errors || return
+        --only-show-errors || return
     kubelogin convert-kubeconfig -l azurecli || return
     if [[ -n "$currentContext" ]]; then
         kubectl config use-context "$currentContext" >/dev/null 2>&1
