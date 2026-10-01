@@ -34,16 +34,6 @@ data "github_repository_file" "aks_authorized_ip_ranges" {
 }
 
 locals {
-  systempool_variants = {
-    systempool    = var.systempool
-    systempool_v1 = var.systempool_v1
-  }
-
-  nodepools_variants = {
-    nodepools    = var.nodepools
-    nodepools_v1 = var.nodepools_v1
-  }
-
   # Node OS maintenance runs on the second Thursday of the month
   node_os_maintenance_week_index  = "Second"
   node_os_maintenance_day_of_week = "Thursday"
@@ -62,8 +52,8 @@ module "aks" {
   enviroment                        = module.config.environment
   aks_version                       = each.value.aksversion
   authorized_ip_ranges              = compact(split("\n", replace(trimspace(data.github_repository_file.aks_authorized_ip_ranges.content), ",", "\n")))
-  nodepools                         = lookup(local.nodepools_variants, lookup(each.value, "nodepools", "nodepools"), var.nodepools)
-  systempool                        = lookup(local.systempool_variants, lookup(each.value, "systempool", "systempool"), var.systempool)
+  nodepools                         = var.nodepools
+  systempool                        = var.systempool
   identity_aks                      = data.azurerm_user_assigned_identity.aks.id
   identity_kublet_client            = data.azurerm_user_assigned_identity.akskubelet.client_id
   identity_kublet_object            = data.azurerm_user_assigned_identity.akskubelet.principal_id

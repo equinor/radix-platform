@@ -61,8 +61,8 @@ output "location" {
 output "common_resource_group" {
   value = "common-${local.config.environment}"
 }
-output "cluster_resource_group" {
-  value = "clusters-${local.config.environment}"
+output "cluster_resource_group" { # C1 resource are called "platform", so until then this has to be handled specially
+  value = lookup(local.config, "cluster_resource_group", "clusters-${local.config.environment}")
 }
 output "public_ip_resource_group" {
   value = lookup(lookup(local.config, "network", {}), "public_ip_resource_group", null)

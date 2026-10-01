@@ -22,12 +22,6 @@ module "resourcegroup_clusters" {
   location = module.config.location
 }
 
-module "resourcegroup_clusters_c1" {
-  source   = "../../../modules/resourcegroups"
-  name     = "clusters-c1"
-  location = module.config.location
-}
-
 module "resourcegroup_cost_allocation" {
   source   = "../../../modules/resourcegroups"
   name     = "cost-allocation-${module.config.environment}"
@@ -46,16 +40,8 @@ module "resourcegroup_vnet" {
   location = module.config.location
 }
 
-data "azurerm_resource_group" "clusters" { #TODO. Needed by gitrunner
-  name = "clusters"
-}
-
 data "azurerm_resource_group" "logs" { #TODO Needed by gitrunner
   name = "Logs"
-}
-
-output "az_resource_group_clusters" { #TODO
-  value = data.azurerm_resource_group.clusters.name
 }
 
 output "az_resource_group_common" {
