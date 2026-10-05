@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
 
 #######################################################################################
 ### PURPOSE
@@ -64,7 +65,7 @@ echo ""
 
 # Required inputs
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -72,35 +73,35 @@ else
     exit 1
 fi
 
-if [[ -z "$ACME_ACCOUNT_KID" ]]; then
+if [[ -z "${ACME_ACCOUNT_KID:-}" ]]; then
     echo "ERROR: Please provide ACME_ACCOUNT_KID" >&2
     exit 1
 fi
 
-if [[ -z "$ACME_ACCOUNT_HMAC_KEY" ]]; then
+if [[ -z "${ACME_ACCOUNT_HMAC_KEY:-}" ]]; then
     echo "ERROR: Please provide ACME_ACCOUNT_HMAC_KEY" >&2
     exit 1
 fi
 
-if [[ -z "$ACME_ACCOUNT_EMAIL" ]]; then
+if [[ -z "${ACME_ACCOUNT_EMAIL:-}" ]]; then
     echo "ERROR: Please provide ACME_ACCOUNT_EMAIL" >&2
     exit 1
 fi
 
-if [[ -z "$ACME_SERVER" ]]; then
+if [[ -z "${ACME_SERVER:-}" ]]; then
     echo "ERROR: Please provide ACME_SERVER" >&2
     exit 1
 fi
 
 # Optional inputs
 
-if [[ -z "$USER_PROMPT" ]]; then
+if [[ -z "${USER_PROMPT:-}" ]]; then
     USER_PROMPT=true
 fi
 
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 #######################################################################################
 ### Environment
@@ -156,7 +157,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo ""; echo "Quitting."; exit 0;;

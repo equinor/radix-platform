@@ -107,13 +107,6 @@ Keep in mind the following:
 
 See [README.md](../servicenow-proxy/README.md)
 
-
-## Delete a service principal and related stored credentials
-
-Use script [`delete_service_principal_and_stored_credentials.sh.sh`](./delete_service_principal_and_stored_credentials.sh.sh)
-
-
-
 ## Troubleshooting
 
 ### Sticky "update aks credentials" session

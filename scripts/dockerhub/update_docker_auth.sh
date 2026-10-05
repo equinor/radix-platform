@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 #######################################################################################
 ### PURPOSE
 ###
@@ -59,11 +61,11 @@ echo ""
 ### Set default values for optional input
 ###
 
-USER_PROMPT=${USER_PROMPT:=true}
+USER_PROMPT=${USER_PROMPT:-true}
 
 # Validate input
 
-if [[ $RADIX_ZONE =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
@@ -71,19 +73,19 @@ else
     exit 1
 fi
 
-if [[ -z "$USER_NAME" ]]; then
+if [[ -z "${USER_NAME:-}" ]]; then
     echo "ERROR: Please provide USER_NAME" >&2
     exit 1
 fi
 
-if [[ -z "$ACCESS_TOKEN" ]]; then
+if [[ -z "${ACCESS_TOKEN:-}" ]]; then
     echo "ERROR: Please provide ACCESS_TOKEN" >&2
     exit 1
 fi
 
 # Source util scripts
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
-source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
+source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 
 #######################################################################################
 ### Environment
@@ -133,7 +135,7 @@ echo ""
 
 if [[ $USER_PROMPT == true ]]; then
     while true; do
-        read -p "Is this correct? (Y/n) " yn
+        read -r -p "Is this correct? (Y/n) " yn
         case $yn in
         [Yy]*) break ;;
         [Nn]*)
@@ -149,18 +151,39 @@ fi
 
 printf "Updating Docker auth in keyvault... "
 
-EXPIRY_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ" --date="$KV_EXPIRATION_TIME") # The secrets have no real expiration date
+KV_EXPIRATION_TIME=${KV_EXPIRATION_TIME:-'+1 year'}
+if EXPIRY_DATE=$(date -d "$KV_EXPIRATION_TIME" -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+    :
+elif [[ $KV_EXPIRATION_TIME =~ ^\+([0-9]+)[[:space:]]+(year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds)$ ]]; then
+    BSD_DATE_AMOUNT=${BASH_REMATCH[1]}
+    case ${BASH_REMATCH[2]} in
+        year | years) BSD_DATE_UNIT=y ;;
+        month | months) BSD_DATE_UNIT=m ;;
+        week | weeks) BSD_DATE_UNIT=w ;;
+        day | days) BSD_DATE_UNIT=d ;;
+        hour | hours) BSD_DATE_UNIT=H ;;
+        minute | minutes) BSD_DATE_UNIT=M ;;
+        second | seconds) BSD_DATE_UNIT=S ;;
+    esac
+    if ! EXPIRY_DATE=$(date "-v+${BSD_DATE_AMOUNT}${BSD_DATE_UNIT}" -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null); then
+        echo "ERROR: Unable to compute expiry date for '$KV_EXPIRATION_TIME' with the installed date implementation." >&2
+        exit 1
+    fi
+else
+    echo "ERROR: Unable to compute expiry date for '$KV_EXPIRATION_TIME' with the installed date implementation." >&2
+    exit 1
+fi
 
 az keyvault secret set \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
     --name docker-io-auth-username \
     --value "${USER_NAME}" \
-    --expires "${EXPIRY_DATE}" --output none || exit
+    --expires "${EXPIRY_DATE}" --output none
 
 az keyvault secret set \
     --vault-name "${AZ_RESOURCE_KEYVAULT}" \
     --name docker-io-auth-access-token \
     --value "${ACCESS_TOKEN}" \
-    --expires "${EXPIRY_DATE}" --output none || exit
+    --expires "${EXPIRY_DATE}" --output none
 
 printf "Done.\n"
