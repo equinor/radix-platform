@@ -96,7 +96,6 @@ clusters:
   c1-17:
     aksversion: "1.35.5"
     networkset: "networkset2"
-    network_policy: "cilium"
     activecluster: true
     cluster_resource_group: "clusters-c1"
     hostencryption: true

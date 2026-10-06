@@ -45,12 +45,10 @@ clusters:
   weekly-40:
     aksversion: "1.35.5"
     networkset: "networkset2"
-    network_policy: "cilium"
     hostencryption: true
     activecluster: false
   weekly-41:
     aksversion: "1.36.4"
     networkset: "networkset1"
-    network_policy: "cilium"
     hostencryption: true
     activecluster: true

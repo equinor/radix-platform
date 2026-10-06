@@ -56,9 +56,6 @@ module "aks" {
   sku_tier                          = lookup(module.config.cluster[each.key], "sku_tier", "Free")
   node_os_upgrade_channel           = lookup(module.config.cluster[each.key], "node_os_upgrade_channel", "NodeImage")
   containers_workspace_id           = data.azurerm_log_analytics_workspace.containers.id
-  network_data_plane                = each.value.network_policy == "cilium" ? "cilium" : "azure"
-  network_plugin_mode               = each.value.network_policy == "cilium" ? "overlay" : null
-  network_policy                    = each.value.network_policy
   developers                        = module.config.developers
   subscription                      = module.config.subscription
   vnethub_id                        = data.azurerm_virtual_network.hub.id

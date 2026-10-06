@@ -65,7 +65,6 @@ clusters:
   c2-24:
     aksversion: "1.35.5"
     networkset: "networkset2"
-    network_policy: "cilium"
     activecluster: true
     ddos_protection: true
     ContainerInsights_time: "1m"

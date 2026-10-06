@@ -135,11 +135,11 @@ resource "azurerm_kubernetes_cluster" "this" {
       "IPv4",
     ]
     load_balancer_sku   = "standard"
-    network_data_plane  = var.network_data_plane
+    network_data_plane  = "cilium"
     network_plugin      = "azure"
-    network_policy      = var.network_policy
+    network_policy      = "cilium"
     outbound_type       = "loadBalancer"
-    network_plugin_mode = var.network_plugin_mode
+    network_plugin_mode = "overlay"
     # pod_cidr            = "10.244.0.0/16"
     # pod_cidrs = [
     #   "10.244.0.0/16",

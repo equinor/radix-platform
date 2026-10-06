@@ -54,10 +54,7 @@ module "aks" {
   identity_kublet_identity_id       = data.azurerm_user_assigned_identity.akskubelet.id
   defender_workspace_id             = data.azurerm_log_analytics_workspace.defender.id
   containers_workspace_id           = data.azurerm_log_analytics_workspace.containers.id
-  network_data_plane                = each.value.network_policy == "cilium" ? "cilium" : "azure"
-  network_plugin_mode               = each.value.network_policy == "cilium" ? "overlay" : null
   node_os_upgrade_channel           = lookup(module.config.cluster[each.key], "node_os_upgrade_channel", "NodeImage")
-  network_policy                    = each.value.network_policy
   developers                        = module.config.developers
   subscription                      = module.config.subscription
   vnethub_id                        = data.azurerm_virtual_network.hub.id

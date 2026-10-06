@@ -64,38 +64,21 @@ variable "defender_workspace_id" {
   type = string
 }
 
-variable "network_policy" {
-  description = "Specifies the data plane used for building the Kubernetes network. Currently supported values are calico, azure and cilium"
-  type        = string
-  default     = "calico"
-}
-
-variable "network_data_plane" {
-  description = "The AKS network data plane to use."
-  type        = string
-}
-
-variable "network_plugin_mode" {
-  description = "The AKS network plugin mode to use."
-  type        = string
-  default     = null
-}
-
 variable "outbound_ip_address_ids" {
   type = list(any)
 }
 
 variable "nodepools" {
   type = map(object({
-    vm_size                  = string
-    min_count                = number
-    max_count                = number
-    node_count               = optional(number, 1)
-    node_labels              = optional(map(string))
-    node_taints              = optional(list(string), [])
-    os_disk_type             = optional(string, "Managed")
-    nodepool_os_sku          = optional(string, "Ubuntu")
-    max_surge                = optional(string, "33%")
+    vm_size         = string
+    min_count       = number
+    max_count       = number
+    node_count      = optional(number, 1)
+    node_labels     = optional(map(string))
+    node_taints     = optional(list(string), [])
+    os_disk_type    = optional(string, "Managed")
+    nodepool_os_sku = optional(string, "Ubuntu")
+    max_surge       = optional(string, "33%")
 
   }))
 }
