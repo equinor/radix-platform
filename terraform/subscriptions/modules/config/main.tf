@@ -65,10 +65,10 @@ output "cluster_resource_group" { # C1 resource are called "platform", so until 
   value = lookup(local.config, "cluster_resource_group", "clusters-${local.config.environment}")
 }
 output "public_ip_resource_group" {
-  value = lookup(lookup(local.config, "network", {}), "public_ip_resource_group", null)
+  value = try(local.config.network.public_ip_resource_group, null)
 }
 output "vnet_resource_group" {
-  value = local.config.network.vnet_hub_resourcegroup
+  value = try(local.config.network.vnet_hub_resourcegroup, null)
 }
 output "key_vault_name" {
   value = "radix-keyv-${local.config.environment}"
@@ -126,14 +126,10 @@ output "subscription_contributor" {
   value = local.config.subscription_contributor
 }
 
-output "legal_owners" {
-  value = local.config.legal_owners
-}
-
 output "dns_zone_name" {
-  value = local.config.dnsZone.name
+  value = try(local.config.dnsZone.name, null)
 }
 
 output "dns_zone_create_caa_records" {
-  value = lookup(local.config.dnsZone, "create_caa_records", false)
+  value = try(local.config.dnsZone.create_caa_records, false)
 }
