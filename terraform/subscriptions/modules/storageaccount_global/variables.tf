@@ -33,6 +33,12 @@ variable "shared_access_key_enabled" {
   default = false
 }
 
+variable "public_network_access_enabled" {
+  description = "Allow public network access. When false, only private endpoints and trusted Azure services can reach the account"
+  type        = bool
+  default     = false
+}
+
 variable "change_feed_enabled" {
   description = "Is the blob service properties for change feed events enabled?"
   type        = bool
