@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   purge:
-    runs-on: ubuntu-latest
+    runs-on: radix-runner
     if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false

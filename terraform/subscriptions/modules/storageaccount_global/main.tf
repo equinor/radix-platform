@@ -12,8 +12,10 @@ resource "azurerm_storage_account" "storageaccount" {
   allow_nested_items_to_be_public = false
   default_to_oauth_authentication = true
   shared_access_key_enabled       = var.shared_access_key_enabled
+  public_network_access_enabled   = var.public_network_access_enabled
   network_rules {
     default_action = "Deny"
+    bypass         = ["AzureServices"]
   }
 
   dynamic "blob_properties" {

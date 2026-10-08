@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   lock-clusters:
-    runs-on: ubuntu-latest
+    runs-on: radix-runner
     if: github.ref == 'refs/heads/master'
     strategy:
       fail-fast: false
@@ -38,20 +38,6 @@ jobs:
           client-id: ${{ matrix.target.client_id }}
           tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
           subscription-id: "ded7ca41-37c8-4085-862f-b11d21ab341a"
-
-      - name: Get GitHub Public IP
-        id: github_public_ip
-        run: echo "ipv4=$(curl 'https://ifconfig.me/ip')" >> $GITHUB_OUTPUT
-
-      - name: Add GitHub IP to StorageAccount
-        run: |
-          az storage account network-rule add \
-            --resource-group "s940-tfstate" \
-            --account-name "s940radixinfra" \
-            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
-
-      - name: Lets sleep for 30 seconds for FW rule to complete
-        run: sleep 30s
 
       - name: Setup Terraform
         id: update_firewall

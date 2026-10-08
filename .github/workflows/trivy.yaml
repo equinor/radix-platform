@@ -11,7 +11,7 @@ on:
 jobs:
   trivy-scan:
     name: Scan with Trivy
-    runs-on: ubuntu-latest
+    runs-on: radix-runner
     timeout-minutes: 30
     permissions:
       # Required as the workflow needs to upload (write) any findings to the security tab.

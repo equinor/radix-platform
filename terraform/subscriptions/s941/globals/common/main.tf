@@ -21,21 +21,22 @@ module "backupvault" {
 
 
 module "storageaccount" {
-  source                   = "../../../modules/storageaccount_global"
-  name                     = "s941radixinfra"
-  tier                     = "Standard"
-  account_replication_type = "RAGRS"
-  resource_group_name      = "s941-tfstate"
-  location                 = module.config.location
-  environment              = module.config.environment
-  kind                     = "StorageV2"
-  change_feed_enabled      = false
-  versioning_enabled       = false
-  backup                   = true
-  principal_id             = module.backupvault.data.backupvault.identity[0].principal_id
-  vault_id                 = module.backupvault.data.backupvault.id
-  policyblobstorage_id     = module.backupvault.data.policyblobstorage.id
-  log_analytics_id         = module.config.backend.log_analytics_workspace_id
+  source                        = "../../../modules/storageaccount_global"
+  name                          = "s941radixinfra"
+  tier                          = "Standard"
+  account_replication_type      = "RAGRS"
+  resource_group_name           = "s941-tfstate"
+  location                      = module.config.location
+  environment                   = module.config.environment
+  kind                          = "StorageV2"
+  change_feed_enabled           = false
+  versioning_enabled            = false
+  public_network_access_enabled = false
+  backup                        = true
+  principal_id                  = module.backupvault.data.backupvault.identity[0].principal_id
+  vault_id                      = module.backupvault.data.backupvault.id
+  policyblobstorage_id          = module.backupvault.data.policyblobstorage.id
+  log_analytics_id              = module.config.backend.log_analytics_workspace_id
 
 }
 

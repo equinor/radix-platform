@@ -5,19 +5,15 @@ module "radix_id_gitrunner" {
   location            = module.config.location
   roleassignments = {
     # Storage and Blob Access
-    storage_account_contributor = {
-      role     = "Storage Account Contributor" # Needed to manage Storage Account firewall and settings
-      scope_id = data.azurerm_storage_account.terraform_state.id
-    }
     storage_blob_data_contributor = {
       role     = "Storage Blob Data Contributor" # Needed to manage blobs and containers (read/write/delete data)
       scope_id = data.azurerm_storage_account.terraform_state.id
     }
     # Container Registry
-    container_registry_app = {
-      role     = "Contributor"
-      scope_id = module.acr.azurerm_container_registry_app_id
-    }
+    # container_registry_app = {
+    #   role     = "Contributor"
+    #   scope_id = module.acr.azurerm_container_registry_app_id
+    # }
     #  Infrastructure: Networking
     k8s_command_runner = {
       role     = "Radix Azure Kubernetes Service Command Runner"
