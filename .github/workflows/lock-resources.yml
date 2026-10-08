@@ -47,11 +47,3 @@ jobs:
 
       - name: lock-resources
         run: RADIX_ZONE=${{matrix.target.zoneFile}} SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} .github/workflows/scripts/check_resource_lock.sh
-
-      - name: Revoke GitHub IP on StorageAccount
-        if: ${{ steps.update_firewall.outcome == 'success' && !cancelled()}} # Always run this step even if previous step failed
-        run: |
-          az storage account network-rule remove \
-            --resource-group "s940-tfstate" \
-            --account-name "s940radixinfra" \
-            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null

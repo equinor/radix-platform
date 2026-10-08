@@ -53,10 +53,4 @@ jobs:
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" init
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply -auto-approve
           terraform -chdir="./terraform/subscriptions/${{ matrix.target.subscription }}/${{ matrix.target.name }}/pre-clusters" apply -auto-approve
-      - name: Revoke GitHub IP on StorageAccount
-        if: ${{ github.ref == 'refs/heads/master' && inputs.terraformapply }}
-        run: |
-          az storage account network-rule remove \
-            --resource-group "${{ matrix.target.subscription }}-tfstate" \
-            --account-name "${{ matrix.target.subscription }}radixinfra" \
-            --ip-address ${{ steps.github_public_ip.outputs.ipv4 }} >/dev/null
+
