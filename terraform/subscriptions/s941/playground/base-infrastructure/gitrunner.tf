@@ -10,10 +10,10 @@ module "radix_id_gitrunner" {
       scope_id = data.azurerm_storage_account.terraform_state.id
     }
     # Container Registry
-    # container_registry_app = {
-    #   role     = "Contributor"
-    #   scope_id = module.acr.azurerm_container_registry_app_id
-    # }
+    container_registry_app = {
+      role     = "Contributor"
+      scope_id = module.acr.azurerm_container_registry_app_id
+    }
     container_registry_app_abac_contributor = {
       role     = "Container Registry Repository Contributor"
       scope_id = module.acr.azurerm_container_registry_app_id
