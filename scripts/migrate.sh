@@ -91,6 +91,7 @@ function flux_configmap() {
       --from-literal=subscriptionId="$AZ_SUBSCRIPTION_ID" \
       --from-literal=dnsZoneResourceGroup="$AZ_RESOURCE_GROUP_DNS" \
       --from-literal=radixIdCertManager="$RADIX_ID_CERTMANAGER_MI_CLIENT_ID" \
+      --from-literal=radixIdAcrCleanup="$RADIX_ID_ACR_CLEANUP_MI_CLIENT_ID" \
       --from-literal=zone="$RADIX_ENVIRONMENT" \
       --from-literal=cacheRegistry="$RADIX_CACHE_REGISTRY" \
       --from-literal=kubernetesIssuerUrl="$(jq -r .\"$CLUSTER_NAME\" <<< "$CLUSTER_OIDC_ISSUER_URLS")" \
@@ -173,6 +174,7 @@ function get_variables() {
     MIGRATION_STRATEGY="aa"
     STORAGACCOUNT=$(jq -r .velero_sa <<< "$RADIX_RESOURCE_JSON")
     RADIX_ID_CERTMANAGER_MI_CLIENT_ID=$(jq -r .radix_id_certmanager_mi_client_id <<< "$RADIX_RESOURCE_JSON")
+    RADIX_ID_ACR_CLEANUP_MI_CLIENT_ID=$(jq -r .radix_id_acr_cleanup_mi_client_id <<< "$RADIX_RESOURCE_JSON")
     login_azure "$AZ_SUBSCRIPTION_ID"
 }
 
