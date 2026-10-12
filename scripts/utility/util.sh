@@ -83,6 +83,7 @@ function environment_json() {
   radix_id_certmanager_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_certmanager_mi_client_id) || return 1
   dns_zone_resource_group=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw dns_zone_resource_group) || return 1
   cacheRegistry=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw cacheRegistry) || return 1
+  radix_id_acr_cleanup_mi_client_id=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/base-infrastructure" output -raw radix_id_acr_cleanup_mi_client_id) || return 1
   precluster_outputs=$(terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" output -json) || return 1
   clusterIssuerUrls=$(jq -r '.oidc_issuer_url.value' <<< "$precluster_outputs") || return 1
   cluster_resource_groups=$(jq -c '.cluster_resource_groups.value // {}' <<< "$precluster_outputs") || return 1
@@ -101,6 +102,7 @@ function environment_json() {
     "ingress_prefix": "$ip_prefix_ingress",
     "ip_prefix_egress_ips": "$ip_prefix_egress_ips",
     "radix_id_certmanager_mi_client_id": "$radix_id_certmanager_mi_client_id",
+    "radix_id_acr_cleanup_mi_client_id": "$radix_id_acr_cleanup_mi_client_id",
     "dns_zone_resource_group": "$dns_zone_resource_group",
     "cache_registry": "$cacheRegistry.azurecr.io",
     "cluster_resource_groups": $cluster_resource_groups,

@@ -6,11 +6,11 @@ module "grafana_redirect_uris" {
   source         = "../../../modules/grafana_redirect_uris"
   application_id = data.azuread_application.grafana.id
   dns_zone_name  = module.config.dns_zone_name
-  cluster_names  = local.oidc_issuer_urls
+  cluster_names  = module.clusters.oidc_issuer_url
 }
 
 module "grafana_fedcred" {
-  for_each       = local.oidc_issuer_urls
+  for_each       = module.clusters.oidc_issuer_url
   source         = "../../../modules/app_application_federated_credentials"
   application_id = data.azuread_application.grafana.id
   display_name   = each.key

@@ -26,7 +26,7 @@ variable "nodepools" {
     node_labels     = optional(map(string))
     node_taints     = optional(list(string), [])
     os_disk_type    = optional(string, "Managed")
-    nodepool_os_sku = optional(string, "Ubuntu")
+    nodepool_os_sku = optional(string, "AzureLinux")
     max_surge       = optional(string, "33%")
   }))
   default = {
@@ -74,13 +74,11 @@ variable "nodepools" {
         "nodepooltasks" = "jobs"
       }
       node_taints     = ["nodepooltasks=jobs:NoSchedule"]
-      nodepool_os_sku = "AzureLinux"
     }
     armuserpool = {
       vm_size         = "Standard_B8ps_v2"
       min_count       = 1
       max_count       = 4
-      nodepool_os_sku = "AzureLinux"
     }
     x86pipepool = {
       vm_size   = "Standard_B8as_v2"
@@ -90,13 +88,11 @@ variable "nodepools" {
         "nodepooltasks" = "jobs"
       }
       node_taints     = ["nodepooltasks=jobs:NoSchedule"]
-      nodepool_os_sku = "AzureLinux"
     }
     x86userpool = {
       vm_size         = "Standard_B8as_v2"
       min_count       = 1
       max_count       = 16
-      nodepool_os_sku = "AzureLinux"
       max_surge       = "5"
     }
   }

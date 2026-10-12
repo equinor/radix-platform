@@ -40,6 +40,10 @@ module "resourcegroup_vnet" {
   location = module.config.location
 }
 
+output "az_resource_group_clusters" {
+  value = module.resourcegroup_clusters.data.name
+}
+
 output "az_resource_group_common" {
   value = module.config.common_resource_group
 }
