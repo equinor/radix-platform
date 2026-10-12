@@ -5,7 +5,7 @@ data "azurerm_user_assigned_identity" "prometheus_backup" {
 
 module "prometheus_backup_mi_fedcred" {
   source              = "../../../modules/federated-credentials"
-  for_each            = local.oidc_issuer_urls
+  for_each            = module.clusters.oidc_issuer_url
   name                = "k8s-prometheus-backup-${each.key}-${module.config.environment}"
   issuer              = each.value
   subject             = "system:serviceaccount:monitor:prometheus-backup-uploader"

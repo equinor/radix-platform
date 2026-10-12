@@ -42,19 +42,6 @@ module "config" {
 
 module "clusters" {
   source              = "../../../modules/active-clusters"
-  resource_group_name = "clusters" #TODO
-  subscription        = module.config.subscription
-}
-
-module "clusters_c1" {
-  source              = "../../../modules/active-clusters"
   resource_group_name = module.config.cluster_resource_group
   subscription        = module.config.subscription
-}
-
-locals {
-  oidc_issuer_urls = merge(
-    module.clusters.oidc_issuer_url,
-    try(module.clusters_c1.oidc_issuer_url, {})
-  )
 }

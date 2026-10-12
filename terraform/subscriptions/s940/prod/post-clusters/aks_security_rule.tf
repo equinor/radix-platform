@@ -8,7 +8,7 @@ locals {
 
 module "nsg_rules" {
   source                   = "../../../modules/aks/nsg_rule"
-  nsg_ids                  = merge(module.clusters.nsg, try(module.clusters_c1.nsg, {}))
+  nsg_ids                  = merge(module.clusters.nsg, try(module.clusters.nsg, {}))
   nsg_resource_group_names = local.nsg_resource_group_names
   resource_group_name      = module.config.cluster_resource_group
   public_ip_resource_group = coalesce(module.config.public_ip_resource_group, module.config.cluster_resource_group)

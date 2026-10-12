@@ -33,22 +33,22 @@ module "config" {
 
 module "clusters" {
   source              = "../../../modules/active-clusters"
-  resource_group_name = "clusters" #TODO with code below after cluster in new RG module.config.cluster_resource_group
+  resource_group_name = module.config.cluster_resource_group #"clusters" #TODO with code below after cluster in new RG module.config.cluster_resource_group
   subscription        = module.config.subscription
 }
 
-module "clusters_c1" {
-  source              = "../../../modules/active-clusters"
-  resource_group_name = module.config.cluster_resource_group
-  subscription        = module.config.subscription
-}
+# module "clusters_c1" {
+#   source              = "../../../modules/active-clusters"
+#   resource_group_name = module.config.cluster_resource_group
+#   subscription        = module.config.subscription
+# }
 
-locals {
-  oidc_issuer_urls = merge(
-    module.clusters.oidc_issuer_url,
-    try(module.clusters_c1.oidc_issuer_url, {})
-  )
-}
+# locals {
+#   oidc_issuer_urls = merge(
+#     module.clusters.oidc_issuer_url,
+#     try(module.clusters_c1.oidc_issuer_url, {})
+#   )
+# }
 
 #TODO: Remove module.clusters_c1 and related code when all clusters have been migrated to new RGs and module.clusters can be used exclusively.
 #Migration steps:
