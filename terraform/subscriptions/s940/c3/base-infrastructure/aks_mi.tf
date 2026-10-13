@@ -31,5 +31,3 @@ module "radix_id_aks_mi" {
     }
   }
 }
-
-
