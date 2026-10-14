@@ -8,19 +8,10 @@ module "radix_id_akskubelet_mi" {
       role     = "AcrPull"
       scope_id = module.acr.azurerm_container_registry_id
     }
-    # repository_reader_env = {
-    #   role     = "Container Registry Repository Reader"
-    #   scope_id = module.acr.azurerm_container_registry_id
-    # }
-    # repository_reader_cache = {
-    #   role     = "Container Registry Repository Reader"
-    #   scope_id = module.acr.azurerm_container_registry_cache_id
-    # }
     arccache = {
       role     = "AcrPull"
       scope_id = module.acr.azurerm_container_registry_cache_id
     }
-
   }
 }
 
@@ -30,7 +21,7 @@ module "radix_id_aks_mi" {
   location            = module.config.location
   resource_group_name = module.resourcegroup_common.data.name
   roleassignments = {
-    mi_akskubelet = {
+    mi_operator = {
       role     = "Managed Identity Operator"
       scope_id = module.radix_id_akskubelet_mi.data.id
     }
