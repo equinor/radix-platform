@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - name: "platform"
+          - name: "c1"
             zoneFile: "prod"
             subscription: "s940"
             client_id: "5b6da3d2-84f9-4703-b253-f6b7a528b080"
@@ -23,6 +23,10 @@ jobs:
             zoneFile: "c2"
             subscription: "s940"
             client_id: "fa0fa160-648d-46f0-93ce-65fe0838a075"
+          - name: "c3"
+            zoneFile: "c3"
+            subscription: "s940"
+            client_id: "075e797a-2fb1-41a8-98a3-72b9792db9c8"
     permissions:
       id-token: write
       contents: read
