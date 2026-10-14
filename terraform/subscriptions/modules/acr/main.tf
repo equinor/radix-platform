@@ -133,23 +133,15 @@ resource "azapi_update_resource" "env_abac_mode" {
   }
 }
 
-resource "azurerm_role_assignment" "env" {
+resource "azurerm_role_assignment" "radix_cr_cicd_acr_pull" {
   scope                = azurerm_container_registry.env.id
-  role_definition_name = "Contributor"
+  role_definition_name = "AcrPull"
   principal_id         = var.radix_cr_cicd
 }
 
-# Need both List and Contributor roles for ABAC to work properly
-resource "azurerm_role_assignment" "env_abac_list" {
-  count                = var.abac_env ? 1 : 0
+resource "azurerm_role_assignment" "radix_cr_cicd_acr_push" {
   scope                = azurerm_container_registry.env.id
-  role_definition_name = "Container Registry Repository Catalog Lister"
-  principal_id         = var.radix_cr_cicd
-}
-resource "azurerm_role_assignment" "env_abac_contributor" {
-  count                = var.abac_env ? 1 : 0
-  scope                = azurerm_container_registry.env.id
-  role_definition_name = "Container Registry Repository Contributor"
+  role_definition_name = "AcrPush"
   principal_id         = var.radix_cr_cicd
 }
 
