@@ -17,6 +17,7 @@ module "radix_id_gitrunner_locker" {
       scope_id = module.resourcegroup_clusters.data.id
     }
   }
+<<<<<<< HEAD
   federated_credentials = {
     github_radix-platform = {
       name    = "radix-platform-env-${module.config.environment}"
@@ -24,6 +25,8 @@ module "radix_id_gitrunner_locker" {
       subject = "repo:equinor/radix-platform:ref:refs/heads/master"
     }
   }
+=======
+>>>>>>> origin/master
 }
 
 module "radix_id_akskubelet_mi" {
