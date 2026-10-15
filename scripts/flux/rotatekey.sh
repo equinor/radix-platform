@@ -3,7 +3,7 @@
 set -euo pipefail
 
 #######################################################################################
-# PURPOSE
+# PURPOSE 
 #
 #  1. Generate the flux ssh secret with the new key into the cluster
 #  2. Update secret in keyvault
@@ -18,11 +18,11 @@ normal=$(tput sgr0 2>/dev/null || true)
 
 # Required inputs
 
-if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3|extmon)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3|extmon" >&2
     exit 1
 fi
 
