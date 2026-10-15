@@ -54,6 +54,10 @@ output "environment" {
   value = local.config.environment
 }
 
+output "new_environment" {
+  value = try(local.config.new_environment, local.config.environment)
+}
+
 output "location" {
   value = local.config.location
 }
