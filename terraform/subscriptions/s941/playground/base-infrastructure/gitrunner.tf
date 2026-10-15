@@ -27,15 +27,6 @@ module "radix_id_gitrunner" {
       role     = "Radix Azure Kubernetes Service Command Runner"
       scope_id = module.resourcegroup_clusters.data.id
     }
-    cluster_vnet_hub = {
-      role     = "Private DNS Zone Contributor"
-      scope_id = module.resourcegroup_vnet.data.id
-    }
-    # Custom Roles
-    privatelink-contributor = {
-      role     = "Radix Privatelink rbac-${module.config.subscription_shortname}"
-      scope_id = "/subscriptions/${module.config.subscription}"
-    }
   }
   federated_credentials = {
     radix-id-gitrunner = {
