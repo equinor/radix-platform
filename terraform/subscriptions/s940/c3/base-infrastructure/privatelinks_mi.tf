@@ -25,6 +25,11 @@ module "radix_id_privatelinks" {
       name    = "radix-id-gitrunner-privatelinks-${module.config.environment}"
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-internal:ref:refs/heads/main"
+    },
+    radix-id-gitrunner-radix_pull = {
+      name    = "radix-id-gitrunner-${module.config.environment}-radix_pull"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-internal:pull_request"
     }
   }
 }
