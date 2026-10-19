@@ -195,4 +195,5 @@ resource "azurerm_management_lock" "aks" {
   scope      = azurerm_kubernetes_cluster.this.id
   lock_level = "CanNotDelete"
   notes      = "IaC : Terraform"
+  depends_on = [azurerm_kubernetes_cluster.this]
 }

@@ -73,12 +73,12 @@ variable "nodepools" {
       node_labels = {
         "nodepooltasks" = "jobs"
       }
-      node_taints     = ["nodepooltasks=jobs:NoSchedule"]
+      node_taints = ["nodepooltasks=jobs:NoSchedule"]
     }
     armuserpool = {
-      vm_size         = "Standard_B8ps_v2"
-      min_count       = 1
-      max_count       = 4
+      vm_size   = "Standard_B8ps_v2"
+      min_count = 1
+      max_count = 4
     }
     x86pipepool = {
       vm_size   = "Standard_B8as_v2"
@@ -87,13 +87,13 @@ variable "nodepools" {
       node_labels = {
         "nodepooltasks" = "jobs"
       }
-      node_taints     = ["nodepooltasks=jobs:NoSchedule"]
+      node_taints = ["nodepooltasks=jobs:NoSchedule"]
     }
     x86userpool = {
-      vm_size         = "Standard_B8as_v2"
-      min_count       = 1
-      max_count       = 16
-      max_surge       = "5"
+      vm_size   = "Standard_B8as_v2"
+      min_count = 1
+      max_count = 16
+      max_surge = "5"
     }
   }
 }
