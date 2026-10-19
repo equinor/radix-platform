@@ -77,9 +77,11 @@ variable "nodepools" {
     node_labels     = optional(map(string))
     node_taints     = optional(list(string), [])
     os_disk_type    = optional(string, "Managed")
+    os_disk_size_gb = optional(number) # null keeps the Azure default/current size
     nodepool_os_sku = optional(string, "Ubuntu")
     max_surge       = optional(string, "33%")
-
+    # Required to change os_disk_size_gb etc. without destroying the pool; max 12 lowercase alphanumeric chars
+    temporary_name_for_rotation = optional(string)
   }))
 }
 
