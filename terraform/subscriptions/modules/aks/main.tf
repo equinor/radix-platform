@@ -158,32 +158,34 @@ resource "azurerm_kubernetes_cluster" "this" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "this" {
-  for_each                = { for k, v in var.nodepools : k => v }
-  name                    = each.key
-  kubernetes_cluster_id   = azurerm_kubernetes_cluster.this.id
-  vm_size                 = each.value.vm_size
-  auto_scaling_enabled    = true
-  max_pods                = 110
-  min_count               = each.value.min_count
-  max_count               = each.value.max_count
-  fips_enabled            = false
-  node_labels             = each.value.node_labels
-  node_taints             = each.value.node_taints
-  os_disk_type            = each.value.os_disk_type
-  os_sku                  = each.value.nodepool_os_sku
-  vnet_subnet_id          = azurerm_subnet.this.id
-  workload_runtime        = "OCIContainer"
-  tags                    = {}
-  zones                   = []
-  host_encryption_enabled = var.hostencryption
-  depends_on              = [azurerm_kubernetes_cluster.this]
+  for_each                    = { for k, v in var.nodepools : k => v }
+  name                        = each.key
+  kubernetes_cluster_id       = azurerm_kubernetes_cluster.this.id
+  vm_size                     = each.value.vm_size
+  auto_scaling_enabled        = true
+  max_pods                    = 110
+  min_count                   = each.value.min_count
+  max_count                   = each.value.max_count
+  fips_enabled                = false
+  node_labels                 = each.value.node_labels
+  node_taints                 = each.value.node_taints
+  os_disk_type                = each.value.os_disk_type
+  os_disk_size_gb             = each.value.os_disk_size_gb
+  os_sku                      = each.value.nodepool_os_sku
+  temporary_name_for_rotation = each.value.temporary_name_for_rotation
+  vnet_subnet_id              = azurerm_subnet.this.id
+  workload_runtime            = "OCIContainer"
+  tags                        = {}
+  zones                       = []
+  host_encryption_enabled     = var.hostencryption
+  depends_on                  = [azurerm_kubernetes_cluster.this]
   upgrade_settings {
     max_surge                     = each.value.max_surge
     drain_timeout_in_minutes      = 1440
     node_soak_duration_in_minutes = 10
   }
   lifecycle {
-    ignore_changes = [gpu_driver, temporary_name_for_rotation]
+    ignore_changes = [gpu_driver]
   }
 }
 
@@ -193,4 +195,5 @@ resource "azurerm_management_lock" "aks" {
   scope      = azurerm_kubernetes_cluster.this.id
   lock_level = "CanNotDelete"
   notes      = "IaC : Terraform"
+  depends_on = [azurerm_kubernetes_cluster.this]
 }

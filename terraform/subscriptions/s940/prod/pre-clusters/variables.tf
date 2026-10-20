@@ -20,15 +20,17 @@ variable "systempool" {
 
 variable "nodepools" {
   type = map(object({
-    vm_size         = string
-    min_count       = number
-    max_count       = number
-    node_count      = optional(number, 1)
-    node_labels     = optional(map(string))
-    node_taints     = optional(list(string), [])
-    os_disk_type    = optional(string, "Managed")
-    nodepool_os_sku = optional(string, "AzureLinux")
-    max_surge       = optional(string, "33%")
+    vm_size                     = string
+    min_count                   = number
+    max_count                   = number
+    node_count                  = optional(number, 1)
+    node_labels                 = optional(map(string))
+    node_taints                 = optional(list(string), [])
+    os_disk_type                = optional(string, "Managed")
+    os_disk_size_gb             = optional(number)
+    nodepool_os_sku             = optional(string, "AzureLinux")
+    max_surge                   = optional(string, "33%")
+    temporary_name_for_rotation = optional(string)
   }))
   default = {
     memory2v1 = {
@@ -74,7 +76,9 @@ variable "nodepools" {
       node_labels = {
         "nodepooltasks" = "jobs"
       }
-      node_taints = ["nodepooltasks=jobs:NoSchedule"]
+      node_taints                 = ["nodepooltasks=jobs:NoSchedule"]
+      os_disk_size_gb             = 2000
+      temporary_name_for_rotation = "armpipetmp"
     }
     armuserpool = {
       vm_size   = "Standard_E16ps_v6"
@@ -89,7 +93,9 @@ variable "nodepools" {
       node_labels = {
         "nodepooltasks" = "jobs"
       }
-      node_taints = ["nodepooltasks=jobs:NoSchedule"]
+      node_taints                 = ["nodepooltasks=jobs:NoSchedule"]
+      os_disk_size_gb             = 2000
+      temporary_name_for_rotation = "x86pipetmp"
     }
     x86pipepool5 = {
       vm_size   = "Standard_E16as_v5"
@@ -98,7 +104,9 @@ variable "nodepools" {
       node_labels = {
         "nodepooltasks" = "jobs"
       }
-      node_taints = ["nodepooltasks=jobs:NoSchedule"]
+      node_taints                 = ["nodepooltasks=jobs:NoSchedule"]
+      os_disk_size_gb             = 2000
+      temporary_name_for_rotation = "x86pipe5tmp"
     }
     x86userpool = {
       vm_size   = "Standard_E16as_v7"
