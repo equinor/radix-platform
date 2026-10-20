@@ -46,9 +46,9 @@ clusters:
     aksversion: "1.36.4"
     networkset: "networkset2"
     hostencryption: true
-    activecluster: true
-  weekly-41:
+    activecluster: false
+  weekly-43:
     aksversion: "1.36.4"
     networkset: "networkset1"
     hostencryption: true
-    activecluster: false
+    activecluster: true
