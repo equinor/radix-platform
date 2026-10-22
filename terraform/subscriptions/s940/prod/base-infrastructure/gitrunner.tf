@@ -1,3 +1,12 @@
+module "keyvault_lock_creator_role" {
+  source            = "../../../modules/roles"
+  name              = "Radix Key Vault Lock Creator ${module.config.new_environment}"
+  scope             = data.azurerm_subscription.current.id
+  description       = "Can read the main Key Vault and create or read locks, but cannot delete locks."
+  actions           = ["Microsoft.KeyVault/vaults/read", "Microsoft.KeyVault/vaults/write", "Microsoft.Authorization/locks/read", "Microsoft.Authorization/locks/write"]
+  assignable_scopes = [data.azurerm_subscription.current.id]
+}
+
 module "radix_id_gitrunner" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-gitrunner-${module.config.environment}"
@@ -13,6 +22,10 @@ module "radix_id_gitrunner" {
     container_registry_app = {
       role     = "Contributor"
       scope_id = module.acr.azurerm_container_registry_app_id
+    }
+    keyvault_lock_creator = {
+      role     = module.keyvault_lock_creator_role.name
+      scope_id = module.keyvault.azurerm_key_vault_id
     }
   }
   federated_credentials = {
@@ -32,4 +45,5 @@ module "radix_id_gitrunner" {
       subject = "repo:equinor/radix-internal:pull_request"
     }
   }
+  depends_on = [module.keyvault_lock_creator_role]
 }
