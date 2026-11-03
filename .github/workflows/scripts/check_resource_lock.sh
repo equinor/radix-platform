@@ -46,6 +46,7 @@ EOF
 AZ_RESOURCE_KEYVAULT=$(jq -r .keyvault_main <<< "$RADIX_RESOURCE_JSON")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
 AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
+AZ_RESOURCE_GROUP_COMMON=$(jq -r .common_rg <<< "$RADIX_RESOURCE_JSON")
 
 #######################################################################################
 ### Start
@@ -53,6 +54,7 @@ AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
 CLUSTERS=$(az aks list --resource-group "${AZ_RESOURCE_GROUP_CLUSTERS}" --output json | jq '{k8s:[.[] | {name: .name, resourceGroup: .resourceGroup, id: .id}]}')
 AZ_RESOURCE_KEYVAULT_ID=$(az keyvault show \
     --name "$AZ_RESOURCE_KEYVAULT" \
+    --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
     --query id \
     --output tsv \
     --only-show-errors) || {
@@ -65,6 +67,7 @@ if [[ -z "$AZ_RESOURCE_KEYVAULT_ID" ]]; then
 fi
 AZ_RESOURCE_KEYVAULT_PUBLIC_ACCESS=$(az keyvault show \
     --name "$AZ_RESOURCE_KEYVAULT" \
+    --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
     --query properties.publicNetworkAccess \
     --output tsv \
     --only-show-errors) || {
@@ -75,6 +78,7 @@ if [[ "$AZ_RESOURCE_KEYVAULT_PUBLIC_ACCESS" != "Disabled" ]]; then
     echo "Disabling public access for Key Vault $AZ_RESOURCE_KEYVAULT..."
     az keyvault update \
         --name "$AZ_RESOURCE_KEYVAULT" \
+        --resource-group "$AZ_RESOURCE_GROUP_COMMON" \
         --public-network-access Disabled \
         --only-show-errors >/dev/null || {
         echo "ERROR: Could not disable public access for main Key Vault: $AZ_RESOURCE_KEYVAULT" >&2
