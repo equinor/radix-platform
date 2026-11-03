@@ -3,8 +3,37 @@ module "keyvault_lock_creator_role" {
   name              = "Radix Key Vault Lock Creator ${module.config.new_environment}"
   scope             = data.azurerm_subscription.current.id
   description       = "Can read the main Key Vault and create or read locks, but cannot delete locks."
-  actions           = ["Microsoft.KeyVault/vaults/read", "Microsoft.KeyVault/vaults/write", "Microsoft.Authorization/locks/read", "Microsoft.Authorization/locks/write"]
+  actions           = ["Microsoft.KeyVault/vaults/read", "Microsoft.KeyVault/vaults/write", "Microsoft.Authorization/locks/read", "Microsoft.Authorization/locks/write"] # It does not grant read or write access to secret values
   assignable_scopes = [data.azurerm_subscription.current.id]
+}
+
+module "radix_id_gitrunner_locker" {
+  source              = "../../../modules/userassignedidentity"
+  name                = "radix-id-gitrunner-locker-${module.config.new_environment}"
+  location            = module.config.location
+  resource_group_name = module.resourcegroup_common.data.name
+  roleassignments = {
+    storage_blob_data_reader = {
+      role     = "Storage Blob Data Reader"
+      scope_id = data.azurerm_storage_account.terraform_state.id
+    }
+    lock_operator = {
+      role     = "Locks Contributor"
+      scope_id = module.resourcegroup_clusters.data.id
+    }
+    keyvault_lock_creator = {
+      role     = module.keyvault_lock_creator_role.name
+      scope_id = module.keyvault.azurerm_key_vault_id
+    }
+  }
+  federated_credentials = {
+    github_radix-platform = {
+      name    = "radix-platform-env-${module.config.environment}"
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:equinor/radix-platform:ref:refs/heads/master"
+    }
+  }
+  depends_on = [module.keyvault_lock_creator_role]
 }
 
 module "radix_id_gitrunner" {
