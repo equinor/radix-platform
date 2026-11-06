@@ -14,10 +14,6 @@ module "radix_id_gitrunner" {
       role     = "Contributor"
       scope_id = module.acr.azurerm_container_registry_app_id
     }
-    # keyvault_lock_creator = {
-    #   role     = module.keyvault_lock_creator_role.name
-    #   scope_id = module.keyvault.azurerm_key_vault_id
-    # }
   }
   federated_credentials = {
     radix-id-gitrunner = {
