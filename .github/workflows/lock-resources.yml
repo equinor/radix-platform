@@ -8,7 +8,8 @@ permissions:
   id-token: write
   contents: read
 jobs:
-  lock-clusters:
+  s940-resource-locks:
+    name: 940-resource-locks (${{ matrix.target.zoneFile }})
     runs-on: radix-runner
     if: github.ref == 'refs/heads/master'
     strategy:
@@ -18,14 +19,17 @@ jobs:
           - name: "c1"
             zoneFile: "prod"
             subscription: "s940"
+            mode: "lock-resources"
             client_id: "387c491b-56fe-44fa-9179-e4e85b5aa327"
           - name: "c2"
             zoneFile: "c2"
             subscription: "s940"
+            mode: "lock-resources"
             client_id: "ec86d92f-80fd-4a68-8c87-e4c3e1c5b58e"
           - name: "c3"
             zoneFile: "c3"
             subscription: "s940"
+            mode: "lock-resources"
             client_id: "95d89d27-838d-4fca-86cd-e4cafd41c635"
     permissions:
       id-token: write
@@ -50,4 +54,42 @@ jobs:
           terraform_version: 'latest'
 
       - name: lock-resources
-        run: RADIX_ZONE=${{matrix.target.zoneFile}} SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} .github/workflows/scripts/check_resource_lock.sh
+        run: RESOURCE_MODE=${{matrix.target.mode}} RADIX_ZONE=${{matrix.target.zoneFile}} SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} .github/workflows/scripts/check_resource_lock.sh
+
+  s941-resource-locks:
+    name: 941-resource-locks (${{ matrix.target.zoneFile }})
+    runs-on: radix-runner
+    if: github.ref == 'refs/heads/master'
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: "dev"
+            zoneFile: "dev"
+            subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
+            client_id: "35079af5-d1cd-469c-a892-8de0a5c032a9"
+          - name: "playground"
+            zoneFile: "playground"
+            subscription_id: "16ede44b-1f74-40a5-b428-46cca9a5741b"
+            client_id: "e72f1137-7211-42b0-a779-40fc13e2dfd8"
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: 'Az login'
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ matrix.target.client_id }}
+          tenant-id: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+          subscription-id: ${{ matrix.target.subscription_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        with:
+          terraform_version: 'latest'
+
+      - name: lock-resources
+        run: RESOURCE_MODE=disable-keyvault-public-access RADIX_ZONE=${{ matrix.target.zoneFile }} .github/workflows/scripts/check_resource_lock.sh
