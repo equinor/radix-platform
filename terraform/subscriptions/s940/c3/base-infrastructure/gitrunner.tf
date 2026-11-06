@@ -1,41 +1,3 @@
-module "keyvault_lock_creator_role" {
-  source            = "../../../modules/roles"
-  name              = "Radix Key Vault Lock Creator ${module.config.environment}"
-  scope             = data.azurerm_subscription.current.id
-  description       = "Can read the main Key Vault and create or read locks, but cannot delete locks."
-  actions           = ["Microsoft.KeyVault/vaults/read", "Microsoft.KeyVault/vaults/write", "Microsoft.Authorization/locks/read", "Microsoft.Authorization/locks/write"] # It does not grant read or write access to secret values
-  assignable_scopes = [data.azurerm_subscription.current.id]
-}
-
-module "radix_id_gitrunner_locker" {
-  source              = "../../../modules/userassignedidentity"
-  name                = "radix-id-gitrunner-locker-${module.config.environment}"
-  location            = module.config.location
-  resource_group_name = module.resourcegroup_common.data.name
-  roleassignments = {
-    storage_blob_data_reader = {
-      role     = "Storage Blob Data Reader"
-      scope_id = data.azurerm_storage_account.terraform_state.id
-    }
-    lock_operator = {
-      role     = "Locks Contributor"
-      scope_id = module.resourcegroup_clusters.data.id
-    }
-    keyvault_lock_creator = {
-      role     = module.keyvault_lock_creator_role.name
-      scope_id = module.keyvault.azurerm_key_vault_id
-    }
-  }
-  federated_credentials = {
-    github_radix-platform = {
-      name    = "radix-platform-env-${module.config.environment}"
-      issuer  = "https://token.actions.githubusercontent.com"
-      subject = "repo:equinor/radix-platform:ref:refs/heads/master"
-    }
-  }
-}
-
-
 module "radix_id_gitrunner" {
   source              = "../../../modules/userassignedidentity"
   name                = "radix-id-gitrunner-${module.config.environment}"
@@ -52,10 +14,10 @@ module "radix_id_gitrunner" {
       role     = "Contributor"
       scope_id = module.acr.azurerm_container_registry_app_id
     }
-    keyvault_lock_creator = {
-      role     = module.keyvault_lock_creator_role.name
-      scope_id = module.keyvault.azurerm_key_vault_id
-    }
+    # keyvault_lock_creator = {
+    #   role     = module.keyvault_lock_creator_role.name
+    #   scope_id = module.keyvault.azurerm_key_vault_id
+    # }
   }
   federated_credentials = {
     radix-id-gitrunner = {
@@ -74,5 +36,5 @@ module "radix_id_gitrunner" {
       subject = "repo:equinor/radix-internal:pull_request"
     }
   }
-  depends_on = [module.keyvault_lock_creator_role]
+  # depends_on = [module.keyvault_lock_creator_role]
 }
