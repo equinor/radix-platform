@@ -32,5 +32,5 @@ module "radix_id_gitrunner" {
       subject = "repo:equinor/radix-internal:pull_request"
     }
   }
-  # depends_on = [module.keyvault_lock_creator_role]
+  depends_on = [module.base.keyvault_lock_creator_role]
 }
