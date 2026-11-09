@@ -1,5 +1,5 @@
 module "base" {
-  source                             = "../../../modules/base"
+  source                             = "../../../modules/base-infrastructure"
   environment                        = module.config.new_environment
   locker_environment                 = module.config.new_environment
   location                           = module.config.location

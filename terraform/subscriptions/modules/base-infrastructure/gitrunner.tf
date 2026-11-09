@@ -43,5 +43,4 @@ module "radix_id_gitrunner_locker" {
       subject = "repo:equinor/radix-platform:ref:refs/heads/master"
     }
   }
-  depends_on = [module.base.keyvault_lock_creator_role]
 }

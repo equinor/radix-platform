@@ -1,5 +1,5 @@
 module "base" {
-  source                             = "../../../modules/base"
+  source                             = "../../../modules/base-infrastructure"
   environment                        = module.config.environment
   location                           = module.config.location
   subscription_id                    = data.azurerm_subscription.current.id
