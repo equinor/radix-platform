@@ -133,7 +133,7 @@ variable "cluster_lock" {
 variable "enable_workload_identity" {
   description = "Enable workload identity on the AKS cluster."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "sku_tier" {

@@ -68,7 +68,6 @@ module "aks" {
   private_dns_zones             = module.config.private_dns_zones
   cluster_vnet_resourcegroup    = data.azurerm_virtual_network.hub.resource_group_name
   cluster_to_hub_resource_group = lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)
-  enable_workload_identity      = true
   # enable_ddos_protection_plan       = module.config.environment == "platform" || module.config.environment == "c2"
   # enable_network_lock               = module.config.environment == "platform" || module.config.environment == "c2"
   network_lock_name                 = "vnet-${each.key}-CanNotDelete-Lock"

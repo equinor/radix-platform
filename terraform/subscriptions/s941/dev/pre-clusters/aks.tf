@@ -65,7 +65,6 @@ module "aks" {
   hub_virtual_network_name          = data.azurerm_virtual_network.hub.name
   hub_to_cluster_peering_name       = "hub-to-vnet-${each.key}"
   cluster_to_hub_peering_name       = "vnet-${each.key}-to-hub"
-  enable_workload_identity          = true
   monitor_interval                  = "5m"
   private_dns_zones                 = module.config.private_dns_zones
   cluster_vnet_resourcegroup        = data.azurerm_virtual_network.hub.resource_group_name
