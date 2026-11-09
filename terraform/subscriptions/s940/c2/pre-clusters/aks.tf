@@ -84,6 +84,7 @@ module "aks" {
   cluster_to_hub_resource_group     = lookup(module.config.cluster[each.key], "cluster_resource_group", module.config.cluster_resource_group)
   enable_ddos_protection_plan       = true
   enable_network_lock               = true
+  enable_workload_identity          = true
   network_lock_name                 = "vnet-${each.key}-CanNotDelete-Lock"
   private_dns_zone_link_name        = "${each.key}-link"
   monitor_data_collection_rule_name = "MSCI-${module.config.location}-${each.key}"
