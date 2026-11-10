@@ -18,11 +18,11 @@ normal=$(tput sgr0 2>/dev/null || true)
 
 # Required inputs
 
-if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3)$ ]]
+if [[ ${RADIX_ZONE:-} =~ ^(dev|playground|prod|c2|c3|extmon)$ ]]
 then
     echo "RADIX_ZONE: $RADIX_ZONE"    
 else
-    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3" >&2
+    echo "ERROR: RADIX_ZONE must be either dev|playground|prod|c2|c3|extmon" >&2
     exit 1
 fi
 
@@ -66,17 +66,17 @@ source "${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh"
 #######################################################################################
 ### Environment
 ###
-printf "\n%s► Read YAML configfile $RADIX_ZONE"
+printf "\n%s► Read YAML configfile $RADIX_ZONE\n"
 RADIX_ZONE_ENV=$(config_path $RADIX_ZONE)
-printf "\n%s► Read terraform variables and configuration"
-RADIX_RESOURCE_JSON=$(environment_json $RADIX_ZONE)
 RADIX_ZONE_YAML=$(cat <<EOF
 $(<$RADIX_ZONE_ENV)
 EOF
 )
+RADIX_ENVIRONMENT=$(yq '.environment' <<< "$RADIX_ZONE_YAML")
 AZ_SUBSCRIPTION_ID=$(yq '.backend.subscription_id' <<< "$RADIX_ZONE_YAML")
-AZ_RESOURCE_GROUP_CLUSTERS=$(jq -r .cluster_rg <<< "$RADIX_RESOURCE_JSON")
-AZ_RESOURCE_KEYVAULT_CONFIG=$(jq -r .keyvault_config <<< "$RADIX_RESOURCE_JSON")
+# Same naming rules as terraform/subscriptions/modules/config and modules/key-vault
+AZ_RESOURCE_GROUP_CLUSTERS=$(yq '.cluster_resource_group // ("clusters-" + .environment)' <<< "$RADIX_ZONE_YAML")
+AZ_RESOURCE_KEYVAULT_CONFIG="radix-config-${RADIX_ENVIRONMENT}"
 FLUX_PRIVATE_KEY_NAME="flux-github-deploy-key-private"
 
 #######################################################################################
