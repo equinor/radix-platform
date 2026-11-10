@@ -6,7 +6,7 @@ module "radix_id_external_secrets_operator_mi" {
   roleassignments = {
     kv_user = {
       role     = "Key Vault Secrets Officer"
-      scope_id = module.keyvault.vault_id
+      scope_id = module.base.keyvault_id
     }
   }
 }

@@ -8,7 +8,7 @@ module "acr" {
   acr_prefix_env        = module.config.environment
   vnet_resource_group   = module.config.vnet_resource_group
   subnet_id             = module.azurerm_virtual_network.azurerm_subnet_id
-  keyvault_name         = module.keyvault.vault_name
+  keyvault_name         = "radix-keyv-${module.config.environment}"
   dockercredentials_id  = "/subscriptions/${module.config.subscription}/resourceGroups/${module.config.common_resource_group}/providers/Microsoft.ContainerRegistry/registries/radix${module.config.environment}cache/credentialSets/radix-service-account-docker"
   radix_cr_cicd         = replace(replace(module.app_application_registration.cr_cicd.azuread_service_principal_id, "/servicePrincipals/", ""), "/", "")
   acr_retension_policy  = 1
