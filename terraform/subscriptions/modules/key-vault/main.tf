@@ -18,7 +18,7 @@ data "azurerm_role_definition" "this" {
 
 data "azurerm_key_vault_secret" "slack_webhook" {
   name         = "slack-webhook"
-  key_vault_id = azurerm_key_vault.config.id
+  key_vault_id = var.config_key_vault_id
 }
 
 data "azurerm_subnet" "subnet" {
@@ -102,29 +102,6 @@ resource "azurerm_private_dns_a_record" "this" {
 
 output "azurerm_key_vault_id" {
   value = azurerm_key_vault.this.id
-}
-
-################################################################################
-# Config Key Vault for Bootstrap
-################################################################################
-
-resource "azurerm_key_vault" "config" {
-  name                          = "radix-config-${var.environment}"
-  location                      = var.location
-  resource_group_name           = var.resource_group_name
-  tenant_id                     = data.azurerm_client_config.current.tenant_id
-  public_network_access_enabled = false
-  soft_delete_retention_days    = 30
-  purge_protection_enabled      = true
-  tags = {
-    IaC = "terraform"
-  }
-  network_acls {
-    bypass         = "AzureServices"
-    default_action = "Deny"
-    ip_rules       = []
-  }
-  sku_name = "standard"
 }
 
 ################################################################################

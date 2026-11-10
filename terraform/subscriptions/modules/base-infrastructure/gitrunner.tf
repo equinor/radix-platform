@@ -1,7 +1,7 @@
 module "keyvault_lock_creator_role" {
   source = "../roles"
 
-  name        = "Radix Key Vault Lock Creator ${coalesce(var.locker_environment, var.environment)}"
+  name        = var.keyvault_lock_creator_role_name
   scope       = var.subscription_id
   description = var.enable_resource_locks ? "Can read the main Key Vault and create or read locks, but cannot delete locks." : "Can read and update the main Key Vault configuration."
   actions = concat(
@@ -14,9 +14,9 @@ module "keyvault_lock_creator_role" {
 module "radix_id_gitrunner_locker" {
   source = "../userassignedidentity"
 
-  name                = "radix-id-gitrunner-locker-${coalesce(var.locker_environment, var.environment)}"
+  name                = var.gitrunner_locker_name
   location            = var.location
-  resource_group_name = var.common_resource_group_name
+  resource_group_name = var.gitrunner_locker_resource_group_name
   roleassignments = merge({
     storage_blob_data_reader = {
       role     = "Storage Blob Data Reader"
@@ -24,7 +24,7 @@ module "radix_id_gitrunner_locker" {
     }
     keyvault_lock_creator = {
       role     = module.keyvault_lock_creator_role.name
-      scope_id = var.key_vault_id
+      scope_id = module.keyvault.vault_id
     }
     }, var.enable_resource_locks ? {
     lock_operator = {
@@ -38,7 +38,7 @@ module "radix_id_gitrunner_locker" {
   } : {})
   federated_credentials = {
     github_radix-platform = {
-      name    = "radix-platform-env-${var.environment}"
+      name    = var.gitrunner_federated_credential_name
       issuer  = "https://token.actions.githubusercontent.com"
       subject = "repo:equinor/radix-platform:ref:refs/heads/master"
     }

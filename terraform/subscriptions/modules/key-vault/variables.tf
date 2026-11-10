@@ -60,10 +60,16 @@ variable "testzone" {
   default = false
 }
 
-variable "environment" {
+variable "subscription_contributor" {
   type = string
 }
 
-variable "subscription_contributor" {
-  type = string
+variable "config_key_vault_id" {
+  description = "ID of the bootstrap Key Vault."
+  type        = string
+}
+
+variable "config_key_vault_name" {
+  description = "Name of the bootstrap Key Vault."
+  type        = string
 }
