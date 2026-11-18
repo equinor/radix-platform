@@ -91,3 +91,37 @@ variable "clusters_resource_group_id" {
     error_message = "clusters_resource_group_id must be provided when enable_resource_locks is true."
   }
 }
+
+variable "enable_easyauth" {
+  description = "Create the Radix EasyAuth (Dex) infrastructure: app registration, Dex managed identity and Postgres server."
+  type        = bool
+  default     = false
+}
+
+variable "easyauth" {
+  description = "Radix EasyAuth settings. Required when enable_easyauth is true."
+  type = object({
+    app_display_name          = optional(string)
+    app_owners                = optional(list(string), [])
+    allowed_group_names       = optional(list(string), [])
+    environment               = optional(string)
+    resource_group_name       = optional(string)
+    vnet_resource_group       = optional(string)
+    postgres_admin_group_name = optional(string)
+    postgres_sku_name         = optional(string, "B_Standard_B1ms")
+  })
+  default = {}
+
+  validation {
+    condition = !var.enable_easyauth || (length(var.easyauth.allowed_group_names) > 0 && alltrue([
+      for v in [
+        var.easyauth.app_display_name,
+        var.easyauth.environment,
+        var.easyauth.resource_group_name,
+        var.easyauth.vnet_resource_group,
+        var.easyauth.postgres_admin_group_name,
+      ] : v != null
+    ]))
+    error_message = "easyauth.app_display_name, allowed_group_names, environment, resource_group_name, vnet_resource_group and postgres_admin_group_name must be set when enable_easyauth is true."
+  }
+}

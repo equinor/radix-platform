@@ -65,3 +65,25 @@ variable "optional_id_token_claims" {
   type    = list(string)
   default = []
 }
+
+variable "optional_access_token_claims" {
+  type    = list(string)
+  default = []
+}
+
+variable "optional_saml2_token_claims" {
+  type    = list(string)
+  default = []
+}
+
+variable "group_membership_claims" {
+  description = "Groups claim issued in tokens, e.g. [\"SecurityGroup\"] or [\"All\"]. null leaves it out of the configuration."
+  type        = list(string)
+  default     = null
+}
+
+variable "default_access_assignments" {
+  description = "Principals (key => object ID) assigned the Default Access app role. Used with app_role_assignment_required when the app has no custom roles."
+  type        = map(string)
+  default     = {}
+}

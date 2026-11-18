@@ -22,3 +22,18 @@ output "keyvault_config_name" {
   description = "Name of the zone's bootstrap Key Vault."
   value       = azurerm_key_vault.config.name
 }
+
+output "easyauth_app_client_id" {
+  description = "EasyAuth app registration client ID (radix-flux EASYAUTH_ENTRA_CLIENT_ID). null when EasyAuth is disabled."
+  value       = one(module.easyauth[*].app_client_id)
+}
+
+output "easyauth_dex_identity_client_id" {
+  description = "Dex managed identity client ID (radix-flux EASYAUTH_DEX_MI_CLIENT_ID). null when EasyAuth is disabled."
+  value       = one(module.easyauth[*].dex_identity_client_id)
+}
+
+output "easyauth_postgres_host" {
+  description = "Dex Postgres server FQDN (radix-flux EASYAUTH_POSTGRES_HOST). null when EasyAuth is disabled."
+  value       = one(module.easyauth[*].postgres_host)
+}
