@@ -18,12 +18,6 @@ module "easyauth_redirect_uris" {
   redirect_uris  = [for cluster, _ in module.clusters.oidc_issuer_url : "https://easyauth.${cluster}.${module.config.dns_zone_name}/callback"]
 }
 
-# The app registration already has Web redirect URIs from the manual setup. They are replaced on apply.
-import {
-  to = module.easyauth_redirect_uris.azuread_application_redirect_uris.this
-  id = "${data.azuread_application.easyauth.id}/redirectUris/Web"
-}
-
 # Dex signs in to Entra with clientAssertion
 module "easyauth_fedcred" {
   for_each       = module.clusters.oidc_issuer_url
