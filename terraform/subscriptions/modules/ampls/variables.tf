@@ -3,11 +3,6 @@ variable "ampls_name" {
   type        = string
 }
 
-variable "ampls_enabled" {
-  description = "Flag to enable or disable AMPLS."
-  type        = bool
-}
-
 variable "resource_group_name" {
   description = "Resource group containing the AMPLS instance."
   type        = string
@@ -19,8 +14,8 @@ variable "private_endpoint_name" {
   default     = null
 
   validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.private_endpoint_name) != "", false)
-    error_message = "private_endpoint_name must be provided when AMPLS is enabled."
+    condition     = try(trimspace(var.private_endpoint_name) != "", false)
+    error_message = "private_endpoint_name must be provided."
   }
 }
 
@@ -30,8 +25,8 @@ variable "location" {
   default     = null
 
   validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.location) != "", false)
-    error_message = "location must be provided when AMPLS is enabled."
+    condition     = try(trimspace(var.location) != "", false)
+    error_message = "location must be provided."
   }
 }
 
@@ -41,8 +36,8 @@ variable "subnet_id" {
   default     = null
 
   validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.subnet_id) != "", false)
-    error_message = "subnet_id must be provided when AMPLS is enabled."
+    condition     = try(trimspace(var.subnet_id) != "", false)
+    error_message = "subnet_id must be provided."
   }
 }
 
@@ -52,15 +47,15 @@ variable "private_dns_zones" {
   default     = {}
 
   validation {
-    condition = !var.ampls_enabled || alltrue([
+    condition = alltrue([
       for zone in [
         "privatelink.monitor.azure.com",
         "privatelink.oms.opinsights.azure.com",
         "privatelink.ods.opinsights.azure.com",
         "privatelink.agentsvc.azure-automation.net",
         "privatelink.blob.core.windows.net",
-      ] : contains(keys(var.private_dns_zones), zone)
+      ] : contains(keys(var.private_dns_zones), zone) && try(trimspace(var.private_dns_zones[zone].id) != "", false)
     ])
-    error_message = "The Azure Monitor private DNS zones must be provided when AMPLS is enabled."
+    error_message = "The Azure Monitor private DNS zones must be provided with IDs."
   }
 }

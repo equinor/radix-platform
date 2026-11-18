@@ -1,7 +1,6 @@
 module "ampls" {
+  count  = var.ampls_enabled ? 1 : 0
   source = "../ampls"
-
-  ampls_enabled         = var.ampls_enabled
   ampls_name            = var.ampls_name
   location              = var.location
   private_dns_zones     = var.virtual_network_private_dns_zone
