@@ -91,3 +91,59 @@ variable "clusters_resource_group_id" {
     error_message = "clusters_resource_group_id must be provided when enable_resource_locks is true."
   }
 }
+
+variable "ampls_name" {
+  description = "Name of the AMPLS instance."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.ampls_enabled || try(trimspace(var.ampls_name) != "", false)
+    error_message = "ampls_name must be provided when ampls_enabled is true."
+  }
+}
+
+variable "ampls_enabled" {
+  description = "Flag to enable or disable AMPLS."
+  type        = bool
+  default     = false
+}
+
+variable "ampls_private_endpoint_name" {
+  description = "Name of the AMPLS private endpoint."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = !var.ampls_enabled || try(trimspace(var.ampls_private_endpoint_name) != "", false)
+    error_message = "ampls_private_endpoint_name must be provided when AMPLS is enabled."
+  }
+}
+
+variable "virtual_network_private_dns_zone" {
+  description = "Private DNS zones available to the AMPLS private endpoint."
+  type        = map(any)
+  default     = {}
+}
+
+variable "virtual_network_subnet_id" {
+  description = "Subnet ID for the AMPLS private endpoint."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = !var.ampls_enabled || try(trimspace(var.virtual_network_subnet_id) != "", false)
+    error_message = "virtual_network_subnet_id must be provided when AMPLS is enabled."
+  }
+}
+
+variable "vnet_resource_group" {
+  description = "Resource group containing the virtual network."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = !var.ampls_enabled || try(trimspace(var.vnet_resource_group) != "", false)
+    error_message = "vnet_resource_group must be provided when ampls_enabled is true."
+  }
+}

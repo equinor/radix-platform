@@ -1,5 +1,8 @@
 module "base" {
   source                               = "../../../modules/base-infrastructure"
+  ampls_enabled                        = module.config.ampls_enabled
+  ampls_name                           = "radix-ampls-${module.config.environment}"
+  ampls_private_endpoint_name          = "pe-ampls-${module.config.environment}"
   gitrunner_federated_credential_name  = "radix-platform-env-${module.config.environment}"
   gitrunner_locker_name                = "radix-id-gitrunner-locker-${module.config.environment}"
   gitrunner_locker_resource_group_name = module.config.common_resource_group
@@ -14,6 +17,9 @@ module "base" {
   location                             = module.config.location
   subscription_id                      = data.azurerm_subscription.current.id
   terraform_state_storage_account_id   = data.azurerm_storage_account.terraform_state.id
+  virtual_network_private_dns_zone     = module.azurerm_virtual_network.data.private_dns_zone
+  virtual_network_subnet_id            = module.azurerm_virtual_network.azurerm_subnet_id
+  vnet_resource_group                  = module.resourcegroup_vnet.data.name
 }
 
 output "radix_id_gitrunner_locker_client_id" {

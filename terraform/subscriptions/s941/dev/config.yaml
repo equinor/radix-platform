@@ -1,4 +1,5 @@
 environment: "dev"
+ampls_enabled: true
 flux_folder: "development"
 cluster_type: "development"
 dnsZone:

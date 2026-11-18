@@ -9,19 +9,18 @@ variable "private_dns_zones" {
     resolution_policy = optional(string, "Default") # Valid values: Default, NxDomainRedirect
   }))
   default = {
-    "private.radix.equinor.com"               = {}
-    "privatelink.azconfig.io"                 = {}
-    "privatelink.azurecr.io"                  = {}
-    "privatelink.blob.core.windows.net"       = {}
-    "privatelink.cassandra.cosmos.azure.com"  = {}
-    "privatelink.cognitiveservices.azure.com" = {}
-    "privatelink.database.windows.net"        = { resolution_policy = "NxDomainRedirect" }
-    "privatelink.dfs.core.windows.net"        = {}
-    "privatelink.documents.azure.com"         = {}
-    "privatelink.file.core.windows.net"       = {}
-    "privatelink.gremlin.cosmos.azure.com"    = {}
-    "privatelink.mariadb.database.azure.com"  = {}
-    # "privatelink.monitor.azure.com"             = {} # Read this first: https://techcommunity.microsoft.com/t5/fasttrack-for-azure/how-azure-monitor-s-implementation-of-private-link-differs-from/ba-p/3608938
+    "private.radix.equinor.com"                   = {}
+    "privatelink.azconfig.io"                     = {}
+    "privatelink.azurecr.io"                      = {}
+    "privatelink.blob.core.windows.net"           = {}
+    "privatelink.cassandra.cosmos.azure.com"      = {}
+    "privatelink.cognitiveservices.azure.com"     = {}
+    "privatelink.database.windows.net"            = { resolution_policy = "NxDomainRedirect" }
+    "privatelink.dfs.core.windows.net"            = {}
+    "privatelink.documents.azure.com"             = {}
+    "privatelink.file.core.windows.net"           = {}
+    "privatelink.gremlin.cosmos.azure.com"        = {}
+    "privatelink.mariadb.database.azure.com"      = {}
     "privatelink.mongo.cosmos.azure.com"          = {}
     "privatelink.mysql.database.azure.com"        = {}
     "privatelink.openai.azure.com"                = {}
@@ -47,7 +46,14 @@ variable "private_dns_zones" {
 }
 
 locals {
-  config = yamldecode(file(var.configfile))
+  config        = yamldecode(file(var.configfile))
+  ampls_enabled = lookup(local.config, "ampls_enabled", false)
+  ampls_private_dns_zones = {
+    "privatelink.monitor.azure.com"             = {}
+    "privatelink.oms.opinsights.azure.com"      = {}
+    "privatelink.ods.opinsights.azure.com"      = {}
+    "privatelink.agentsvc.azure-automation.net" = {}
+  }
 }
 
 output "environment" {
@@ -99,7 +105,15 @@ output "grafana_ar_reader_display_name" {
 }
 
 output "private_dns_zones" {
-  value = var.private_dns_zones
+  value = merge(
+    var.private_dns_zones,
+    local.ampls_enabled ? local.ampls_private_dns_zones : {}
+  )
+}
+
+output "ampls_enabled" {
+  description = "Whether Azure Monitor Private Link is enabled for this environment."
+  value       = local.ampls_enabled
 }
 
 output "radix_log_api_mi_name" {

@@ -22,3 +22,13 @@ output "keyvault_config_name" {
   description = "Name of the zone's bootstrap Key Vault."
   value       = azurerm_key_vault.config.name
 }
+
+output "ampls_id" {
+  description = "ID of the shared AMPLS instance, or null when disabled."
+  value       = module.ampls.id
+}
+
+output "ampls_name" {
+  description = "Name of the shared AMPLS instance, or null when disabled."
+  value       = module.ampls.name
+}
