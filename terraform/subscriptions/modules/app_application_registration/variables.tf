@@ -8,7 +8,12 @@ variable "service_management_reference" {
 
 variable "internal_notes" {
   type    = string
-  default = ""
+  default = null
+}
+
+variable "homepage_url" {
+  type    = string
+  default = null
 }
 
 variable "radixowners" {

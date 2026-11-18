@@ -6,6 +6,7 @@ resource "azuread_application_registration" "this" {
   requested_access_token_version     = var.token_version
   implicit_id_token_issuance_enabled = var.implicit_id_token_issuance_enabled
   group_membership_claims            = var.group_membership_claims
+  homepage_url                       = var.homepage_url
 }
 
 resource "azuread_application_app_role" "this" {

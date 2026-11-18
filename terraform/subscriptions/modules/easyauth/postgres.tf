@@ -49,18 +49,11 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ad
   principal_type      = "Group"
 }
 
-# Dex runs its own schema migrations, so its identity is a server administrator.
-# The login name used by Dex is the identity name.
-resource "azurerm_postgresql_flexible_server_active_directory_administrator" "dex" {
-  server_name         = azurerm_postgresql_flexible_server.this.name
-  resource_group_name = azurerm_postgresql_flexible_server.this.resource_group_name
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  object_id           = module.dex_identity.principal_id
-  principal_name      = module.dex_identity.name
-  principal_type      = "ServicePrincipal"
-
-  # The server rejects concurrent administrator operations
-  depends_on = [azurerm_postgresql_flexible_server_active_directory_administrator.admin_group]
+# Dex runs its own schema migrations, so its identity gets admin rights through the admin group.
+# Group members log in with the group name as the Postgres user name.
+resource "azuread_group_member" "dex" {
+  group_object_id  = data.azuread_group.postgres_admin.object_id
+  member_object_id = module.dex_identity.principal_id
 }
 
 data "azurerm_subnet" "private_links" {
