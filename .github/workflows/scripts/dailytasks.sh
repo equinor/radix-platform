@@ -28,11 +28,6 @@ if [[ -z "$TASK" ]]; then
     exit 1
 fi
 
-if [[ -z "$SLACK_WEBHOOK_URL" ]]; then
-    echo "ERROR: Please provide Slack Webhook URL ./dailytasks.sh" >&2
-    exit 1
-fi
-
 RADIX_PLATFORM_REPOSITORY_PATH=$(git rev-parse --show-toplevel)
 source ${RADIX_PLATFORM_REPOSITORY_PATH}/scripts/utility/util.sh
 
@@ -67,11 +62,6 @@ function stopcluster() {
                 --resource-group "${RESOURCE_GROUP}" \
                 --subscription "${DEV_SUBSCRIPTION}" \
                 --no-wait
-
-            curl -s \
-                -X POST \
-                -H 'Content-type: application/json' \
-                --data '{"text":"GitHub Action: Stopping cluster '"${CLUSTER_NAME}"'"}' "${SLACK_WEBHOOK_URL}" >/dev/null
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
 }
@@ -90,11 +80,6 @@ function startcluster() {
                 --resource-group "${RESOURCE_GROUP}" \
                 --subscription "${DEV_SUBSCRIPTION}" \
                 --no-wait
-
-            curl -s \
-                -X POST \
-                -H 'Content-type: application/json' \
-                --data '{"text":"GitHub Action: Starting cluster '"${CLUSTER_NAME}"'"}' "${SLACK_WEBHOOK_URL}" >/dev/null
         fi
     done < <(printf "%s" "${CLUSTERS}" | jq -c '.[].k8s[]')
 }
