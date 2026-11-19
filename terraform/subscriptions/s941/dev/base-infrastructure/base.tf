@@ -24,7 +24,7 @@ module "base" {
   easyauth = {
     app_display_name          = "Radix EasyAuth Dev"
     app_owners                = data.azuread_group.radix_az.members
-    allowed_group_names       = ["Equinor All"]
+    allowed_group_objectids   = ["a636269f-a967-45b2-bb4e-3e02dbb624a2"] # Equinor All group object ID
     dex_mi_name               = "radix-id-easyauth-dex-${module.config.environment}"
     postgres_server_name      = "psql-radix-easyauth-${module.config.environment}"
     postgres_admin_group_name = data.azuread_group.sql_admin.display_name
