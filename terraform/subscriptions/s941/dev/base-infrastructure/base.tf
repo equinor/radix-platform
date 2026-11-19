@@ -30,6 +30,7 @@ module "base" {
     postgres_admin_group_name = data.azuread_group.sql_admin.display_name
     postgres_sku_name         = "B_Standard_B1ms"
   }
+  depends_on = [module.azurerm_virtual_network]
 }
 
 output "easyauth_app_client_id" {
