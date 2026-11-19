@@ -14,16 +14,16 @@ resource "azurerm_log_analytics_workspace" "this" {
   }
 }
 
-output "workspace_id" {
-  value = azurerm_log_analytics_workspace.this.id
-
-}
-
 resource "azurerm_monitor_private_link_scoped_service" "this" {
   count = var.ampls_enabled ? 1 : 0
 
   name                = var.workspace_name
-  resource_group_name = var.vnet_resource_group
+  resource_group_name = var.ampls_resource_group
   scope_name          = var.ampls_scope_name
   linked_resource_id  = azurerm_log_analytics_workspace.this.id
 }
+
+output "workspace_id" {
+  value = azurerm_log_analytics_workspace.this.id
+}
+

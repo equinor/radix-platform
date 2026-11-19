@@ -6,7 +6,7 @@ module "loganalytics" {
   retention_in_days   = 30
   ampls_enabled       = module.config.ampls_enabled
   ampls_scope_name    = module.base.ampls_name
-  vnet_resource_group = module.resourcegroup_vnet.data.name
+  ampls_resource_group = module.config.common_resource_group
 }
 
 module "loganalytics_containers" {
@@ -17,5 +17,5 @@ module "loganalytics_containers" {
   retention_in_days   = 30
   ampls_enabled       = module.config.ampls_enabled
   ampls_scope_name    = module.base.ampls_name
-  vnet_resource_group = module.resourcegroup_vnet.data.name
+  ampls_resource_group = module.config.common_resource_group
 }

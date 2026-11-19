@@ -2,6 +2,7 @@ module "base" {
   source                               = "../../../modules/base-infrastructure"
   ampls_enabled                        = module.config.ampls_enabled
   ampls_name                           = "radix-ampls-${module.config.environment}"
+  ampls_resource_group                 = module.config.common_resource_group
   ampls_private_endpoint_name          = "pe-ampls-${module.config.environment}"
   gitrunner_federated_credential_name  = "radix-platform-env-${module.config.environment}"
   gitrunner_locker_name                = "radix-id-gitrunner-locker-${module.config.environment}"

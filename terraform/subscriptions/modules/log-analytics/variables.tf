@@ -58,13 +58,13 @@ variable "ampls_scope_name" {
   }
 }
 
-variable "vnet_resource_group" {
+variable "ampls_resource_group" {
   description = "Resource group containing the AMPLS instance."
   type        = string
   default     = null
 
   validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.vnet_resource_group) != "", false)
-    error_message = "vnet_resource_group must be provided when ampls_enabled is true."
+    condition     = !var.ampls_enabled || try(trimspace(var.ampls_resource_group) != "", false)
+    error_message = "ampls_resource_group must be provided when ampls_enabled is true."
   }
 }

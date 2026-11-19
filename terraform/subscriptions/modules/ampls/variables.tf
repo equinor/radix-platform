@@ -8,6 +8,11 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "private_endpoint_resource_group_name" {
+  description = "Resource group containing the AMPLS private endpoint."
+  type        = string
+}
+
 variable "private_endpoint_name" {
   description = "Name of the private endpoint for AMPLS."
   type        = string

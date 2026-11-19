@@ -142,16 +142,6 @@ variable "virtual_network_subnet_id" {
   }
 }
 
-variable "vnet_resource_group" {
-  description = "Resource group containing the virtual network."
-  type        = string
-  default     = null
-
-  validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.vnet_resource_group) != "", false)
-    error_message = "vnet_resource_group must be provided when ampls_enabled is true."
-  }
-}
 variable "easyauth" {
   description = "Radix EasyAuth settings. EasyAuth (app registration, Dex managed identity and Postgres server) is created only when set."
   type = object({
@@ -171,4 +161,10 @@ variable "easyauth" {
     condition     = var.easyauth == null || length(try(var.easyauth.allowed_group_objectids, [])) > 0
     error_message = "easyauth.allowed_group_objectids must contain at least one group."
   }
+}
+
+variable "ampls_resource_group" {
+  description = "Resource group containing the AMPLS instance."
+  type        = string
+  default     = null
 }

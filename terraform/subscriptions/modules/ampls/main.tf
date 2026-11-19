@@ -24,7 +24,7 @@ resource "azurerm_monitor_private_link_scope" "this" {
 
 resource "azurerm_private_endpoint" "this" {
   name                = var.private_endpoint_name
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.private_endpoint_resource_group_name
   location            = var.location
   subnet_id           = var.subnet_id
 
