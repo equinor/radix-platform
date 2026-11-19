@@ -15,8 +15,8 @@ locals {
 resource "azurerm_monitor_private_link_scope" "this" {
   name                  = var.ampls_name
   resource_group_name   = var.resource_group_name
-  ingestion_access_mode = "PrivateOnly" # Switch to "PrivateOnly" after testing - Valid values are "Open" or "PrivateOnly"
-  query_access_mode     = "PrivateOnly" # Switch to "PrivateOnly" after testing - Valid values are "Open" or "PrivateOnly"
+  ingestion_access_mode = "Open" # Switch to "PrivateOnly" after testing - Valid values are "Open" or "PrivateOnly"
+  query_access_mode     = "Open" # Switch to "PrivateOnly" after testing - Valid values are "Open" or "PrivateOnly"
   tags = {
     IaC = "terraform"
   }
