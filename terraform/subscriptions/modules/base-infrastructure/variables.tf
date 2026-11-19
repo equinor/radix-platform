@@ -23,6 +23,16 @@ variable "location" {
   type        = string
 }
 
+variable "common_resource_group" {
+  description = "Common resource group name for shared resources."
+  type        = string
+}
+
+variable "vnet_resource_group" {
+  description = "Resource group containing the virtual network."
+  type        = string
+}
+
 variable "managed_resource_group_names" {
   description = "Additional resource groups managed by this module."
   type        = list(string)
@@ -63,11 +73,6 @@ variable "enable_resource_locks" {
   description = "Grant Key Vault lock creation and cluster resource group lock management."
   type        = bool
   default     = false
-}
-
-variable "keyvault_vnet_resource_group" {
-  description = "Virtual network resource group for the Key Vault private endpoint."
-  type        = string
 }
 
 variable "keyvault_subscription_contributor" {
@@ -145,5 +150,25 @@ variable "vnet_resource_group" {
   validation {
     condition     = !var.ampls_enabled || try(trimspace(var.vnet_resource_group) != "", false)
     error_message = "vnet_resource_group must be provided when ampls_enabled is true."
+  }
+}
+variable "easyauth" {
+  description = "Radix EasyAuth settings. EasyAuth (app registration, Dex managed identity and Postgres server) is created only when set."
+  type = object({
+    app_display_name          = string
+    allowed_group_names       = list(string)
+    dex_mi_name               = string
+    app_owners                = list(string)
+    postgres_server_name      = string
+    postgres_admin_group_name = string
+    postgres_sku_name         = optional(string, "B_Standard_B1ms")
+    postgres_version          = optional(string, "17")
+    postgres_storage_mb       = optional(number, 32768)
+  })
+  default = null
+
+  validation {
+    condition     = var.easyauth == null || length(try(var.easyauth.allowed_group_names, [])) > 0
+    error_message = "easyauth.allowed_group_names must contain at least one group."
   }
 }

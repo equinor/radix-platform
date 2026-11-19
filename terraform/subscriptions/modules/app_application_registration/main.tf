@@ -5,6 +5,8 @@ resource "azuread_application_registration" "this" {
   notes                              = var.internal_notes
   requested_access_token_version     = var.token_version
   implicit_id_token_issuance_enabled = var.implicit_id_token_issuance_enabled
+  group_membership_claims            = var.group_membership_claims
+  homepage_url                       = var.homepage_url
 }
 
 resource "azuread_application_app_role" "this" {
@@ -25,6 +27,13 @@ resource "azuread_app_role_assignment" "this" {
 }
 
 
+resource "azuread_app_role_assignment" "default_access" {
+  for_each            = var.default_access_assignments
+  principal_object_id = each.value
+  resource_object_id  = azuread_service_principal.this.id
+  app_role_id         = "00000000-0000-0000-0000-000000000000" # Default Access
+}
+
 resource "azuread_application_owner" "this" {
   for_each        = toset(var.radixowners)
   application_id  = azuread_application_registration.this.id
@@ -32,12 +41,24 @@ resource "azuread_application_owner" "this" {
 }
 
 resource "azuread_application_optional_claims" "this" {
-  count          = length(var.optional_id_token_claims) > 0 ? 1 : 0
+  count          = length(concat(var.optional_id_token_claims, var.optional_access_token_claims, var.optional_saml2_token_claims)) > 0 ? 1 : 0
   application_id = azuread_application_registration.this.id
   dynamic "id_token" {
     for_each = toset(var.optional_id_token_claims)
     content {
       name = id_token.value
+    }
+  }
+  dynamic "access_token" {
+    for_each = toset(var.optional_access_token_claims)
+    content {
+      name = access_token.value
+    }
+  }
+  dynamic "saml2_token" {
+    for_each = toset(var.optional_saml2_token_claims)
+    content {
+      name = saml2_token.value
     }
   }
 }

@@ -26,7 +26,7 @@ module "keyvault" {
   location                 = var.location
   vault_name               = var.keyvault_name
   resource_group_name      = var.keyvault_resource_group_name
-  vnet_resource_group      = var.keyvault_vnet_resource_group
+  vnet_resource_group      = var.vnet_resource_group
   kv_secrets_user_id       = var.keyvault_secrets_user_id
   subscription_contributor = var.keyvault_subscription_contributor
   config_key_vault_id      = azurerm_key_vault.config.id
