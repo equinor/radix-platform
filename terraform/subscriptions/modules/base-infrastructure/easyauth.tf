@@ -6,7 +6,7 @@ module "easyauth" {
   resource_group_name       = var.common_resource_group
   app_display_name          = var.easyauth.app_display_name
   app_owners                = var.easyauth.app_owners
-  allowed_group_names       = var.easyauth.allowed_group_names
+  allowed_group_objectids   = var.easyauth.allowed_group_objectids
   dex_mi_name               = var.easyauth.dex_mi_name
   vnet_resource_group       = var.vnet_resource_group
   postgres_server_name      = var.easyauth.postgres_server_name

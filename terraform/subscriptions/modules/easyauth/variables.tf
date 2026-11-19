@@ -31,7 +31,7 @@ variable "app_owners" {
   type        = list(string)
 }
 
-variable "allowed_group_names" {
+variable "allowed_group_objectids" {
   description = "Groups assigned to the app registration. Only members can sign in."
   type        = list(string)
 }

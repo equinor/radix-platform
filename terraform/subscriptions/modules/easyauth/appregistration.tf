@@ -1,9 +1,3 @@
-data "azuread_group" "allowed" {
-  for_each         = toset(var.allowed_group_names)
-  display_name     = each.value
-  security_enabled = true
-}
-
 module "app" {
   source = "../app_application_registration"
 
@@ -12,7 +6,7 @@ module "app" {
   homepage_url                 = "https://radix.equinor.com"
   radixowners                  = var.app_owners
   app_role_assignment_required = true
-  default_access_assignments   = { for name, group in data.azuread_group.allowed : name => group.object_id }
+  default_access_assignments   = { for groupid in var.allowed_group_objectids : groupid => groupid }
   group_membership_claims      = ["All"]
   optional_id_token_claims     = ["groups"]
   optional_access_token_claims = ["groups"]
