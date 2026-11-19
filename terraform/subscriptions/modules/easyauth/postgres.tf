@@ -6,12 +6,12 @@ data "azuread_group" "postgres_admin" {
 }
 
 resource "azurerm_postgresql_flexible_server" "this" {
-  name                          = "psql-radix-easyauth-${var.environment}"
+  name                          = var.postgres_server_name
   location                      = var.location
   resource_group_name           = var.resource_group_name
-  version                       = "17"
+  version                       = var.postgres_version
   sku_name                      = var.postgres_sku_name
-  storage_mb                    = 32768
+  storage_mb                    = var.postgres_storage_mb
   auto_grow_enabled             = true
   backup_retention_days         = 7
   geo_redundant_backup_enabled  = false

@@ -12,7 +12,8 @@ module "base" {
   keyvault_resource_group_name         = module.config.common_resource_group
   keyvault_secrets_user_id             = module.acr.azurerm_container_registry_credential_id
   keyvault_subscription_contributor    = module.config.subscription_contributor
-  keyvault_vnet_resource_group         = module.config.vnet_resource_group
+  vnet_resource_group                  = module.config.vnet_resource_group
+  common_resource_group                = module.config.common_resource_group
   location                             = module.config.location
   managed_resource_group_names         = ["common-${module.config.new_environment}"] # Added managed resource group "common-c1" for the new environment
   subscription_id                      = data.azurerm_subscription.current.id

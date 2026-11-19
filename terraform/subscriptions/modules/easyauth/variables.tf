@@ -1,8 +1,3 @@
-variable "environment" {
-  description = "Radix environment name, used in resource names (e.g. dev, playground)."
-  type        = string
-}
-
 variable "location" {
   type = string
 }
@@ -21,10 +16,19 @@ variable "app_display_name" {
   type = string
 }
 
+variable "dex_mi_name" {
+  description = "Managed identity name for Dex."
+  type        = string
+}
+
+variable "postgres_server_name" {
+  description = "Name of the Postgres flexible server."
+  type        = string
+}
+
 variable "app_owners" {
   description = "Object IDs of the app registration owners."
   type        = list(string)
-  default     = []
 }
 
 variable "allowed_group_names" {
@@ -40,4 +44,14 @@ variable "postgres_admin_group_name" {
 variable "postgres_sku_name" {
   description = "Postgres flexible server SKU, e.g. B_Standard_B1ms."
   type        = string
+}
+
+variable "postgres_version" {
+  description = "Postgres major version, e.g. 17."
+  type        = string
+}
+
+variable "postgres_storage_mb" {
+  description = "Initial Postgres storage in MB. Storage grows automatically."
+  type        = number
 }

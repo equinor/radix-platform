@@ -10,19 +10,18 @@ module "base" {
   keyvault_resource_group_name         = module.config.common_resource_group
   keyvault_secrets_user_id             = module.acr.azurerm_container_registry_credential_id
   keyvault_subscription_contributor    = module.config.subscription_contributor
-  keyvault_vnet_resource_group         = module.config.vnet_resource_group
+  vnet_resource_group                  = module.config.vnet_resource_group
+  common_resource_group                = module.config.common_resource_group
   location                             = module.config.location
   subscription_id                      = data.azurerm_subscription.current.id
   terraform_state_storage_account_id   = data.azurerm_storage_account.terraform_state.id
 
-  enable_easyauth = true
   easyauth = {
     app_display_name          = "Radix EasyAuth Dev"
     app_owners                = data.azuread_group.radix_az.members
     allowed_group_names       = ["Equinor All"]
-    environment               = module.config.environment
-    resource_group_name       = module.config.common_resource_group
-    vnet_resource_group       = module.config.vnet_resource_group
+    dex_mi_name               = "radix-id-easyauth-dex-${module.config.environment}"
+    postgres_server_name      = "psql-radix-easyauth-${module.config.environment}"
     postgres_admin_group_name = data.azuread_group.sql_admin.display_name
     postgres_sku_name         = "B_Standard_B1ms"
   }
