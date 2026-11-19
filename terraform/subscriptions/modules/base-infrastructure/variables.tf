@@ -101,7 +101,7 @@ variable "easyauth" {
   description = "Radix EasyAuth settings. EasyAuth (app registration, Dex managed identity and Postgres server) is created only when set."
   type = object({
     app_display_name          = string
-    allowed_group_names       = list(string)
+    allowed_group_objectids   = list(string)
     dex_mi_name               = string
     app_owners                = list(string)
     postgres_server_name      = string
@@ -113,7 +113,7 @@ variable "easyauth" {
   default = null
 
   validation {
-    condition     = var.easyauth == null || length(try(var.easyauth.allowed_group_names, [])) > 0
-    error_message = "easyauth.allowed_group_names must contain at least one group."
+    condition     = var.easyauth == null || length(try(var.easyauth.allowed_group_objectids, [])) > 0
+    error_message = "easyauth.allowed_group_objectids must contain at least one group."
   }
 }
