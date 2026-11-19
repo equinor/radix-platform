@@ -23,6 +23,15 @@ output "keyvault_config_name" {
   value       = azurerm_key_vault.config.name
 }
 
+output "ampls_id" {
+  description = "ID of the shared AMPLS instance, or null when disabled."
+  value       = one(module.ampls[*].id)
+}
+
+output "ampls_name" {
+  description = "Name of the shared AMPLS instance, or null when disabled."
+  value       = one(module.ampls[*].name)
+}
 output "easyauth_app_client_id" {
   description = "EasyAuth app registration client ID (radix-flux EASYAUTH_ENTRA_CLIENT_ID). null when EasyAuth is disabled."
   value       = one(module.easyauth[*].app_client_id)

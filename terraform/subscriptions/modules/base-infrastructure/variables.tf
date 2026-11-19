@@ -97,6 +97,51 @@ variable "clusters_resource_group_id" {
   }
 }
 
+variable "ampls_name" {
+  description = "Name of the AMPLS instance."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.ampls_enabled || try(trimspace(var.ampls_name) != "", false)
+    error_message = "ampls_name must be provided when ampls_enabled is true."
+  }
+}
+
+variable "ampls_enabled" {
+  description = "Flag to enable or disable AMPLS."
+  type        = bool
+  default     = false
+}
+
+variable "ampls_private_endpoint_name" {
+  description = "Name of the AMPLS private endpoint."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = !var.ampls_enabled || try(trimspace(var.ampls_private_endpoint_name) != "", false)
+    error_message = "ampls_private_endpoint_name must be provided when AMPLS is enabled."
+  }
+}
+
+variable "virtual_network_private_dns_zone" {
+  description = "Private DNS zones available to the AMPLS private endpoint."
+  type        = map(any)
+  default     = {}
+}
+
+variable "virtual_network_subnet_id" {
+  description = "Subnet ID for the AMPLS private endpoint."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = !var.ampls_enabled || try(trimspace(var.virtual_network_subnet_id) != "", false)
+    error_message = "virtual_network_subnet_id must be provided when AMPLS is enabled."
+  }
+}
+
 variable "easyauth" {
   description = "Radix EasyAuth settings. EasyAuth (app registration, Dex managed identity and Postgres server) is created only when set."
   type = object({
@@ -116,4 +161,10 @@ variable "easyauth" {
     condition     = var.easyauth == null || length(try(var.easyauth.allowed_group_objectids, [])) > 0
     error_message = "easyauth.allowed_group_objectids must contain at least one group."
   }
+}
+
+variable "ampls_resource_group" {
+  description = "Resource group containing the AMPLS instance."
+  type        = string
+  default     = null
 }
