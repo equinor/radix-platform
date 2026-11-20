@@ -388,17 +388,22 @@ echo "Making sure that Storage Account container $DEST_CLUSTER exists on $STORAG
 CONTAINER=$(az storage container create --name $DEST_CLUSTER --account-name $STORAGACCOUNT --auth-mode login --only-show-errors)
 echo ""
 # echo "You need to create a pull request to make ready for new cluster"
-printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
-git checkout -b $DEST_CLUSTER > /dev/null
+if git show-ref --verify --quiet "refs/heads/$DEST_CLUSTER"; then
+    printf "%s► Switching to existing branch: "$DEST_CLUSTER"\n"
+    git checkout "$DEST_CLUSTER" > /dev/null
+else
+    printf "%s► Adding a new branch: "$DEST_CLUSTER"\n"
+    git checkout -b "$DEST_CLUSTER" > /dev/null
+fi
 printf "%s► Modify %s%s\n" "${grn}" "${RADIX_PLATFORM_REPOSITORY_PATH}/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/config.yaml to reflect the new cluster" "${normal}"
 echo "DO NOT alter the 'activecluster' value yet.."
 echo "Press 'space' to continue"
 read -r -s -d ' '
 printf "Do some terraform tasks..."
-terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init
+terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" init || exit 1
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply || exit 1
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/pre-clusters" apply || exit 1
-terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init
+terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" init || exit 1
 terraform -chdir="$RADIX_PLATFORM_REPOSITORY_PATH/terraform/subscriptions/$AZ_SUBSCRIPTION_NAME/$RADIX_ZONE/post-clusters" apply || exit 1
 
 get_credentials "$AZ_RESOURCE_GROUP_CLUSTERS" "$DEST_CLUSTER" >/dev/null

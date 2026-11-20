@@ -25,6 +25,8 @@ The following applications tools/applications are required to run the platform s
 * [flux](https://fluxcd.io/docs/cmd/)
 * [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility?view=sql-server-ver15)
 * [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli#install-cli)
+* [cilium](https://cilium.io/)
+* [colordiff](https://www.colordiff.org/)
 
 ## 1. Install and update shared infrastructure
 
