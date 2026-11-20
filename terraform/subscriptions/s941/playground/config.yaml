@@ -1,4 +1,5 @@
 environment: "playground"
+ampls_enabled: true
 flux_folder: "playground"
 cluster_type: "playground"
 dnsZone:
