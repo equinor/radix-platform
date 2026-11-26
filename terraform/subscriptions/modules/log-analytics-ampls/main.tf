@@ -18,6 +18,10 @@ resource "azurerm_log_analytics_workspace" "this" {
   local_authentication_disabled      = true
   allow_resource_only_permissions    = false
   reservation_capacity_in_gb_per_day = var.acr_reservation
+  identity {
+    type = "SystemAssigned"
+  }
+
   tags = {
     IaC = "terraform"
   }

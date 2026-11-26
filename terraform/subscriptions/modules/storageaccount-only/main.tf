@@ -22,8 +22,6 @@ resource "azurerm_storage_account" "storageaccount" {
   default_to_oauth_authentication = true
   shared_access_key_enabled       = false
   public_network_access_enabled   = var.public_network_access
-
-  # Required for authenticated intra-perimeter access between NSP-associated resources.
   identity {
     type = "SystemAssigned"
   }

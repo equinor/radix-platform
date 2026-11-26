@@ -27,7 +27,8 @@ the module that manages the resource, never in the environment root.
 the AMPLS scoped service. Without AMPLS the workspace must stay reachable over
 the internet, so the perimeter association is created only when
 `ampls_enabled` is true. The module requires
-`network_security_perimeter_profile_id`.
+`network_security_perimeter_profile_id`. Every workspace has a system-assigned
+managed identity, which Azure requires for authenticated intra-perimeter access.
 
 ### Storage accounts
 
