@@ -37,6 +37,8 @@ policy. The wrapper adds the perimeter association and sets the account's
 public network access to `SecuredByPerimeter` through `azapi_update_resource`,
 because AzureRM < 5.5 only supports `Enabled`/`Disabled`; `storageaccount-only`
 therefore ignores changes to `public_network_access_enabled`.
+Every account has a system-assigned managed identity, which Azure requires for
+authenticated intra-perimeter access between associated resources.
 
 `storageaccount` requires AzureRM `>= 4.60.0, < 5.0.0` and `azapi >= 2.7.0`;
 `storageaccount-only` requires AzureRM `>= 3.110.0, < 5.0.0`.
