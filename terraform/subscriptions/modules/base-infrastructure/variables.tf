@@ -168,3 +168,24 @@ variable "ampls_resource_group" {
   type        = string
   default     = null
 }
+
+variable "network_security_perimeter_name" {
+  description = "Name of the network security perimeter."
+  type        = string
+  default     = null
+}
+
+variable "network_security_perimeter_resource_group_name" {
+  description = "Resource group containing the network security perimeter."
+  type        = string
+  default     = null
+}
+
+variable "network_security_perimeter_associations" {
+  description = "Resources associated with this zone's network security perimeter. All associations are Enforced."
+  type = map(object({
+    name        = string
+    resource_id = string
+  }))
+  default = {}
+}

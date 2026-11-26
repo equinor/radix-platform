@@ -1,4 +1,5 @@
 environment: "platform"
+ampls_enabled: false
 new_environment: "c1"
 cluster_resource_group: "clusters-c1" # overrides default clusters-${environment}
 flux_folder: "production"

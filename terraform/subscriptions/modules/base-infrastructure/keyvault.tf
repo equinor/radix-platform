@@ -21,6 +21,13 @@ resource "azurerm_key_vault" "config" {
   depends_on = [module.common_resource_group]
 }
 
+resource "azurerm_network_security_perimeter_association" "config_key_vault" {
+  name                                  = var.network_security_perimeter_name
+  access_mode                           = "Enforced"
+  network_security_perimeter_profile_id = module.network_security_perimeter.profile_id
+  resource_id                           = azurerm_key_vault.config.id
+}
+
 module "keyvault" {
   source                   = "../key-vault"
   location                 = var.location
@@ -32,4 +39,5 @@ module "keyvault" {
   config_key_vault_id      = azurerm_key_vault.config.id
   config_key_vault_name    = azurerm_key_vault.config.name
 
+  network_security_perimeter_profile_id = module.network_security_perimeter.profile_id
 }
