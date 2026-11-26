@@ -18,10 +18,11 @@ The `log-analytics` module requires the shared perimeter profile ID:
 network_security_perimeter_profile_id = module.base.network_security_perimeter_profile_id
 ```
 
-It always creates one association using `workspace_name` and `Enforced` mode,
-without `count` or `for_each`. The shared `log-analytics-ampls` module manages
-the workspace and AMPLS link. Extmon uses it directly, without an association,
-while other environments use it through `log-analytics`.
+It creates one `Enforced` association named after `workspace_name` only when
+`ampls_enabled` is true; without AMPLS the workspace is reachable over the
+internet and must not be in the perimeter. The shared `log-analytics-ampls`
+module manages the workspace and AMPLS link. Extmon uses it directly, without
+an association, while other environments use it through `log-analytics`.
 Existing UUID-suffixed workspace associations are intentionally replaced.
 
 The `storageaccount` module always creates one association without `count` or
@@ -53,6 +54,8 @@ The shared state accounts (`s940radixinfra` / `s941radixinfra`) are
 intentionally not associated with a perimeter through Terraform; their
 associations are managed manually.
 
-The module-address migrations have been applied in dev, playground, c2, c3 and
-prod, and their `moved` and `import` blocks have been removed. Existing states
-must use the current module addresses. Review the plan before applying.
+The `log-analytics` module carries `moved` blocks for the workspace and AMPLS
+link, which were previously declared directly in the module and now live in the
+nested `log-analytics-ampls` module. They are no-ops for states that have
+already been migrated and can be removed once every environment has applied
+this change. Review the plan before applying.

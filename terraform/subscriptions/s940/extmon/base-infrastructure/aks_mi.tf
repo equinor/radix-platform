@@ -4,10 +4,10 @@ module "radix_id_akskubelet_mi" {
   location            = module.config.location
   resource_group_name = module.resourcegroup_common.data.name
   roleassignments = {
-    arcpull = {
-      role     = "AcrPull"
-      scope_id = module.acr.azurerm_container_registry_id
-    }
+    # arcpull = {
+    #   role     = "AcrPull"
+    #   scope_id = module.acr.azurerm_container_registry_id
+    # }
     arccache = {
       role     = "AcrPull"
       scope_id = data.azurerm_container_registry.cache.id

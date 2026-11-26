@@ -7,6 +7,17 @@ terraform {
   }
 }
 
+# The workspace and AMPLS link used to be declared directly in this module.
+moved {
+  from = azurerm_log_analytics_workspace.this
+  to   = module.workspace.azurerm_log_analytics_workspace.this
+}
+
+moved {
+  from = azurerm_monitor_private_link_scoped_service.this
+  to   = module.workspace.azurerm_monitor_private_link_scoped_service.this
+}
+
 module "workspace" {
   source               = "../log-analytics-ampls"
   workspace_name       = var.workspace_name
@@ -20,7 +31,10 @@ module "workspace" {
   ampls_resource_group = var.ampls_resource_group
 }
 
+# Without AMPLS the workspace must stay reachable over the internet, which an Enforced perimeter would block.
 resource "azurerm_network_security_perimeter_association" "this" {
+  count = var.ampls_enabled ? 1 : 0
+
   name                                  = var.workspace_name
   access_mode                           = "Enforced"
   network_security_perimeter_profile_id = var.network_security_perimeter_profile_id
