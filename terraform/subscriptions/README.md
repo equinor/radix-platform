@@ -6,56 +6,69 @@
 
 ### Bootstrap base infrastructure
 
-### Network security perimeter associations
+## Network security perimeter
 
-Each environment keeps its own perimeter and shared `defaultProfile`. Association
-resources belong to the module that manages the associated resource, not the
-environment root.
+Each environment (except extmon) owns one network security perimeter,
+`network-perimeter-<environment>`, with a shared `defaultProfile`. Every
+association is `Enforced`; `Learning` and `Audit` are not supported. Association
+names equal the name of the associated resource. Associations are declared in
+the module that manages the resource, never in the environment root.
 
-The `log-analytics` module requires the shared perimeter profile ID:
+| Resource | Module | Association |
+| --- | --- | --- |
+| Config Key Vault (`radix-config-<env>`) | `base-infrastructure` | always, named `network-perimeter-<env>` |
+| Main Key Vault (`radix-keyv-<env>`) | `key-vault` | when `network_security_perimeter_profile_id` is set |
+| Log Analytics workspaces | `log-analytics` | only when `ampls_enabled` is true |
+| Storage accounts (`radixlog<env>`, `radixvelero<env>`) | `storageaccount` | always |
 
-```hcl
-network_security_perimeter_profile_id = module.base.network_security_perimeter_profile_id
-```
+### Log Analytics
 
-It creates one `Enforced` association named after `workspace_name` only when
-`ampls_enabled` is true; without AMPLS the workspace is reachable over the
-internet and must not be in the perimeter. The shared `log-analytics-ampls`
-module manages the workspace and AMPLS link. Extmon uses it directly, without
-an association, while other environments use it through `log-analytics`.
-Existing UUID-suffixed workspace associations are intentionally replaced.
+`log-analytics` wraps `log-analytics-ampls`, which manages the workspace and
+the AMPLS scoped service. Without AMPLS the workspace must stay reachable over
+the internet, so the perimeter association is created only when
+`ampls_enabled` is true. The module requires
+`network_security_perimeter_profile_id`.
 
-The `storageaccount` module always creates one association without `count` or
-`for_each`, named after the storage account (e.g. `radixlogdev`). It requires
-`network_security_perimeter_profile_id`. Existing UUID-suffixed associations are
-intentionally replaced. The module also sets the account's public network access to
-`SecuredByPerimeter` through `azapi_update_resource`, since AzureRM < 5.5 only
-supports `Enabled`/`Disabled`; `storageaccount-only` therefore ignores changes
-to `public_network_access_enabled`.
-The shared `storageaccount-only` module manages the storage account, diagnostics,
-backup, private endpoint and lifecycle policy. Extmon uses it directly without
-an association. Existing `.data` outputs remain unchanged.
-Both modules require AzureRM >= 4.60.0 and < 5.0.0.
+### Storage accounts
 
-The base module always manages one config Key Vault association named using
-`network_security_perimeter_name`. This intentionally replaces existing
-UUID-suffixed config Key Vault associations; the vault and perimeter are not
-renamed.
+`storageaccount` wraps `storageaccount-only`, which manages the account,
+network rules, diagnostics, backup, private endpoint, DNS record and lifecycle
+policy. The wrapper adds the perimeter association and sets the account's
+public network access to `SecuredByPerimeter` through `azapi_update_resource`,
+because AzureRM < 5.5 only supports `Enabled`/`Disabled`; `storageaccount-only`
+therefore ignores changes to `public_network_access_enabled`.
 
-The `key-vault` module associates the main vault (e.g. `radix-keyv-dev`) with the
-perimeter when `network_security_perimeter_profile_id` is set; the association is
-named after the vault. The base module always sets the profile ID; extmon calls
-`key-vault` without it and gets no association.
+`storageaccount` requires AzureRM `>= 4.60.0, < 5.0.0` and `azapi >= 2.7.0`;
+`storageaccount-only` requires AzureRM `>= 3.110.0, < 5.0.0`.
 
-All perimeter associations use `Enforced` access mode; there is no option for
-`Learning` or `Audit`.
+### Key Vaults
 
-The shared state accounts (`s940radixinfra` / `s941radixinfra`) are
-intentionally not associated with a perimeter through Terraform; their
-associations are managed manually.
+The base module associates the config Key Vault directly. The `key-vault`
+module associates the main vault when `network_security_perimeter_profile_id`
+is set; the base module always sets it.
 
-The `log-analytics` module carries `moved` blocks for the workspace and AMPLS
-link, which were previously declared directly in the module and now live in the
-nested `log-analytics-ampls` module. They are no-ops for states that have
-already been migrated and can be removed once every environment has applied
-this change. Review the plan before applying.
+### Extmon
+
+Extmon has no perimeter. It calls `log-analytics-ampls`, `storageaccount-only`
+and `key-vault` (without a profile ID) directly and gets no associations.
+
+### Shared state accounts
+
+`s940radixinfra` and `s941radixinfra` are not associated with a perimeter
+through Terraform; their associations are managed manually.
+
+### State migration
+
+Existing UUID-suffixed associations created outside Terraform are replaced by
+the named associations above. A resource can only have one association, so an
+apply that creates a named association fails with
+`Only 'Audit' mode can be selected for the second association pairing` until
+the old one is deleted. The AzureRM provider records the association as
+created even when Azure later fails it, which shows up as the same association
+being planned for creation on every run.
+
+`log-analytics` and `storageaccount` carry `moved` blocks for the resources
+that previously lived directly in those modules and now live in the nested
+`log-analytics-ampls` and `storageaccount-only` modules. They are no-ops for
+states that have already been migrated and can be removed once every
+environment has applied this change. Review the plan before applying.
