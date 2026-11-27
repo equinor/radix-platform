@@ -30,6 +30,42 @@ module "base" {
   virtual_network_subnet_id                      = module.azurerm_virtual_network.azurerm_subnet_id
 }
 
+#region External AMPLS workspaces
+data "azurerm_key_vault_secret" "external_ampls_ids" {
+  name         = "external-ampls-ids"
+  key_vault_id = module.base.keyvault_config_id
+}
+
+locals {
+  external_ampls_workspace_pattern = "(?i)^/subscriptions/(?P<subscription>[^/]+)/resourcegroups/(?P<resource_group>[^/]+)/providers/microsoft\\.operationalinsights/workspaces/(?P<name>[^/]+)$"
+
+  # Only resource IDs are stored in this secret, not credentials.
+  external_ampls_workspaces = [
+    for id in split(",", nonsensitive(data.azurerm_key_vault_secret.external_ampls_ids.value)) :
+    regex(local.external_ampls_workspace_pattern, trimspace(id))
+  ]
+
+  external_ampls_workspace_ids = {
+    for workspace in local.external_ampls_workspaces :
+    workspace.name => format(
+      "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.OperationalInsights/workspaces/%s",
+      workspace.subscription,
+      workspace.resource_group,
+      workspace.name
+    )
+  }
+}
+
+resource "azurerm_monitor_private_link_scoped_service" "external_workspaces" {
+  for_each = local.external_ampls_workspace_ids
+
+  name                = each.key
+  resource_group_name = "common-${module.config.new_environment}"
+  scope_name          = module.base.ampls_name
+  linked_resource_id  = each.value
+}
+#endregion External AMPLS workspaces
+
 output "radix_id_gitrunner_locker_client_id" {
   value = module.base.radix_id_gitrunner_locker_client_id
 }

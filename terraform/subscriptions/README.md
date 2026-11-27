@@ -30,6 +30,16 @@ the internet, so the perimeter association is created only when
 `network_security_perimeter_profile_id`. Every workspace has a system-assigned
 managed identity, which Azure requires for authenticated intra-perimeter access.
 
+Production links external Log Analytics workspaces to its AMPLS using the
+`external-ampls-ids` secret in `radix-config-platform`. Set its value to a
+comma-separated list of full workspace resource IDs with unique workspace names.
+Whitespace is trimmed and resource ID casing is normalized for AzureRM. Invalid
+IDs or duplicate workspace names fail planning. These IDs are treated as
+non-sensitive Terraform instance keys. The deployment identity needs permission
+to read the secret and `Microsoft.OperationalInsights/workspaces/write` on each
+remote workspace, in addition to AMPLS scoped-resource permissions. Removing an
+ID from the secret removes that link on the next apply, not the workspace.
+
 ### Storage accounts
 
 `storageaccount` wraps `storageaccount-only`, which manages the account,
