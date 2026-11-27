@@ -8,7 +8,7 @@ data "azurerm_data_protection_backup_vault" "this" {
 }
 
 module "storageaccount" {
-  source                   = "../../../modules/storageaccount"
+  source                   = "../../../modules/storageaccount-only"
   for_each                 = var.storageaccounts
   name                     = "radix${each.key}${module.config.environment}"
   tier                     = each.value.account_tier

@@ -97,31 +97,29 @@ variable "clusters_resource_group_id" {
   }
 }
 
-variable "ampls_name" {
-  description = "Name of the AMPLS instance."
-  type        = string
-  default     = ""
+variable "ampls" {
+  description = "Radix AMPLS settings. The shared AMPLS instance and its private endpoint are created only when ampls_enabled is true."
+  type = object({
+    ampls_enabled               = optional(bool, false)
+    ampls_name                  = optional(string)
+    ampls_resource_group        = optional(string)
+    ampls_private_endpoint_name = optional(string)
+  })
+  default = null
 
   validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.ampls_name) != "", false)
-    error_message = "ampls_name must be provided when ampls_enabled is true."
+    condition     = !try(var.ampls.ampls_enabled, false) || try(trimspace(var.ampls.ampls_name) != "", false)
+    error_message = "ampls.ampls_name must be provided when ampls.ampls_enabled is true."
   }
-}
-
-variable "ampls_enabled" {
-  description = "Flag to enable or disable AMPLS."
-  type        = bool
-  default     = false
-}
-
-variable "ampls_private_endpoint_name" {
-  description = "Name of the AMPLS private endpoint."
-  type        = string
-  default     = null
 
   validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.ampls_private_endpoint_name) != "", false)
-    error_message = "ampls_private_endpoint_name must be provided when AMPLS is enabled."
+    condition     = !try(var.ampls.ampls_enabled, false) || try(trimspace(var.ampls.ampls_resource_group) != "", false)
+    error_message = "ampls.ampls_resource_group must be provided when ampls.ampls_enabled is true."
+  }
+
+  validation {
+    condition     = !try(var.ampls.ampls_enabled, false) || try(trimspace(var.ampls.ampls_private_endpoint_name) != "", false)
+    error_message = "ampls.ampls_private_endpoint_name must be provided when ampls.ampls_enabled is true."
   }
 }
 
@@ -137,7 +135,7 @@ variable "virtual_network_subnet_id" {
   default     = null
 
   validation {
-    condition     = !var.ampls_enabled || try(trimspace(var.virtual_network_subnet_id) != "", false)
+    condition     = !try(var.ampls.ampls_enabled, false) || try(trimspace(var.virtual_network_subnet_id) != "", false)
     error_message = "virtual_network_subnet_id must be provided when AMPLS is enabled."
   }
 }
@@ -163,8 +161,23 @@ variable "easyauth" {
   }
 }
 
-variable "ampls_resource_group" {
-  description = "Resource group containing the AMPLS instance."
+variable "network_security_perimeter_name" {
+  description = "Name of the network security perimeter."
   type        = string
   default     = null
+}
+
+variable "network_security_perimeter_resource_group_name" {
+  description = "Resource group containing the network security perimeter."
+  type        = string
+  default     = null
+}
+
+variable "network_security_perimeter_associations" {
+  description = "Resources associated with this zone's network security perimeter. All associations are Enforced."
+  type = map(object({
+    name        = string
+    resource_id = string
+  }))
+  default = {}
 }

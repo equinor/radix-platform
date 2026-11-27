@@ -49,10 +49,10 @@ locals {
   config        = yamldecode(file(var.configfile))
   ampls_enabled = lookup(local.config, "ampls_enabled", false)
   ampls_private_dns_zones = {
-    "privatelink.monitor.azure.com"             = {}
-    "privatelink.oms.opinsights.azure.com"      = {}
-    "privatelink.ods.opinsights.azure.com"      = {}
-    "privatelink.agentsvc.azure-automation.net" = {}
+    "privatelink.monitor.azure.com"             = { resolution_policy = "NxDomainRedirect" }
+    "privatelink.oms.opinsights.azure.com"      = { resolution_policy = "NxDomainRedirect" }
+    "privatelink.ods.opinsights.azure.com"      = { resolution_policy = "NxDomainRedirect" }
+    "privatelink.agentsvc.azure-automation.net" = { resolution_policy = "NxDomainRedirect" }
   }
 }
 

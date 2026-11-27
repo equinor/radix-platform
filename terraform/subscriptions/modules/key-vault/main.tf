@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 4.60.0, < 5.0.0"
+    }
+  }
+}
+
 ################################################################################
 # Data Sources
 ################################################################################
@@ -48,6 +57,15 @@ resource "azurerm_key_vault" "this" {
     ip_rules       = []
   }
   sku_name = "standard"
+}
+
+resource "azurerm_network_security_perimeter_association" "this" {
+  count = var.network_security_perimeter_profile_id == null ? 0 : 1
+
+  name                                  = azurerm_key_vault.this.name
+  access_mode                           = "Enforced"
+  network_security_perimeter_profile_id = var.network_security_perimeter_profile_id
+  resource_id                           = azurerm_key_vault.this.id
 }
 
 resource "azurerm_role_assignment" "this" {

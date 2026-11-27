@@ -1,3 +1,9 @@
+variable "network_security_perimeter_profile_id" {
+  description = "Shared perimeter profile ID for this storage account."
+  type        = string
+  nullable    = false
+}
+
 variable "name" {
   description = "Specifies the name of the storage account. Only lowercase Alphanumeric characters allowed"
   type        = string
@@ -72,7 +78,6 @@ variable "backup_center" {
   default     = false
 }
 
-
 variable "principal_id" {
   description = "The ID of the Principal (User, Group or Service Principal) to assign the Role Definition to"
   type        = string
@@ -109,6 +114,7 @@ variable "virtual_network" {
 variable "vnet_resource_group" {
   type = string
 }
+
 variable "lifecycle_policy_rules" {
   description = "Lifecycle management rules for the storage account. Non-default values must be provided by the zone configuration."
   type = list(object({

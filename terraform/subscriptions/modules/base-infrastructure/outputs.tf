@@ -23,6 +23,16 @@ output "keyvault_config_name" {
   value       = azurerm_key_vault.config.name
 }
 
+output "keyvault_config_id" {
+  description = "ID of the zone's bootstrap Key Vault."
+  value       = azurerm_key_vault.config.id
+}
+
+output "network_security_perimeter_profile_id" {
+  description = "ID of the zone's network security perimeter profile."
+  value       = module.network_security_perimeter.profile_id
+}
+
 output "ampls_id" {
   description = "ID of the shared AMPLS instance, or null when disabled."
   value       = one(module.ampls[*].id)

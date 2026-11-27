@@ -1,4 +1,5 @@
 environment: "c3"
+ampls_enabled: true
 flux_folder: "c3"
 cluster_type: "production"
 dnsZone:

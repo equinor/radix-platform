@@ -1,3 +1,9 @@
+variable "network_security_perimeter_profile_id" {
+  description = "Shared perimeter profile ID for this workspace."
+  type        = string
+  nullable    = false
+}
+
 variable "workspace_name" {
   description = "The name of this Log Analytics workspace."
   type        = string

@@ -73,3 +73,9 @@ variable "config_key_vault_name" {
   description = "Name of the bootstrap Key Vault."
   type        = string
 }
+
+variable "network_security_perimeter_profile_id" {
+  description = "Shared perimeter profile ID. When null, the vault is not associated with a perimeter."
+  type        = string
+  default     = null
+}

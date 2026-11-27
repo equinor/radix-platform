@@ -96,7 +96,7 @@ module "maintenance_alert" {
   location                   = module.config.location
   log_analytics_workspace_id = data.azurerm_log_analytics_workspace.containers.id
   key_vault_name             = "radix-config-${module.config.environment}"
-  key_vault_resource_group   = module.config.common_resource_group
+  key_vault_resource_group   = "common-${module.config.new_environment}"
   email_address              = "radix@statoilsrm.onmicrosoft.com"
   week_index                 = local.node_os_maintenance_week_index
   day_of_week                = local.node_os_maintenance_day_of_week

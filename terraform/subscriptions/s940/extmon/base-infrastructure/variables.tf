@@ -133,10 +133,6 @@ variable "appregistrations" {
           principal_object_id = "17b94e5c-3174-4efa-9b88-45980b49997b"
           role_key            = "system-admin"
         }
-        radix = {
-          principal_object_id = "a5dfa635-dc00-4a28-9ad9-9e7f1e56919d"
-          role_key            = "editors"
-        }
       }
     }
     # cr_cicd = {
