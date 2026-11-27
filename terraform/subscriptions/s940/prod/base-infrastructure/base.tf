@@ -1,10 +1,12 @@
 module "base" {
-  source                                         = "../../../modules/base-infrastructure"
-  clusters_resource_group_id                     = module.resourcegroup_clusters.data.id
-  ampls_enabled                                  = module.config.ampls_enabled
-  ampls_name                                     = "radix-ampls-${module.config.new_environment}"
-  ampls_resource_group                           = "common-${module.config.new_environment}"
-  ampls_private_endpoint_name                    = "pe-ampls-${module.config.new_environment}"
+  source                     = "../../../modules/base-infrastructure"
+  clusters_resource_group_id = module.resourcegroup_clusters.data.id
+  ampls = {
+    ampls_enabled               = module.config.ampls_enabled
+    ampls_name                  = "radix-ampls-${module.config.new_environment}"
+    ampls_resource_group        = "common-${module.config.new_environment}"
+    ampls_private_endpoint_name = "pe-ampls-${module.config.new_environment}"
+  }
   enable_resource_locks                          = true
   gitrunner_federated_credential_name            = "radix-platform-env-${module.config.new_environment}"
   gitrunner_locker_name                          = "radix-id-gitrunner-locker-${module.config.new_environment}"
