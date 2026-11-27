@@ -7,17 +7,6 @@ terraform {
   }
 }
 
-# The workspace and AMPLS link used to be declared directly in this module.
-moved {
-  from = azurerm_log_analytics_workspace.this
-  to   = module.workspace.azurerm_log_analytics_workspace.this
-}
-
-moved {
-  from = azurerm_monitor_private_link_scoped_service.this
-  to   = module.workspace.azurerm_monitor_private_link_scoped_service.this
-}
-
 module "workspace" {
   source               = "../log-analytics-ampls"
   workspace_name       = var.workspace_name

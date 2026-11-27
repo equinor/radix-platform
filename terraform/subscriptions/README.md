@@ -70,8 +70,8 @@ the old one is deleted. The AzureRM provider records the association as
 created even when Azure later fails it, which shows up as the same association
 being planned for creation on every run.
 
-`log-analytics` and `storageaccount` carry `moved` blocks for the resources
-that previously lived directly in those modules and now live in the nested
-`log-analytics-ampls` and `storageaccount-only` modules. They are no-ops for
-states that have already been migrated and can be removed once every
-environment has applied this change. Review the plan before applying.
+Resources that previously lived directly in `log-analytics` and `storageaccount`
+now live in the nested `log-analytics-ampls` and `storageaccount-only` modules.
+States that have not yet migrated those resource addresses need a state migration
+before applying; otherwise Terraform may plan to destroy and recreate resources.
+Review the plan before applying.

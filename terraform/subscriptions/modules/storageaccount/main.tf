@@ -11,47 +11,6 @@ terraform {
   }
 }
 
-# These resources used to be declared directly in this module.
-moved {
-  from = azurerm_storage_account.storageaccount
-  to   = module.account.azurerm_storage_account.storageaccount
-}
-
-moved {
-  from = azurerm_storage_account_network_rules.this
-  to   = module.account.azurerm_storage_account_network_rules.this
-}
-
-moved {
-  from = azurerm_monitor_diagnostic_setting.blob
-  to   = module.account.azurerm_monitor_diagnostic_setting.blob
-}
-
-moved {
-  from = azurerm_role_assignment.roleassignment
-  to   = module.account.azurerm_role_assignment.roleassignment
-}
-
-moved {
-  from = azurerm_data_protection_backup_instance_blob_storage.backupinstanceblobstorage
-  to   = module.account.azurerm_data_protection_backup_instance_blob_storage.backupinstanceblobstorage
-}
-
-moved {
-  from = azurerm_private_endpoint.this
-  to   = module.account.azurerm_private_endpoint.this
-}
-
-moved {
-  from = azurerm_private_dns_a_record.this
-  to   = module.account.azurerm_private_dns_a_record.this
-}
-
-moved {
-  from = azurerm_storage_management_policy.this
-  to   = module.account.azurerm_storage_management_policy.this
-}
-
 module "account" {
   source                            = "../storageaccount-only"
   name                              = var.name
